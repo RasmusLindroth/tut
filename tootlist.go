@@ -17,13 +17,15 @@ const (
 )
 
 type TootList struct {
-	app         *App
-	Index       int
-	Statuses    []*mastodon.Status
-	Thread      []*mastodon.Status
-	ThreadIndex int
-	View        *tview.Table
-	focus       tootListFocus
+	app            *App
+	Index          int
+	Statuses       []*mastodon.Status
+	Thread         []*mastodon.Status
+	ThreadIndex    int
+	View           *tview.Table
+	focus          tootListFocus
+	loadingFeedOld bool
+	loadingFeedNew bool
 }
 
 func NewTootList(app *App, viewTable *tview.Table) *TootList {
@@ -52,6 +54,18 @@ func (t *TootList) GetStatus(index int) (*mastodon.Status, error) {
 func (t *TootList) SetFeedStatuses(s []*mastodon.Status) {
 	t.Statuses = s
 	t.Draw()
+}
+
+func (t *TootList) PrependFeedStatuses(s []*mastodon.Status) {
+	t.Statuses = append(s, t.Statuses...)
+	t.SetFeedIndex(
+		t.GetFeedIndex() + len(s),
+	)
+	t.View.Select(t.GetFeedIndex(), 0)
+}
+
+func (t *TootList) AppendFeedStatuses(s []*mastodon.Status) {
+	t.Statuses = append(t.Statuses, s...)
 }
 
 func (t *TootList) GetFeed() []*mastodon.Status {
@@ -100,9 +114,24 @@ func (t *TootList) SetThreadIndex(index int) {
 
 func (t *TootList) Prev() {
 	index := t.GetIndex()
+	statuses := t.GetStatuses()
 
 	if index-1 > -1 {
 		index--
+	}
+
+	if index < 5 && t.focus == feedFocus {
+		go func() {
+			if t.loadingFeedNew {
+				return
+			}
+			t.loadingFeedNew = true
+			t.app.UI.LoadNewer(statuses[0])
+			t.app.App.QueueUpdateDraw(func() {
+				t.Draw()
+				t.loadingFeedNew = false
+			})
+		}()
 	}
 	t.SetIndex(index)
 	t.View.Select(index, 0)
@@ -114,6 +143,20 @@ func (t *TootList) Next() {
 
 	if index+1 < len(statuses) {
 		index++
+	}
+
+	if (len(statuses)-index) < 10 && t.focus == feedFocus {
+		go func() {
+			if t.loadingFeedOld || len(statuses) == 0 {
+				return
+			}
+			t.loadingFeedOld = true
+			t.app.UI.LoadOlder(statuses[len(statuses)-1])
+			t.app.App.QueueUpdateDraw(func() {
+				t.Draw()
+				t.loadingFeedOld = false
+			})
+		}()
 	}
 	t.SetIndex(index)
 	t.View.Select(index, 0)
@@ -127,7 +170,7 @@ func (t *TootList) Draw() {
 
 	switch t.focus {
 	case feedFocus:
-		statuses = t.GetStatuses()
+		statuses = t.GetFeed()
 		index = t.GetFeedIndex()
 	case threadFocus:
 		statuses = t.GetThread()

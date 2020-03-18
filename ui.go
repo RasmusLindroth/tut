@@ -32,6 +32,7 @@ type UI struct {
 	Status      *tview.TextView
 	Pages       *tview.Pages
 	AuthOverlay *AuthOverlay
+	Timeline    TimelineType
 }
 
 func (ui *UI) SetFocus(f FocusAt) {
@@ -64,20 +65,27 @@ func (ui *UI) SetFocus(f FocusAt) {
 	}
 }
 
+func (ui *UI) SetTimeline(tl TimelineType) {
+	ui.Timeline = tl
+	statuses, err := ui.app.API.GetStatuses(tl)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	ui.TootList.SetFeedStatuses(statuses)
+}
+
 func (ui *UI) ShowThread() {
 	status, err := ui.TootList.GetStatus(ui.TootList.Index)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	cont, err := ui.app.API.Client.GetStatusContext(context.Background(), status.ID)
+
+	thread, index, err := ui.app.API.GetThread(status)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	var thread []*mastodon.Status
-	thread = append(thread, cont.Ancestors...)
-	thread = append(thread, status)
-	thread = append(thread, cont.Descendants...)
-	ui.TootList.SetThread(thread, len(cont.Ancestors))
+
+	ui.TootList.SetThread(thread, index)
 	ui.TootList.FocusThread()
 	ui.SetFocus(LeftPaneFocus)
 	ui.TootList.Draw()
@@ -154,16 +162,63 @@ func (ui *UI) LoggedIn() {
 	}
 	ui.app.Me = me
 
-	statuses, err := ui.app.API.Client.GetTimelineHome(context.Background(), nil)
+	ui.SetTimeline(ui.Timeline)
+}
+
+func (ui *UI) LoadNewer(status *mastodon.Status) int {
+	statuses, _, err := ui.app.API.GetStatusesNewer(ui.Timeline, status)
 	if err != nil {
 		log.Fatalln(err)
 	}
+	ui.app.UI.TootList.PrependFeedStatuses(statuses)
+	return len(statuses)
+}
 
-	ui.app.UI.TootList.SetFeedStatuses(statuses)
+func (ui *UI) LoadOlder(status *mastodon.Status) int {
+	statuses, _, err := ui.app.API.GetStatusesOlder(ui.Timeline, status)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	ui.app.UI.TootList.AppendFeedStatuses(statuses)
+	return len(statuses)
+}
 
-	ui.app.UI.TootList.View.SetSelectionChangedFunc(func(row, _ int) {
-		ui.app.UI.StatusText.ShowToot(row)
-	})
+func (ui *UI) FavoriteEvent() {
+	status, err := ui.TootList.GetStatus(ui.TootList.GetIndex())
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if status.Favourited == true {
+		err = ui.app.API.Unfavorite(status)
+	} else {
+		err = ui.app.API.Favorite(status)
+	}
+}
+
+func (ui *UI) BoostEvent() {
+	status, err := ui.TootList.GetStatus(ui.TootList.GetIndex())
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if status.Reblogged == true {
+		err = ui.app.API.Unboost(status)
+	} else {
+		err = ui.app.API.Boost(status)
+	}
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func (ui *UI) DeleteStatus() {
+	status, err := ui.TootList.GetStatus(ui.TootList.GetIndex())
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = ui.app.API.DeleteStatus(status)
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
 
 func clearContent(screen tcell.Screen, x int, y int, width int, height int) (int, int, int, int) {

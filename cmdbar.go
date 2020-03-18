@@ -21,3 +21,7 @@ type CmdBar struct {
 func (c *CmdBar) GetInput() string {
 	return strings.TrimSpace(c.View.GetText())
 }
+
+func (c *CmdBar) ClearInput() {
+	c.View.SetText("")
+}

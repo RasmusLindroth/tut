@@ -130,7 +130,26 @@ func (s *StatusText) ShowTootOptions(index int, showSensitive bool) {
 
 	s.View.SetText(output)
 	s.View.ScrollToBeginning()
+	var info []string
+	if status.Favourited == true {
+		info = append(info, "Un[F]avorite")
+	} else {
+		info = append(info, "[F]avorite")
+	}
+	if status.Reblogged == true {
+		info = append(info, "Un[B]oost")
+	} else {
+		info = append(info, "[B]oost")
+	}
+	info = append(info, "[T]hread", "[R]eply", "[V]iew")
+	if len(status.MediaAttachments) > 0 {
+		info = append(info, "[M]edia")
+	}
+	info = append(info, "[O]ther")
 
-	info := "[B]oost [F]avorite [T]hread [R]eply [V]iew [M]edia [O]ther"
-	s.Controls.View.SetText(tview.Escape(info))
+	if status.Account.ID == s.app.Me.ID {
+		info = append(info, "[D]elete")
+	}
+
+	s.Controls.View.SetText(tview.Escape(strings.Join(info, " ")))
 }

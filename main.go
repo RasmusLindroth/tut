@@ -54,12 +54,18 @@ func main() {
 	top := tview.NewTextView()
 	top.SetBackgroundColor(tcell.ColorGreen)
 
-	app.UI = &UI{app: app, Top: top}
+	app.UI = &UI{app: app, Top: top, Timeline: TimelineHome}
 
 	app.UI.TootList = NewTootList(app, tview.NewTable())
 	app.UI.TootList.View.SetSelectedStyle(tcell.ColorWhite, tcell.ColorRed, tcell.AttrMask(0))
 	app.UI.TootList.View.SetSelectable(true, false)
 	app.UI.TootList.View.SetBackgroundColor(tcell.ColorDefault)
+
+	app.UI.TootList.View.SetSelectionChangedFunc(func(row, _ int) {
+		if app.HaveAccount {
+			app.UI.StatusText.ShowToot(row)
+		}
+	})
 
 	lo := NewLinkOverlay(app, tview.NewTextView(),
 		NewControls(app, tview.NewTextView()),
@@ -339,6 +345,14 @@ func main() {
 					app.UI.Reply()
 				case 'm':
 					app.UI.OpenMedia()
+				case 'f':
+					//TODO UPDATE TOOT IN LIST
+					app.UI.FavoriteEvent()
+				case 'b':
+					//TODO UPDATE TOOT IN LIST
+					app.UI.BoostEvent()
+				case 'd':
+					app.UI.DeleteStatus()
 				}
 			}
 		}
@@ -346,7 +360,7 @@ func main() {
 		return event
 	})
 
-	words := strings.Split(":q,:quit", ",")
+	words := strings.Split(":q,:quit,:timeline", ",")
 	app.UI.CmdBar.View.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		if currentText == "" {
 			return
@@ -356,7 +370,7 @@ func main() {
 				entries = append(entries, word)
 			}
 		}
-		if len(entries) <= 1 {
+		if len(entries) < 1 {
 			entries = nil
 		}
 		return
@@ -373,8 +387,29 @@ func main() {
 			fallthrough
 		case ":quit":
 			app.App.Stop()
+		case ":timeline":
+			if len(parts) < 2 {
+				break
+			}
+			switch parts[1] {
+			case "local":
+				app.UI.SetTimeline(TimelineLocal)
+				app.UI.SetFocus(LeftPaneFocus)
+				app.UI.CmdBar.ClearInput()
+			case "federated":
+				app.UI.SetTimeline(TimelineFederated)
+				app.UI.SetFocus(LeftPaneFocus)
+				app.UI.CmdBar.ClearInput()
+			case "direct":
+				app.UI.SetTimeline(TimelineDirect)
+				app.UI.SetFocus(LeftPaneFocus)
+				app.UI.CmdBar.ClearInput()
+			case "home":
+				app.UI.SetTimeline(TimelineHome)
+				app.UI.SetFocus(LeftPaneFocus)
+				app.UI.CmdBar.ClearInput()
+			}
 		}
-
 	})
 
 	app.UI.AuthOverlay.View.SetDoneFunc(func(key tcell.Key) {
