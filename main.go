@@ -56,14 +56,16 @@ func main() {
 
 	app.UI = &UI{app: app, Top: top, Timeline: TimelineHome}
 
-	app.UI.TootList = NewTootList(app, tview.NewTable())
-	app.UI.TootList.View.SetSelectedStyle(tcell.ColorWhite, tcell.ColorRed, tcell.AttrMask(0))
-	app.UI.TootList.View.SetSelectable(true, false)
+	app.UI.TootList = NewTootList(app, tview.NewList())
+	app.UI.TootList.View.SetSelectedTextColor(tcell.ColorWhite)
+	app.UI.TootList.View.SetSelectedBackgroundColor(tcell.ColorRed)
+	app.UI.TootList.View.ShowSecondaryText(false)
+	app.UI.TootList.View.SetHighlightFullLine(true)
 	app.UI.TootList.View.SetBackgroundColor(tcell.ColorDefault)
 
-	app.UI.TootList.View.SetSelectionChangedFunc(func(row, _ int) {
+	app.UI.TootList.View.SetChangedFunc(func(index int, _ string, _ string, _ rune) {
 		if app.HaveAccount {
-			app.UI.StatusText.ShowToot(row)
+			app.UI.StatusText.ShowToot(index)
 		}
 	})
 
@@ -177,14 +179,29 @@ func main() {
 	app.UI.AuthOverlay.Draw()
 
 	app.UI.MediaOverlay = NewMediaView(app)
+	app.UI.Pages.AddPage("media", tview.NewFlex().AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(app.UI.MediaOverlay.Flex.SetDirection(tview.FlexRow).
+				AddItem(app.UI.MediaOverlay.TextTop, 0, 1, true).
+				AddItem(app.UI.MediaOverlay.FileList, 0, 10, true).
+				AddItem(app.UI.MediaOverlay.TextBottom, 0, 1, true).
+				AddItem(app.UI.MediaOverlay.InputField.View, 2, 1, false), 0, 8, false).
+			AddItem(nil, 0, 1, false), 0, 8, true).
+		AddItem(nil, 0, 1, false), true, false)
+
+	app.UI.MediaOverlay.FileList.SetSelectedTextColor(tcell.ColorWhite)
+	app.UI.MediaOverlay.FileList.SetSelectedBackgroundColor(tcell.ColorRed)
+	app.UI.MediaOverlay.FileList.ShowSecondaryText(false)
+	app.UI.MediaOverlay.FileList.SetHighlightFullLine(true)
+	app.UI.MediaOverlay.FileList.SetBackgroundColor(tcell.ColorDefault)
+
 	app.UI.MediaOverlay.Flex.SetBackgroundColor(tcell.ColorDefault)
-	app.UI.MediaOverlay.Text.SetBackgroundColor(tcell.ColorDefault)
+	app.UI.MediaOverlay.TextTop.SetBackgroundColor(tcell.ColorDefault)
+	app.UI.MediaOverlay.TextBottom.SetBackgroundColor(tcell.ColorDefault)
 	app.UI.MediaOverlay.InputField.View.SetBackgroundColor(tcell.ColorDefault)
 	app.UI.MediaOverlay.InputField.View.SetFieldBackgroundColor(tcell.ColorDefault)
 	app.UI.MediaOverlay.Flex.SetDrawFunc(clearContent)
-
-	app.UI.Pages.AddPage("media",
-		modal(app.UI.MediaOverlay.Flex, app.UI.MediaOverlay.Text, app.UI.MediaOverlay.InputField.View), true, false)
 
 	if !app.HaveAccount {
 		app.UI.SetFocus(AuthOverlayFocus)
@@ -299,6 +316,12 @@ func main() {
 		if app.UI.Focus == MessageAttachmentFocus && app.UI.MediaOverlay.Focus == MediaFocusOverview {
 			if event.Key() == tcell.KeyRune {
 				switch event.Rune() {
+				case 'j':
+					app.UI.MediaOverlay.Next()
+				case 'k':
+					app.UI.MediaOverlay.Prev()
+				case 'd':
+					app.UI.MediaOverlay.Delete()
 				case 'a':
 					app.UI.MediaOverlay.SetFocus(MediaFocusAdd)
 				case 'q':

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -13,14 +12,15 @@ type MediaFocus int
 const (
 	MediaFocusOverview MediaFocus = iota
 	MediaFocusAdd
-	MediaFocusDelete
 )
 
 func NewMediaView(app *App) *MediaView {
 	m := &MediaView{
 		app:        app,
 		Flex:       tview.NewFlex(),
-		Text:       tview.NewTextView(),
+		TextTop:    tview.NewTextView(),
+		TextBottom: tview.NewTextView(),
+		FileList:   tview.NewList(),
 		InputField: &MediaInput{app: app, View: tview.NewInputField()},
 		Focus:      MediaFocusOverview,
 	}
@@ -31,7 +31,9 @@ func NewMediaView(app *App) *MediaView {
 type MediaView struct {
 	app        *App
 	Flex       *tview.Flex
-	Text       *tview.TextView
+	TextTop    *tview.TextView
+	TextBottom *tview.TextView
+	FileList   *tview.List
 	InputField *MediaInput
 	Focus      MediaFocus
 	Files      []string
@@ -39,23 +41,20 @@ type MediaView struct {
 
 func (m *MediaView) AddFile(f string) {
 	m.Files = append(m.Files, f)
+	m.FileList.AddItem(filepath.Base(f), "", 0, nil)
 	m.Draw()
 }
 
 func (m *MediaView) Draw() {
-	output := "[A]dd media\n\nList of attached files:\n"
-	for i, f := range m.Files {
-		output += fmt.Sprintf("\t%d. %s\n", i+1, filepath.Base(f))
-	}
-
-	m.Text.SetText(output)
+	m.TextTop.SetText("List of attached files:")
+	m.TextBottom.SetText("[A]dd file [D]elete file [Esc] Done")
 }
 
 func (m *MediaView) SetFocus(f MediaFocus) {
 	switch f {
 	case MediaFocusOverview:
 		m.InputField.View.SetText("")
-		m.app.App.SetFocus(m.Text)
+		m.app.App.SetFocus(m.FileList)
 	case MediaFocusAdd:
 		m.app.App.SetFocus(m.InputField.View)
 		pwd, err := os.Getwd()
@@ -68,11 +67,31 @@ func (m *MediaView) SetFocus(f MediaFocus) {
 			}
 		}
 		m.InputField.View.SetText(pwd)
-	case MediaFocusDelete:
-		m.app.App.SetFocus(m.InputField.View)
-		//m.InputField.View.SetText(":delete ")
 	}
 	m.Focus = f
+}
+
+func (m *MediaView) Prev() {
+	index := m.FileList.GetCurrentItem()
+	if index-1 >= 0 {
+		m.FileList.SetCurrentItem(index - 1)
+	}
+}
+
+func (m *MediaView) Next() {
+	index := m.FileList.GetCurrentItem()
+	if index+1 < m.FileList.GetItemCount() {
+		m.FileList.SetCurrentItem(index + 1)
+	}
+}
+
+func (m *MediaView) Delete() {
+	index := m.FileList.GetCurrentItem()
+	if len(m.Files) == 0 || index > len(m.Files) {
+		return
+	}
+	m.FileList.RemoveItem(index)
+	m.Files = append(m.Files[:index], m.Files[index+1:]...)
 }
 
 type MediaInput struct {

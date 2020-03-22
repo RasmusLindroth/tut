@@ -22,18 +22,18 @@ type TootList struct {
 	Statuses       []*mastodon.Status
 	Thread         []*mastodon.Status
 	ThreadIndex    int
-	View           *tview.Table
+	View           *tview.List
 	focus          tootListFocus
 	loadingFeedOld bool
 	loadingFeedNew bool
 }
 
-func NewTootList(app *App, viewTable *tview.Table) *TootList {
+func NewTootList(app *App, viewList *tview.List) *TootList {
 	return &TootList{
 		app:   app,
 		Index: 0,
 		focus: feedFocus,
-		View:  viewTable,
+		View:  viewList,
 	}
 }
 
@@ -61,7 +61,7 @@ func (t *TootList) PrependFeedStatuses(s []*mastodon.Status) {
 	t.SetFeedIndex(
 		t.GetFeedIndex() + len(s),
 	)
-	t.View.Select(t.GetFeedIndex(), 0)
+	t.View.SetCurrentItem(t.GetFeedIndex())
 }
 
 func (t *TootList) AppendFeedStatuses(s []*mastodon.Status) {
@@ -134,7 +134,7 @@ func (t *TootList) Prev() {
 		}()
 	}
 	t.SetIndex(index)
-	t.View.Select(index, 0)
+	t.View.SetCurrentItem(index)
 }
 
 func (t *TootList) Next() {
@@ -159,7 +159,7 @@ func (t *TootList) Next() {
 		}()
 	}
 	t.SetIndex(index)
-	t.View.Select(index, 0)
+	t.View.SetCurrentItem(index)
 }
 
 func (t *TootList) Draw() {
@@ -191,10 +191,10 @@ func (t *TootList) Draw() {
 			format = "15:04"
 		}
 		content := fmt.Sprintf("%s %s", sLocal.Format(format), s.Account.Acct)
-		t.View.SetCellSimple(currRow, 0, content)
+		t.View.InsertItem(currRow, content, "", 0, nil)
 		currRow++
 	}
-	t.View.Select(index, 0)
+	t.View.SetCurrentItem(index)
 	t.app.UI.StatusText.ShowToot(index)
 }
 
