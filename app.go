@@ -10,5 +10,6 @@ type App struct {
 	UI          *UI
 	Me          *mastodon.Account
 	API         *API
+	Config      *Config
 	HaveAccount bool
 }

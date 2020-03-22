@@ -39,6 +39,13 @@ type MediaView struct {
 	Files      []string
 }
 
+func (m *MediaView) Reset() {
+	m.Files = nil
+	m.FileList.Clear()
+	m.Focus = MediaFocusOverview
+	m.Draw()
+}
+
 func (m *MediaView) AddFile(f string) {
 	m.Files = append(m.Files, f)
 	m.FileList.AddItem(filepath.Base(f), "", 0, nil)

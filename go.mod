@@ -9,5 +9,5 @@ require (
 	github.com/microcosm-cc/bluemonday v1.0.2
 	github.com/pelletier/go-toml v1.6.0
 	github.com/rivo/tview v0.0.0-20200219210816-cd38d7432498
-	golang.org/x/net v0.0.0-20200301022130-244492dfa37a
+	golang.org/x/net v0.0.0-20200320220750-118fecf932d8
 )

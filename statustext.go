@@ -66,21 +66,25 @@ func (s *StatusText) ShowTootOptions(index int, showSensitive bool) {
 	}
 	s.LinkOverlay.SetURLs(urls)
 
+	subtleColor := fmt.Sprintf("[#%x]", s.app.Config.Style.Subtle.Hex())
+	special1 := fmt.Sprintf("[#%x]", s.app.Config.Style.TextSpecial1.Hex())
+	special2 := fmt.Sprintf("[#%x]", s.app.Config.Style.TextSpecial2.Hex())
 	var head string
 	if status.Reblog != nil {
 		if status.Account.DisplayName != "" {
-			head += fmt.Sprintf("[gray]%s (%s)\n", status.Account.DisplayName, status.Account.Acct)
+			head += fmt.Sprintf(subtleColor+"%s (%s)\n", status.Account.DisplayName, status.Account.Acct)
 		} else {
-			head += fmt.Sprintf("[gray]%s\n", status.Account.Acct)
+			head += fmt.Sprintf(subtleColor+"%s\n", status.Account.Acct)
 		}
-		head += "[gray]Boosted\n"
-		head += "[gray]" + line
+		head += subtleColor + "Boosted\n"
+		head += subtleColor + line
 		status = status.Reblog
 	}
+
 	if status.Account.DisplayName != "" {
-		head += fmt.Sprintf("[tomato]%s\n", status.Account.DisplayName)
+		head += fmt.Sprintf(special2+"%s\n", status.Account.DisplayName)
 	}
-	head += fmt.Sprintf("[yellow]%s\n\n", status.Account.Acct)
+	head += fmt.Sprintf(special1+"%s\n\n", status.Account.Acct)
 	output := head
 	content := tview.Escape(stripped)
 	if content != "" {
@@ -89,8 +93,8 @@ func (s *StatusText) ShowTootOptions(index int, showSensitive bool) {
 
 	var poll string
 	if status.Poll != nil {
-		poll += "[gray]Poll\n"
-		poll += "[gray]" + line
+		poll += subtleColor + "Poll\n"
+		poll += subtleColor + line
 		poll += fmt.Sprintf("Number of votes: %d\n\n", status.Poll.VotesCount)
 		votes := float64(status.Poll.VotesCount)
 		for _, o := range status.Poll.Options {
@@ -105,15 +109,15 @@ func (s *StatusText) ShowTootOptions(index int, showSensitive bool) {
 
 	var media string
 	for _, att := range status.MediaAttachments {
-		media += "[gray]" + line
-		media += fmt.Sprintf("[gray]Attached %s\n", att.Type)
+		media += subtleColor + line
+		media += fmt.Sprintf(subtleColor+"Attached %s\n", att.Type)
 		media += fmt.Sprintf("%s\n", att.URL)
 	}
 
 	var card string
 	if status.Card != nil {
-		card += "[gray]Card type: " + status.Card.Type + "\n"
-		card += "[gray]" + line
+		card += subtleColor + "Card type: " + status.Card.Type + "\n"
+		card += subtleColor + line
 		if status.Card.Title != "" {
 			card += status.Card.Title + "\n\n"
 		}
@@ -145,7 +149,9 @@ func (s *StatusText) ShowTootOptions(index int, showSensitive bool) {
 	if len(status.MediaAttachments) > 0 {
 		info = append(info, "[M]edia")
 	}
-	info = append(info, "[O]ther")
+	if len(urls) > 0 {
+		info = append(info, "[O]pen")
+	}
 
 	if status.Account.ID == s.app.Me.ID {
 		info = append(info, "[D]elete")

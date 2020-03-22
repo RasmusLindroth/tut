@@ -3,10 +3,39 @@ package main
 import (
 	"os"
 
+	"github.com/gdamore/tcell"
 	"github.com/kyoh86/xdg"
 )
 
 type Config struct {
+	Style StyleConfig
+	Media MediaConfig
+}
+
+type StyleConfig struct {
+	Background tcell.Color
+	Text       tcell.Color
+
+	Subtle      tcell.Color
+	WarningText tcell.Color
+
+	TextSpecial1 tcell.Color
+	TextSpecial2 tcell.Color
+
+	TopBarBackground tcell.Color
+	TopBarText       tcell.Color
+
+	StatusBarBackground tcell.Color
+	StatusBarText       tcell.Color
+
+	ListSelectedBackground tcell.Color
+	ListSelectedText       tcell.Color
+}
+
+type MediaConfig struct {
+	ImageViewer string
+	ImageSingle bool
+	VideoViewer string
 }
 
 func CreateConfigDir() error {

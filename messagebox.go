@@ -92,6 +92,15 @@ func (m *MessageBox) Post() {
 		send.SpoilerText = toot.SpoilerText
 	}
 
+	attachments := m.app.UI.MediaOverlay.Files
+	for _, ap := range attachments {
+		a, err := m.app.API.Client.UploadMedia(context.Background(), ap)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		send.MediaIDs = append(send.MediaIDs, a.ID)
+	}
+
 	_, err := m.app.API.Client.PostStatus(context.Background(), &send)
 	if err != nil {
 		log.Fatalln(err)
@@ -107,6 +116,8 @@ func (m *MessageBox) Draw() {
 	var outputHead string
 	var output string
 
+	subtleColor := fmt.Sprintf("[#%x]", m.app.Config.Style.Subtle.Hex())
+	warningColor := fmt.Sprintf("[#%x]", m.app.Config.Style.WarningText.Hex())
 	if m.currentToot.Status != nil {
 		var acct string
 		if m.currentToot.Status.Account.DisplayName != "" {
@@ -114,21 +125,20 @@ func (m *MessageBox) Draw() {
 		} else {
 			acct = fmt.Sprintf("%s\n", m.currentToot.Status.Account.Acct)
 		}
-		outputHead += "[gray]Replying to " + tview.Escape(acct) + "\n"
+		outputHead += subtleColor + "Replying to " + tview.Escape(acct) + "\n"
 	}
-
 	if m.currentToot.SpoilerText != "" && !m.currentToot.Sensitive {
-		outputHead += "[red]You have entered spoiler text, but haven't set an content warning. Do it by pressing " + tview.Escape("[T]") + "\n\n"
+		outputHead += warningColor + "You have entered spoiler text, but haven't set an content warning. Do it by pressing " + tview.Escape("[T]") + "\n\n"
 	}
 
 	if m.currentToot.Sensitive && m.currentToot.SpoilerText == "" {
-		outputHead += "[red]You have added an content warning, but haven't set any text above the hidden text. Do it by pressing " + tview.Escape("[C]") + "\n\n"
+		outputHead += warningColor + "You have added an content warning, but haven't set any text above the hidden text. Do it by pressing " + tview.Escape("[C]") + "\n\n"
 	}
 
 	if m.currentToot.Sensitive && m.currentToot.SpoilerText != "" {
-		outputHead += "[gray]Content warning\n\n"
+		outputHead += subtleColor + "Content warning\n\n"
 		outputHead += tview.Escape(m.currentToot.SpoilerText)
-		outputHead += "\n\n[gray]---hidden content below---\n\n"
+		outputHead += "\n\n" + subtleColor + "---hidden content below---\n\n"
 	}
 
 	output = outputHead + tview.Escape(m.currentToot.Text)
