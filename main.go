@@ -176,6 +176,16 @@ func main() {
 	app.UI.AuthOverlay.Controls.View.SetBackgroundColor(tcell.ColorDefault)
 	app.UI.AuthOverlay.Draw()
 
+	app.UI.MediaOverlay = NewMediaView(app)
+	app.UI.MediaOverlay.Flex.SetBackgroundColor(tcell.ColorDefault)
+	app.UI.MediaOverlay.Text.SetBackgroundColor(tcell.ColorDefault)
+	app.UI.MediaOverlay.InputField.View.SetBackgroundColor(tcell.ColorDefault)
+	app.UI.MediaOverlay.InputField.View.SetFieldBackgroundColor(tcell.ColorDefault)
+	app.UI.MediaOverlay.Flex.SetDrawFunc(clearContent)
+
+	app.UI.Pages.AddPage("media",
+		modal(app.UI.MediaOverlay.Flex, app.UI.MediaOverlay.Text, app.UI.MediaOverlay.InputField.View), true, false)
+
 	if !app.HaveAccount {
 		app.UI.SetFocus(AuthOverlayFocus)
 	} else {
@@ -269,6 +279,9 @@ func main() {
 				case 't':
 					app.UI.MessageBox.ToggleSpoiler()
 					return nil
+				case 'm':
+					app.UI.SetFocus(MessageAttachmentFocus)
+					return nil
 				case 'q':
 					app.UI.SetFocus(LeftPaneFocus)
 					return nil
@@ -278,6 +291,47 @@ func main() {
 				case tcell.KeyEsc:
 					app.UI.SetFocus(LeftPaneFocus)
 					return nil
+				}
+			}
+			return event
+		}
+
+		if app.UI.Focus == MessageAttachmentFocus && app.UI.MediaOverlay.Focus == MediaFocusOverview {
+			if event.Key() == tcell.KeyRune {
+				switch event.Rune() {
+				case 'a':
+					app.UI.MediaOverlay.SetFocus(MediaFocusAdd)
+				case 'q':
+					app.UI.SetFocus(MessageFocus)
+					return nil
+				}
+			} else {
+				switch event.Key() {
+				case tcell.KeyEsc:
+					app.UI.SetFocus(MessageFocus)
+					return nil
+				}
+			}
+			return event
+		}
+
+		if app.UI.Focus == MessageAttachmentFocus && app.UI.MediaOverlay.Focus == MediaFocusAdd {
+			if event.Key() == tcell.KeyRune {
+				app.UI.MediaOverlay.InputField.AddRune(event.Rune())
+				return nil
+			} else {
+				switch event.Key() {
+				case tcell.KeyTab, tcell.KeyDown:
+					app.UI.MediaOverlay.InputField.AutocompleteNext()
+					return nil
+				case tcell.KeyBacktab, tcell.KeyUp:
+					app.UI.MediaOverlay.InputField.AutocompletePrev()
+					return nil
+				case tcell.KeyEnter:
+					app.UI.MediaOverlay.InputField.CheckDone()
+					return nil
+				case tcell.KeyEsc:
+					app.UI.MediaOverlay.SetFocus(MediaFocusOverview)
 				}
 			}
 			return event
@@ -359,6 +413,10 @@ func main() {
 
 		return event
 	})
+
+	app.UI.MediaOverlay.InputField.View.SetChangedFunc(
+		app.UI.MediaOverlay.InputField.HandleChanges,
+	)
 
 	words := strings.Split(":q,:quit,:timeline", ",")
 	app.UI.CmdBar.View.SetAutocompleteFunc(func(currentText string) (entries []string) {

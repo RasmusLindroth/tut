@@ -100,7 +100,7 @@ func (m *MessageBox) Post() {
 }
 
 func (m *MessageBox) Draw() {
-	info := "\n[p]ost [e]dit text, [t]oggle CW, [c]ontent warning text"
+	info := "\n[P]ost [E]dit text, [T]oggle CW, [C]ontent warning text [M]edia attachment"
 	status := tview.Escape(info)
 	m.Controls.View.SetText(status)
 
@@ -118,11 +118,11 @@ func (m *MessageBox) Draw() {
 	}
 
 	if m.currentToot.SpoilerText != "" && !m.currentToot.Sensitive {
-		outputHead += "[red]You have entered spoiler text, but haven't set an content warning. Do it by pressing " + tview.Escape("[t]") + "\n\n"
+		outputHead += "[red]You have entered spoiler text, but haven't set an content warning. Do it by pressing " + tview.Escape("[T]") + "\n\n"
 	}
 
 	if m.currentToot.Sensitive && m.currentToot.SpoilerText == "" {
-		outputHead += "[red]You have added an content warning, but haven't set any text above the hidden text. Do it by pressing " + tview.Escape("[c]") + "\n\n"
+		outputHead += "[red]You have added an content warning, but haven't set any text above the hidden text. Do it by pressing " + tview.Escape("[C]") + "\n\n"
 	}
 
 	if m.currentToot.Sensitive && m.currentToot.SpoilerText != "" {

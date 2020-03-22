@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -152,4 +153,57 @@ func GetAccountsPath() (string, error) {
 
 func GetConfigPath() (string, error) {
 	return testConfigPath("config.yaml")
+}
+
+func CheckPath(input string, inclHidden bool) (string, bool) {
+	info, err := os.Stat(input)
+	if err != nil {
+		return "", false
+	}
+	if !inclHidden && strings.HasPrefix(info.Name(), ".") {
+		return "", false
+	}
+
+	if info.IsDir() {
+		if input == "/" {
+			return input, true
+		}
+		return input + "/", true
+	}
+	return input, true
+}
+
+func IsDir(input string) bool {
+	info, err := os.Stat(input)
+	if err != nil {
+		return false
+	}
+	return info.IsDir()
+}
+
+func FindFiles(s string) []string {
+	input := filepath.Clean(s)
+	if len(s) > 2 && s[len(s)-2:] == "/." {
+		input += "/."
+	}
+	var files []string
+	path, exists := CheckPath(input, true)
+	if exists {
+		files = append(files, path)
+	}
+
+	base := filepath.Base(input)
+	inclHidden := strings.HasPrefix(base, ".") || (len(input) > 1 && input[len(input)-2:] == "/.")
+	matches, _ := filepath.Glob(input + "*")
+	if strings.HasSuffix(path, "/") {
+		matchesDir, _ := filepath.Glob(path + "*")
+		matches = append(matches, matchesDir...)
+	}
+	for _, f := range matches {
+		p, exists := CheckPath(f, inclHidden)
+		if exists && p != path {
+			files = append(files, p)
+		}
+	}
+	return files
 }

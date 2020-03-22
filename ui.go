@@ -17,22 +17,24 @@ const (
 	RightPaneFocus
 	CmdBarFocus
 	MessageFocus
+	MessageAttachmentFocus
 	LinkOverlayFocus
 	AuthOverlayFocus
 )
 
 type UI struct {
-	app         *App
-	Focus       FocusAt
-	Top         *tview.TextView
-	StatusText  *StatusText
-	TootList    *TootList
-	MessageBox  *MessageBox
-	CmdBar      *CmdBar
-	Status      *tview.TextView
-	Pages       *tview.Pages
-	AuthOverlay *AuthOverlay
-	Timeline    TimelineType
+	app          *App
+	Focus        FocusAt
+	Top          *tview.TextView
+	StatusText   *StatusText
+	TootList     *TootList
+	MessageBox   *MessageBox
+	CmdBar       *CmdBar
+	Status       *tview.TextView
+	Pages        *tview.Pages
+	AuthOverlay  *AuthOverlay
+	MediaOverlay *MediaView
+	Timeline     TimelineType
 }
 
 func (ui *UI) SetFocus(f FocusAt) {
@@ -47,7 +49,10 @@ func (ui *UI) SetFocus(f FocusAt) {
 	case MessageFocus:
 		ui.Status.SetText("-- TOOT --")
 		ui.Pages.ShowPage("toot")
+		ui.Pages.HidePage("media")
 		ui.app.App.SetFocus(ui.MessageBox.View)
+	case MessageAttachmentFocus:
+		ui.Pages.ShowPage("media")
 	case LinkOverlayFocus:
 		ui.Status.SetText("-- LINK --")
 		ui.Pages.ShowPage("links")
@@ -60,6 +65,7 @@ func (ui *UI) SetFocus(f FocusAt) {
 		ui.Status.SetText("-- LIST --")
 		ui.app.App.SetFocus(ui.Pages)
 		ui.Pages.HidePage("toot")
+		ui.Pages.HidePage("media")
 		ui.Pages.HidePage("links")
 		ui.Pages.HidePage("login")
 	}
