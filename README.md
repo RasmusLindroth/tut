@@ -2,6 +2,10 @@
 
 A TUI for Mastodon with vim inspired keys. The program misses some features but they will be added when I get time.
 
+Press `C` to create a new toot.
+
+You can find Linux binaries under [releases](https://github.com/RasmusLindroth/tut/releases).
+
 ![Preview](./images/preview.png "Preview")
 
 Currently supported commands
