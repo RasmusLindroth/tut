@@ -8,7 +8,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 
 ![Preview](./images/preview.png "Preview")
 
-Currently supported commands
+### Currently supported commands
 * `:q` `:quit` exit
 * `:timeline` home, local, federated, direct
 
@@ -17,7 +17,7 @@ Explanation of the non obvious keys when viewing a toot
 * `O` = open. Gives you a list of all URLs in the toot. Opens them in your default browser.
 * `M` = media. Opens the media with `xdg-open`.
 
-On my TODO-list:
+### On my TODO-list:
 * Support for config files (theme, default image/video viewer)
 * Multiple accounts
 * View users profiles
@@ -26,3 +26,9 @@ On my TODO-list:
 * Support lists
 * Notifications
 * Better error handling (in other words, don't crash the whole program)
+
+### Thanks to
+* [mattn/go-mastodon](https://github.com/mattn/go-mastodon) - used to make calls to the Mastodon API
+* [rivo/tview](https://github.com/rivo/tview) - used to make the TUI
+* [gdamore/tcell](https://github.com/gdamore/tcell) - used by tview under the hood
+* [microcosm-cc/bluemonday](https://github.com/microcosm-cc/bluemonday) - used to remove HTML-tags
