@@ -17,6 +17,31 @@ Explanation of the non obvious keys when viewing a toot
 * `O` = open. Gives you a list of all URLs in the toot. Opens them in your default browser.
 * `M` = media. Opens the media with `xdg-open`.
 
+### Install instructions
+If you don't use the binary that you find under releases
+you will need Go. Use a newer one that supports modules.
+
+```bash
+# First clone this repository
+git clone https://github.com/RasmusLindroth/tut.git
+
+# Go to that folder
+cd tut
+
+# Build or install
+
+# Install (usally /home/user/go/bin)
+go install
+
+#Build (same directory i.e. ./ )
+go build
+```
+
+If you choose to install and want to be able to just run `tut` 
+you will have to add `go/bin` to your `$PATH`.
+
+
+
 ### On my TODO-list:
 * Support for config files (theme, default image/video viewer)
 * Multiple accounts

@@ -62,6 +62,10 @@ func cleanTootHTML(content string) (string, []URL) {
 }
 
 func openEditor(app *tview.Application, content string) (string, error) {
+	editor, exists := os.LookupEnv("EDITOR")
+	if !exists || editor == "" {
+		editor = "vi"
+	}
 	f, err := ioutil.TempFile("", "tut")
 	if err != nil {
 		return "", err
@@ -72,7 +76,7 @@ func openEditor(app *tview.Application, content string) (string, error) {
 			return "", err
 		}
 	}
-	cmd := exec.Command("nvim", f.Name())
+	cmd := exec.Command(editor, f.Name())
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	var text []byte
