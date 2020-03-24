@@ -8,36 +8,42 @@ import (
 	"github.com/rivo/tview"
 )
 
-func NewStatusText(app *App, view *tview.TextView, controls *Controls, lo *LinkOverlay) *StatusText {
-	return &StatusText{
-		app:         app,
-		Index:       0,
-		View:        view,
-		Controls:    controls,
-		LinkOverlay: lo,
+func NewTootView(app *App) *TootView {
+	t := &TootView{
+		app:      app,
+		Index:    0,
+		Text:     tview.NewTextView(),
+		Controls: tview.NewTextView(),
 	}
+
+	t.Text.SetWordWrap(true).SetDynamicColors(true)
+	t.Text.SetBackgroundColor(app.Config.Style.Background)
+	t.Text.SetTextColor(app.Config.Style.Text)
+	t.Controls.SetDynamicColors(true)
+	t.Controls.SetBackgroundColor(app.Config.Style.Background)
+
+	return t
 }
 
-type StatusText struct {
-	app         *App
-	Index       int
-	View        *tview.TextView
-	Controls    *Controls
-	LinkOverlay *LinkOverlay
+type TootView struct {
+	app      *App
+	Index    int
+	Text     *tview.TextView
+	Controls *tview.TextView
 }
 
-func (s *StatusText) ShowToot(index int) {
+func (s *TootView) ShowToot(index int) {
 	s.ShowTootOptions(index, false)
 }
 
-func (s *StatusText) ShowTootOptions(index int, showSensitive bool) {
+func (s *TootView) ShowTootOptions(index int, showSensitive bool) {
 	status, err := s.app.UI.TootList.GetStatus(index)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	var line string
-	_, _, width, _ := s.View.GetInnerRect()
+	_, _, width, _ := s.Text.GetInnerRect()
 	for i := 0; i < width; i++ {
 		line += "-"
 	}
@@ -64,7 +70,7 @@ func (s *StatusText) ShowTootOptions(index int, showSensitive bool) {
 			stripped = sens + "\n\n" + stripped
 		}
 	}
-	s.LinkOverlay.SetURLs(urls)
+	s.app.UI.LinkOverlay.SetURLs(urls)
 
 	subtleColor := fmt.Sprintf("[#%x]", s.app.Config.Style.Subtle.Hex())
 	special1 := fmt.Sprintf("[#%x]", s.app.Config.Style.TextSpecial1.Hex())
@@ -132,8 +138,8 @@ func (s *StatusText) ShowTootOptions(index int, showSensitive bool) {
 		output += poll + media + card
 	}
 
-	s.View.SetText(output)
-	s.View.ScrollToBeginning()
+	s.Text.SetText(output)
+	s.Text.ScrollToBeginning()
 	var info []string
 	if status.Favourited == true {
 		info = append(info, "Un[F]avorite")
@@ -157,5 +163,5 @@ func (s *StatusText) ShowTootOptions(index int, showSensitive bool) {
 		info = append(info, "[D]elete")
 	}
 
-	s.Controls.View.SetText(tview.Escape(strings.Join(info, " ")))
+	s.Controls.SetText(tview.Escape(strings.Join(info, " ")))
 }

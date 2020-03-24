@@ -14,7 +14,7 @@ const (
 	MediaFocusAdd
 )
 
-func NewMediaView(app *App) *MediaView {
+func NewMediaOverlay(app *App) *MediaView {
 	m := &MediaView{
 		app:        app,
 		Flex:       tview.NewFlex(),
@@ -24,6 +24,27 @@ func NewMediaView(app *App) *MediaView {
 		InputField: &MediaInput{app: app, View: tview.NewInputField()},
 		Focus:      MediaFocusOverview,
 	}
+	m.Flex.SetBackgroundColor(app.Config.Style.Background)
+
+	m.FileList.SetBackgroundColor(app.Config.Style.Background)
+	m.FileList.SetMainTextColor(app.Config.Style.Text)
+	m.FileList.SetSelectedBackgroundColor(app.Config.Style.ListSelectedBackground)
+	m.FileList.SetSelectedTextColor(app.Config.Style.ListSelectedText)
+	m.FileList.ShowSecondaryText(false)
+	m.FileList.SetHighlightFullLine(true)
+
+	m.TextTop.SetBackgroundColor(app.Config.Style.Background)
+	m.TextTop.SetTextColor(app.Config.Style.Text)
+
+	m.TextBottom.SetBackgroundColor(app.Config.Style.Background)
+	m.TextBottom.SetTextColor(app.Config.Style.Text)
+
+	m.InputField.View.SetBackgroundColor(app.Config.Style.Background)
+	m.InputField.View.SetFieldBackgroundColor(app.Config.Style.Background)
+	m.InputField.View.SetFieldTextColor(app.Config.Style.Text)
+
+	m.Flex.SetDrawFunc(app.Config.ClearContent)
+
 	m.Draw()
 	return m
 }
@@ -61,9 +82,9 @@ func (m *MediaView) SetFocus(f MediaFocus) {
 	switch f {
 	case MediaFocusOverview:
 		m.InputField.View.SetText("")
-		m.app.App.SetFocus(m.FileList)
+		m.app.UI.Root.SetFocus(m.FileList)
 	case MediaFocusAdd:
-		m.app.App.SetFocus(m.InputField.View)
+		m.app.UI.Root.SetFocus(m.InputField.View)
 		pwd, err := os.Getwd()
 		if err != nil {
 			home, err := os.UserHomeDir()

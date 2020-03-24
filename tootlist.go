@@ -9,11 +9,11 @@ import (
 	"github.com/rivo/tview"
 )
 
-type tootListFocus int
+type TootListFocus int
 
 const (
-	feedFocus tootListFocus = iota
-	threadFocus
+	TootListFeedFocus TootListFocus = iota
+	TootListThreadFocus
 )
 
 type TootList struct {
@@ -22,30 +22,43 @@ type TootList struct {
 	Statuses       []*mastodon.Status
 	Thread         []*mastodon.Status
 	ThreadIndex    int
-	View           *tview.List
-	focus          tootListFocus
+	List           *tview.List
+	Focus          TootListFocus
 	loadingFeedOld bool
 	loadingFeedNew bool
 }
 
-func NewTootList(app *App, viewList *tview.List) *TootList {
-	return &TootList{
+func NewTootList(app *App) *TootList {
+	t := &TootList{
 		app:   app,
 		Index: 0,
-		focus: feedFocus,
-		View:  viewList,
+		Focus: TootListFeedFocus,
+		List:  tview.NewList(),
 	}
+	t.List.SetBackgroundColor(app.Config.Style.Background)
+	t.List.SetSelectedTextColor(app.Config.Style.ListSelectedText)
+	t.List.SetSelectedBackgroundColor(app.Config.Style.ListSelectedBackground)
+	t.List.ShowSecondaryText(false)
+	t.List.SetHighlightFullLine(true)
+
+	t.List.SetChangedFunc(func(index int, _ string, _ string, _ rune) {
+		if app.HaveAccount {
+			app.UI.TootView.ShowToot(index)
+		}
+	})
+
+	return t
 }
 
 func (t *TootList) GetStatuses() []*mastodon.Status {
-	if t.focus == threadFocus {
+	if t.Focus == TootListThreadFocus {
 		return t.GetThread()
 	}
 	return t.GetFeed()
 }
 
 func (t *TootList) GetStatus(index int) (*mastodon.Status, error) {
-	if t.focus == threadFocus {
+	if t.Focus == TootListThreadFocus {
 		return t.GetThreadStatus(index)
 	}
 	return t.GetFeedStatus(index)
@@ -61,7 +74,7 @@ func (t *TootList) PrependFeedStatuses(s []*mastodon.Status) {
 	t.SetFeedIndex(
 		t.GetFeedIndex() + len(s),
 	)
-	t.View.SetCurrentItem(t.GetFeedIndex())
+	t.List.SetCurrentItem(t.GetFeedIndex())
 }
 
 func (t *TootList) AppendFeedStatuses(s []*mastodon.Status) {
@@ -81,17 +94,17 @@ func (t *TootList) GetFeedStatus(index int) (*mastodon.Status, error) {
 }
 
 func (t *TootList) GetIndex() int {
-	if t.focus == threadFocus {
+	if t.Focus == TootListThreadFocus {
 		return t.GetThreadIndex()
 	}
 	return t.GetFeedIndex()
 }
 
 func (t *TootList) SetIndex(index int) {
-	switch t.focus {
-	case feedFocus:
+	switch t.Focus {
+	case TootListFeedFocus:
 		t.SetFeedIndex(index)
-	case threadFocus:
+	case TootListThreadFocus:
 		t.SetThreadIndex(index)
 	}
 }
@@ -120,21 +133,21 @@ func (t *TootList) Prev() {
 		index--
 	}
 
-	if index < 5 && t.focus == feedFocus {
+	if index < 5 && t.Focus == TootListFeedFocus {
 		go func() {
 			if t.loadingFeedNew {
 				return
 			}
 			t.loadingFeedNew = true
 			t.app.UI.LoadNewer(statuses[0])
-			t.app.App.QueueUpdateDraw(func() {
+			t.app.UI.Root.QueueUpdateDraw(func() {
 				t.Draw()
 				t.loadingFeedNew = false
 			})
 		}()
 	}
 	t.SetIndex(index)
-	t.View.SetCurrentItem(index)
+	t.List.SetCurrentItem(index)
 }
 
 func (t *TootList) Next() {
@@ -145,34 +158,34 @@ func (t *TootList) Next() {
 		index++
 	}
 
-	if (len(statuses)-index) < 10 && t.focus == feedFocus {
+	if (len(statuses)-index) < 10 && t.Focus == TootListFeedFocus {
 		go func() {
 			if t.loadingFeedOld || len(statuses) == 0 {
 				return
 			}
 			t.loadingFeedOld = true
 			t.app.UI.LoadOlder(statuses[len(statuses)-1])
-			t.app.App.QueueUpdateDraw(func() {
+			t.app.UI.Root.QueueUpdateDraw(func() {
 				t.Draw()
 				t.loadingFeedOld = false
 			})
 		}()
 	}
 	t.SetIndex(index)
-	t.View.SetCurrentItem(index)
+	t.List.SetCurrentItem(index)
 }
 
 func (t *TootList) Draw() {
-	t.View.Clear()
+	t.List.Clear()
 
 	var statuses []*mastodon.Status
 	var index int
 
-	switch t.focus {
-	case feedFocus:
+	switch t.Focus {
+	case TootListFeedFocus:
 		statuses = t.GetFeed()
 		index = t.GetFeedIndex()
-	case threadFocus:
+	case TootListThreadFocus:
 		statuses = t.GetThread()
 		index = t.GetThreadIndex()
 	}
@@ -191,11 +204,11 @@ func (t *TootList) Draw() {
 			format = "15:04"
 		}
 		content := fmt.Sprintf("%s %s", sLocal.Format(format), s.Account.Acct)
-		t.View.InsertItem(currRow, content, "", 0, nil)
+		t.List.InsertItem(currRow, content, "", 0, nil)
 		currRow++
 	}
-	t.View.SetCurrentItem(index)
-	t.app.UI.StatusText.ShowToot(index)
+	t.List.SetCurrentItem(index)
+	t.app.UI.TootView.ShowToot(index)
 }
 
 func (t *TootList) SetThread(s []*mastodon.Status, index int) {
@@ -216,15 +229,15 @@ func (t *TootList) GetThreadStatus(index int) (*mastodon.Status, error) {
 }
 
 func (t *TootList) FocusFeed() {
-	t.focus = feedFocus
+	t.Focus = TootListFeedFocus
 }
 
 func (t *TootList) FocusThread() {
-	t.focus = threadFocus
+	t.Focus = TootListThreadFocus
 }
 
 func (t *TootList) GoBack() {
-	t.focus = feedFocus
+	t.Focus = TootListFeedFocus
 	t.Draw()
 }
 

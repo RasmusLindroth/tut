@@ -21,19 +21,31 @@ type msgToot struct {
 	ScheduledAt *time.Time
 }
 
-func NewMessageBox(app *App, view *tview.TextView, controls *Controls) *MessageBox {
-	return &MessageBox{
+func NewMessageBox(app *App) *MessageBox {
+	m := &MessageBox{
 		app:      app,
-		View:     view,
+		Flex:     tview.NewFlex(),
+		View:     tview.NewTextView(),
 		Index:    0,
-		Controls: controls,
+		Controls: tview.NewTextView(),
 	}
+
+	m.View.SetBackgroundColor(app.Config.Style.Background)
+	m.View.SetTextColor(app.Config.Style.Text)
+	m.View.SetDynamicColors(true)
+	m.Controls.SetDynamicColors(true)
+	m.Controls.SetBackgroundColor(app.Config.Style.Background)
+	m.Controls.SetTextColor(app.Config.Style.Text)
+	m.Flex.SetDrawFunc(app.Config.ClearContent)
+
+	return m
 }
 
 type MessageBox struct {
 	app         *App
+	Flex        *tview.Flex
 	View        *tview.TextView
-	Controls    *Controls
+	Controls    *tview.TextView
 	Index       int
 	maxIndex    int
 	currentToot msgToot
@@ -111,7 +123,7 @@ func (m *MessageBox) Post() {
 func (m *MessageBox) Draw() {
 	info := "\n[P]ost [E]dit text, [T]oggle CW, [C]ontent warning text [M]edia attachment"
 	status := tview.Escape(info)
-	m.Controls.View.SetText(status)
+	m.Controls.SetText(status)
 
 	var outputHead string
 	var output string
@@ -165,7 +177,7 @@ func (m *MessageBox) EditText() {
 		}
 		t = strings.Join(users, " ")
 	}
-	text, err := openEditor(m.app.App, t)
+	text, err := openEditor(m.app.UI.Root, t)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -174,7 +186,7 @@ func (m *MessageBox) EditText() {
 }
 
 func (m *MessageBox) EditSpoiler() {
-	text, err := openEditor(m.app.App, m.currentToot.SpoilerText)
+	text, err := openEditor(m.app.UI.Root, m.currentToot.SpoilerText)
 	if err != nil {
 		log.Fatalln(err)
 	}

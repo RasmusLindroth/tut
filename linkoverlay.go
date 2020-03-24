@@ -12,6 +12,16 @@ func NewLinkOverlay(app *App) *LinkOverlay {
 		TextBottom: tview.NewTextView(),
 		List:       tview.NewList(),
 	}
+
+	l.TextBottom.SetBackgroundColor(app.Config.Style.Background)
+	l.List.SetBackgroundColor(app.Config.Style.Background)
+	l.List.SetMainTextColor(app.Config.Style.Text)
+	l.List.SetSelectedBackgroundColor(app.Config.Style.ListSelectedBackground)
+	l.List.SetSelectedTextColor(app.Config.Style.ListSelectedText)
+	l.List.ShowSecondaryText(false)
+	l.List.SetHighlightFullLine(true)
+	l.Flex.SetDrawFunc(app.Config.ClearContent)
+
 	l.TextBottom.SetText("[O]pen")
 	return l
 }

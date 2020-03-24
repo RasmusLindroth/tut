@@ -6,22 +6,27 @@ import (
 	"github.com/rivo/tview"
 )
 
-func NewCmdBar(app *App, view *tview.InputField) *CmdBar {
-	return &CmdBar{
-		app:  app,
-		View: view,
+func NewCmdBar(app *App) *CmdBar {
+	c := &CmdBar{
+		app:   app,
+		Input: tview.NewInputField(),
 	}
+
+	c.Input.SetFieldBackgroundColor(app.Config.Style.Background)
+	c.Input.SetFieldTextColor(app.Config.Style.Text)
+
+	return c
 }
 
 type CmdBar struct {
-	app  *App
-	View *tview.InputField
+	app   *App
+	Input *tview.InputField
 }
 
 func (c *CmdBar) GetInput() string {
-	return strings.TrimSpace(c.View.GetText())
+	return strings.TrimSpace(c.Input.GetText())
 }
 
 func (c *CmdBar) ClearInput() {
-	c.View.SetText("")
+	c.Input.SetText("")
 }

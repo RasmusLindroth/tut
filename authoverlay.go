@@ -16,28 +16,38 @@ const (
 	authCodeStep
 )
 
-func NewAuthoverlay(app *App, flex *tview.Flex, view *tview.InputField, controls *Controls) *AuthOverlay {
-	return &AuthOverlay{
+func NewAuthOverlay(app *App) *AuthOverlay {
+	a := &AuthOverlay{
 		app:      app,
-		Flex:     flex,
-		View:     view,
-		Controls: controls,
+		Flex:     tview.NewFlex(),
+		Input:    tview.NewInputField(),
+		Text:     tview.NewTextView(),
 		authStep: authNoneStep,
 	}
+
+	a.Flex.SetBackgroundColor(app.Config.Style.Background)
+	a.Input.SetBackgroundColor(app.Config.Style.Background)
+	a.Input.SetFieldBackgroundColor(app.Config.Style.Background)
+	a.Input.SetFieldTextColor(app.Config.Style.Text)
+	a.Text.SetBackgroundColor(app.Config.Style.Background)
+	a.Text.SetTextColor(app.Config.Style.Text)
+	a.Flex.SetDrawFunc(app.Config.ClearContent)
+	a.Draw()
+	return a
 }
 
 type AuthOverlay struct {
 	app         *App
 	Flex        *tview.Flex
-	View        *tview.InputField
-	Controls    *Controls
+	Input       *tview.InputField
+	Text        *tview.TextView
 	authStep    authStep
 	account     AccountRegister
 	redirectURL string
 }
 
 func (a *AuthOverlay) GotInput() {
-	input := strings.TrimSpace(a.View.GetText())
+	input := strings.TrimSpace(a.Input.GetText())
 	switch a.authStep {
 	case authInstanceStep:
 		if !(strings.HasPrefix(input, "https://") || strings.HasPrefix(input, "http://")) {
@@ -55,7 +65,7 @@ func (a *AuthOverlay) GotInput() {
 		}
 		a.account = acc
 		openURL(acc.AuthURI)
-		a.View.SetText("")
+		a.Input.SetText("")
 		a.authStep = authCodeStep
 		a.Draw()
 	case authCodeStep:
@@ -91,14 +101,14 @@ func (a *AuthOverlay) Draw() {
 	switch a.authStep {
 	case authNoneStep:
 		a.authStep = authInstanceStep
-		a.View.SetText("")
+		a.Input.SetText("")
 		a.Draw()
 		return
 	case authInstanceStep:
-		a.View.SetLabel("Instance: ")
-		a.Controls.View.SetText("Enter the url of your instance. Will default to https://\nPress Enter when done")
+		a.Input.SetLabel("Instance: ")
+		a.Text.SetText("Enter the url of your instance. Will default to https://\nPress Enter when done")
 	case authCodeStep:
-		a.Controls.View.SetText(fmt.Sprintf("The login URL has opened in your browser. If it didn't work open this URL\n%s", a.account.AuthURI))
-		a.View.SetLabel("Authorization code: ")
+		a.Text.SetText(fmt.Sprintf("The login URL has opened in your browser. If it didn't work open this URL\n%s", a.account.AuthURI))
+		a.Input.SetLabel("Authorization code: ")
 	}
 }
