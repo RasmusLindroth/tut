@@ -176,7 +176,7 @@ func (ui *UI) SetTimeline(tl TimelineType) {
 }
 
 func (ui *UI) ShowThread() {
-	status, err := ui.TootList.GetStatus(ui.TootList.Index)
+	status, err := ui.TootList.GetStatus(ui.TootList.GetIndex())
 	if err != nil {
 		log.Fatalln(err)
 	}
