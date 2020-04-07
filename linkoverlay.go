@@ -78,6 +78,8 @@ func (l *LinkOverlay) InputHandler(event *tcell.EventKey) {
 		}
 	} else {
 		switch event.Key() {
+		case tcell.KeyEnter:
+			l.Open()
 		case tcell.KeyUp:
 			l.Prev()
 		case tcell.KeyDown:

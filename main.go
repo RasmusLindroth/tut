@@ -197,11 +197,19 @@ func main() {
 		app.UI.MediaOverlay.InputField.HandleChanges,
 	)
 
-	words := strings.Split(":q,:quit,:timeline,:tl", ",")
 	app.UI.CmdBar.Input.SetAutocompleteFunc(func(currentText string) (entries []string) {
+		words := strings.Split(":q,:quit,:timeline,:tl", ",")
 		if currentText == "" {
 			return
 		}
+
+		if currentText == ":tl " {
+			words = strings.Split(":tl home,:tl notifications,:tl local,:tl federated,:tl direct", ",")
+		}
+		if currentText == ":timeline " {
+			words = strings.Split(":timeline home,:timeline notifications,:timeline local,:timeline federated,:timeline direct", ",")
+		}
+
 		for _, word := range words {
 			if strings.HasPrefix(strings.ToLower(word), strings.ToLower(currentText)) {
 				entries = append(entries, word)

@@ -16,6 +16,7 @@ type Config struct {
 type GeneralConfig struct {
 	DateTodayFormat string
 	DateFormat      string
+	StartTimeline   TimelineType
 }
 
 type StyleConfig struct {
@@ -42,6 +43,7 @@ type MediaConfig struct {
 	ImageViewer string
 	ImageSingle bool
 	VideoViewer string
+	VideoSingle bool
 }
 
 func CreateConfigDir() error {

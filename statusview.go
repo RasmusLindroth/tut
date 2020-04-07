@@ -97,6 +97,10 @@ func (t *StatusView) ScrollToBeginning() {
 func (t *StatusView) inputBoth(event *tcell.EventKey) {
 	if event.Key() == tcell.KeyRune {
 		switch event.Rune() {
+		case 'g':
+			t.home()
+		case 'G':
+			t.end()
 		case 'q', 'Q':
 			if len(t.feeds) > 1 {
 				t.RemoveLatestFeed()
@@ -108,6 +112,10 @@ func (t *StatusView) inputBoth(event *tcell.EventKey) {
 		switch event.Key() {
 		case tcell.KeyCtrlC:
 			t.app.UI.Root.Stop()
+		case tcell.KeyHome:
+			t.home()
+		case tcell.KeyEnd:
+			t.end()
 		}
 	}
 	if len(t.feeds) > 0 {
@@ -217,6 +225,18 @@ func (t *StatusView) next() {
 	}
 }
 
+func (t *StatusView) home() {
+	t.list.SetCurrentItem(0)
+	t.feeds[len(t.feeds)-1].DrawToot()
+	t.loadOlder()
+}
+
+func (t *StatusView) end() {
+	t.list.SetCurrentItem(-1)
+	t.feeds[len(t.feeds)-1].DrawToot()
+	t.loadOlder()
+}
+
 func (t *StatusView) loadNewer() {
 	if t.loadingNewer {
 		return
@@ -225,10 +245,8 @@ func (t *StatusView) loadNewer() {
 	feedIndex := len(t.feeds) - 1
 	go func() {
 		new := t.feeds[feedIndex].LoadNewer()
-		if new == 0 {
-			return
-		}
-		if feedIndex != len(t.feeds)-1 {
+		if new == 0 || feedIndex != len(t.feeds)-1 {
+			t.loadingNewer = false
 			return
 		}
 		t.app.UI.Root.QueueUpdateDraw(func() {
@@ -252,10 +270,8 @@ func (t *StatusView) loadOlder() {
 	feedIndex := len(t.feeds) - 1
 	go func() {
 		new := t.feeds[feedIndex].LoadOlder()
-		if new == 0 {
-			return
-		}
-		if feedIndex != len(t.feeds)-1 {
+		if new == 0 || feedIndex != len(t.feeds)-1 {
+			t.loadingOlder = false
 			return
 		}
 		t.app.UI.Root.QueueUpdateDraw(func() {
