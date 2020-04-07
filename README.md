@@ -10,7 +10,8 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 
 ### Currently supported commands
 * `:q` `:quit` exit
-* `:timeline` home, local, federated, direct
+* `:timeline` home, local, federated, direct, notifications
+* `:tl` h, l, f, d, n (a shorter form of the former)
 
 Explanation of the non obvious keys when viewing a toot
 * `V` = view. In this mode you can scroll throught the text of the toot if it doesn't fit the screen
@@ -45,11 +46,9 @@ you will have to add `go/bin` to your `$PATH`.
 ### On my TODO-list:
 * Support for config files (theme, default image/video viewer)
 * Multiple accounts
-* View users profiles
 * Support search
 * Support tags
 * Support lists
-* Notifications
 * Better error handling (in other words, don't crash the whole program)
 
 ### Thanks to

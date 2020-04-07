@@ -24,42 +24,44 @@ const (
 
 func NewUI(app *App) *UI {
 	ui := &UI{
-		app:          app,
-		Root:         tview.NewApplication(),
-		Top:          NewTop(app),
-		Pages:        tview.NewPages(),
-		Timeline:     TimelineHome,
-		TootList:     NewTootList(app),
-		TootView:     NewTootView(app),
-		CmdBar:       NewCmdBar(app),
-		StatusBar:    NewStatusBar(app),
-		MessageBox:   NewMessageBox(app),
-		LinkOverlay:  NewLinkOverlay(app),
-		AuthOverlay:  NewAuthOverlay(app),
-		MediaOverlay: NewMediaOverlay(app),
+		app:  app,
+		Root: tview.NewApplication(),
 	}
 
-	verticalLine := tview.NewBox().SetBackgroundColor(app.Config.Style.Background)
+	return ui
+}
+
+func (ui *UI) Init() {
+	ui.Top = NewTop(ui.app)
+	ui.Pages = tview.NewPages()
+	ui.Timeline = TimelineHome
+	ui.CmdBar = NewCmdBar(ui.app)
+	ui.StatusBar = NewStatusBar(ui.app)
+	ui.MessageBox = NewMessageBox(ui.app)
+	ui.LinkOverlay = NewLinkOverlay(ui.app)
+	ui.AuthOverlay = NewAuthOverlay(ui.app)
+	ui.MediaOverlay = NewMediaOverlay(ui.app)
+	ui.StatusView = NewStatusView(ui.app, ui.Timeline)
+
+	verticalLine := tview.NewBox().SetBackgroundColor(ui.app.Config.Style.Background)
 	verticalLine.SetDrawFunc(func(screen tcell.Screen, x int, y int, width int, height int) (int, int, int, int) {
 		for cy := y; cy < y+height; cy++ {
-			screen.SetContent(x, cy, tview.BoxDrawingsLightVertical, nil, tcell.StyleDefault.Foreground(app.Config.Style.Subtle))
+			screen.SetContent(x, cy, tview.BoxDrawingsLightVertical, nil, tcell.StyleDefault.Foreground(ui.app.Config.Style.Subtle))
 		}
 		return 0, 0, 0, 0
 	})
 
-	ui.Pages.SetBackgroundColor(app.Config.Style.Background)
+	ui.Pages.SetBackgroundColor(ui.app.Config.Style.Background)
 
 	ui.Pages.AddPage("main",
 		tview.NewFlex().
 			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 				AddItem(ui.Top.Text, 1, 0, false).
 				AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-					AddItem(ui.TootList.List, 0, 2, false).
+					AddItem(ui.StatusView.GetLeftView(), 0, 2, false).
 					AddItem(verticalLine, 1, 0, false).
-					AddItem(tview.NewBox().SetBackgroundColor(app.Config.Style.Background), 1, 0, false).
-					AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-						AddItem(ui.TootView.Text, 0, 9, false).
-						AddItem(ui.TootView.Controls, 1, 0, false),
+					AddItem(tview.NewBox().SetBackgroundColor(ui.app.Config.Style.Background), 1, 0, false).
+					AddItem(ui.StatusView.GetRightView(),
 						0, 4, false),
 					0, 1, false).
 				AddItem(ui.StatusBar.Text, 1, 1, false).
@@ -111,8 +113,6 @@ func NewUI(app *App) *UI {
 		screen.Clear()
 		return false
 	})
-
-	return ui
 }
 
 type UI struct {
@@ -120,8 +120,6 @@ type UI struct {
 	Root         *tview.Application
 	Focus        FocusAt
 	Top          *Top
-	TootView     *TootView
-	TootList     *TootList
 	MessageBox   *MessageBox
 	CmdBar       *CmdBar
 	StatusBar    *StatusBar
@@ -130,6 +128,18 @@ type UI struct {
 	AuthOverlay  *AuthOverlay
 	MediaOverlay *MediaView
 	Timeline     TimelineType
+	StatusView   *StatusView
+}
+
+func (ui *UI) FocusAt(p tview.Primitive, s string) {
+	if p == nil {
+		ui.Root.SetFocus(ui.Pages)
+	} else {
+		ui.Root.SetFocus(p)
+	}
+	if s != "" {
+		ui.StatusBar.SetText(s)
+	}
 }
 
 func (ui *UI) SetFocus(f FocusAt) {
@@ -137,7 +147,6 @@ func (ui *UI) SetFocus(f FocusAt) {
 	switch f {
 	case RightPaneFocus:
 		ui.StatusBar.SetText("-- VIEW --")
-		ui.Root.SetFocus(ui.TootView.Text)
 	case CmdBarFocus:
 		ui.StatusBar.SetText("-- CMD --")
 		ui.Root.SetFocus(ui.CmdBar.Input)
@@ -166,40 +175,6 @@ func (ui *UI) SetFocus(f FocusAt) {
 	}
 }
 
-func (ui *UI) SetTimeline(tl TimelineType) {
-	ui.Timeline = tl
-	statuses, err := ui.app.API.GetStatuses(tl)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	ui.TootList.SetFeedStatuses(statuses)
-}
-
-func (ui *UI) ShowThread() {
-	status, err := ui.TootList.GetStatus(ui.TootList.GetIndex())
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	if status.Reblog != nil {
-		status = status.Reblog
-	}
-
-	thread, index, err := ui.app.API.GetThread(status)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	ui.TootList.SetThread(thread, index)
-	ui.TootList.FocusThread()
-	ui.SetFocus(LeftPaneFocus)
-	ui.TootList.Draw()
-}
-
-func (ui *UI) ShowSensetive() {
-	ui.TootView.ShowTootOptions(ui.TootList.GetIndex(), true)
-}
-
 func (ui *UI) NewToot() {
 	ui.Root.SetFocus(ui.MessageBox.View)
 	ui.MediaOverlay.Reset()
@@ -208,11 +183,7 @@ func (ui *UI) NewToot() {
 	ui.SetFocus(MessageFocus)
 }
 
-func (ui *UI) Reply() {
-	status, err := ui.TootList.GetStatus(ui.TootList.GetIndex())
-	if err != nil {
-		log.Fatalln(err)
-	}
+func (ui *UI) Reply(status *mastodon.Status) {
 	if status.Reblog != nil {
 		status = status.Reblog
 	}
@@ -226,11 +197,7 @@ func (ui *UI) ShowLinks() {
 	ui.SetFocus(LinkOverlayFocus)
 }
 
-func (ui *UI) OpenMedia() {
-	status, err := ui.TootList.GetStatus(ui.TootList.GetIndex())
-	if err != nil {
-		log.Fatalln(err)
-	}
+func (ui *UI) OpenMedia(status *mastodon.Status) {
 	if status.Reblog != nil {
 		status = status.Reblog
 	}
@@ -267,64 +234,9 @@ func (ui *UI) LoggedIn() {
 		log.Fatalln(err)
 	}
 	ui.app.Me = me
-
-	ui.SetTimeline(ui.Timeline)
-}
-
-func (ui *UI) LoadNewer(status *mastodon.Status) int {
-	statuses, _, err := ui.app.API.GetStatusesNewer(ui.Timeline, status)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	ui.TootList.PrependFeedStatuses(statuses)
-	return len(statuses)
-}
-
-func (ui *UI) LoadOlder(status *mastodon.Status) int {
-	statuses, _, err := ui.app.API.GetStatusesOlder(ui.Timeline, status)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	ui.TootList.AppendFeedStatuses(statuses)
-	return len(statuses)
-}
-
-func (ui *UI) FavoriteEvent() {
-	status, err := ui.TootList.GetStatus(ui.TootList.GetIndex())
-	if err != nil {
-		log.Fatalln(err)
-	}
-	if status.Favourited == true {
-		err = ui.app.API.Unfavorite(status)
-	} else {
-		err = ui.app.API.Favorite(status)
-	}
-}
-
-func (ui *UI) BoostEvent() {
-	status, err := ui.TootList.GetStatus(ui.TootList.GetIndex())
-	if err != nil {
-		log.Fatalln(err)
-	}
-	if status.Reblogged == true {
-		err = ui.app.API.Unboost(status)
-	} else {
-		err = ui.app.API.Boost(status)
-	}
-	if err != nil {
-		log.Fatalln(err)
-	}
-}
-
-func (ui *UI) DeleteStatus() {
-	status, err := ui.TootList.GetStatus(ui.TootList.GetIndex())
-	if err != nil {
-		log.Fatalln(err)
-	}
-	err = ui.app.API.DeleteStatus(status)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	ui.StatusView.AddFeed(
+		NewTimeline(ui.app, TimelineHome),
+	)
 }
 
 func (conf *Config) ClearContent(screen tcell.Screen, x int, y int, width int, height int) (int, int, int, int) {

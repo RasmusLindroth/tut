@@ -14,6 +14,7 @@ func NewLinkOverlay(app *App) *LinkOverlay {
 	}
 
 	l.TextBottom.SetBackgroundColor(app.Config.Style.Background)
+	l.TextBottom.SetDynamicColors(true)
 	l.List.SetBackgroundColor(app.Config.Style.Background)
 	l.List.SetMainTextColor(app.Config.Style.Text)
 	l.List.SetSelectedBackgroundColor(app.Config.Style.ListSelectedBackground)
@@ -21,8 +22,7 @@ func NewLinkOverlay(app *App) *LinkOverlay {
 	l.List.ShowSecondaryText(false)
 	l.List.SetHighlightFullLine(true)
 	l.Flex.SetDrawFunc(app.Config.ClearContent)
-
-	l.TextBottom.SetText("[O]pen")
+	l.TextBottom.SetText(ColorKey(app.Config.Style, "", "O", "pen"))
 	return l
 }
 

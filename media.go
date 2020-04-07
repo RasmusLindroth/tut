@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/rivo/tview"
 )
@@ -38,6 +39,7 @@ func NewMediaOverlay(app *App) *MediaView {
 
 	m.TextBottom.SetBackgroundColor(app.Config.Style.Background)
 	m.TextBottom.SetTextColor(app.Config.Style.Text)
+	m.TextBottom.SetDynamicColors(true)
 
 	m.InputField.View.SetBackgroundColor(app.Config.Style.Background)
 	m.InputField.View.SetFieldBackgroundColor(app.Config.Style.Background)
@@ -75,7 +77,11 @@ func (m *MediaView) AddFile(f string) {
 
 func (m *MediaView) Draw() {
 	m.TextTop.SetText("List of attached files:")
-	m.TextBottom.SetText("[A]dd file [D]elete file [Esc] Done")
+	var items []string
+	items = append(items, ColorKey(m.app.Config.Style, "", "A", "dd file"))
+	items = append(items, ColorKey(m.app.Config.Style, "", "D", "elete file"))
+	items = append(items, ColorKey(m.app.Config.Style, "", "Esc", " Done"))
+	m.TextBottom.SetText(strings.Join(items, " "))
 }
 
 func (m *MediaView) SetFocus(f MediaFocus) {

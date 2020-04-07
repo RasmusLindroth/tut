@@ -121,8 +121,13 @@ func (m *MessageBox) Post() {
 }
 
 func (m *MessageBox) Draw() {
-	info := "\n[P]ost [E]dit text, [T]oggle CW, [C]ontent warning text [M]edia attachment"
-	status := tview.Escape(info)
+	var items []string
+	items = append(items, ColorKey(m.app.Config.Style, "", "P", "ost"))
+	items = append(items, ColorKey(m.app.Config.Style, "", "E", "dit"))
+	items = append(items, ColorKey(m.app.Config.Style, "", "T", "oggle CW"))
+	items = append(items, ColorKey(m.app.Config.Style, "", "C", "ontent warning text"))
+	items = append(items, ColorKey(m.app.Config.Style, "", "M", "edia attachment"))
+	status := strings.Join(items, " ")
 	m.Controls.SetText(status)
 
 	var outputHead string

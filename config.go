@@ -8,8 +8,14 @@ import (
 )
 
 type Config struct {
-	Style StyleConfig
-	Media MediaConfig
+	General GeneralConfig
+	Style   StyleConfig
+	Media   MediaConfig
+}
+
+type GeneralConfig struct {
+	DateTodayFormat string
+	DateFormat      string
 }
 
 type StyleConfig struct {

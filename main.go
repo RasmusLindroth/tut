@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"strings"
 
@@ -39,7 +40,6 @@ func main() {
 		HaveAccount: false,
 		Config:      &config,
 	}
-	app.UI = NewUI(app)
 
 	if exists {
 		accounts, err := GetAccounts(path)
@@ -50,11 +50,20 @@ func main() {
 			a := accounts.Accounts[0]
 			client, err := a.Login()
 			if err == nil {
-				app.API.Client = client
+				app.API.SetClient(client)
 				app.HaveAccount = true
+
+				me, err := app.API.Client.GetAccountCurrentUser(context.Background())
+				if err != nil {
+					log.Fatalln(err)
+				}
+				app.Me = me
 			}
 		}
 	}
+
+	app.UI = NewUI(app)
+	app.UI.Init()
 
 	if !app.HaveAccount {
 		app.UI.SetFocus(AuthOverlayFocus)
@@ -169,53 +178,6 @@ func main() {
 			return event
 		}
 
-		if app.UI.Focus == LeftPaneFocus {
-			if event.Key() == tcell.KeyRune {
-				switch event.Rune() {
-				case 'v', 'V':
-					app.UI.SetFocus(RightPaneFocus)
-					return nil
-				case 'k', 'K':
-					app.UI.TootList.Prev()
-					return nil
-				case 'j', 'J':
-					app.UI.TootList.Next()
-					return nil
-				case 'q', 'Q':
-					if app.UI.TootList.Focus == TootListThreadFocus {
-						app.UI.TootList.GoBack()
-					} else {
-						app.UI.Root.Stop()
-					}
-					return nil
-				}
-			} else {
-				switch event.Key() {
-				case tcell.KeyUp:
-					app.UI.TootList.Prev()
-					return nil
-				case tcell.KeyDown:
-					app.UI.TootList.Next()
-					return nil
-				case tcell.KeyEsc:
-					app.UI.TootList.GoBack()
-					return nil
-				case tcell.KeyCtrlC:
-					app.UI.Root.Stop()
-					return nil
-				}
-			}
-		}
-
-		if app.UI.Focus == RightPaneFocus {
-			if event.Key() != tcell.KeyRune {
-				switch event.Key() {
-				case tcell.KeyEsc:
-					app.UI.SetFocus(LeftPaneFocus)
-				}
-			}
-		}
-
 		if app.UI.Focus == LeftPaneFocus || app.UI.Focus == RightPaneFocus {
 			if event.Key() == tcell.KeyRune {
 				switch event.Rune() {
@@ -223,28 +185,9 @@ func main() {
 					app.UI.CmdBar.Input.SetText(":")
 					app.UI.SetFocus(CmdBarFocus)
 					return nil
-				case 't', 'T':
-					app.UI.ShowThread()
-				case 's', 'S':
-					app.UI.ShowSensetive()
-				case 'c', 'C':
-					app.UI.NewToot()
-				case 'o', 'O':
-					app.UI.ShowLinks()
-				case 'r', 'R':
-					app.UI.Reply()
-				case 'm', 'M':
-					app.UI.OpenMedia()
-				case 'f', 'F':
-					//TODO UPDATE TOOT IN LIST
-					app.UI.FavoriteEvent()
-				case 'b':
-					//TODO UPDATE TOOT IN LIST
-					app.UI.BoostEvent()
-				case 'd':
-					app.UI.DeleteStatus()
 				}
 			}
+			return app.UI.StatusView.Input(event)
 		}
 
 		return event
@@ -254,7 +197,7 @@ func main() {
 		app.UI.MediaOverlay.InputField.HandleChanges,
 	)
 
-	words := strings.Split(":q,:quit,:timeline", ",")
+	words := strings.Split(":q,:quit,:timeline,:tl", ",")
 	app.UI.CmdBar.Input.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		if currentText == "" {
 			return
@@ -281,25 +224,29 @@ func main() {
 			fallthrough
 		case ":quit":
 			app.UI.Root.Stop()
-		case ":timeline":
+		case ":timeline", ":tl":
 			if len(parts) < 2 {
 				break
 			}
 			switch parts[1] {
-			case "local":
-				app.UI.SetTimeline(TimelineLocal)
+			case "local", "l":
+				app.UI.StatusView.AddFeed(NewTimeline(app, TimelineLocal))
 				app.UI.SetFocus(LeftPaneFocus)
 				app.UI.CmdBar.ClearInput()
-			case "federated":
-				app.UI.SetTimeline(TimelineFederated)
+			case "federated", "f":
+				app.UI.StatusView.AddFeed(NewTimeline(app, TimelineFederated))
 				app.UI.SetFocus(LeftPaneFocus)
 				app.UI.CmdBar.ClearInput()
-			case "direct":
-				app.UI.SetTimeline(TimelineDirect)
+			case "direct", "d":
+				app.UI.StatusView.AddFeed(NewTimeline(app, TimelineDirect))
 				app.UI.SetFocus(LeftPaneFocus)
 				app.UI.CmdBar.ClearInput()
-			case "home":
-				app.UI.SetTimeline(TimelineHome)
+			case "home", "h":
+				app.UI.StatusView.AddFeed(NewTimeline(app, TimelineHome))
+				app.UI.SetFocus(LeftPaneFocus)
+				app.UI.CmdBar.ClearInput()
+			case "notifications", "n":
+				app.UI.StatusView.AddFeed(NewNoticifations(app))
 				app.UI.SetFocus(LeftPaneFocus)
 				app.UI.CmdBar.ClearInput()
 			}

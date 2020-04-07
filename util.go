@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -11,6 +12,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/mattn/go-mastodon"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/rivo/tview"
 	"golang.org/x/net/html"
@@ -54,6 +56,7 @@ func cleanTootHTML(content string) (string, []URL) {
 	urls := getURLs(stripped)
 	stripped = bluemonday.NewPolicy().AllowElements("p", "br").Sanitize(content)
 	stripped = strings.ReplaceAll(stripped, "<br>", "\n")
+	stripped = strings.ReplaceAll(stripped, "<br/>", "\n")
 	stripped = strings.ReplaceAll(stripped, "<p>", "")
 	stripped = strings.ReplaceAll(stripped, "</p>", "\n\n")
 	stripped = strings.TrimSpace(stripped)
@@ -210,4 +213,24 @@ func FindFiles(s string) []string {
 		}
 	}
 	return files
+}
+
+func ColorKey(style StyleConfig, pre, key, end string) string {
+	color := fmt.Sprintf("[#%x]", style.TextSpecial2.Hex())
+	normal := fmt.Sprintf("[#%x]", style.Text.Hex())
+	key = tview.Escape("[" + key + "]")
+	text := fmt.Sprintf("%s%s%s%s%s", pre, color, key, normal, end)
+	return text
+}
+
+func FormatUsername(a mastodon.Account) string {
+	if a.DisplayName != "" {
+		return fmt.Sprintf("%s (%s)", a.DisplayName, a.Acct)
+	}
+	return a.Acct
+}
+
+func SublteText(style StyleConfig, text string) string {
+	subtle := fmt.Sprintf("[#%x]", style.Subtle.Hex())
+	return fmt.Sprintf("%s%s", subtle, text)
 }
