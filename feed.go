@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -14,10 +13,11 @@ import (
 type FeedType uint
 
 const (
-	TimelineFeed FeedType = iota
-	ThreadFeed
-	UserFeed
-	NotificationFeed
+	TimelineFeedType FeedType = iota
+	ThreadFeedType
+	UserFeedType
+	NotificationFeedType
+	TagFeedType
 )
 
 type Feed interface {
@@ -42,25 +42,30 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	shouldDisplay := !status.Sensitive || showSensitive
 
 	var stripped string
+	var strippedContent string
+	var strippedSpoiler string
 	var urls []URL
 	var u []URL
-	if status.Sensitive && !showSensitive {
-		stripped, u = cleanTootHTML(status.SpoilerText)
-		urls = append(urls, u...)
-		stripped += "\n" + line
-		stripped += "Press [s] to show hidden text"
 
-	} else {
-		stripped, u = cleanTootHTML(status.Content)
-		urls = append(urls, u...)
+	strippedContent, urls = cleanTootHTML(status.Content)
 
-		if status.Sensitive {
-			sens, u := cleanTootHTML(status.SpoilerText)
-			urls = append(urls, u...)
-			stripped = sens + "\n\n" + stripped
-		}
+	if status.Sensitive {
+		strippedSpoiler, u = cleanTootHTML(status.SpoilerText)
+		urls = append(urls, u...)
 	}
-	app.UI.LinkOverlay.SetURLs(urls)
+	if status.Sensitive && !showSensitive {
+		strippedSpoiler += "\n" + line
+		strippedSpoiler += "Press [s] to show hidden text"
+		stripped = strippedSpoiler
+	}
+	if status.Sensitive && showSensitive {
+		stripped = strippedSpoiler + "\n\n" + strippedContent
+	}
+	if !status.Sensitive {
+		stripped = strippedContent
+	}
+
+	app.UI.LinkOverlay.SetLinks(urls, status)
 
 	subtleColor := fmt.Sprintf("[#%x]", app.Config.Style.Subtle.Hex())
 	special1 := fmt.Sprintf("[#%x]", app.Config.Style.TextSpecial1.Hex())
@@ -150,7 +155,7 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	if len(status.MediaAttachments) > 0 {
 		info = append(info, ColorKey(app.Config.Style, "", "M", "edia"))
 	}
-	if len(urls) > 0 {
+	if len(urls)+len(status.Mentions)+len(status.Tags) > 0 {
 		info = append(info, ColorKey(app.Config.Style, "", "O", "pen"))
 	}
 
@@ -183,16 +188,20 @@ func drawStatusList(statuses []*mastodon.Status) <-chan string {
 	return ch
 }
 
-func NewTimeline(app *App, tl TimelineType) *Timeline {
-	t := &Timeline{
+func NewTimelineFeed(app *App, tl TimelineType) *TimelineFeed {
+	t := &TimelineFeed{
 		app:          app,
 		timelineType: tl,
 	}
-	t.statuses, _ = t.app.API.GetStatuses(t.timelineType)
+	var err error
+	t.statuses, err = t.app.API.GetStatuses(t.timelineType)
+	if err != nil {
+		t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load timeline toots. Error: %v\n", err))
+	}
 	return t
 }
 
-type Timeline struct {
+type TimelineFeed struct {
 	app          *App
 	timelineType TimelineType
 	statuses     []*mastodon.Status
@@ -200,11 +209,11 @@ type Timeline struct {
 	showSpoiler  bool
 }
 
-func (t *Timeline) FeedType() FeedType {
-	return TimelineFeed
+func (t *TimelineFeed) FeedType() FeedType {
+	return TimelineFeedType
 }
 
-func (t *Timeline) GetCurrentStatus() *mastodon.Status {
+func (t *TimelineFeed) GetCurrentStatus() *mastodon.Status {
 	index := t.app.UI.StatusView.GetCurrentItem()
 	if index >= len(t.statuses) {
 		return nil
@@ -212,20 +221,21 @@ func (t *Timeline) GetCurrentStatus() *mastodon.Status {
 	return t.statuses[t.app.UI.StatusView.GetCurrentItem()]
 }
 
-func (t *Timeline) GetFeedList() <-chan string {
+func (t *TimelineFeed) GetFeedList() <-chan string {
 	return drawStatusList(t.statuses)
 }
 
-func (t *Timeline) LoadNewer() int {
+func (t *TimelineFeed) LoadNewer() int {
 	var statuses []*mastodon.Status
 	var err error
 	if len(t.statuses) == 0 {
 		statuses, err = t.app.API.GetStatuses(t.timelineType)
 	} else {
-		statuses, _, err = t.app.API.GetStatusesNewer(t.timelineType, t.statuses[0])
+		statuses, err = t.app.API.GetStatusesNewer(t.timelineType, t.statuses[0])
 	}
 	if err != nil {
-		log.Fatalln(err)
+		t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load new toots. Error: %v\n", err))
+		return 0
 	}
 	if len(statuses) == 0 {
 		return 0
@@ -235,16 +245,17 @@ func (t *Timeline) LoadNewer() int {
 	return len(statuses)
 }
 
-func (t *Timeline) LoadOlder() int {
+func (t *TimelineFeed) LoadOlder() int {
 	var statuses []*mastodon.Status
 	var err error
 	if len(t.statuses) == 0 {
 		statuses, err = t.app.API.GetStatuses(t.timelineType)
 	} else {
-		statuses, _, err = t.app.API.GetStatusesOlder(t.timelineType, t.statuses[len(t.statuses)-1])
+		statuses, err = t.app.API.GetStatusesOlder(t.timelineType, t.statuses[len(t.statuses)-1])
 	}
 	if err != nil {
-		log.Fatalln(err)
+		t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load older toots. Error: %v\n", err))
+		return 0
 	}
 	if len(statuses) == 0 {
 		return 0
@@ -253,11 +264,11 @@ func (t *Timeline) LoadOlder() int {
 	return len(statuses)
 }
 
-func (t *Timeline) DrawList() {
+func (t *TimelineFeed) DrawList() {
 	t.app.UI.StatusView.SetList(t.GetFeedList())
 }
 
-func (t *Timeline) DrawToot() {
+func (t *TimelineFeed) DrawToot() {
 	if len(t.statuses) == 0 {
 		t.app.UI.StatusView.SetText("")
 		t.app.UI.StatusView.SetControls("")
@@ -270,7 +281,7 @@ func (t *Timeline) DrawToot() {
 	t.app.UI.StatusView.SetControls(controls)
 }
 
-func (t *Timeline) redrawControls() {
+func (t *TimelineFeed) redrawControls() {
 	status := t.GetCurrentStatus()
 	if status == nil {
 		return
@@ -279,11 +290,11 @@ func (t *Timeline) redrawControls() {
 	t.app.UI.StatusView.SetControls(controls)
 }
 
-func (t *Timeline) GetSavedIndex() int {
+func (t *TimelineFeed) GetSavedIndex() int {
 	return t.index
 }
 
-func (t *Timeline) Input(event *tcell.EventKey) {
+func (t *TimelineFeed) Input(event *tcell.EventKey) {
 	status := t.GetCurrentStatus()
 	if status == nil {
 		return
@@ -292,11 +303,11 @@ func (t *Timeline) Input(event *tcell.EventKey) {
 		switch event.Rune() {
 		case 't', 'T':
 			t.app.UI.StatusView.AddFeed(
-				NewThread(t.app, status),
+				NewThreadFeed(t.app, status),
 			)
 		case 'u', 'U':
 			t.app.UI.StatusView.AddFeed(
-				NewUser(t.app, status.Account),
+				NewUserFeed(t.app, status.Account),
 			)
 		case 's', 'S':
 			t.showSpoiler = true
@@ -313,7 +324,8 @@ func (t *Timeline) Input(event *tcell.EventKey) {
 			index := t.app.UI.StatusView.GetCurrentItem()
 			newStatus, err := t.app.API.FavoriteToogle(status)
 			if err != nil {
-				log.Fatalln(err)
+				t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't favorite toot. Error: %v\n", err))
+				return
 			}
 			t.statuses[index] = newStatus
 			t.redrawControls()
@@ -322,7 +334,8 @@ func (t *Timeline) Input(event *tcell.EventKey) {
 			index := t.app.UI.StatusView.GetCurrentItem()
 			newStatus, err := t.app.API.BoostToggle(status)
 			if err != nil {
-				log.Fatalln(err)
+				t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't boost toot. Error: %v\n", err))
+				return
 			}
 			t.statuses[index] = newStatus
 			t.redrawControls()
@@ -332,13 +345,13 @@ func (t *Timeline) Input(event *tcell.EventKey) {
 	}
 }
 
-func NewThread(app *App, s *mastodon.Status) *Thread {
-	t := &Thread{
+func NewThreadFeed(app *App, s *mastodon.Status) *ThreadFeed {
+	t := &ThreadFeed{
 		app: app,
 	}
 	statuses, index, err := t.app.API.GetThread(s)
 	if err != nil {
-		log.Fatalln(err)
+		t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load thread. Error: %v\n", err))
 	}
 	t.statuses = statuses
 	t.status = s
@@ -346,7 +359,7 @@ func NewThread(app *App, s *mastodon.Status) *Thread {
 	return t
 }
 
-type Thread struct {
+type ThreadFeed struct {
 	app         *App
 	statuses    []*mastodon.Status
 	status      *mastodon.Status
@@ -354,11 +367,11 @@ type Thread struct {
 	showSpoiler bool
 }
 
-func (t *Thread) FeedType() FeedType {
-	return ThreadFeed
+func (t *ThreadFeed) FeedType() FeedType {
+	return ThreadFeedType
 }
 
-func (t *Thread) GetCurrentStatus() *mastodon.Status {
+func (t *ThreadFeed) GetCurrentStatus() *mastodon.Status {
 	index := t.app.UI.StatusView.GetCurrentItem()
 	if index >= len(t.statuses) {
 		return nil
@@ -366,23 +379,23 @@ func (t *Thread) GetCurrentStatus() *mastodon.Status {
 	return t.statuses[t.app.UI.StatusView.GetCurrentItem()]
 }
 
-func (t *Thread) GetFeedList() <-chan string {
+func (t *ThreadFeed) GetFeedList() <-chan string {
 	return drawStatusList(t.statuses)
 }
 
-func (t *Thread) LoadNewer() int {
+func (t *ThreadFeed) LoadNewer() int {
 	return 0
 }
 
-func (t *Thread) LoadOlder() int {
+func (t *ThreadFeed) LoadOlder() int {
 	return 0
 }
 
-func (t *Thread) DrawList() {
+func (t *ThreadFeed) DrawList() {
 	t.app.UI.StatusView.SetList(t.GetFeedList())
 }
 
-func (t *Thread) DrawToot() {
+func (t *ThreadFeed) DrawToot() {
 	status := t.GetCurrentStatus()
 	if status == nil {
 		t.app.UI.StatusView.SetText("")
@@ -396,7 +409,7 @@ func (t *Thread) DrawToot() {
 	t.app.UI.StatusView.SetControls(controls)
 }
 
-func (t *Thread) redrawControls() {
+func (t *ThreadFeed) redrawControls() {
 	status := t.GetCurrentStatus()
 	if status == nil {
 		t.app.UI.StatusView.SetText("")
@@ -407,11 +420,11 @@ func (t *Thread) redrawControls() {
 	t.app.UI.StatusView.SetControls(controls)
 }
 
-func (t *Thread) GetSavedIndex() int {
+func (t *ThreadFeed) GetSavedIndex() int {
 	return t.index
 }
 
-func (t *Thread) Input(event *tcell.EventKey) {
+func (t *ThreadFeed) Input(event *tcell.EventKey) {
 	status := t.GetCurrentStatus()
 	if status == nil {
 		return
@@ -421,12 +434,12 @@ func (t *Thread) Input(event *tcell.EventKey) {
 		case 't', 'T':
 			if t.status.ID != status.ID {
 				t.app.UI.StatusView.AddFeed(
-					NewThread(t.app, status),
+					NewThreadFeed(t.app, status),
 				)
 			}
 		case 'u', 'U':
 			t.app.UI.StatusView.AddFeed(
-				NewUser(t.app, status.Account),
+				NewUserFeed(t.app, status.Account),
 			)
 		case 's', 'S':
 			t.showSpoiler = true
@@ -443,7 +456,8 @@ func (t *Thread) Input(event *tcell.EventKey) {
 			index := t.app.UI.StatusView.GetCurrentItem()
 			newStatus, err := t.app.API.FavoriteToogle(status)
 			if err != nil {
-				log.Fatalln(err)
+				t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't favorite toot. Error: %v\n", err))
+				return
 			}
 			t.statuses[index] = newStatus
 			t.redrawControls()
@@ -452,7 +466,8 @@ func (t *Thread) Input(event *tcell.EventKey) {
 			index := t.app.UI.StatusView.GetCurrentItem()
 			newStatus, err := t.app.API.BoostToggle(status)
 			if err != nil {
-				log.Fatalln(err)
+				t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't boost toot. Error: %v\n", err))
+				return
 			}
 			t.statuses[index] = newStatus
 			t.redrawControls()
@@ -462,25 +477,27 @@ func (t *Thread) Input(event *tcell.EventKey) {
 	}
 }
 
-func NewUser(app *App, a mastodon.Account) *User {
-	u := &User{
+func NewUserFeed(app *App, a mastodon.Account) *UserFeed {
+	u := &UserFeed{
 		app: app,
 	}
 	statuses, err := app.API.GetUserStatuses(a)
 	if err != nil {
-		log.Fatalln(err)
+		u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load user toots. Error: %v\n", err))
+		return u
 	}
 	u.statuses = statuses
 	relation, err := app.API.UserRelation(a)
 	if err != nil {
-		log.Fatalln(err)
+		u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load user data. Error: %v\n", err))
+		return u
 	}
 	u.relation = relation
 	u.user = a
 	return u
 }
 
-type User struct {
+type UserFeed struct {
 	app         *App
 	statuses    []*mastodon.Status
 	user        mastodon.Account
@@ -489,11 +506,11 @@ type User struct {
 	showSpoiler bool
 }
 
-func (u *User) FeedType() FeedType {
-	return UserFeed
+func (u *UserFeed) FeedType() FeedType {
+	return UserFeedType
 }
 
-func (u *User) GetCurrentStatus() *mastodon.Status {
+func (u *UserFeed) GetCurrentStatus() *mastodon.Status {
 	index := u.app.UI.app.UI.StatusView.GetCurrentItem()
 	if index > 0 && index-1 >= len(u.statuses) {
 		return nil
@@ -501,7 +518,7 @@ func (u *User) GetCurrentStatus() *mastodon.Status {
 	return u.statuses[index-1]
 }
 
-func (u *User) GetFeedList() <-chan string {
+func (u *UserFeed) GetFeedList() <-chan string {
 	ch := make(chan string)
 	go func() {
 		ch <- "Profile"
@@ -513,16 +530,17 @@ func (u *User) GetFeedList() <-chan string {
 	return ch
 }
 
-func (u *User) LoadNewer() int {
+func (u *UserFeed) LoadNewer() int {
 	var statuses []*mastodon.Status
 	var err error
 	if len(u.statuses) == 0 {
 		statuses, err = u.app.API.GetUserStatuses(u.user)
 	} else {
-		statuses, _, err = u.app.API.GetUserStatusesNewer(u.user, u.statuses[0])
+		statuses, err = u.app.API.GetUserStatusesNewer(u.user, u.statuses[0])
 	}
 	if err != nil {
-		log.Fatalln(err)
+		u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load new toots. Error: %v\n", err))
+		return 0
 	}
 	if len(statuses) == 0 {
 		return 0
@@ -532,16 +550,17 @@ func (u *User) LoadNewer() int {
 	return len(statuses)
 }
 
-func (u *User) LoadOlder() int {
+func (u *UserFeed) LoadOlder() int {
 	var statuses []*mastodon.Status
 	var err error
 	if len(u.statuses) == 0 {
 		statuses, err = u.app.API.GetUserStatuses(u.user)
 	} else {
-		statuses, _, err = u.app.API.GetUserStatusesOlder(u.user, u.statuses[len(u.statuses)-1])
+		statuses, err = u.app.API.GetUserStatusesOlder(u.user, u.statuses[len(u.statuses)-1])
 	}
 	if err != nil {
-		log.Fatalln(err)
+		u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load older toots. Error: %v\n", err))
+		return 0
 	}
 	if len(statuses) == 0 {
 		return 0
@@ -550,11 +569,11 @@ func (u *User) LoadOlder() int {
 	return len(statuses)
 }
 
-func (u *User) DrawList() {
+func (u *UserFeed) DrawList() {
 	u.app.UI.StatusView.SetList(u.GetFeedList())
 }
 
-func (u *User) DrawToot() {
+func (u *UserFeed) DrawToot() {
 	u.index = u.app.UI.StatusView.GetCurrentItem()
 
 	var text string
@@ -582,7 +601,7 @@ func (u *User) DrawToot() {
 			urls = append(urls, fu...)
 		}
 
-		u.app.UI.LinkOverlay.SetURLs(urls)
+		u.app.UI.LinkOverlay.SetLinks(urls, nil)
 
 		var controlItems []string
 		if u.app.Me.ID != u.user.ID {
@@ -622,7 +641,7 @@ func (u *User) DrawToot() {
 	u.app.UI.StatusView.SetControls(controls)
 }
 
-func (u *User) redrawControls() {
+func (u *UserFeed) redrawControls() {
 	var controls string
 	status := u.GetCurrentStatus()
 	if status == nil {
@@ -633,11 +652,11 @@ func (u *User) redrawControls() {
 	u.app.UI.StatusView.SetControls(controls)
 }
 
-func (u *User) GetSavedIndex() int {
+func (u *UserFeed) GetSavedIndex() int {
 	return u.index
 }
 
-func (u *User) Input(event *tcell.EventKey) {
+func (u *UserFeed) Input(event *tcell.EventKey) {
 	index := u.GetSavedIndex()
 
 	if index == 0 {
@@ -652,7 +671,8 @@ func (u *User) Input(event *tcell.EventKey) {
 					relation, err = u.app.API.FollowUser(u.user)
 				}
 				if err != nil {
-					log.Fatalln(err)
+					u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't follow/unfollow user. Error: %v\n", err))
+					return
 				}
 				u.relation = relation
 				u.DrawToot()
@@ -665,7 +685,8 @@ func (u *User) Input(event *tcell.EventKey) {
 					relation, err = u.app.API.BlockUser(u.user)
 				}
 				if err != nil {
-					log.Fatalln(err)
+					u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't block/unblock user. Error: %v\n", err))
+					return
 				}
 				u.relation = relation
 				u.DrawToot()
@@ -678,7 +699,8 @@ func (u *User) Input(event *tcell.EventKey) {
 					relation, err = u.app.API.MuteUser(u.user)
 				}
 				if err != nil {
-					log.Fatalln(err)
+					u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't mute/unmute user. Error: %v\n", err))
+					return
 				}
 				u.relation = relation
 				u.DrawToot()
@@ -699,12 +721,12 @@ func (u *User) Input(event *tcell.EventKey) {
 		switch event.Rune() {
 		case 't', 'T':
 			u.app.UI.StatusView.AddFeed(
-				NewThread(u.app, status),
+				NewThreadFeed(u.app, status),
 			)
 		case 'u', 'U':
 			if u.user.ID != status.Account.ID {
 				u.app.UI.StatusView.AddFeed(
-					NewUser(u.app, status.Account),
+					NewUserFeed(u.app, status.Account),
 				)
 			}
 		case 's', 'S':
@@ -722,7 +744,8 @@ func (u *User) Input(event *tcell.EventKey) {
 			index := u.app.UI.StatusView.GetCurrentItem()
 			newStatus, err := u.app.API.FavoriteToogle(status)
 			if err != nil {
-				log.Fatalln(err)
+				u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't favorite toot. Error: %v\n", err))
+				return
 			}
 			u.statuses[index-1] = newStatus
 			u.redrawControls()
@@ -731,7 +754,8 @@ func (u *User) Input(event *tcell.EventKey) {
 			index := u.app.UI.StatusView.GetCurrentItem()
 			newStatus, err := u.app.API.BoostToggle(status)
 			if err != nil {
-				log.Fatalln(err)
+				u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't boost toot. Error: %v\n", err))
+				return
 			}
 			u.statuses[index-1] = newStatus
 			u.redrawControls()
@@ -741,15 +765,15 @@ func (u *User) Input(event *tcell.EventKey) {
 	}
 }
 
-func NewNoticifations(app *App) *Notifications {
-	n := &Notifications{
+func NewNoticifationsFeed(app *App) *NotificationsFeed {
+	n := &NotificationsFeed{
 		app: app,
 	}
 	n.notifications, _ = n.app.API.GetNotifications()
 	return n
 }
 
-type Notifications struct {
+type NotificationsFeed struct {
 	app           *App
 	timelineType  TimelineType
 	notifications []*mastodon.Notification
@@ -757,11 +781,11 @@ type Notifications struct {
 	showSpoiler   bool
 }
 
-func (n *Notifications) FeedType() FeedType {
-	return NotificationFeed
+func (n *NotificationsFeed) FeedType() FeedType {
+	return NotificationFeedType
 }
 
-func (n *Notifications) GetCurrentNotification() *mastodon.Notification {
+func (n *NotificationsFeed) GetCurrentNotification() *mastodon.Notification {
 	index := n.app.UI.StatusView.GetCurrentItem()
 	if index >= len(n.notifications) {
 		return nil
@@ -769,7 +793,7 @@ func (n *Notifications) GetCurrentNotification() *mastodon.Notification {
 	return n.notifications[index]
 }
 
-func (n *Notifications) GetFeedList() <-chan string {
+func (n *NotificationsFeed) GetFeedList() <-chan string {
 	ch := make(chan string)
 	notifications := n.notifications
 	go func() {
@@ -790,16 +814,17 @@ func (n *Notifications) GetFeedList() <-chan string {
 	return ch
 }
 
-func (n *Notifications) LoadNewer() int {
+func (n *NotificationsFeed) LoadNewer() int {
 	var notifications []*mastodon.Notification
 	var err error
 	if len(n.notifications) == 0 {
 		notifications, err = n.app.API.GetNotifications()
 	} else {
-		notifications, _, err = n.app.API.GetNotificationsNewer(n.notifications[0])
+		notifications, err = n.app.API.GetNotificationsNewer(n.notifications[0])
 	}
 	if err != nil {
-		log.Fatalln(err)
+		n.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load new toots. Error: %v\n", err))
+		return 0
 	}
 	if len(notifications) == 0 {
 		return 0
@@ -809,16 +834,17 @@ func (n *Notifications) LoadNewer() int {
 	return len(notifications)
 }
 
-func (n *Notifications) LoadOlder() int {
+func (n *NotificationsFeed) LoadOlder() int {
 	var notifications []*mastodon.Notification
 	var err error
 	if len(n.notifications) == 0 {
 		notifications, err = n.app.API.GetNotifications()
 	} else {
-		notifications, _, err = n.app.API.GetNotificationsOlder(n.notifications[len(n.notifications)-1])
+		notifications, err = n.app.API.GetNotificationsOlder(n.notifications[len(n.notifications)-1])
 	}
 	if err != nil {
-		log.Fatalln(err)
+		n.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load older toots. Error: %v\n", err))
+		return 0
 	}
 	if len(notifications) == 0 {
 		return 0
@@ -827,11 +853,11 @@ func (n *Notifications) LoadOlder() int {
 	return len(notifications)
 }
 
-func (n *Notifications) DrawList() {
+func (n *NotificationsFeed) DrawList() {
 	n.app.UI.StatusView.SetList(n.GetFeedList())
 }
 
-func (n *Notifications) DrawToot() {
+func (n *NotificationsFeed) DrawToot() {
 	n.index = n.app.UI.StatusView.GetCurrentItem()
 	notification := n.GetCurrentNotification()
 	if notification == nil {
@@ -869,7 +895,7 @@ func (n *Notifications) DrawToot() {
 	n.app.UI.StatusView.SetControls(controls)
 }
 
-func (n *Notifications) redrawControls() {
+func (n *NotificationsFeed) redrawControls() {
 	notification := n.GetCurrentNotification()
 	if notification == nil {
 		n.app.UI.StatusView.SetControls("")
@@ -882,11 +908,11 @@ func (n *Notifications) redrawControls() {
 	}
 }
 
-func (n *Notifications) GetSavedIndex() int {
+func (n *NotificationsFeed) GetSavedIndex() int {
 	return n.index
 }
 
-func (n *Notifications) Input(event *tcell.EventKey) {
+func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 	notification := n.GetCurrentNotification()
 	if notification == nil {
 		return
@@ -896,7 +922,7 @@ func (n *Notifications) Input(event *tcell.EventKey) {
 			switch event.Rune() {
 			case 'u', 'U':
 				n.app.UI.StatusView.AddFeed(
-					NewUser(n.app, notification.Account),
+					NewUserFeed(n.app, notification.Account),
 				)
 			}
 		}
@@ -907,11 +933,11 @@ func (n *Notifications) Input(event *tcell.EventKey) {
 		switch event.Rune() {
 		case 't', 'T':
 			n.app.UI.StatusView.AddFeed(
-				NewThread(n.app, notification.Status),
+				NewThreadFeed(n.app, notification.Status),
 			)
 		case 'u', 'U':
 			n.app.UI.StatusView.AddFeed(
-				NewUser(n.app, notification.Account),
+				NewUserFeed(n.app, notification.Account),
 			)
 		case 's', 'S':
 			n.showSpoiler = true
@@ -928,7 +954,8 @@ func (n *Notifications) Input(event *tcell.EventKey) {
 			index := n.app.UI.StatusView.GetCurrentItem()
 			status, err := n.app.API.FavoriteToogle(notification.Status)
 			if err != nil {
-				log.Fatalln(err)
+				n.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't favorite toot. Error: %v\n", err))
+				return
 			}
 			n.notifications[index].Status = status
 			n.redrawControls()
@@ -937,12 +964,166 @@ func (n *Notifications) Input(event *tcell.EventKey) {
 			index := n.app.UI.StatusView.GetCurrentItem()
 			status, err := n.app.API.BoostToggle(notification.Status)
 			if err != nil {
-				log.Fatalln(err)
+				n.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't boost toot. Error: %v\n", err))
+				return
 			}
 			n.notifications[index].Status = status
 			n.redrawControls()
 		case 'd', 'D':
 			n.app.API.DeleteStatus(notification.Status)
+		}
+	}
+}
+
+func NewTagFeed(app *App, tag string) *TagFeed {
+	t := &TagFeed{
+		app: app,
+		tag: tag,
+	}
+	t.statuses, _ = t.app.API.GetTags(tag)
+	return t
+}
+
+type TagFeed struct {
+	app         *App
+	tag         string
+	statuses    []*mastodon.Status
+	index       int
+	showSpoiler bool
+}
+
+func (t *TagFeed) FeedType() FeedType {
+	return TagFeedType
+}
+
+func (t *TagFeed) GetCurrentStatus() *mastodon.Status {
+	index := t.app.UI.StatusView.GetCurrentItem()
+	if index >= len(t.statuses) {
+		return nil
+	}
+	return t.statuses[t.app.UI.StatusView.GetCurrentItem()]
+}
+
+func (t *TagFeed) GetFeedList() <-chan string {
+	return drawStatusList(t.statuses)
+}
+
+func (t *TagFeed) LoadNewer() int {
+	var statuses []*mastodon.Status
+	var err error
+	if len(t.statuses) == 0 {
+		statuses, err = t.app.API.GetTags(t.tag)
+	} else {
+		statuses, err = t.app.API.GetTagsNewer(t.tag, t.statuses[0])
+	}
+	if err != nil {
+		t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load new toots. Error: %v\n", err))
+		return 0
+	}
+	if len(statuses) == 0 {
+		return 0
+	}
+	old := t.statuses
+	t.statuses = append(statuses, old...)
+	return len(statuses)
+}
+
+func (t *TagFeed) LoadOlder() int {
+	var statuses []*mastodon.Status
+	var err error
+	if len(t.statuses) == 0 {
+		statuses, err = t.app.API.GetTags(t.tag)
+	} else {
+		statuses, err = t.app.API.GetTagsOlder(t.tag, t.statuses[len(t.statuses)-1])
+	}
+	if err != nil {
+		t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load older toots. Error: %v\n", err))
+		return 0
+	}
+	if len(statuses) == 0 {
+		return 0
+	}
+	t.statuses = append(t.statuses, statuses...)
+	return len(statuses)
+}
+
+func (t *TagFeed) DrawList() {
+	t.app.UI.StatusView.SetList(t.GetFeedList())
+}
+
+func (t *TagFeed) DrawToot() {
+	if len(t.statuses) == 0 {
+		t.app.UI.StatusView.SetText("")
+		t.app.UI.StatusView.SetControls("")
+		return
+	}
+	t.index = t.app.UI.StatusView.GetCurrentItem()
+	text, controls := showTootOptions(t.app, t.statuses[t.index], t.showSpoiler)
+	t.showSpoiler = false
+	t.app.UI.StatusView.SetText(text)
+	t.app.UI.StatusView.SetControls(controls)
+}
+
+func (t *TagFeed) redrawControls() {
+	status := t.GetCurrentStatus()
+	if status == nil {
+		return
+	}
+	_, controls := showTootOptions(t.app, status, t.showSpoiler)
+	t.app.UI.StatusView.SetControls(controls)
+}
+
+func (t *TagFeed) GetSavedIndex() int {
+	return t.index
+}
+
+func (t *TagFeed) Input(event *tcell.EventKey) {
+	status := t.GetCurrentStatus()
+	if status == nil {
+		return
+	}
+	if event.Key() == tcell.KeyRune {
+		switch event.Rune() {
+		case 't', 'T':
+			t.app.UI.StatusView.AddFeed(
+				NewThreadFeed(t.app, status),
+			)
+		case 'u', 'U':
+			t.app.UI.StatusView.AddFeed(
+				NewUserFeed(t.app, status.Account),
+			)
+		case 's', 'S':
+			t.showSpoiler = true
+			t.DrawToot()
+		case 'c', 'C':
+			t.app.UI.NewToot()
+		case 'o', 'O':
+			t.app.UI.ShowLinks()
+		case 'r', 'R':
+			t.app.UI.Reply(status)
+		case 'm', 'M':
+			t.app.UI.OpenMedia(status)
+		case 'f', 'F':
+			index := t.app.UI.StatusView.GetCurrentItem()
+			newStatus, err := t.app.API.FavoriteToogle(status)
+			if err != nil {
+				t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't favorite toot. Error: %v\n", err))
+				return
+			}
+			t.statuses[index] = newStatus
+			t.redrawControls()
+
+		case 'b', 'B':
+			index := t.app.UI.StatusView.GetCurrentItem()
+			newStatus, err := t.app.API.BoostToggle(status)
+			if err != nil {
+				t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't boost toot. Error: %v\n", err))
+				return
+			}
+			t.statuses[index] = newStatus
+			t.redrawControls()
+		case 'd', 'D':
+			t.app.API.DeleteStatus(status)
 		}
 	}
 }

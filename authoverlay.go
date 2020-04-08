@@ -56,12 +56,14 @@ func (a *AuthOverlay) GotInput() {
 
 		_, err := TryInstance(input)
 		if err != nil {
-			log.Fatalf("Couldn'n connect to instance %s\n", input)
+			a.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't connect to instance %s\n", input))
+			return
 		}
 
 		acc, err := Authorize(input)
 		if err != nil {
-			log.Fatalln(err)
+			a.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't authorize. Error: %v\n", err))
+			return
 		}
 		a.account = acc
 		openURL(acc.AuthURI)
@@ -71,11 +73,13 @@ func (a *AuthOverlay) GotInput() {
 	case authCodeStep:
 		client, err := AuthorizationCode(a.account, input)
 		if err != nil {
-			log.Fatalln(err)
+			a.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't verify the code. Error: %v\n", err))
+			a.Input.SetText("")
+			return
 		}
 		path, _, err := CheckConfig("accounts.toml")
 		if err != nil {
-			log.Fatalln(err)
+			log.Fatalf("Couldn't open the account file for reading. Error: %v", err)
 		}
 		ad := AccountData{
 			Accounts: []Account{
@@ -89,7 +93,7 @@ func (a *AuthOverlay) GotInput() {
 		}
 		err = ad.Save(path)
 		if err != nil {
-			log.Fatalln(err)
+			log.Fatalf("Couldn't save the account file. Error: %v", err)
 		}
 		a.app.API.SetClient(client)
 		a.app.HaveAccount = true

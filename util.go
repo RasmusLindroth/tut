@@ -46,7 +46,9 @@ func getURLs(text string) []URL {
 				url.Classes = strings.Split(a[2], " ")
 			}
 		}
-		urls = append(urls, url)
+		if len(url.Classes) == 0 {
+			urls = append(urls, url)
+		}
 	}
 	return urls
 }

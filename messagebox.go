@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -108,14 +107,16 @@ func (m *MessageBox) Post() {
 	for _, ap := range attachments {
 		a, err := m.app.API.Client.UploadMedia(context.Background(), ap)
 		if err != nil {
-			log.Fatalln(err)
+			m.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't upload media. Error: %v\n", err))
+			return
 		}
 		send.MediaIDs = append(send.MediaIDs, a.ID)
 	}
 
 	_, err := m.app.API.Client.PostStatus(context.Background(), &send)
 	if err != nil {
-		log.Fatalln(err)
+		m.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't post toot. Error: %v\n", err))
+		return
 	}
 	m.app.UI.SetFocus(LeftPaneFocus)
 }
@@ -184,7 +185,9 @@ func (m *MessageBox) EditText() {
 	}
 	text, err := openEditor(m.app.UI.Root, t)
 	if err != nil {
-		log.Fatalln(err)
+		m.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't edit toot. Error: %v\n", err))
+		m.Draw()
+		return
 	}
 	m.currentToot.Text = text
 	m.Draw()
@@ -193,7 +196,9 @@ func (m *MessageBox) EditText() {
 func (m *MessageBox) EditSpoiler() {
 	text, err := openEditor(m.app.UI.Root, m.currentToot.SpoilerText)
 	if err != nil {
-		log.Fatalln(err)
+		m.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't edit spoiler. Error: %v\n", err))
+		m.Draw()
+		return
 	}
 	m.currentToot.SpoilerText = text
 	m.Draw()

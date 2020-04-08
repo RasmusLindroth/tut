@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strings"
 
@@ -26,25 +27,34 @@ func main() {
 		},
 	}
 
-	err := CreateConfigDir()
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	path, exists, err := CheckConfig("accounts.toml")
-	if err != nil {
-		log.Fatalln(err)
-	}
 	app := &App{
 		API:         &API{},
 		HaveAccount: false,
 		Config:      &config,
 	}
 
+	err := CreateConfigDir()
+	if err != nil {
+		log.Fatalln(
+			fmt.Sprintf("Couldn't create or access the configuration dir. Error: %v", err),
+		)
+	}
+	app.UI = NewUI(app)
+	app.UI.Init()
+
+	path, exists, err := CheckConfig("accounts.toml")
+	if err != nil {
+		log.Fatalln(
+			fmt.Sprintf("Couldn't access accounts.toml. Error: %v", err),
+		)
+	}
+
 	if exists {
 		accounts, err := GetAccounts(path)
 		if err != nil {
-			log.Fatalln(err)
+			log.Fatalln(
+				fmt.Sprintf("Couldn't access accounts.toml. Error: %v", err),
+			)
 		}
 		if len(accounts.Accounts) > 0 {
 			a := accounts.Accounts[0]
@@ -61,9 +71,6 @@ func main() {
 			}
 		}
 	}
-
-	app.UI = NewUI(app)
-	app.UI.Init()
 
 	if !app.HaveAccount {
 		app.UI.SetFocus(AuthOverlayFocus)
@@ -182,6 +189,7 @@ func main() {
 			if event.Key() == tcell.KeyRune {
 				switch event.Rune() {
 				case ':':
+					app.UI.CmdBar.ClearInput()
 					app.UI.CmdBar.Input.SetText(":")
 					app.UI.SetFocus(CmdBarFocus)
 					return nil
@@ -198,7 +206,7 @@ func main() {
 	)
 
 	app.UI.CmdBar.Input.SetAutocompleteFunc(func(currentText string) (entries []string) {
-		words := strings.Split(":q,:quit,:timeline,:tl", ",")
+		words := strings.Split(":tag,:timeline,:tl,:quit,:q", ",")
 		if currentText == "" {
 			return
 		}
@@ -238,26 +246,37 @@ func main() {
 			}
 			switch parts[1] {
 			case "local", "l":
-				app.UI.StatusView.AddFeed(NewTimeline(app, TimelineLocal))
+				app.UI.StatusView.AddFeed(NewTimelineFeed(app, TimelineLocal))
 				app.UI.SetFocus(LeftPaneFocus)
 				app.UI.CmdBar.ClearInput()
 			case "federated", "f":
-				app.UI.StatusView.AddFeed(NewTimeline(app, TimelineFederated))
+				app.UI.StatusView.AddFeed(NewTimelineFeed(app, TimelineFederated))
 				app.UI.SetFocus(LeftPaneFocus)
 				app.UI.CmdBar.ClearInput()
 			case "direct", "d":
-				app.UI.StatusView.AddFeed(NewTimeline(app, TimelineDirect))
+				app.UI.StatusView.AddFeed(NewTimelineFeed(app, TimelineDirect))
 				app.UI.SetFocus(LeftPaneFocus)
 				app.UI.CmdBar.ClearInput()
 			case "home", "h":
-				app.UI.StatusView.AddFeed(NewTimeline(app, TimelineHome))
+				app.UI.StatusView.AddFeed(NewTimelineFeed(app, TimelineHome))
 				app.UI.SetFocus(LeftPaneFocus)
 				app.UI.CmdBar.ClearInput()
 			case "notifications", "n":
-				app.UI.StatusView.AddFeed(NewNoticifations(app))
+				app.UI.StatusView.AddFeed(NewNoticifationsFeed(app))
 				app.UI.SetFocus(LeftPaneFocus)
 				app.UI.CmdBar.ClearInput()
 			}
+		case ":tag":
+			if len(parts) < 2 {
+				break
+			}
+			tag := strings.TrimSpace(strings.TrimPrefix(parts[1], "#"))
+			if len(tag) == 0 {
+				break
+			}
+			app.UI.StatusView.AddFeed(NewTagFeed(app, tag))
+			app.UI.SetFocus(LeftPaneFocus)
+			app.UI.CmdBar.ClearInput()
 		}
 	})
 

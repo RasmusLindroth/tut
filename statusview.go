@@ -253,7 +253,7 @@ func (t *StatusView) loadNewer() {
 			index := t.list.GetCurrentItem()
 			t.feeds[feedIndex].DrawList()
 			newIndex := index + new
-			if index == 0 && t.feeds[feedIndex].FeedType() == UserFeed {
+			if index == 0 && t.feeds[feedIndex].FeedType() == UserFeedType {
 				newIndex = 0
 			}
 			t.list.SetCurrentItem(newIndex)

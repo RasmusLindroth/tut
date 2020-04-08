@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/gdamore/tcell"
+	"github.com/mattn/go-mastodon"
 	"github.com/rivo/tview"
 )
 
@@ -32,13 +35,32 @@ type LinkOverlay struct {
 	TextBottom *tview.TextView
 	List       *tview.List
 	urls       []URL
+	mentions   []mastodon.Mention
+	tags       []mastodon.Tag
 }
 
-func (l *LinkOverlay) SetURLs(urls []URL) {
-	l.urls = urls
+func (l *LinkOverlay) SetLinks(urls []URL, status *mastodon.Status) {
+	l.urls = []URL{}
+	l.mentions = []mastodon.Mention{}
+	l.tags = []mastodon.Tag{}
+
+	if urls != nil {
+		l.urls = urls
+	}
+	if status != nil {
+		l.mentions = status.Mentions
+		l.tags = status.Tags
+	}
+
 	l.List.Clear()
 	for _, url := range urls {
 		l.List.AddItem(url.Text, "", 0, nil)
+	}
+	for _, mention := range l.mentions {
+		l.List.AddItem(mention.Acct, "", 0, nil)
+	}
+	for _, tag := range l.tags {
+		l.List.AddItem("#"+tag.Name, "", 0, nil)
 	}
 }
 
@@ -58,10 +80,34 @@ func (l *LinkOverlay) Next() {
 
 func (l *LinkOverlay) Open() {
 	index := l.List.GetCurrentItem()
-	if len(l.urls) == 0 || index >= len(l.urls) {
+	total := len(l.urls) + len(l.mentions) + len(l.tags)
+	if total == 0 || index >= total {
 		return
 	}
-	openURL(l.urls[index].URL)
+	if index < len(l.urls) {
+		openURL(l.urls[index].URL)
+		return
+	}
+	mIndex := index - len(l.urls)
+	if mIndex < len(l.mentions) {
+		u, err := l.app.API.GetUserByID(l.mentions[mIndex].ID)
+		if err != nil {
+			l.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load user. Error: %v\n", err))
+			return
+		}
+		l.app.UI.StatusView.AddFeed(
+			NewUserFeed(l.app, *u),
+		)
+		l.app.UI.SetFocus(LeftPaneFocus)
+		return
+	}
+	tIndex := index - len(l.mentions) - len(l.urls)
+	if tIndex < len(l.tags) {
+		l.app.UI.StatusView.AddFeed(
+			NewTagFeed(l.app, l.tags[tIndex].Name),
+		)
+		l.app.UI.SetFocus(LeftPaneFocus)
+	}
 }
 
 func (l *LinkOverlay) InputHandler(event *tcell.EventKey) {

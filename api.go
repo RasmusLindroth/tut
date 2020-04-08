@@ -54,38 +54,40 @@ func (api *API) GetStatuses(tl TimelineType) ([]*mastodon.Status, error) {
 	return api.getStatuses(tl, nil)
 }
 
-func (api *API) GetStatusesOlder(tl TimelineType, s *mastodon.Status) ([]*mastodon.Status, bool, error) {
+func (api *API) GetStatusesOlder(tl TimelineType, s *mastodon.Status) ([]*mastodon.Status, error) {
 	pg := &mastodon.Pagination{
 		MaxID: s.ID,
 	}
 
-	statuses, err := api.getStatuses(tl, pg)
-	if err != nil {
-		return statuses, false, err
-	}
-
-	if pg.MinID == "" {
-		return statuses, false, err
-	}
-
-	return statuses, true, err
+	return api.getStatuses(tl, pg)
 }
 
-func (api *API) GetStatusesNewer(tl TimelineType, s *mastodon.Status) ([]*mastodon.Status, bool, error) {
+func (api *API) GetStatusesNewer(tl TimelineType, s *mastodon.Status) ([]*mastodon.Status, error) {
 	pg := &mastodon.Pagination{
 		MinID: s.ID,
 	}
 
-	statuses, err := api.getStatuses(tl, pg)
-	if err != nil {
-		return statuses, false, err
+	return api.getStatuses(tl, pg)
+}
+
+func (api *API) GetTags(tag string) ([]*mastodon.Status, error) {
+	return api.Client.GetTimelineHashtag(context.Background(), tag, false, nil)
+}
+
+func (api *API) GetTagsOlder(tag string, s *mastodon.Status) ([]*mastodon.Status, error) {
+	pg := &mastodon.Pagination{
+		MaxID: s.ID,
 	}
 
-	if pg.MaxID == "" {
-		return statuses, false, err
+	return api.Client.GetTimelineHashtag(context.Background(), tag, false, pg)
+}
+
+func (api *API) GetTagsNewer(tag string, s *mastodon.Status) ([]*mastodon.Status, error) {
+	pg := &mastodon.Pagination{
+		MinID: s.ID,
 	}
 
-	return statuses, true, err
+	return api.Client.GetTimelineHashtag(context.Background(), tag, false, pg)
 }
 
 func (api *API) GetThread(s *mastodon.Status) ([]*mastodon.Status, int, error) {
@@ -103,76 +105,45 @@ func (api *API) GetUserStatuses(u mastodon.Account) ([]*mastodon.Status, error) 
 	return api.Client.GetAccountStatuses(context.Background(), u.ID, nil)
 }
 
-func (api *API) GetUserStatusesOlder(u mastodon.Account, s *mastodon.Status) ([]*mastodon.Status, bool, error) {
+func (api *API) GetUserStatusesOlder(u mastodon.Account, s *mastodon.Status) ([]*mastodon.Status, error) {
 	pg := &mastodon.Pagination{
 		MaxID: s.ID,
 	}
 
-	statuses, err := api.Client.GetAccountStatuses(context.Background(), u.ID, pg)
-	if err != nil {
-		return statuses, false, err
-	}
-
-	if pg.MinID == "" {
-		return statuses, false, err
-	}
-
-	return statuses, true, err
+	return api.Client.GetAccountStatuses(context.Background(), u.ID, pg)
 }
 
-func (api *API) GetUserStatusesNewer(u mastodon.Account, s *mastodon.Status) ([]*mastodon.Status, bool, error) {
+func (api *API) GetUserStatusesNewer(u mastodon.Account, s *mastodon.Status) ([]*mastodon.Status, error) {
 	pg := &mastodon.Pagination{
 		MinID: s.ID,
 	}
 
-	statuses, err := api.Client.GetAccountStatuses(context.Background(), u.ID, pg)
-	if err != nil {
-		return statuses, false, err
-	}
-
-	if pg.MaxID == "" {
-		return statuses, false, err
-	}
-
-	return statuses, true, err
+	return api.Client.GetAccountStatuses(context.Background(), u.ID, pg)
 }
 
 func (api *API) GetNotifications() ([]*mastodon.Notification, error) {
 	return api.Client.GetNotifications(context.Background(), nil)
 }
 
-func (api *API) GetNotificationsOlder(n *mastodon.Notification) ([]*mastodon.Notification, bool, error) {
+func (api *API) GetNotificationsOlder(n *mastodon.Notification) ([]*mastodon.Notification, error) {
 	pg := &mastodon.Pagination{
 		MaxID: n.ID,
 	}
 
-	statuses, err := api.Client.GetNotifications(context.Background(), pg)
-	if err != nil {
-		return statuses, false, err
-	}
-
-	if pg.MinID == "" {
-		return statuses, false, err
-	}
-
-	return statuses, true, err
+	return api.Client.GetNotifications(context.Background(), pg)
 }
 
-func (api *API) GetNotificationsNewer(n *mastodon.Notification) ([]*mastodon.Notification, bool, error) {
+func (api *API) GetNotificationsNewer(n *mastodon.Notification) ([]*mastodon.Notification, error) {
 	pg := &mastodon.Pagination{
 		MinID: n.ID,
 	}
 
-	statuses, err := api.Client.GetNotifications(context.Background(), pg)
-	if err != nil {
-		return statuses, false, err
-	}
+	return api.Client.GetNotifications(context.Background(), pg)
+}
 
-	if pg.MaxID == "" {
-		return statuses, false, err
-	}
-
-	return statuses, true, err
+func (api *API) GetUserByID(id mastodon.ID) (*mastodon.Account, error) {
+	a, err := api.Client.GetAccount(context.Background(), id)
+	return a, err
 }
 
 func (api *API) BoostToggle(s *mastodon.Status) (*mastodon.Status, error) {

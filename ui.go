@@ -41,7 +41,8 @@ func (ui *UI) Init() {
 	ui.LinkOverlay = NewLinkOverlay(ui.app)
 	ui.AuthOverlay = NewAuthOverlay(ui.app)
 	ui.MediaOverlay = NewMediaOverlay(ui.app)
-	ui.StatusView = NewStatusView(ui.app, ui.Timeline)
+
+	ui.Pages.SetBackgroundColor(ui.app.Config.Style.Background)
 
 	verticalLine := tview.NewBox().SetBackgroundColor(ui.app.Config.Style.Background)
 	verticalLine.SetDrawFunc(func(screen tcell.Screen, x int, y int, width int, height int) (int, int, int, int) {
@@ -50,18 +51,15 @@ func (ui *UI) Init() {
 		}
 		return 0, 0, 0, 0
 	})
-
-	ui.Pages.SetBackgroundColor(ui.app.Config.Style.Background)
-
 	ui.Pages.AddPage("main",
 		tview.NewFlex().
 			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 				AddItem(ui.Top.Text, 1, 0, false).
 				AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-					AddItem(ui.StatusView.GetLeftView(), 0, 2, false).
+					AddItem(tview.NewBox().SetBackgroundColor(ui.app.Config.Style.Background), 0, 2, false).
 					AddItem(verticalLine, 1, 0, false).
 					AddItem(tview.NewBox().SetBackgroundColor(ui.app.Config.Style.Background), 1, 0, false).
-					AddItem(ui.StatusView.GetRightView(),
+					AddItem(tview.NewTextView().SetBackgroundColor(ui.app.Config.Style.Background),
 						0, 4, false),
 					0, 1, false).
 				AddItem(ui.StatusBar.Text, 1, 1, false).
@@ -85,7 +83,6 @@ func (ui *UI) Init() {
 				AddItem(ui.LinkOverlay.TextBottom, 1, 1, true), 0, 8, false).
 			AddItem(nil, 0, 1, false), 0, 8, true).
 		AddItem(nil, 0, 1, false), true, false)
-
 	ui.Pages.AddPage("login",
 		tview.NewFlex().
 			AddItem(nil, 0, 1, false).
@@ -226,6 +223,31 @@ func (ui *UI) OpenMedia(status *mastodon.Status) {
 }
 
 func (ui *UI) LoggedIn() {
+	ui.StatusView = NewStatusView(ui.app, ui.Timeline)
+
+	verticalLine := tview.NewBox().SetBackgroundColor(ui.app.Config.Style.Background)
+	verticalLine.SetDrawFunc(func(screen tcell.Screen, x int, y int, width int, height int) (int, int, int, int) {
+		for cy := y; cy < y+height; cy++ {
+			screen.SetContent(x, cy, tview.BoxDrawingsLightVertical, nil, tcell.StyleDefault.Foreground(ui.app.Config.Style.Subtle))
+		}
+		return 0, 0, 0, 0
+	})
+	ui.Pages.RemovePage("main")
+	ui.Pages.AddPage("main",
+		tview.NewFlex().
+			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+				AddItem(ui.Top.Text, 1, 0, false).
+				AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+					AddItem(ui.StatusView.GetLeftView(), 0, 2, false).
+					AddItem(verticalLine, 1, 0, false).
+					AddItem(tview.NewBox().SetBackgroundColor(ui.app.Config.Style.Background), 1, 0, false).
+					AddItem(ui.StatusView.GetRightView(),
+						0, 4, false),
+					0, 1, false).
+				AddItem(ui.StatusBar.Text, 1, 1, false).
+				AddItem(ui.CmdBar.Input, 1, 0, false), 0, 1, false), true, true)
+	ui.Pages.SendToBack("main")
+
 	ui.SetFocus(LeftPaneFocus)
 	fmt.Fprint(ui.Top.Text, "tut\n")
 
@@ -235,7 +257,7 @@ func (ui *UI) LoggedIn() {
 	}
 	ui.app.Me = me
 	ui.StatusView.AddFeed(
-		NewTimeline(ui.app, TimelineHome),
+		NewTimelineFeed(ui.app, TimelineHome),
 	)
 }
 

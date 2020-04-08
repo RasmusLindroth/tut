@@ -27,6 +27,12 @@ func (c *CmdBar) GetInput() string {
 	return strings.TrimSpace(c.Input.GetText())
 }
 
+func (c *CmdBar) ShowError(s string) {
+	c.Input.SetFieldTextColor(c.app.Config.Style.WarningText)
+	c.Input.SetText(s)
+}
+
 func (c *CmdBar) ClearInput() {
+	c.Input.SetFieldTextColor(c.app.Config.Style.Text)
 	c.Input.SetText("")
 }
