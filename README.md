@@ -12,11 +12,20 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:q` `:quit` exit
 * `:timeline` home, local, federated, direct, notifications
 * `:tl` h, l, f, d, n (a shorter form of the former)
+* `:tag` followed by the hashtag e.g. `:tag linux`
 
 Explanation of the non obvious keys when viewing a toot
 * `V` = view. In this mode you can scroll throught the text of the toot if it doesn't fit the screen
-* `O` = open. Gives you a list of all URLs in the toot. Opens them in your default browser.
+* `O` = open. Gives you a list of all URLs in the toot. Opens them in your default browser, if it's
+an user or tag they will be opened in tut.
 * `M` = media. Opens the media with `xdg-open`.
+
+### Configuration
+Tut if configurable, so you can change things like the colors, the default timeline, 
+what image viewer to use and some more. Check out the configuration file to see 
+all the options.
+
+You find it in `XDG_CONFIG_HOME/tut/config.ini` which usally equals to `~/.config/tut/config.ini`.
 
 ### Install instructions
 If you don't use the binary that you find under releases
@@ -44,10 +53,8 @@ you will have to add `go/bin` to your `$PATH`.
 
 
 ### On my TODO-list:
-* Support for config files (theme, default image/video viewer)
 * Multiple accounts
 * Support search
-* Support tags
 * Support lists
 * Better error handling (in other words, don't crash the whole program)
 

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
 )
@@ -8,7 +10,6 @@ import (
 func NewStatusView(app *App, tl TimelineType) *StatusView {
 	t := &StatusView{
 		app:          app,
-		timelineType: tl,
 		list:         tview.NewList(),
 		text:         tview.NewTextView(),
 		controls:     tview.NewTextView(),
@@ -37,12 +38,24 @@ func NewStatusView(app *App, tl TimelineType) *StatusView {
 	t.text.SetTextColor(app.Config.Style.Text)
 	t.controls.SetDynamicColors(true)
 	t.controls.SetBackgroundColor(app.Config.Style.Background)
+
+	if app.Config.General.AutoLoadNewer {
+		go func() {
+			d := time.Second * time.Duration(app.Config.General.AutoLoadSeconds)
+			ticker := time.NewTicker(d)
+			for {
+				select {
+				case <-ticker.C:
+					t.loadNewer()
+				}
+			}
+		}()
+	}
 	return t
 }
 
 type StatusView struct {
 	app          *App
-	timelineType TimelineType
 	list         *tview.List
 	flex         *tview.Flex
 	text         *tview.TextView
@@ -238,11 +251,11 @@ func (t *StatusView) end() {
 }
 
 func (t *StatusView) loadNewer() {
-	if t.loadingNewer {
+	feedIndex := len(t.feeds) - 1
+	if t.loadingNewer || feedIndex < 0 {
 		return
 	}
 	t.loadingNewer = true
-	feedIndex := len(t.feeds) - 1
 	go func() {
 		new := t.feeds[feedIndex].LoadNewer()
 		if new == 0 || feedIndex != len(t.feeds)-1 {
@@ -263,11 +276,11 @@ func (t *StatusView) loadNewer() {
 }
 
 func (t *StatusView) loadOlder() {
-	if t.loadingOlder {
+	feedIndex := len(t.feeds) - 1
+	if t.loadingOlder || feedIndex < 0 {
 		return
 	}
 	t.loadingOlder = true
-	feedIndex := len(t.feeds) - 1
 	go func() {
 		new := t.feeds[feedIndex].LoadOlder()
 		if new == 0 || feedIndex != len(t.feeds)-1 {

@@ -34,7 +34,7 @@ func NewUI(app *App) *UI {
 func (ui *UI) Init() {
 	ui.Top = NewTop(ui.app)
 	ui.Pages = tview.NewPages()
-	ui.Timeline = TimelineHome
+	ui.Timeline = ui.app.Config.General.StartTimeline
 	ui.CmdBar = NewCmdBar(ui.app)
 	ui.StatusBar = NewStatusBar(ui.app)
 	ui.MessageBox = NewMessageBox(ui.app)
@@ -200,7 +200,6 @@ func (ui *UI) OpenMedia(status *mastodon.Status) {
 	}
 
 	if len(status.MediaAttachments) == 0 {
-		//TODO show error that there's no media
 		return
 	}
 
@@ -212,13 +211,14 @@ func (ui *UI) OpenMedia(status *mastodon.Status) {
 	for key := range mediaGroup {
 		var files []string
 		for _, m := range mediaGroup[key] {
+			//'image', 'video', 'gifv', 'audio' or 'unknown'
 			f, err := downloadFile(m.URL)
 			if err != nil {
 				continue
 			}
 			files = append(files, f)
 		}
-		go openMedia(files)
+		go openMediaType(ui.app.Config.Media, files, key)
 	}
 }
 
@@ -257,7 +257,7 @@ func (ui *UI) LoggedIn() {
 	}
 	ui.app.Me = me
 	ui.StatusView.AddFeed(
-		NewTimelineFeed(ui.app, TimelineHome),
+		NewTimelineFeed(ui.app, ui.Timeline),
 	)
 }
 

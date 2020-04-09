@@ -340,7 +340,19 @@ func (t *TimelineFeed) Input(event *tcell.EventKey) {
 			t.statuses[index] = newStatus
 			t.redrawControls()
 		case 'd', 'D':
-			t.app.API.DeleteStatus(status)
+			err := t.app.API.DeleteStatus(status)
+			if err != nil {
+				t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't delete toot. Error: %v\n", err))
+			} else {
+				status.Card = nil
+				status.Sensitive = false
+				status.SpoilerText = ""
+				status.Favourited = false
+				status.MediaAttachments = nil
+				status.Reblogged = false
+				status.Content = "Deleted"
+				t.DrawToot()
+			}
 		}
 	}
 }
@@ -472,7 +484,19 @@ func (t *ThreadFeed) Input(event *tcell.EventKey) {
 			t.statuses[index] = newStatus
 			t.redrawControls()
 		case 'd', 'D':
-			t.app.API.DeleteStatus(status)
+			err := t.app.API.DeleteStatus(status)
+			if err != nil {
+				t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't delete toot. Error: %v\n", err))
+			} else {
+				status.Card = nil
+				status.Sensitive = false
+				status.SpoilerText = ""
+				status.Favourited = false
+				status.MediaAttachments = nil
+				status.Reblogged = false
+				status.Content = "Deleted"
+				t.DrawToot()
+			}
 		}
 	}
 }
@@ -760,7 +784,19 @@ func (u *UserFeed) Input(event *tcell.EventKey) {
 			u.statuses[index-1] = newStatus
 			u.redrawControls()
 		case 'd', 'D':
-			u.app.API.DeleteStatus(status)
+			err := u.app.API.DeleteStatus(status)
+			if err != nil {
+				u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't delete toot. Error: %v\n", err))
+			} else {
+				status.Card = nil
+				status.Sensitive = false
+				status.SpoilerText = ""
+				status.Favourited = false
+				status.MediaAttachments = nil
+				status.Reblogged = false
+				status.Content = "Deleted"
+				u.DrawToot()
+			}
 		}
 	}
 }
@@ -970,7 +1006,19 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 			n.notifications[index].Status = status
 			n.redrawControls()
 		case 'd', 'D':
-			n.app.API.DeleteStatus(notification.Status)
+			err := n.app.API.DeleteStatus(notification.Status)
+			if err != nil {
+				n.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't delete toot. Error: %v\n", err))
+			} else {
+				notification.Status.Card = nil
+				notification.Status.Sensitive = false
+				notification.Status.SpoilerText = ""
+				notification.Status.Favourited = false
+				notification.Status.MediaAttachments = nil
+				notification.Status.Reblogged = false
+				notification.Status.Content = "Deleted"
+				n.DrawToot()
+			}
 		}
 	}
 }
@@ -1123,7 +1171,19 @@ func (t *TagFeed) Input(event *tcell.EventKey) {
 			t.statuses[index] = newStatus
 			t.redrawControls()
 		case 'd', 'D':
-			t.app.API.DeleteStatus(status)
+			err := t.app.API.DeleteStatus(status)
+			if err != nil {
+				t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't delete toot. Error: %v\n", err))
+			} else {
+				status.Card = nil
+				status.Sensitive = false
+				status.SpoilerText = ""
+				status.Favourited = false
+				status.MediaAttachments = nil
+				status.Reblogged = false
+				status.Content = "Deleted"
+				t.DrawToot()
+			}
 		}
 	}
 }

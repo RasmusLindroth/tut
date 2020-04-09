@@ -103,10 +103,34 @@ func openURL(url string) {
 	exec.Command("xdg-open", url).Start()
 }
 
-func openMedia(filenames []string) {
-	for _, f := range filenames {
-		exec.Command("xdg-open", f).Run()
+func openMediaType(conf MediaConfig, filenames []string, mediaType string) {
+	switch mediaType {
+	case "image":
+		if conf.ImageSingle {
+			for _, f := range filenames {
+				exec.Command(conf.ImageViewer, f).Run()
+			}
+		} else {
+			exec.Command(conf.ImageViewer, filenames...).Run()
+		}
+	case "video", "gifv":
+		if conf.VideoSingle {
+			for _, f := range filenames {
+				exec.Command(conf.VideoViewer, f).Run()
+			}
+		} else {
+			exec.Command(conf.VideoViewer, filenames...).Run()
+		}
+	case "audio":
+		if conf.AudioSingle {
+			for _, f := range filenames {
+				exec.Command(conf.AudioViewer, f).Run()
+			}
+		} else {
+			exec.Command(conf.AudioViewer, filenames...).Run()
+		}
 	}
+
 	for _, f := range filenames {
 		os.Remove(f)
 	}

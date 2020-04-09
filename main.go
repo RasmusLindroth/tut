@@ -10,21 +10,27 @@ import (
 )
 
 func main() {
-	config := Config{
-		Style: StyleConfig{
-			Background:             tcell.ColorDefault,
-			Text:                   tcell.ColorWhite,
-			Subtle:                 tcell.ColorGray,
-			WarningText:            tcell.NewRGBColor(249, 38, 114),
-			TextSpecial1:           tcell.NewRGBColor(174, 129, 255),
-			TextSpecial2:           tcell.NewRGBColor(166, 226, 46),
-			TopBarBackground:       tcell.NewRGBColor(249, 38, 114),
-			TopBarText:             tcell.ColorWhite,
-			StatusBarBackground:    tcell.NewRGBColor(249, 38, 114),
-			StatusBarText:          tcell.ColorWhite,
-			ListSelectedBackground: tcell.NewRGBColor(249, 38, 114),
-			ListSelectedText:       tcell.ColorWhite,
-		},
+	err := CreateConfigDir()
+	if err != nil {
+		log.Fatalln(
+			fmt.Sprintf("Couldn't create or access the configuration dir. Error: %v", err),
+		)
+	}
+	path, exists, err := CheckConfig("config.ini")
+	if err != nil {
+		log.Fatalln(
+			fmt.Sprintf("Couldn't access config.ini. Error: %v", err),
+		)
+	}
+	if !exists {
+		err = CreateDefaultConfig(path)
+		if err != nil {
+			log.Fatalf("Couldn't create default config. Error: %v", err)
+		}
+	}
+	config, err := ParseConfig(path)
+	if err != nil {
+		log.Fatalf("Couldn't open or parse the config. Error: %v", err)
 	}
 
 	app := &App{
@@ -33,16 +39,10 @@ func main() {
 		Config:      &config,
 	}
 
-	err := CreateConfigDir()
-	if err != nil {
-		log.Fatalln(
-			fmt.Sprintf("Couldn't create or access the configuration dir. Error: %v", err),
-		)
-	}
 	app.UI = NewUI(app)
 	app.UI.Init()
 
-	path, exists, err := CheckConfig("accounts.toml")
+	path, exists, err = CheckConfig("accounts.toml")
 	if err != nil {
 		log.Fatalln(
 			fmt.Sprintf("Couldn't access accounts.toml. Error: %v", err),
@@ -211,10 +211,10 @@ func main() {
 			return
 		}
 
-		if currentText == ":tl " {
+		if len(currentText) > 2 && currentText[:3] == ":tl" {
 			words = strings.Split(":tl home,:tl notifications,:tl local,:tl federated,:tl direct", ",")
 		}
-		if currentText == ":timeline " {
+		if len(currentText) > 8 && currentText[:9] == ":timeline" {
 			words = strings.Split(":timeline home,:timeline notifications,:timeline local,:timeline federated,:timeline direct", ",")
 		}
 

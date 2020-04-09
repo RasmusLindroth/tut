@@ -83,7 +83,7 @@ func (a *AuthOverlay) GotInput() {
 		}
 		ad := AccountData{
 			Accounts: []Account{
-				Account{
+				{
 					Server:       client.Config.Server,
 					ClientID:     client.Config.ClientID,
 					ClientSecret: client.Config.ClientSecret,

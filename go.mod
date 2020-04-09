@@ -7,7 +7,9 @@ require (
 	github.com/kyoh86/xdg v1.2.0
 	github.com/mattn/go-mastodon v0.0.5-0.20200302023913-3e91c76504df
 	github.com/microcosm-cc/bluemonday v1.0.2
-	github.com/pelletier/go-toml v1.6.0
-	github.com/rivo/tview v0.0.0-20200219210816-cd38d7432498
-	golang.org/x/net v0.0.0-20200320220750-118fecf932d8
+	github.com/pelletier/go-toml v1.7.0
+	github.com/rivo/tview v0.0.0-20200404204604-ca37f83cb2e7
+	github.com/smartystreets/goconvey v1.6.4 // indirect
+	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e
+	gopkg.in/ini.v1 v1.55.0
 )
