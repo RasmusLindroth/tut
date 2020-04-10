@@ -16,6 +16,7 @@ const (
 	TimelineFeedType FeedType = iota
 	ThreadFeedType
 	UserFeedType
+	UserListFeedType
 	UserSearchFeedType
 	NotificationFeedType
 	TagFeedType
@@ -29,6 +30,8 @@ type Feed interface {
 	DrawToot()
 	DrawSpoiler()
 	RedrawControls()
+	GetCurrentUser() *mastodon.Account
+	GetCurrentStatus() *mastodon.Status
 	FeedType() FeedType
 	GetSavedIndex() int
 	GetDesc() string
@@ -53,9 +56,9 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 
 	strippedContent, urls = cleanTootHTML(status.Content)
 
-	subtleColor := fmt.Sprintf("[#%x]", app.Config.Style.Subtle.Hex())
-	special1 := fmt.Sprintf("[#%x]", app.Config.Style.TextSpecial1.Hex())
-	special2 := fmt.Sprintf("[#%x]", app.Config.Style.TextSpecial2.Hex())
+	subtleColor := ColorMark(app.Config.Style.Subtle)
+	special1 := ColorMark(app.Config.Style.TextSpecial1)
+	special2 := ColorMark(app.Config.Style.TextSpecial2)
 
 	if status.Sensitive {
 		strippedSpoiler, u = cleanTootHTML(status.SpoilerText)
@@ -167,7 +170,7 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	if len(urls)+len(status.Mentions)+len(status.Tags) > 0 {
 		info = append(info, ColorKey(app.Config.Style, "", "O", "pen"))
 	}
-
+	info = append(info, ColorKey(app.Config.Style, "", "A", "vatar"))
 	if status.Account.ID == app.Me.ID {
 		info = append(info, ColorKey(app.Config.Style, "", "D", "elete"))
 	}
@@ -180,9 +183,9 @@ func showUser(app *App, user *mastodon.Account, relation *mastodon.Relationship,
 	var text string
 	var controls string
 
-	n := fmt.Sprintf("[#%x]", app.Config.Style.Text.Hex())
-	s1 := fmt.Sprintf("[#%x]", app.Config.Style.TextSpecial1.Hex())
-	s2 := fmt.Sprintf("[#%x]", app.Config.Style.TextSpecial2.Hex())
+	n := ColorMark(app.Config.Style.Text)
+	s1 := ColorMark(app.Config.Style.TextSpecial1)
+	s2 := ColorMark(app.Config.Style.TextSpecial2)
 
 	if user.DisplayName != "" {
 		text = fmt.Sprintf(s2+"%s\n", user.DisplayName)
@@ -227,6 +230,7 @@ func showUser(app *App, user *mastodon.Account, relation *mastodon.Relationship,
 	if showUserControl {
 		controlItems = append(controlItems, ColorKey(app.Config.Style, "", "U", "ser"))
 	}
+	controlItems = append(controlItems, ColorKey(app.Config.Style, "", "A", "vatar"))
 	controls = strings.Join(controlItems, " ")
 
 	return text, controls
@@ -417,6 +421,16 @@ func inputSimple(app *App, event *tcell.EventKey, controls ControlItem,
 	return
 }
 
+func userFromStatus(s *mastodon.Status) *mastodon.Account {
+	if s == nil {
+		return nil
+	}
+	if s.Reblog != nil {
+		s = s.Reblog
+	}
+	return &s.Account
+}
+
 func NewTimelineFeed(app *App, tl TimelineType) *TimelineFeed {
 	t := &TimelineFeed{
 		app:          app,
@@ -461,7 +475,11 @@ func (t *TimelineFeed) GetCurrentStatus() *mastodon.Status {
 	if index >= len(t.statuses) {
 		return nil
 	}
-	return t.statuses[t.app.UI.StatusView.GetCurrentItem()]
+	return t.statuses[index]
+}
+
+func (t *TimelineFeed) GetCurrentUser() *mastodon.Account {
+	return userFromStatus(t.GetCurrentStatus())
 }
 
 func (t *TimelineFeed) GetFeedList() <-chan string {
@@ -607,6 +625,10 @@ func (t *ThreadFeed) GetCurrentStatus() *mastodon.Status {
 	return t.statuses[t.app.UI.StatusView.GetCurrentItem()]
 }
 
+func (t *ThreadFeed) GetCurrentUser() *mastodon.Account {
+	return userFromStatus(t.GetCurrentStatus())
+}
+
 func (t *ThreadFeed) GetFeedList() <-chan string {
 	return drawStatusList(t.statuses)
 }
@@ -730,6 +752,10 @@ func (u *UserFeed) GetCurrentStatus() *mastodon.Status {
 		return nil
 	}
 	return u.statuses[index-1]
+}
+
+func (u *UserFeed) GetCurrentUser() *mastodon.Account {
+	return &u.user
 }
 
 func (u *UserFeed) GetFeedList() <-chan string {
@@ -903,6 +929,22 @@ func (n *NotificationsFeed) GetCurrentNotification() *mastodon.Notification {
 		return nil
 	}
 	return n.notifications[index]
+}
+
+func (n *NotificationsFeed) GetCurrentStatus() *mastodon.Status {
+	notification := n.GetCurrentNotification()
+	if notification == nil {
+		return nil
+	}
+	return notification.Status
+}
+
+func (n *NotificationsFeed) GetCurrentUser() *mastodon.Account {
+	notification := n.GetCurrentNotification()
+	if notification == nil {
+		return nil
+	}
+	return &notification.Account
 }
 
 func (n *NotificationsFeed) GetFeedList() <-chan string {
@@ -1097,6 +1139,10 @@ func (t *TagFeed) GetCurrentStatus() *mastodon.Status {
 	return t.statuses[t.app.UI.StatusView.GetCurrentItem()]
 }
 
+func (t *TagFeed) GetCurrentUser() *mastodon.Account {
+	return userFromStatus(t.GetCurrentStatus())
+}
+
 func (t *TagFeed) GetFeedList() <-chan string {
 	return drawStatusList(t.statuses)
 }
@@ -1202,11 +1248,13 @@ func (t *TagFeed) Input(event *tcell.EventKey) {
 	}
 }
 
-func NewUserSearchFeed(app *App, s string) *UserSearchFeed {
-	u := &UserSearchFeed{
-		app: app,
+func NewUserListFeed(app *App, t UserListType, s string) *UserListFeed {
+	u := &UserListFeed{
+		app:      app,
+		listType: t,
+		input:    s,
 	}
-	users, err := app.API.GetUsers(s)
+	users, err := app.API.GetUserList(t, s)
 	if err != nil {
 		u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load users. Error: %v\n", err))
 		return u
@@ -1215,30 +1263,60 @@ func NewUserSearchFeed(app *App, s string) *UserSearchFeed {
 	return u
 }
 
-type UserSearchFeed struct {
-	app    *App
-	users  []*UserSearchData
-	index  int
-	search string
+type UserListFeed struct {
+	app      *App
+	users    []*UserData
+	index    int
+	input    string
+	listType UserListType
 }
 
-func (u *UserSearchFeed) FeedType() FeedType {
-	return UserSearchFeedType
+func (u *UserListFeed) FeedType() FeedType {
+	return UserListFeedType
 }
 
-func (u *UserSearchFeed) GetDesc() string {
-	return "User search: " + u.search
+func (u *UserListFeed) GetDesc() string {
+	var output string
+	switch u.listType {
+	case UserListSearch:
+		output = "User search: " + u.input
+	case UserListBoosts:
+		output = "Boosts"
+	case UserListFavorites:
+		output = "Favorites"
+	case UserListFollowers:
+		output = "Followers"
+	case UserListFollowing:
+		output = "Following"
+	case UserListBlocking:
+		output = "Blocking"
+	case UserListMuting:
+		output = "Muting"
+	}
+	return output
 }
 
-func (u *UserSearchFeed) GetCurrentUser() *UserSearchData {
+func (u *UserListFeed) GetCurrentStatus() *mastodon.Status {
+	return nil
+}
+
+func (u *UserListFeed) GetCurrentUser() *mastodon.Account {
+	ud := u.GetCurrentUserData()
+	if ud == nil {
+		return nil
+	}
+	return ud.User
+}
+
+func (u *UserListFeed) GetCurrentUserData() *UserData {
 	index := u.app.UI.app.UI.StatusView.GetCurrentItem()
-	if index > 0 && index-1 >= len(u.users) {
+	if len(u.users) == 0 || index > len(u.users)-1 {
 		return nil
 	}
 	return u.users[index-1]
 }
 
-func (u *UserSearchFeed) GetFeedList() <-chan string {
+func (u *UserListFeed) GetFeedList() <-chan string {
 	ch := make(chan string)
 	users := u.users
 	go func() {
@@ -1256,27 +1334,58 @@ func (u *UserSearchFeed) GetFeedList() <-chan string {
 	return ch
 }
 
-func (u *UserSearchFeed) LoadNewer() int {
-	return 0
+func (u *UserListFeed) LoadNewer() int {
+	var users []*UserData
+	var err error
+	if len(u.users) == 0 {
+		users, err = u.app.API.GetUserList(u.listType, u.input)
+	} else {
+		users, err = u.app.API.GetUserListNewer(u.listType, u.input, u.users[0].User)
+	}
+	if err != nil {
+		u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load new users. Error: %v\n", err))
+		return 0
+	}
+	if len(users) == 0 {
+		return 0
+	}
+	old := u.users
+	u.users = append(users, old...)
+	return len(users)
 }
 
-func (u *UserSearchFeed) LoadOlder() int {
-	return 0
+func (u *UserListFeed) LoadOlder() int {
+	var users []*UserData
+	var err error
+	if len(u.users) == 0 {
+		users, err = u.app.API.GetUserList(u.listType, u.input)
+	} else {
+		users, err = u.app.API.GetUserListOlder(u.listType, u.input, u.users[len(u.users)-1].User)
+	}
+	if err != nil {
+		u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load more users. Error: %v\n", err))
+		return 0
+	}
+	if len(users) == 0 {
+		return 0
+	}
+	u.users = append(u.users, users...)
+	return len(users)
 }
 
-func (u *UserSearchFeed) DrawList() {
+func (u *UserListFeed) DrawList() {
 	u.app.UI.StatusView.SetList(u.GetFeedList())
 }
 
-func (u *UserSearchFeed) RedrawControls() {
+func (u *UserListFeed) RedrawControls() {
 	//Does not implement
 }
 
-func (u *UserSearchFeed) DrawSpoiler() {
+func (u *UserListFeed) DrawSpoiler() {
 	//Does not implement
 }
 
-func (u *UserSearchFeed) DrawToot() {
+func (u *UserListFeed) DrawToot() {
 	u.index = u.app.UI.StatusView.GetCurrentItem()
 	index := u.index
 	if index > len(u.users)-1 || len(u.users) == 0 {
@@ -1290,11 +1399,11 @@ func (u *UserSearchFeed) DrawToot() {
 	u.app.UI.StatusView.SetControls(controls)
 }
 
-func (u *UserSearchFeed) GetSavedIndex() int {
+func (u *UserListFeed) GetSavedIndex() int {
 	return u.index
 }
 
-func (u *UserSearchFeed) Input(event *tcell.EventKey) {
+func (u *UserListFeed) Input(event *tcell.EventKey) {
 	index := u.GetSavedIndex()
 	if index > len(u.users)-1 || len(u.users) == 0 {
 		return

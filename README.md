@@ -11,7 +11,13 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 ## Currently supported commands
 * `:q` `:quit` exit
 * `:timeline` home, local, federated, direct, notifications
-* `:tl` h, l, f, d, n (a shorter form of the former)
+  * `:tl` h, l, f, d, n (shorter form)
+* `:blocking` lists users that you have blocked
+* `:boosts` lists users that boosted the toot
+* `:compose` compose a new toot
+* `:favorites` lists users that favorited the toot
+* `:muting`  lists users that you have muted
+* `:profile` go to your profile
 * `:tag` followed by the hashtag e.g. `:tag linux`
 * `:user` followed by a username e.g. `:user rasmus` to narrow a search include 
 the instance like this `:user rasmus@mastodon.acc.sunet.se`.

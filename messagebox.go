@@ -134,8 +134,8 @@ func (m *MessageBox) Draw() {
 	var outputHead string
 	var output string
 
-	subtleColor := fmt.Sprintf("[#%x]", m.app.Config.Style.Subtle.Hex())
-	warningColor := fmt.Sprintf("[#%x]", m.app.Config.Style.WarningText.Hex())
+	subtleColor := ColorMark(m.app.Config.Style.Subtle)
+	warningColor := ColorMark(m.app.Config.Style.WarningText)
 	if m.currentToot.Status != nil {
 		var acct string
 		if m.currentToot.Status.Account.DisplayName != "" {

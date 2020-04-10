@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/gdamore/tcell"
 	"github.com/mattn/go-mastodon"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/rivo/tview"
@@ -242,11 +243,15 @@ func FindFiles(s string) []string {
 }
 
 func ColorKey(style StyleConfig, pre, key, end string) string {
-	color := fmt.Sprintf("[#%x]", style.TextSpecial2.Hex())
-	normal := fmt.Sprintf("[#%x]", style.Text.Hex())
+	color := ColorMark(style.TextSpecial2)
+	normal := ColorMark(style.Text)
 	key = tview.Escape("[" + key + "]")
 	text := fmt.Sprintf("%s%s%s%s%s", pre, color, key, normal, end)
 	return text
+}
+
+func ColorMark(color tcell.Color) string {
+	return fmt.Sprintf("[#%x]", color.Hex())
 }
 
 func FormatUsername(a mastodon.Account) string {
@@ -257,6 +262,6 @@ func FormatUsername(a mastodon.Account) string {
 }
 
 func SublteText(style StyleConfig, text string) string {
-	subtle := fmt.Sprintf("[#%x]", style.Subtle.Hex())
+	subtle := ColorMark(style.Subtle)
 	return fmt.Sprintf("%s%s", subtle, text)
 }

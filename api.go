@@ -17,6 +17,18 @@ const (
 	TimelineFederated
 )
 
+type UserListType uint
+
+const (
+	UserListSearch UserListType = iota
+	UserListBoosts
+	UserListFavorites
+	UserListFollowers
+	UserListFollowing
+	UserListBlocking
+	UserListMuting
+)
+
 type API struct {
 	Client *mastodon.Client
 }
@@ -147,13 +159,13 @@ func (api *API) GetNotificationsNewer(n *mastodon.Notification) ([]*mastodon.Not
 	return api.Client.GetNotifications(context.Background(), pg)
 }
 
-type UserSearchData struct {
+type UserData struct {
 	User         *mastodon.Account
 	Relationship *mastodon.Relationship
 }
 
-func (api *API) GetUsers(s string) ([]*UserSearchData, error) {
-	var ud []*UserSearchData
+func (api *API) GetUsers(s string) ([]*UserData, error) {
+	var ud []*UserData
 	users, err := api.Client.AccountsSearch(context.Background(), s, 10)
 	if err != nil {
 		return nil, err
@@ -163,10 +175,70 @@ func (api *API) GetUsers(s string) ([]*UserSearchData, error) {
 		if err != nil {
 			return ud, err
 		}
-		ud = append(ud, &UserSearchData{User: u, Relationship: r})
+		ud = append(ud, &UserData{User: u, Relationship: r})
 	}
 
 	return ud, nil
+}
+
+func (api *API) getUserList(t UserListType, id string, pg *mastodon.Pagination) ([]*UserData, error) {
+
+	var ud []*UserData
+	var users []*mastodon.Account
+	var err error
+
+	switch t {
+	case UserListSearch:
+		users, err = api.Client.AccountsSearch(context.Background(), id, 10)
+	case UserListBoosts:
+		users, err = api.Client.GetRebloggedBy(context.Background(), mastodon.ID(id), pg)
+	case UserListFavorites:
+		users, err = api.Client.GetFavouritedBy(context.Background(), mastodon.ID(id), pg)
+	case UserListFollowers:
+		users, err = api.Client.GetAccountFollowers(context.Background(), mastodon.ID(id), pg)
+	case UserListFollowing:
+		users, err = api.Client.GetAccountFollowing(context.Background(), mastodon.ID(id), pg)
+	case UserListBlocking:
+		users, err = api.Client.GetBlocks(context.Background(), pg)
+	case UserListMuting:
+		users, err = api.Client.GetMutes(context.Background(), pg)
+	}
+	if err != nil {
+		return ud, err
+	}
+
+	for _, u := range users {
+		r, err := api.UserRelation(*u)
+		if err != nil {
+			return ud, err
+		}
+		ud = append(ud, &UserData{User: u, Relationship: r})
+	}
+	return ud, nil
+}
+
+func (api *API) GetUserList(t UserListType, id string) ([]*UserData, error) {
+	return api.getUserList(t, id, nil)
+}
+
+func (api *API) GetUserListOlder(t UserListType, id string, user *mastodon.Account) ([]*UserData, error) {
+	if t == UserListSearch {
+		return []*UserData{}, nil
+	}
+	pg := &mastodon.Pagination{
+		MaxID: user.ID,
+	}
+	return api.getUserList(t, id, pg)
+}
+
+func (api *API) GetUserListNewer(t UserListType, id string, user *mastodon.Account) ([]*UserData, error) {
+	if t == UserListSearch {
+		return []*UserData{}, nil
+	}
+	pg := &mastodon.Pagination{
+		MinID: user.ID,
+	}
+	return api.getUserList(t, id, pg)
 }
 
 func (api *API) GetUserByID(id mastodon.ID) (*mastodon.Account, error) {

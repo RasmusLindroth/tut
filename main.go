@@ -206,7 +206,7 @@ func main() {
 	)
 
 	app.UI.CmdBar.Input.SetAutocompleteFunc(func(currentText string) (entries []string) {
-		words := strings.Split(":compose,:tag,:timeline,:tl,:user,:quit,:q", ",")
+		words := strings.Split(":blocking,:boosts,:compose,:favorites,:muting,:profile,:tag,:timeline,:tl,:user,:quit,:q", ",")
 		if currentText == "" {
 			return
 		}
@@ -243,6 +243,62 @@ func main() {
 		case ":compose":
 			app.UI.NewToot()
 			app.UI.CmdBar.ClearInput()
+		case ":blocking":
+			app.UI.StatusView.AddFeed(NewUserListFeed(app, UserListBlocking, ""))
+			app.UI.SetFocus(LeftPaneFocus)
+			app.UI.CmdBar.ClearInput()
+		case ":boosts":
+			app.UI.CmdBar.ClearInput()
+			status := app.UI.StatusView.GetCurrentStatus()
+			if status == nil {
+				return
+			}
+
+			if status.Reblog != nil {
+				status = status.Reblog
+			}
+			app.UI.StatusView.AddFeed(NewUserListFeed(app, UserListBoosts, string(status.ID)))
+			app.UI.SetFocus(LeftPaneFocus)
+		case ":favorites":
+			app.UI.CmdBar.ClearInput()
+			status := app.UI.StatusView.GetCurrentStatus()
+			if status == nil {
+				return
+			}
+			if status.Reblog != nil {
+				status = status.Reblog
+			}
+			app.UI.StatusView.AddFeed(NewUserListFeed(app, UserListFavorites, string(status.ID)))
+			app.UI.SetFocus(LeftPaneFocus)
+		/*
+			case ":followers":
+				app.UI.CmdBar.ClearInput()
+				user := app.UI.StatusView.GetCurrentUser()
+				if user == nil {
+					return
+				}
+				app.UI.StatusView.AddFeed(NewUserListFeed(app, UserListFollowers, string(user.ID)))
+				app.UI.SetFocus(LeftPaneFocus)
+			case ":following":
+				app.UI.CmdBar.ClearInput()
+				user := app.UI.StatusView.GetCurrentUser()
+				if user == nil {
+					return
+				}
+				app.UI.StatusView.AddFeed(NewUserListFeed(app, UserListFollowing, string(user.ID)))
+				app.UI.SetFocus(LeftPaneFocus)
+		*/
+		case ":muting":
+			app.UI.StatusView.AddFeed(NewUserListFeed(app, UserListMuting, ""))
+			app.UI.SetFocus(LeftPaneFocus)
+			app.UI.CmdBar.ClearInput()
+		case ":profile":
+			app.UI.CmdBar.ClearInput()
+			if app.Me == nil {
+				return
+			}
+			app.UI.StatusView.AddFeed(NewUserFeed(app, *app.Me))
+			app.UI.SetFocus(LeftPaneFocus)
 		case ":timeline", ":tl":
 			if len(parts) < 2 {
 				break
@@ -288,7 +344,7 @@ func main() {
 			if len(user) == 0 {
 				break
 			}
-			app.UI.StatusView.AddFeed(NewUserSearchFeed(app, user))
+			app.UI.StatusView.AddFeed(NewUserListFeed(app, UserListSearch, user))
 			app.UI.SetFocus(LeftPaneFocus)
 			app.UI.CmdBar.ClearInput()
 		}

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gdamore/tcell"
+	"github.com/mattn/go-mastodon"
 	"github.com/rivo/tview"
 )
 
@@ -98,6 +99,20 @@ func (t *StatusView) GetTextWidth() int {
 
 func (t *StatusView) GetCurrentItem() int {
 	return t.list.GetCurrentItem()
+}
+
+func (t *StatusView) GetCurrentStatus() *mastodon.Status {
+	if len(t.feeds) == 0 {
+		return nil
+	}
+	return t.feeds[len(t.feeds)-1].GetCurrentStatus()
+}
+
+func (t *StatusView) GetCurrentUser() *mastodon.Account {
+	if len(t.feeds) == 0 {
+		return nil
+	}
+	return t.feeds[len(t.feeds)-1].GetCurrentUser()
 }
 
 func (t *StatusView) ScrollToBeginning() {
