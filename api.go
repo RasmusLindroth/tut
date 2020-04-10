@@ -38,7 +38,13 @@ func (api *API) getStatuses(tl TimelineType, pg *mastodon.Pagination) ([]*mastod
 	case TimelineHome:
 		statuses, err = api.Client.GetTimelineHome(context.Background(), pg)
 	case TimelineDirect:
-		statuses, err = api.Client.GetTimelineDirect(context.Background(), pg)
+		var conv []*mastodon.Conversation
+		conv, err = api.Client.GetConversations(context.Background(), pg)
+		var cStatuses []*mastodon.Status
+		for _, c := range conv {
+			cStatuses = append(cStatuses, c.LastStatus)
+		}
+		statuses = cStatuses
 	case TimelineLocal:
 		statuses, err = api.Client.GetTimelinePublic(context.Background(), true, pg)
 	case TimelineFederated:
@@ -139,6 +145,28 @@ func (api *API) GetNotificationsNewer(n *mastodon.Notification) ([]*mastodon.Not
 	}
 
 	return api.Client.GetNotifications(context.Background(), pg)
+}
+
+type UserSearchData struct {
+	User         *mastodon.Account
+	Relationship *mastodon.Relationship
+}
+
+func (api *API) GetUsers(s string) ([]*UserSearchData, error) {
+	var ud []*UserSearchData
+	users, err := api.Client.AccountsSearch(context.Background(), s, 10)
+	if err != nil {
+		return nil, err
+	}
+	for _, u := range users {
+		r, err := api.UserRelation(*u)
+		if err != nil {
+			return ud, err
+		}
+		ud = append(ud, &UserSearchData{User: u, Relationship: r})
+	}
+
+	return ud, nil
 }
 
 func (api *API) GetUserByID(id mastodon.ID) (*mastodon.Account, error) {

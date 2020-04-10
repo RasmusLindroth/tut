@@ -16,6 +16,7 @@ const (
 	TimelineFeedType FeedType = iota
 	ThreadFeedType
 	UserFeedType
+	UserSearchFeedType
 	NotificationFeedType
 	TagFeedType
 )
@@ -28,6 +29,7 @@ type Feed interface {
 	DrawToot()
 	FeedType() FeedType
 	GetSavedIndex() int
+	GetDesc() string
 	Input(event *tcell.EventKey)
 }
 
@@ -49,27 +51,29 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 
 	strippedContent, urls = cleanTootHTML(status.Content)
 
+	subtleColor := fmt.Sprintf("[#%x]", app.Config.Style.Subtle.Hex())
+	special1 := fmt.Sprintf("[#%x]", app.Config.Style.TextSpecial1.Hex())
+	special2 := fmt.Sprintf("[#%x]", app.Config.Style.TextSpecial2.Hex())
+
 	if status.Sensitive {
 		strippedSpoiler, u = cleanTootHTML(status.SpoilerText)
+		strippedSpoiler = tview.Escape(strippedSpoiler)
 		urls = append(urls, u...)
 	}
 	if status.Sensitive && !showSensitive {
-		strippedSpoiler += "\n" + line
-		strippedSpoiler += "Press [s] to show hidden text"
+		strippedSpoiler += "\n" + subtleColor + line
+		strippedSpoiler += subtleColor + tview.Escape("Press [s] to show hidden text")
 		stripped = strippedSpoiler
 	}
 	if status.Sensitive && showSensitive {
-		stripped = strippedSpoiler + "\n\n" + strippedContent
+		stripped = strippedSpoiler + "\n\n" + tview.Escape(strippedContent)
 	}
 	if !status.Sensitive {
-		stripped = strippedContent
+		stripped = tview.Escape(strippedContent)
 	}
 
 	app.UI.LinkOverlay.SetLinks(urls, status)
 
-	subtleColor := fmt.Sprintf("[#%x]", app.Config.Style.Subtle.Hex())
-	special1 := fmt.Sprintf("[#%x]", app.Config.Style.TextSpecial1.Hex())
-	special2 := fmt.Sprintf("[#%x]", app.Config.Style.TextSpecial2.Hex())
 	var head string
 	if status.Reblog != nil {
 		if status.Account.DisplayName != "" {
@@ -87,7 +91,7 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	}
 	head += fmt.Sprintf(special1+"%s\n\n", status.Account.Acct)
 	output := head
-	content := tview.Escape(stripped)
+	content := stripped
 	if content != "" {
 		output += content + "\n\n"
 	}
@@ -135,6 +139,9 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	if shouldDisplay {
 		output += poll + media + card
 	}
+	output += "\n" + subtleColor + line
+	output += fmt.Sprintf("%sReplies %s%d %sBoosts %s%d %sFavorites %s%d\n\n",
+		subtleColor, special1, status.RepliesCount, subtleColor, special1, status.ReblogsCount, subtleColor, special1, status.FavouritesCount)
 
 	app.UI.StatusView.ScrollToBeginning()
 	var info []string
@@ -211,6 +218,20 @@ type TimelineFeed struct {
 
 func (t *TimelineFeed) FeedType() FeedType {
 	return TimelineFeedType
+}
+
+func (t *TimelineFeed) GetDesc() string {
+	switch t.timelineType {
+	case TimelineHome:
+		return "Timeline home"
+	case TimelineDirect:
+		return "Timeline direct"
+	case TimelineLocal:
+		return "Timeline local"
+	case TimelineFederated:
+		return "Timeline federated"
+	}
+	return "Timeline"
 }
 
 func (t *TimelineFeed) GetCurrentStatus() *mastodon.Status {
@@ -383,6 +404,10 @@ func (t *ThreadFeed) FeedType() FeedType {
 	return ThreadFeedType
 }
 
+func (t *ThreadFeed) GetDesc() string {
+	return "Thread"
+}
+
 func (t *ThreadFeed) GetCurrentStatus() *mastodon.Status {
 	index := t.app.UI.StatusView.GetCurrentItem()
 	if index >= len(t.statuses) {
@@ -532,6 +557,10 @@ type UserFeed struct {
 
 func (u *UserFeed) FeedType() FeedType {
 	return UserFeedType
+}
+
+func (u *UserFeed) GetDesc() string {
+	return "User " + u.user.Acct
 }
 
 func (u *UserFeed) GetCurrentStatus() *mastodon.Status {
@@ -821,6 +850,10 @@ func (n *NotificationsFeed) FeedType() FeedType {
 	return NotificationFeedType
 }
 
+func (n *NotificationsFeed) GetDesc() string {
+	return "Notifications"
+}
+
 func (n *NotificationsFeed) GetCurrentNotification() *mastodon.Notification {
 	index := n.app.UI.StatusView.GetCurrentItem()
 	if index >= len(n.notifications) {
@@ -1044,6 +1077,10 @@ func (t *TagFeed) FeedType() FeedType {
 	return TagFeedType
 }
 
+func (t *TagFeed) GetDesc() string {
+	return "Tag #" + t.tag
+}
+
 func (t *TagFeed) GetCurrentStatus() *mastodon.Status {
 	index := t.app.UI.StatusView.GetCurrentItem()
 	if index >= len(t.statuses) {
@@ -1184,6 +1221,201 @@ func (t *TagFeed) Input(event *tcell.EventKey) {
 				status.Content = "Deleted"
 				t.DrawToot()
 			}
+		}
+	}
+}
+
+func NewUserSearchFeed(app *App, s string) *UserSearchFeed {
+	u := &UserSearchFeed{
+		app: app,
+	}
+	users, err := app.API.GetUsers(s)
+	if err != nil {
+		u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load users. Error: %v\n", err))
+		return u
+	}
+	u.users = users
+	return u
+}
+
+type UserSearchFeed struct {
+	app    *App
+	users  []*UserSearchData
+	index  int
+	search string
+}
+
+func (u *UserSearchFeed) FeedType() FeedType {
+	return UserSearchFeedType
+}
+
+func (u *UserSearchFeed) GetDesc() string {
+	return "User search: " + u.search
+}
+
+func (u *UserSearchFeed) GetCurrentUser() *UserSearchData {
+	index := u.app.UI.app.UI.StatusView.GetCurrentItem()
+	if index > 0 && index-1 >= len(u.users) {
+		return nil
+	}
+	return u.users[index-1]
+}
+
+func (u *UserSearchFeed) GetFeedList() <-chan string {
+	ch := make(chan string)
+	users := u.users
+	go func() {
+		for _, user := range users {
+			var username string
+			if user.User.DisplayName == "" {
+				username = user.User.Acct
+			} else {
+				username = fmt.Sprintf("%s (%s)", user.User.DisplayName, user.User.Acct)
+			}
+			ch <- username
+		}
+		close(ch)
+	}()
+	return ch
+}
+
+func (u *UserSearchFeed) LoadNewer() int {
+	return 0
+}
+
+func (u *UserSearchFeed) LoadOlder() int {
+	return 0
+}
+
+func (u *UserSearchFeed) DrawList() {
+	u.app.UI.StatusView.SetList(u.GetFeedList())
+}
+
+func (u *UserSearchFeed) DrawToot() {
+	u.index = u.app.UI.StatusView.GetCurrentItem()
+	index := u.index
+	if index > len(u.users)-1 || len(u.users) == 0 {
+		return
+	}
+	user := u.users[index]
+
+	var text string
+	var controls string
+
+	n := fmt.Sprintf("[#%x]", u.app.Config.Style.Text.Hex())
+	s1 := fmt.Sprintf("[#%x]", u.app.Config.Style.TextSpecial1.Hex())
+	s2 := fmt.Sprintf("[#%x]", u.app.Config.Style.TextSpecial2.Hex())
+
+	if user.User.DisplayName != "" {
+		text = fmt.Sprintf(s2+"%s\n", user.User.DisplayName)
+	}
+	text += fmt.Sprintf(s1+"%s\n\n", user.User.Acct)
+
+	text += fmt.Sprintf("Toots %s%d %sFollowers %s%d %sFollowing %s%d\n\n",
+		s2, user.User.StatusesCount, n, s2, user.User.FollowersCount, n, s2, user.User.FollowingCount)
+
+	note, urls := cleanTootHTML(user.User.Note)
+	text += note + "\n\n"
+
+	for _, f := range user.User.Fields {
+		value, fu := cleanTootHTML(f.Value)
+		text += fmt.Sprintf("%s%s: %s%s\n", s2, f.Name, n, value)
+		urls = append(urls, fu...)
+	}
+
+	u.app.UI.LinkOverlay.SetLinks(urls, nil)
+
+	var controlItems []string
+	if u.app.Me.ID != user.User.ID {
+		if user.Relationship.Following {
+			controlItems = append(controlItems, ColorKey(u.app.Config.Style, "Un", "F", "ollow"))
+		} else {
+			controlItems = append(controlItems, ColorKey(u.app.Config.Style, "", "F", "ollow"))
+		}
+		if user.Relationship.Blocking {
+			controlItems = append(controlItems, ColorKey(u.app.Config.Style, "Un", "B", "lock"))
+		} else {
+			controlItems = append(controlItems, ColorKey(u.app.Config.Style, "", "B", "lock"))
+		}
+		if user.Relationship.Muting {
+			controlItems = append(controlItems, ColorKey(u.app.Config.Style, "Un", "M", "ute"))
+		} else {
+			controlItems = append(controlItems, ColorKey(u.app.Config.Style, "", "M", "ute"))
+		}
+		if len(urls) > 0 {
+			controlItems = append(controlItems, ColorKey(u.app.Config.Style, "", "O", "pen"))
+		}
+	}
+	controlItems = append(controlItems, ColorKey(u.app.Config.Style, "", "U", "ser"))
+	controls = strings.Join(controlItems, " ")
+
+	u.app.UI.StatusView.SetText(text)
+	u.app.UI.StatusView.SetControls(controls)
+}
+
+func (u *UserSearchFeed) GetSavedIndex() int {
+	return u.index
+}
+
+func (u *UserSearchFeed) Input(event *tcell.EventKey) {
+	index := u.GetSavedIndex()
+	if index > len(u.users)-1 || len(u.users) == 0 {
+		return
+	}
+	user := u.users[index]
+
+	if event.Key() == tcell.KeyRune {
+		switch event.Rune() {
+		case 'f', 'F':
+			var relation *mastodon.Relationship
+			var err error
+			if user.Relationship.Following {
+				relation, err = u.app.API.UnfollowUser(*user.User)
+			} else {
+				relation, err = u.app.API.FollowUser(*user.User)
+			}
+			if err != nil {
+				u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't follow/unfollow user. Error: %v\n", err))
+				return
+			}
+			user.Relationship = relation
+			u.DrawToot()
+		case 'b', 'B':
+			var relation *mastodon.Relationship
+			var err error
+			if user.Relationship.Blocking {
+				relation, err = u.app.API.UnblockUser(*user.User)
+			} else {
+				relation, err = u.app.API.BlockUser(*user.User)
+			}
+			if err != nil {
+				u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't block/unblock user. Error: %v\n", err))
+				return
+			}
+			user.Relationship = relation
+			u.DrawToot()
+		case 'm', 'M':
+			var relation *mastodon.Relationship
+			var err error
+			if user.Relationship.Muting {
+				relation, err = u.app.API.UnmuteUser(*user.User)
+			} else {
+				relation, err = u.app.API.MuteUser(*user.User)
+			}
+			if err != nil {
+				u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't mute/unmute user. Error: %v\n", err))
+				return
+			}
+			user.Relationship = relation
+			u.DrawToot()
+		case 'r', 'R':
+			//toots and replies?
+		case 'o', 'O':
+			u.app.UI.ShowLinks()
+		case 'u', 'U':
+			u.app.UI.StatusView.AddFeed(
+				NewUserFeed(u.app, *user.User),
+			)
 		}
 	}
 }

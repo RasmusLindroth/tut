@@ -206,7 +206,7 @@ func main() {
 	)
 
 	app.UI.CmdBar.Input.SetAutocompleteFunc(func(currentText string) (entries []string) {
-		words := strings.Split(":tag,:timeline,:tl,:quit,:q", ",")
+		words := strings.Split(":compose,:tag,:timeline,:tl,:user,:quit,:q", ",")
 		if currentText == "" {
 			return
 		}
@@ -240,6 +240,9 @@ func main() {
 			fallthrough
 		case ":quit":
 			app.UI.Root.Stop()
+		case ":compose":
+			app.UI.NewToot()
+			app.UI.CmdBar.ClearInput()
 		case ":timeline", ":tl":
 			if len(parts) < 2 {
 				break
@@ -275,6 +278,17 @@ func main() {
 				break
 			}
 			app.UI.StatusView.AddFeed(NewTagFeed(app, tag))
+			app.UI.SetFocus(LeftPaneFocus)
+			app.UI.CmdBar.ClearInput()
+		case ":user":
+			if len(parts) < 2 {
+				break
+			}
+			user := strings.TrimSpace(parts[1])
+			if len(user) == 0 {
+				break
+			}
+			app.UI.StatusView.AddFeed(NewUserSearchFeed(app, user))
 			app.UI.SetFocus(LeftPaneFocus)
 			app.UI.CmdBar.ClearInput()
 		}

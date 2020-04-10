@@ -13,6 +13,8 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:timeline` home, local, federated, direct, notifications
 * `:tl` h, l, f, d, n (a shorter form of the former)
 * `:tag` followed by the hashtag e.g. `:tag linux`
+* `:user` followed by a username e.g. `:user rasmus` to narrow a search include 
+the instance like this `:user rasmus@mastodon.acc.sunet.se`.
 
 Explanation of the non obvious keys when viewing a toot
 * `V` = view. In this mode you can scroll throught the text of the toot if it doesn't fit the screen

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gdamore/tcell"
@@ -26,12 +27,6 @@ func NewStatusView(app *App, tl TimelineType) *StatusView {
 	t.list.SetSelectedBackgroundColor(app.Config.Style.ListSelectedBackground)
 	t.list.ShowSecondaryText(false)
 	t.list.SetHighlightFullLine(true)
-
-	t.list.SetChangedFunc(func(i int, _ string, _ string, _ rune) {
-		if app.HaveAccount {
-			t.showToot(i)
-		}
-	})
 
 	t.text.SetWordWrap(true).SetDynamicColors(true)
 	t.text.SetBackgroundColor(app.Config.Style.Background)
@@ -71,6 +66,7 @@ func (t *StatusView) AddFeed(f Feed) {
 	f.DrawList()
 	t.list.SetCurrentItem(f.GetSavedIndex())
 	f.DrawToot()
+	t.drawDesc()
 }
 
 func (t *StatusView) RemoveLatestFeed() {
@@ -79,6 +75,7 @@ func (t *StatusView) RemoveLatestFeed() {
 	feed.DrawList()
 	t.list.SetCurrentItem(feed.GetSavedIndex())
 	feed.DrawToot()
+	t.drawDesc()
 }
 
 func (t *StatusView) GetLeftView() tview.Primitive {
@@ -206,10 +203,16 @@ func (t *StatusView) SetControls(text string) {
 	t.controls.SetText(text)
 }
 
-func (t *StatusView) showToot(index int) {
-}
-
-func (t *StatusView) showTootOptions(index int, showSensitive bool) {
+func (t *StatusView) drawDesc() {
+	if len(t.feeds) == 0 {
+		t.app.UI.SetTopText("")
+		return
+	}
+	l := len(t.feeds)
+	f := t.feeds[l-1]
+	t.app.UI.SetTopText(
+		fmt.Sprintf("%s (%d/%d)", f.GetDesc(), l, l),
+	)
 }
 
 func (t *StatusView) prev() {

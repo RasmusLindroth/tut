@@ -51,6 +51,7 @@ func (ui *UI) Init() {
 		}
 		return 0, 0, 0, 0
 	})
+	ui.SetTopText("")
 	ui.Pages.AddPage("main",
 		tview.NewFlex().
 			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
@@ -222,6 +223,14 @@ func (ui *UI) OpenMedia(status *mastodon.Status) {
 	}
 }
 
+func (ui *UI) SetTopText(s string) {
+	if s == "" {
+		ui.Top.Text.SetText("tut")
+	} else {
+		ui.Top.Text.SetText(fmt.Sprintf("tut - %s", s))
+	}
+}
+
 func (ui *UI) LoggedIn() {
 	ui.StatusView = NewStatusView(ui.app, ui.Timeline)
 
@@ -249,7 +258,6 @@ func (ui *UI) LoggedIn() {
 	ui.Pages.SendToBack("main")
 
 	ui.SetFocus(LeftPaneFocus)
-	fmt.Fprint(ui.Top.Text, "tut\n")
 
 	me, err := ui.app.API.Client.GetAccountCurrentUser(context.Background())
 	if err != nil {

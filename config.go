@@ -164,7 +164,9 @@ func parseMedia(cfg *ini.File) MediaConfig {
 }
 
 func ParseConfig(filepath string) (Config, error) {
-	cfg, err := ini.Load(filepath)
+	cfg, err := ini.LoadSources(ini.LoadOptions{
+		SpaceBeforeInlineComment: true,
+	}, filepath)
 	conf := Config{}
 	if err != nil {
 		return conf, err
