@@ -565,6 +565,9 @@ func (t *TimelineFeed) Input(event *tcell.EventKey) {
 	if status == nil {
 		return
 	}
+	if status.Reblog != nil {
+		status = status.Reblog
+	}
 	user := status.Account
 
 	controls := []ControlItem{
@@ -683,6 +686,9 @@ func (t *ThreadFeed) Input(event *tcell.EventKey) {
 	status := t.GetCurrentStatus()
 	if status == nil {
 		return
+	}
+	if status.Reblog != nil {
+		status = status.Reblog
 	}
 	user := status.Account
 
@@ -877,19 +883,22 @@ func (u *UserFeed) Input(event *tcell.EventKey) {
 	if status == nil {
 		return
 	}
+	if status.Reblog != nil {
+		status = status.Reblog
+	}
 	user := status.Account
 
 	controls := []ControlItem{
 		ControlAvatar, ControlThread, ControlSpoiler, ControlCompose,
 		ControlOpen, ControlReply, ControlMedia, ControlFavorite, ControlBoost,
-		ControlDelete,
+		ControlDelete, ControlUser,
 	}
 	options := inputOptions(controls)
 
 	updated, rc, rt, newS, _ := inputSimple(u.app, event, options, user, status, nil, u)
 	if updated {
 		index := u.app.UI.StatusView.GetCurrentItem()
-		u.statuses[index] = newS
+		u.statuses[index-1] = newS
 	}
 	if rc {
 		u.RedrawControls()
@@ -1084,6 +1093,9 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 	}
 
 	status := notification.Status
+	if status.Reblog != nil {
+		status = status.Reblog
+	}
 	user := status.Account
 
 	controls := []ControlItem{
@@ -1225,6 +1237,9 @@ func (t *TagFeed) Input(event *tcell.EventKey) {
 	status := t.GetCurrentStatus()
 	if status == nil {
 		return
+	}
+	if status.Reblog != nil {
+		status = status.Reblog
 	}
 	user := status.Account
 
