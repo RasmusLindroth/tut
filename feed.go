@@ -27,6 +27,8 @@ type Feed interface {
 	LoadOlder() int
 	DrawList()
 	DrawToot()
+	DrawSpoiler()
+	RedrawControls()
 	FeedType() FeedType
 	GetSavedIndex() int
 	GetDesc() string
@@ -174,6 +176,62 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	return output, controls
 }
 
+func showUser(app *App, user *mastodon.Account, relation *mastodon.Relationship, showUserControl bool) (string, string) {
+	var text string
+	var controls string
+
+	n := fmt.Sprintf("[#%x]", app.Config.Style.Text.Hex())
+	s1 := fmt.Sprintf("[#%x]", app.Config.Style.TextSpecial1.Hex())
+	s2 := fmt.Sprintf("[#%x]", app.Config.Style.TextSpecial2.Hex())
+
+	if user.DisplayName != "" {
+		text = fmt.Sprintf(s2+"%s\n", user.DisplayName)
+	}
+	text += fmt.Sprintf(s1+"%s\n\n", user.Acct)
+
+	text += fmt.Sprintf("Toots %s%d %sFollowers %s%d %sFollowing %s%d\n\n",
+		s2, user.StatusesCount, n, s2, user.FollowersCount, n, s2, user.FollowingCount)
+
+	note, urls := cleanTootHTML(user.Note)
+	text += note + "\n\n"
+
+	for _, f := range user.Fields {
+		value, fu := cleanTootHTML(f.Value)
+		text += fmt.Sprintf("%s%s: %s%s\n", s2, f.Name, n, value)
+		urls = append(urls, fu...)
+	}
+
+	app.UI.LinkOverlay.SetLinks(urls, nil)
+
+	var controlItems []string
+	if app.Me.ID != user.ID {
+		if relation.Following {
+			controlItems = append(controlItems, ColorKey(app.Config.Style, "Un", "F", "ollow"))
+		} else {
+			controlItems = append(controlItems, ColorKey(app.Config.Style, "", "F", "ollow"))
+		}
+		if relation.Blocking {
+			controlItems = append(controlItems, ColorKey(app.Config.Style, "Un", "B", "lock"))
+		} else {
+			controlItems = append(controlItems, ColorKey(app.Config.Style, "", "B", "lock"))
+		}
+		if relation.Muting {
+			controlItems = append(controlItems, ColorKey(app.Config.Style, "Un", "M", "ute"))
+		} else {
+			controlItems = append(controlItems, ColorKey(app.Config.Style, "", "M", "ute"))
+		}
+		if len(urls) > 0 {
+			controlItems = append(controlItems, ColorKey(app.Config.Style, "", "O", "pen"))
+		}
+	}
+	if showUserControl {
+		controlItems = append(controlItems, ColorKey(app.Config.Style, "", "U", "ser"))
+	}
+	controls = strings.Join(controlItems, " ")
+
+	return text, controls
+}
+
 func drawStatusList(statuses []*mastodon.Status) <-chan string {
 	ch := make(chan string)
 	go func() {
@@ -193,6 +251,170 @@ func drawStatusList(statuses []*mastodon.Status) <-chan string {
 		close(ch)
 	}()
 	return ch
+}
+
+func openAvatar(app *App, user mastodon.Account) {
+	f, err := downloadFile(user.AvatarStatic)
+	if err != nil {
+		app.UI.CmdBar.ShowError("Couldn't open avatar")
+		return
+	}
+	go openMediaType(app.Config.Media, []string{f}, "image")
+}
+
+type ControlItem uint
+
+const (
+	ControlAvatar ControlItem = 1 << iota
+	ControlBlock
+	ControlBoost
+	ControlCompose
+	ControlDelete
+	ControlFavorite
+	ControlFollow
+	ControlMedia
+	ControlMute
+	ControlOpen
+	ControlReply
+	ControlThread
+	ControlUser
+	ControlSpoiler
+)
+
+func inputOptions(options []ControlItem) ControlItem {
+	var controls ControlItem
+	for _, o := range options {
+		controls = controls | o
+	}
+	return controls
+}
+
+func inputSimple(app *App, event *tcell.EventKey, controls ControlItem,
+	user mastodon.Account, status *mastodon.Status, relation *mastodon.Relationship, feed Feed) (updated bool,
+	redrawControls bool, redrawToot bool, newStatus *mastodon.Status, newRelation *mastodon.Relationship) {
+
+	newStatus = status
+	newRelation = relation
+	var err error
+
+	if event.Key() != tcell.KeyRune {
+		return
+	}
+	switch event.Rune() {
+	case 'a', 'A':
+		if controls&ControlAvatar != 0 {
+			openAvatar(app, user)
+		}
+	case 'b', 'B':
+		if controls&ControlBoost != 0 {
+			newStatus, err = app.API.BoostToggle(status)
+			if err != nil {
+				app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't boost toot. Error: %v\n", err))
+				return
+			}
+			updated = true
+			redrawControls = true
+		}
+		if controls&ControlBlock != 0 {
+			if relation.Blocking {
+				newRelation, err = app.API.UnblockUser(user)
+			} else {
+				newRelation, err = app.API.BlockUser(user)
+			}
+			if err != nil {
+				app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't block/unblock user. Error: %v\n", err))
+				return
+			}
+			updated = true
+			redrawToot = true
+		}
+	case 'd', 'D':
+		if controls&ControlDelete != 0 {
+			err = app.API.DeleteStatus(status)
+			if err != nil {
+				app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't delete toot. Error: %v\n", err))
+			} else {
+				status.Card = nil
+				status.Sensitive = false
+				status.SpoilerText = ""
+				status.Favourited = false
+				status.MediaAttachments = nil
+				status.Reblogged = false
+				status.Content = "Deleted"
+				updated = true
+				redrawToot = true
+			}
+		}
+	case 'f', 'F':
+		if controls&ControlFavorite != 0 {
+			newStatus, err = app.API.FavoriteToogle(status)
+			if err != nil {
+				app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't favorite toot. Error: %v\n", err))
+				return
+			}
+			updated = true
+			redrawControls = true
+		}
+		if controls&ControlFollow != 0 {
+			if relation.Following {
+				newRelation, err = app.API.UnfollowUser(user)
+			} else {
+				newRelation, err = app.API.FollowUser(user)
+			}
+			if err != nil {
+				app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't follow/unfollow user. Error: %v\n", err))
+				return
+			}
+			updated = true
+			redrawToot = true
+		}
+	case 'c', 'C':
+		if controls&ControlCompose != 0 {
+			app.UI.NewToot()
+		}
+	case 'm', 'M':
+		if controls&ControlMedia != 0 {
+			app.UI.OpenMedia(status)
+		}
+		if controls&ControlMute != 0 {
+			if relation.Muting {
+				newRelation, err = app.API.UnmuteUser(user)
+			} else {
+				newRelation, err = app.API.MuteUser(user)
+			}
+			if err != nil {
+				app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't mute/unmute user. Error: %v\n", err))
+				return
+			}
+			updated = true
+			redrawToot = true
+		}
+	case 'o', 'O':
+		if controls&ControlOpen != 0 {
+			app.UI.ShowLinks()
+		}
+	case 'r', 'R':
+		if controls&ControlReply != 0 {
+			app.UI.Reply(status)
+		}
+	case 's', 'S':
+		if controls&ControlSpoiler != 0 {
+			feed.DrawSpoiler()
+		}
+	case 't', 'T':
+		if controls&ControlThread != 0 {
+			app.UI.StatusView.AddFeed(
+				NewThreadFeed(app, status),
+			)
+		}
+	case 'u', 'U':
+		if controls&ControlUser != 0 {
+			app.UI.StatusView.AddFeed(
+				NewUserFeed(app, user),
+			)
+		}
+	}
+	return
 }
 
 func NewTimelineFeed(app *App, tl TimelineType) *TimelineFeed {
@@ -289,6 +511,11 @@ func (t *TimelineFeed) DrawList() {
 	t.app.UI.StatusView.SetList(t.GetFeedList())
 }
 
+func (t *TimelineFeed) DrawSpoiler() {
+	t.showSpoiler = true
+	t.DrawToot()
+}
+
 func (t *TimelineFeed) DrawToot() {
 	if len(t.statuses) == 0 {
 		t.app.UI.StatusView.SetText("")
@@ -302,7 +529,7 @@ func (t *TimelineFeed) DrawToot() {
 	t.app.UI.StatusView.SetControls(controls)
 }
 
-func (t *TimelineFeed) redrawControls() {
+func (t *TimelineFeed) RedrawControls() {
 	status := t.GetCurrentStatus()
 	if status == nil {
 		return
@@ -320,61 +547,25 @@ func (t *TimelineFeed) Input(event *tcell.EventKey) {
 	if status == nil {
 		return
 	}
-	if event.Key() == tcell.KeyRune {
-		switch event.Rune() {
-		case 't', 'T':
-			t.app.UI.StatusView.AddFeed(
-				NewThreadFeed(t.app, status),
-			)
-		case 'u', 'U':
-			t.app.UI.StatusView.AddFeed(
-				NewUserFeed(t.app, status.Account),
-			)
-		case 's', 'S':
-			t.showSpoiler = true
-			t.DrawToot()
-		case 'c', 'C':
-			t.app.UI.NewToot()
-		case 'o', 'O':
-			t.app.UI.ShowLinks()
-		case 'r', 'R':
-			t.app.UI.Reply(status)
-		case 'm', 'M':
-			t.app.UI.OpenMedia(status)
-		case 'f', 'F':
-			index := t.app.UI.StatusView.GetCurrentItem()
-			newStatus, err := t.app.API.FavoriteToogle(status)
-			if err != nil {
-				t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't favorite toot. Error: %v\n", err))
-				return
-			}
-			t.statuses[index] = newStatus
-			t.redrawControls()
+	user := status.Account
 
-		case 'b', 'B':
-			index := t.app.UI.StatusView.GetCurrentItem()
-			newStatus, err := t.app.API.BoostToggle(status)
-			if err != nil {
-				t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't boost toot. Error: %v\n", err))
-				return
-			}
-			t.statuses[index] = newStatus
-			t.redrawControls()
-		case 'd', 'D':
-			err := t.app.API.DeleteStatus(status)
-			if err != nil {
-				t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't delete toot. Error: %v\n", err))
-			} else {
-				status.Card = nil
-				status.Sensitive = false
-				status.SpoilerText = ""
-				status.Favourited = false
-				status.MediaAttachments = nil
-				status.Reblogged = false
-				status.Content = "Deleted"
-				t.DrawToot()
-			}
-		}
+	controls := []ControlItem{
+		ControlAvatar, ControlThread, ControlUser, ControlSpoiler,
+		ControlCompose, ControlOpen, ControlReply, ControlMedia,
+		ControlFavorite, ControlBoost, ControlDelete,
+	}
+	options := inputOptions(controls)
+
+	updated, rc, rt, newS, _ := inputSimple(t.app, event, options, user, status, nil, t)
+	if updated {
+		index := t.app.UI.StatusView.GetCurrentItem()
+		t.statuses[index] = newS
+	}
+	if rc {
+		t.RedrawControls()
+	}
+	if rt {
+		t.DrawToot()
 	}
 }
 
@@ -432,6 +623,11 @@ func (t *ThreadFeed) DrawList() {
 	t.app.UI.StatusView.SetList(t.GetFeedList())
 }
 
+func (t *ThreadFeed) DrawSpoiler() {
+	t.showSpoiler = true
+	t.DrawToot()
+}
+
 func (t *ThreadFeed) DrawToot() {
 	status := t.GetCurrentStatus()
 	if status == nil {
@@ -446,7 +642,7 @@ func (t *ThreadFeed) DrawToot() {
 	t.app.UI.StatusView.SetControls(controls)
 }
 
-func (t *ThreadFeed) redrawControls() {
+func (t *ThreadFeed) RedrawControls() {
 	status := t.GetCurrentStatus()
 	if status == nil {
 		t.app.UI.StatusView.SetText("")
@@ -466,63 +662,28 @@ func (t *ThreadFeed) Input(event *tcell.EventKey) {
 	if status == nil {
 		return
 	}
-	if event.Key() == tcell.KeyRune {
-		switch event.Rune() {
-		case 't', 'T':
-			if t.status.ID != status.ID {
-				t.app.UI.StatusView.AddFeed(
-					NewThreadFeed(t.app, status),
-				)
-			}
-		case 'u', 'U':
-			t.app.UI.StatusView.AddFeed(
-				NewUserFeed(t.app, status.Account),
-			)
-		case 's', 'S':
-			t.showSpoiler = true
-			t.DrawToot()
-		case 'c', 'C':
-			t.app.UI.NewToot()
-		case 'o', 'O':
-			t.app.UI.ShowLinks()
-		case 'r', 'R':
-			t.app.UI.Reply(status)
-		case 'm', 'M':
-			t.app.UI.OpenMedia(status)
-		case 'f', 'F':
-			index := t.app.UI.StatusView.GetCurrentItem()
-			newStatus, err := t.app.API.FavoriteToogle(status)
-			if err != nil {
-				t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't favorite toot. Error: %v\n", err))
-				return
-			}
-			t.statuses[index] = newStatus
-			t.redrawControls()
+	user := status.Account
 
-		case 'b', 'B':
-			index := t.app.UI.StatusView.GetCurrentItem()
-			newStatus, err := t.app.API.BoostToggle(status)
-			if err != nil {
-				t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't boost toot. Error: %v\n", err))
-				return
-			}
-			t.statuses[index] = newStatus
-			t.redrawControls()
-		case 'd', 'D':
-			err := t.app.API.DeleteStatus(status)
-			if err != nil {
-				t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't delete toot. Error: %v\n", err))
-			} else {
-				status.Card = nil
-				status.Sensitive = false
-				status.SpoilerText = ""
-				status.Favourited = false
-				status.MediaAttachments = nil
-				status.Reblogged = false
-				status.Content = "Deleted"
-				t.DrawToot()
-			}
-		}
+	controls := []ControlItem{
+		ControlAvatar, ControlUser, ControlSpoiler,
+		ControlCompose, ControlOpen, ControlReply, ControlMedia,
+		ControlFavorite, ControlBoost, ControlDelete,
+	}
+	if status.ID != t.status.ID {
+		controls = append(controls, ControlThread)
+	}
+	options := inputOptions(controls)
+
+	updated, rc, rt, newS, _ := inputSimple(t.app, event, options, user, status, nil, t)
+	if updated {
+		index := t.app.UI.StatusView.GetCurrentItem()
+		t.statuses[index] = newS
+	}
+	if rc {
+		t.RedrawControls()
+	}
+	if rt {
+		t.DrawToot()
 	}
 }
 
@@ -626,6 +787,11 @@ func (u *UserFeed) DrawList() {
 	u.app.UI.StatusView.SetList(u.GetFeedList())
 }
 
+func (u *UserFeed) DrawSpoiler() {
+	u.showSpoiler = true
+	u.DrawToot()
+}
+
 func (u *UserFeed) DrawToot() {
 	u.index = u.app.UI.StatusView.GetCurrentItem()
 
@@ -633,52 +799,7 @@ func (u *UserFeed) DrawToot() {
 	var controls string
 
 	if u.index == 0 {
-		n := fmt.Sprintf("[#%x]", u.app.Config.Style.Text.Hex())
-		s1 := fmt.Sprintf("[#%x]", u.app.Config.Style.TextSpecial1.Hex())
-		s2 := fmt.Sprintf("[#%x]", u.app.Config.Style.TextSpecial2.Hex())
-
-		if u.user.DisplayName != "" {
-			text = fmt.Sprintf(s2+"%s\n", u.user.DisplayName)
-		}
-		text += fmt.Sprintf(s1+"%s\n\n", u.user.Acct)
-
-		text += fmt.Sprintf("Toots %s%d %sFollowers %s%d %sFollowing %s%d\n\n",
-			s2, u.user.StatusesCount, n, s2, u.user.FollowersCount, n, s2, u.user.FollowingCount)
-
-		note, urls := cleanTootHTML(u.user.Note)
-		text += note + "\n\n"
-
-		for _, f := range u.user.Fields {
-			value, fu := cleanTootHTML(f.Value)
-			text += fmt.Sprintf("%s%s: %s%s\n", s2, f.Name, n, value)
-			urls = append(urls, fu...)
-		}
-
-		u.app.UI.LinkOverlay.SetLinks(urls, nil)
-
-		var controlItems []string
-		if u.app.Me.ID != u.user.ID {
-			if u.relation.Following {
-				controlItems = append(controlItems, ColorKey(u.app.Config.Style, "Un", "F", "ollow"))
-			} else {
-				controlItems = append(controlItems, ColorKey(u.app.Config.Style, "", "F", "ollow"))
-			}
-			if u.relation.Blocking {
-				controlItems = append(controlItems, ColorKey(u.app.Config.Style, "Un", "B", "lock"))
-			} else {
-				controlItems = append(controlItems, ColorKey(u.app.Config.Style, "", "B", "lock"))
-			}
-			if u.relation.Muting {
-				controlItems = append(controlItems, ColorKey(u.app.Config.Style, "Un", "M", "ute"))
-			} else {
-				controlItems = append(controlItems, ColorKey(u.app.Config.Style, "", "M", "ute"))
-			}
-			if len(urls) > 0 {
-				controlItems = append(controlItems, ColorKey(u.app.Config.Style, "", "O", "pen"))
-			}
-			controls = strings.Join(controlItems, " ")
-		}
-
+		text, controls = showUser(u.app, &u.user, u.relation, false)
 	} else {
 		status := u.GetCurrentStatus()
 		if status == nil {
@@ -694,7 +815,7 @@ func (u *UserFeed) DrawToot() {
 	u.app.UI.StatusView.SetControls(controls)
 }
 
-func (u *UserFeed) redrawControls() {
+func (u *UserFeed) RedrawControls() {
 	var controls string
 	status := u.GetCurrentStatus()
 	if status == nil {
@@ -713,120 +834,42 @@ func (u *UserFeed) Input(event *tcell.EventKey) {
 	index := u.GetSavedIndex()
 
 	if index == 0 {
-		if event.Key() == tcell.KeyRune {
-			switch event.Rune() {
-			case 'f', 'F':
-				var relation *mastodon.Relationship
-				var err error
-				if u.relation.Following {
-					relation, err = u.app.API.UnfollowUser(u.user)
-				} else {
-					relation, err = u.app.API.FollowUser(u.user)
-				}
-				if err != nil {
-					u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't follow/unfollow user. Error: %v\n", err))
-					return
-				}
-				u.relation = relation
-				u.DrawToot()
-			case 'b', 'B':
-				var relation *mastodon.Relationship
-				var err error
-				if u.relation.Blocking {
-					relation, err = u.app.API.UnblockUser(u.user)
-				} else {
-					relation, err = u.app.API.BlockUser(u.user)
-				}
-				if err != nil {
-					u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't block/unblock user. Error: %v\n", err))
-					return
-				}
-				u.relation = relation
-				u.DrawToot()
-			case 'm', 'M':
-				var relation *mastodon.Relationship
-				var err error
-				if u.relation.Muting {
-					relation, err = u.app.API.UnmuteUser(u.user)
-				} else {
-					relation, err = u.app.API.MuteUser(u.user)
-				}
-				if err != nil {
-					u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't mute/unmute user. Error: %v\n", err))
-					return
-				}
-				u.relation = relation
-				u.DrawToot()
-			case 'r', 'R':
-				//toots and replies?
-			case 'o', 'O':
-				u.app.UI.ShowLinks()
-			}
+		controls := []ControlItem{
+			ControlAvatar, ControlFollow, ControlBlock, ControlMute, ControlOpen,
+		}
+		options := inputOptions(controls)
+
+		updated, _, _, _, newRel := inputSimple(u.app, event, options, u.user, nil, u.relation, u)
+		if updated {
+			u.relation = newRel
+			u.DrawToot()
 		}
 		return
 	}
 
-	if event.Key() == tcell.KeyRune {
-		status := u.GetCurrentStatus()
-		if status == nil {
-			return
-		}
-		switch event.Rune() {
-		case 't', 'T':
-			u.app.UI.StatusView.AddFeed(
-				NewThreadFeed(u.app, status),
-			)
-		case 'u', 'U':
-			if u.user.ID != status.Account.ID {
-				u.app.UI.StatusView.AddFeed(
-					NewUserFeed(u.app, status.Account),
-				)
-			}
-		case 's', 'S':
-			u.showSpoiler = true
-			u.DrawToot()
-		case 'c', 'C':
-			u.app.UI.NewToot()
-		case 'o', 'O':
-			u.app.UI.ShowLinks()
-		case 'r', 'R':
-			u.app.UI.Reply(status)
-		case 'm', 'M':
-			u.app.UI.OpenMedia(status)
-		case 'f', 'F':
-			index := u.app.UI.StatusView.GetCurrentItem()
-			newStatus, err := u.app.API.FavoriteToogle(status)
-			if err != nil {
-				u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't favorite toot. Error: %v\n", err))
-				return
-			}
-			u.statuses[index-1] = newStatus
-			u.redrawControls()
+	status := u.GetCurrentStatus()
+	if status == nil {
+		return
+	}
+	user := status.Account
 
-		case 'b', 'B':
-			index := u.app.UI.StatusView.GetCurrentItem()
-			newStatus, err := u.app.API.BoostToggle(status)
-			if err != nil {
-				u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't boost toot. Error: %v\n", err))
-				return
-			}
-			u.statuses[index-1] = newStatus
-			u.redrawControls()
-		case 'd', 'D':
-			err := u.app.API.DeleteStatus(status)
-			if err != nil {
-				u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't delete toot. Error: %v\n", err))
-			} else {
-				status.Card = nil
-				status.Sensitive = false
-				status.SpoilerText = ""
-				status.Favourited = false
-				status.MediaAttachments = nil
-				status.Reblogged = false
-				status.Content = "Deleted"
-				u.DrawToot()
-			}
-		}
+	controls := []ControlItem{
+		ControlAvatar, ControlThread, ControlSpoiler, ControlCompose,
+		ControlOpen, ControlReply, ControlMedia, ControlFavorite, ControlBoost,
+		ControlDelete,
+	}
+	options := inputOptions(controls)
+
+	updated, rc, rt, newS, _ := inputSimple(u.app, event, options, user, status, nil, u)
+	if updated {
+		index := u.app.UI.StatusView.GetCurrentItem()
+		u.statuses[index] = newS
+	}
+	if rc {
+		u.RedrawControls()
+	}
+	if rt {
+		u.DrawToot()
 	}
 }
 
@@ -926,6 +969,11 @@ func (n *NotificationsFeed) DrawList() {
 	n.app.UI.StatusView.SetList(n.GetFeedList())
 }
 
+func (n *NotificationsFeed) DrawSpoiler() {
+	n.showSpoiler = true
+	n.DrawToot()
+}
+
 func (n *NotificationsFeed) DrawToot() {
 	n.index = n.app.UI.StatusView.GetCurrentItem()
 	notification := n.GetCurrentNotification()
@@ -964,7 +1012,7 @@ func (n *NotificationsFeed) DrawToot() {
 	n.app.UI.StatusView.SetControls(controls)
 }
 
-func (n *NotificationsFeed) redrawControls() {
+func (n *NotificationsFeed) RedrawControls() {
 	notification := n.GetCurrentNotification()
 	if notification == nil {
 		n.app.UI.StatusView.SetControls("")
@@ -987,72 +1035,32 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 		return
 	}
 	if notification.Type == "follow" {
-		if event.Key() == tcell.KeyRune {
-			switch event.Rune() {
-			case 'u', 'U':
-				n.app.UI.StatusView.AddFeed(
-					NewUserFeed(n.app, notification.Account),
-				)
-			}
-		}
+		controls := []ControlItem{ControlUser}
+		options := inputOptions(controls)
+		inputSimple(n.app, event, options, notification.Account, nil, nil, n)
 		return
 	}
 
-	if event.Key() == tcell.KeyRune {
-		switch event.Rune() {
-		case 't', 'T':
-			n.app.UI.StatusView.AddFeed(
-				NewThreadFeed(n.app, notification.Status),
-			)
-		case 'u', 'U':
-			n.app.UI.StatusView.AddFeed(
-				NewUserFeed(n.app, notification.Account),
-			)
-		case 's', 'S':
-			n.showSpoiler = true
-			n.DrawToot()
-		case 'c', 'C':
-			n.app.UI.NewToot()
-		case 'o', 'O':
-			n.app.UI.ShowLinks()
-		case 'r', 'R':
-			n.app.UI.Reply(notification.Status)
-		case 'm', 'M':
-			n.app.UI.OpenMedia(notification.Status)
-		case 'f', 'F':
-			index := n.app.UI.StatusView.GetCurrentItem()
-			status, err := n.app.API.FavoriteToogle(notification.Status)
-			if err != nil {
-				n.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't favorite toot. Error: %v\n", err))
-				return
-			}
-			n.notifications[index].Status = status
-			n.redrawControls()
+	status := notification.Status
+	user := status.Account
 
-		case 'b', 'B':
-			index := n.app.UI.StatusView.GetCurrentItem()
-			status, err := n.app.API.BoostToggle(notification.Status)
-			if err != nil {
-				n.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't boost toot. Error: %v\n", err))
-				return
-			}
-			n.notifications[index].Status = status
-			n.redrawControls()
-		case 'd', 'D':
-			err := n.app.API.DeleteStatus(notification.Status)
-			if err != nil {
-				n.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't delete toot. Error: %v\n", err))
-			} else {
-				notification.Status.Card = nil
-				notification.Status.Sensitive = false
-				notification.Status.SpoilerText = ""
-				notification.Status.Favourited = false
-				notification.Status.MediaAttachments = nil
-				notification.Status.Reblogged = false
-				notification.Status.Content = "Deleted"
-				n.DrawToot()
-			}
-		}
+	controls := []ControlItem{
+		ControlAvatar, ControlThread, ControlUser, ControlSpoiler,
+		ControlCompose, ControlOpen, ControlReply, ControlMedia,
+		ControlFavorite, ControlBoost, ControlDelete,
+	}
+	options := inputOptions(controls)
+
+	updated, rc, rt, newS, _ := inputSimple(n.app, event, options, user, status, nil, n)
+	if updated {
+		index := n.app.UI.StatusView.GetCurrentItem()
+		n.notifications[index].Status = newS
+	}
+	if rc {
+		n.RedrawControls()
+	}
+	if rt {
+		n.DrawToot()
 	}
 }
 
@@ -1136,6 +1144,11 @@ func (t *TagFeed) DrawList() {
 	t.app.UI.StatusView.SetList(t.GetFeedList())
 }
 
+func (t *TagFeed) DrawSpoiler() {
+	t.showSpoiler = true
+	t.DrawToot()
+}
+
 func (t *TagFeed) DrawToot() {
 	if len(t.statuses) == 0 {
 		t.app.UI.StatusView.SetText("")
@@ -1149,7 +1162,7 @@ func (t *TagFeed) DrawToot() {
 	t.app.UI.StatusView.SetControls(controls)
 }
 
-func (t *TagFeed) redrawControls() {
+func (t *TagFeed) RedrawControls() {
 	status := t.GetCurrentStatus()
 	if status == nil {
 		return
@@ -1167,61 +1180,25 @@ func (t *TagFeed) Input(event *tcell.EventKey) {
 	if status == nil {
 		return
 	}
-	if event.Key() == tcell.KeyRune {
-		switch event.Rune() {
-		case 't', 'T':
-			t.app.UI.StatusView.AddFeed(
-				NewThreadFeed(t.app, status),
-			)
-		case 'u', 'U':
-			t.app.UI.StatusView.AddFeed(
-				NewUserFeed(t.app, status.Account),
-			)
-		case 's', 'S':
-			t.showSpoiler = true
-			t.DrawToot()
-		case 'c', 'C':
-			t.app.UI.NewToot()
-		case 'o', 'O':
-			t.app.UI.ShowLinks()
-		case 'r', 'R':
-			t.app.UI.Reply(status)
-		case 'm', 'M':
-			t.app.UI.OpenMedia(status)
-		case 'f', 'F':
-			index := t.app.UI.StatusView.GetCurrentItem()
-			newStatus, err := t.app.API.FavoriteToogle(status)
-			if err != nil {
-				t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't favorite toot. Error: %v\n", err))
-				return
-			}
-			t.statuses[index] = newStatus
-			t.redrawControls()
+	user := status.Account
 
-		case 'b', 'B':
-			index := t.app.UI.StatusView.GetCurrentItem()
-			newStatus, err := t.app.API.BoostToggle(status)
-			if err != nil {
-				t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't boost toot. Error: %v\n", err))
-				return
-			}
-			t.statuses[index] = newStatus
-			t.redrawControls()
-		case 'd', 'D':
-			err := t.app.API.DeleteStatus(status)
-			if err != nil {
-				t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't delete toot. Error: %v\n", err))
-			} else {
-				status.Card = nil
-				status.Sensitive = false
-				status.SpoilerText = ""
-				status.Favourited = false
-				status.MediaAttachments = nil
-				status.Reblogged = false
-				status.Content = "Deleted"
-				t.DrawToot()
-			}
-		}
+	controls := []ControlItem{
+		ControlAvatar, ControlThread, ControlUser, ControlSpoiler,
+		ControlCompose, ControlOpen, ControlReply, ControlMedia,
+		ControlFavorite, ControlBoost, ControlDelete,
+	}
+	options := inputOptions(controls)
+
+	updated, rc, rt, newS, _ := inputSimple(t.app, event, options, user, status, nil, t)
+	if updated {
+		index := t.app.UI.StatusView.GetCurrentItem()
+		t.statuses[index] = newS
+	}
+	if rc {
+		t.RedrawControls()
+	}
+	if rt {
+		t.DrawToot()
 	}
 }
 
@@ -1291,6 +1268,14 @@ func (u *UserSearchFeed) DrawList() {
 	u.app.UI.StatusView.SetList(u.GetFeedList())
 }
 
+func (u *UserSearchFeed) RedrawControls() {
+	//Does not implement
+}
+
+func (u *UserSearchFeed) DrawSpoiler() {
+	//Does not implement
+}
+
 func (u *UserSearchFeed) DrawToot() {
 	u.index = u.app.UI.StatusView.GetCurrentItem()
 	index := u.index
@@ -1299,55 +1284,7 @@ func (u *UserSearchFeed) DrawToot() {
 	}
 	user := u.users[index]
 
-	var text string
-	var controls string
-
-	n := fmt.Sprintf("[#%x]", u.app.Config.Style.Text.Hex())
-	s1 := fmt.Sprintf("[#%x]", u.app.Config.Style.TextSpecial1.Hex())
-	s2 := fmt.Sprintf("[#%x]", u.app.Config.Style.TextSpecial2.Hex())
-
-	if user.User.DisplayName != "" {
-		text = fmt.Sprintf(s2+"%s\n", user.User.DisplayName)
-	}
-	text += fmt.Sprintf(s1+"%s\n\n", user.User.Acct)
-
-	text += fmt.Sprintf("Toots %s%d %sFollowers %s%d %sFollowing %s%d\n\n",
-		s2, user.User.StatusesCount, n, s2, user.User.FollowersCount, n, s2, user.User.FollowingCount)
-
-	note, urls := cleanTootHTML(user.User.Note)
-	text += note + "\n\n"
-
-	for _, f := range user.User.Fields {
-		value, fu := cleanTootHTML(f.Value)
-		text += fmt.Sprintf("%s%s: %s%s\n", s2, f.Name, n, value)
-		urls = append(urls, fu...)
-	}
-
-	u.app.UI.LinkOverlay.SetLinks(urls, nil)
-
-	var controlItems []string
-	if u.app.Me.ID != user.User.ID {
-		if user.Relationship.Following {
-			controlItems = append(controlItems, ColorKey(u.app.Config.Style, "Un", "F", "ollow"))
-		} else {
-			controlItems = append(controlItems, ColorKey(u.app.Config.Style, "", "F", "ollow"))
-		}
-		if user.Relationship.Blocking {
-			controlItems = append(controlItems, ColorKey(u.app.Config.Style, "Un", "B", "lock"))
-		} else {
-			controlItems = append(controlItems, ColorKey(u.app.Config.Style, "", "B", "lock"))
-		}
-		if user.Relationship.Muting {
-			controlItems = append(controlItems, ColorKey(u.app.Config.Style, "Un", "M", "ute"))
-		} else {
-			controlItems = append(controlItems, ColorKey(u.app.Config.Style, "", "M", "ute"))
-		}
-		if len(urls) > 0 {
-			controlItems = append(controlItems, ColorKey(u.app.Config.Style, "", "O", "pen"))
-		}
-	}
-	controlItems = append(controlItems, ColorKey(u.app.Config.Style, "", "U", "ser"))
-	controls = strings.Join(controlItems, " ")
+	text, controls := showUser(u.app, user.User, user.Relationship, true)
 
 	u.app.UI.StatusView.SetText(text)
 	u.app.UI.StatusView.SetControls(controls)
@@ -1364,58 +1301,14 @@ func (u *UserSearchFeed) Input(event *tcell.EventKey) {
 	}
 	user := u.users[index]
 
-	if event.Key() == tcell.KeyRune {
-		switch event.Rune() {
-		case 'f', 'F':
-			var relation *mastodon.Relationship
-			var err error
-			if user.Relationship.Following {
-				relation, err = u.app.API.UnfollowUser(*user.User)
-			} else {
-				relation, err = u.app.API.FollowUser(*user.User)
-			}
-			if err != nil {
-				u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't follow/unfollow user. Error: %v\n", err))
-				return
-			}
-			user.Relationship = relation
-			u.DrawToot()
-		case 'b', 'B':
-			var relation *mastodon.Relationship
-			var err error
-			if user.Relationship.Blocking {
-				relation, err = u.app.API.UnblockUser(*user.User)
-			} else {
-				relation, err = u.app.API.BlockUser(*user.User)
-			}
-			if err != nil {
-				u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't block/unblock user. Error: %v\n", err))
-				return
-			}
-			user.Relationship = relation
-			u.DrawToot()
-		case 'm', 'M':
-			var relation *mastodon.Relationship
-			var err error
-			if user.Relationship.Muting {
-				relation, err = u.app.API.UnmuteUser(*user.User)
-			} else {
-				relation, err = u.app.API.MuteUser(*user.User)
-			}
-			if err != nil {
-				u.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't mute/unmute user. Error: %v\n", err))
-				return
-			}
-			user.Relationship = relation
-			u.DrawToot()
-		case 'r', 'R':
-			//toots and replies?
-		case 'o', 'O':
-			u.app.UI.ShowLinks()
-		case 'u', 'U':
-			u.app.UI.StatusView.AddFeed(
-				NewUserFeed(u.app, *user.User),
-			)
-		}
+	controls := []ControlItem{
+		ControlAvatar, ControlFollow, ControlBlock, ControlMute, ControlOpen, ControlUser,
+	}
+	options := inputOptions(controls)
+
+	updated, _, _, _, newRel := inputSimple(u.app, event, options, *user.User, nil, user.Relationship, u)
+	if updated {
+		u.users[index].Relationship = newRel
+		u.DrawToot()
 	}
 }
