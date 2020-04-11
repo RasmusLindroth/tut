@@ -94,9 +94,10 @@ func main() {
 
 		if app.UI.Focus == CmdBarFocus {
 			switch event.Key() {
+			case tcell.KeyEnter:
+				app.UI.CmdBar.DoneFunc(tcell.KeyEnter)
 			case tcell.KeyEsc:
-				app.UI.CmdBar.Input.SetText("")
-				app.UI.CmdBar.Input.Autocomplete().Blur()
+				app.UI.CmdBar.ClearInput()
 				app.UI.SetFocus(LeftPaneFocus)
 				return nil
 			}
@@ -205,6 +206,11 @@ func main() {
 		app.UI.MediaOverlay.InputField.HandleChanges,
 	)
 
+	app.UI.CmdBar.Input.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+
+		return event
+	})
+
 	app.UI.CmdBar.Input.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		words := strings.Split(":blocking,:boosts,:compose,:favorites,:muting,:profile,:tag,:timeline,:tl,:user,:quit,:q", ",")
 		if currentText == "" {
@@ -227,127 +233,6 @@ func main() {
 			entries = nil
 		}
 		return
-	})
-
-	app.UI.CmdBar.Input.SetDoneFunc(func(key tcell.Key) {
-		input := app.UI.CmdBar.GetInput()
-		parts := strings.Split(input, " ")
-		if len(parts) == 0 {
-			return
-		}
-		switch parts[0] {
-		case ":q":
-			fallthrough
-		case ":quit":
-			app.UI.Root.Stop()
-		case ":compose":
-			app.UI.NewToot()
-			app.UI.CmdBar.ClearInput()
-		case ":blocking":
-			app.UI.StatusView.AddFeed(NewUserListFeed(app, UserListBlocking, ""))
-			app.UI.SetFocus(LeftPaneFocus)
-			app.UI.CmdBar.ClearInput()
-		case ":boosts":
-			app.UI.CmdBar.ClearInput()
-			status := app.UI.StatusView.GetCurrentStatus()
-			if status == nil {
-				return
-			}
-
-			if status.Reblog != nil {
-				status = status.Reblog
-			}
-			app.UI.StatusView.AddFeed(NewUserListFeed(app, UserListBoosts, string(status.ID)))
-			app.UI.SetFocus(LeftPaneFocus)
-		case ":favorites":
-			app.UI.CmdBar.ClearInput()
-			status := app.UI.StatusView.GetCurrentStatus()
-			if status == nil {
-				return
-			}
-			if status.Reblog != nil {
-				status = status.Reblog
-			}
-			app.UI.StatusView.AddFeed(NewUserListFeed(app, UserListFavorites, string(status.ID)))
-			app.UI.SetFocus(LeftPaneFocus)
-		/*
-			case ":followers":
-				app.UI.CmdBar.ClearInput()
-				user := app.UI.StatusView.GetCurrentUser()
-				if user == nil {
-					return
-				}
-				app.UI.StatusView.AddFeed(NewUserListFeed(app, UserListFollowers, string(user.ID)))
-				app.UI.SetFocus(LeftPaneFocus)
-			case ":following":
-				app.UI.CmdBar.ClearInput()
-				user := app.UI.StatusView.GetCurrentUser()
-				if user == nil {
-					return
-				}
-				app.UI.StatusView.AddFeed(NewUserListFeed(app, UserListFollowing, string(user.ID)))
-				app.UI.SetFocus(LeftPaneFocus)
-		*/
-		case ":muting":
-			app.UI.StatusView.AddFeed(NewUserListFeed(app, UserListMuting, ""))
-			app.UI.SetFocus(LeftPaneFocus)
-			app.UI.CmdBar.ClearInput()
-		case ":profile":
-			app.UI.CmdBar.ClearInput()
-			if app.Me == nil {
-				return
-			}
-			app.UI.StatusView.AddFeed(NewUserFeed(app, *app.Me))
-			app.UI.SetFocus(LeftPaneFocus)
-		case ":timeline", ":tl":
-			if len(parts) < 2 {
-				break
-			}
-			switch parts[1] {
-			case "local", "l":
-				app.UI.StatusView.AddFeed(NewTimelineFeed(app, TimelineLocal))
-				app.UI.SetFocus(LeftPaneFocus)
-				app.UI.CmdBar.ClearInput()
-			case "federated", "f":
-				app.UI.StatusView.AddFeed(NewTimelineFeed(app, TimelineFederated))
-				app.UI.SetFocus(LeftPaneFocus)
-				app.UI.CmdBar.ClearInput()
-			case "direct", "d":
-				app.UI.StatusView.AddFeed(NewTimelineFeed(app, TimelineDirect))
-				app.UI.SetFocus(LeftPaneFocus)
-				app.UI.CmdBar.ClearInput()
-			case "home", "h":
-				app.UI.StatusView.AddFeed(NewTimelineFeed(app, TimelineHome))
-				app.UI.SetFocus(LeftPaneFocus)
-				app.UI.CmdBar.ClearInput()
-			case "notifications", "n":
-				app.UI.StatusView.AddFeed(NewNoticifationsFeed(app))
-				app.UI.SetFocus(LeftPaneFocus)
-				app.UI.CmdBar.ClearInput()
-			}
-		case ":tag":
-			if len(parts) < 2 {
-				break
-			}
-			tag := strings.TrimSpace(strings.TrimPrefix(parts[1], "#"))
-			if len(tag) == 0 {
-				break
-			}
-			app.UI.StatusView.AddFeed(NewTagFeed(app, tag))
-			app.UI.SetFocus(LeftPaneFocus)
-			app.UI.CmdBar.ClearInput()
-		case ":user":
-			if len(parts) < 2 {
-				break
-			}
-			user := strings.TrimSpace(parts[1])
-			if len(user) == 0 {
-				break
-			}
-			app.UI.StatusView.AddFeed(NewUserListFeed(app, UserListSearch, user))
-			app.UI.SetFocus(LeftPaneFocus)
-			app.UI.CmdBar.ClearInput()
-		}
 	})
 
 	app.UI.AuthOverlay.Input.SetDoneFunc(func(key tcell.Key) {
