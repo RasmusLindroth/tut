@@ -10,4 +10,5 @@ type App struct {
 	API         *API
 	Config      *Config
 	HaveAccount bool
+	FileList    []string
 }

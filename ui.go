@@ -220,6 +220,7 @@ func (ui *UI) OpenMedia(status *mastodon.Status) {
 			files = append(files, f)
 		}
 		go openMediaType(ui.app.Config.Media, files, key)
+		ui.app.FileList = append(ui.app.FileList, files...)
 	}
 }
 

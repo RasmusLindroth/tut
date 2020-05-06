@@ -137,10 +137,6 @@ func openMediaType(conf MediaConfig, filenames []string, mediaType string) {
 			exec.Command(conf.AudioViewer, args...).Run()
 		}
 	}
-
-	for _, f := range filenames {
-		os.Remove(f)
-	}
 }
 
 func downloadFile(url string) (string, error) {
