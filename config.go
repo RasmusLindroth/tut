@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 
 	"github.com/gdamore/tcell"
 	"github.com/kyoh86/xdg"
@@ -44,10 +45,13 @@ type StyleConfig struct {
 
 type MediaConfig struct {
 	ImageViewer string
+	ImageArgs   []string
 	ImageSingle bool
 	VideoViewer string
+	VideoArgs   []string
 	VideoSingle bool
 	AudioViewer string
+	AudioArgs   []string
 	AudioSingle bool
 }
 
@@ -139,25 +143,34 @@ func parseGeneral(cfg *ini.File) GeneralConfig {
 
 func parseMedia(cfg *ini.File) MediaConfig {
 	media := MediaConfig{}
-	imageViewer := cfg.Section("media").Key("image-viewer").String()
-	if imageViewer == "" {
-		imageViewer = "xdg-open"
+	imageViewerComponents := strings.Fields(cfg.Section("media").Key("image-viewer").String())
+	if len(imageViewerComponents) == 0 {
+		media.ImageViewer = "xdg-open"
+		media.ImageArgs = []string{}
+	} else {
+		media.ImageViewer = imageViewerComponents[0]
+		media.ImageArgs = imageViewerComponents[1:]
 	}
-	media.ImageViewer = imageViewer
 	media.ImageSingle = cfg.Section("media").Key("image-single").MustBool(true)
 
-	videoViewer := cfg.Section("media").Key("video-viewer").String()
-	if videoViewer == "" {
-		videoViewer = "xdg-open"
+	videoViewerComponents := strings.Fields(cfg.Section("media").Key("video-viewer").String())
+	if len(videoViewerComponents) == 0 {
+		media.VideoViewer = "xdg-open"
+		media.VideoArgs = []string{}
+	} else {
+		media.VideoViewer = videoViewerComponents[0]
+		media.VideoArgs = videoViewerComponents[1:]
 	}
-	media.VideoViewer = videoViewer
 	media.VideoSingle = cfg.Section("media").Key("video-single").MustBool(true)
 
-	audioViewer := cfg.Section("media").Key("audio-viewer").String()
-	if audioViewer == "" {
-		videoViewer = "xdg-open"
+	audioViewerComponents := strings.Fields(cfg.Section("media").Key("audio-viewer").String())
+	if len(audioViewerComponents) == 0 {
+		media.AudioViewer = "xdg-open"
+		media.AudioArgs = []string{}
+	} else {
+		media.AudioViewer = audioViewerComponents[0]
+		media.AudioArgs = audioViewerComponents[1:]
 	}
-	media.AudioViewer = audioViewer
 	media.AudioSingle = cfg.Section("media").Key("audio-single").MustBool(true)
 
 	return media
