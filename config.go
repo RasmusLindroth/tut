@@ -53,6 +53,8 @@ type MediaConfig struct {
 	AudioViewer string
 	AudioArgs   []string
 	AudioSingle bool
+	LinkViewer  string
+	LinkArgs    []string
 }
 
 func parseColor(input string, def string) tcell.Color {
@@ -173,6 +175,15 @@ func parseMedia(cfg *ini.File) MediaConfig {
 	}
 	media.AudioSingle = cfg.Section("media").Key("audio-single").MustBool(true)
 
+	linkViewerComponents := strings.Fields(cfg.Section("media").Key("link-viewer").String())
+	if len(linkViewerComponents) == 0 {
+		media.LinkViewer = "xdg-open"
+		media.LinkArgs = []string{}
+	} else {
+		media.LinkViewer = linkViewerComponents[0]
+		media.LinkArgs = linkViewerComponents[1:]
+	}
+
 	return media
 }
 
@@ -266,6 +277,10 @@ audio-viewer=xdg-open
 # If audio files should open one by one. See above comment about image-single
 # default=true
 audio-single=true
+
+# Your web browser
+# default=xdg-open
+link-viewer=xdg-open
 
 [style]
 # All styles can be represented in their HEX value like #ffffff or

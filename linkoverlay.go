@@ -85,7 +85,7 @@ func (l *LinkOverlay) Open() {
 		return
 	}
 	if index < len(l.urls) {
-		openURL(l.urls[index].URL)
+		openURL(l.app.Config.Media, l.urls[index].URL)
 		return
 	}
 	mIndex := index - len(l.urls)

@@ -100,8 +100,9 @@ func openEditor(app *tview.Application, content string) (string, error) {
 	return strings.TrimSpace(string(text)), nil
 }
 
-func openURL(url string) {
-	exec.Command("xdg-open", url).Start()
+func openURL(conf MediaConfig, url string) {
+	args := append(conf.LinkArgs, url)
+	exec.Command(conf.LinkViewer, args...).Start()
 }
 
 func openMediaType(conf MediaConfig, filenames []string, mediaType string) {
