@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"os"
 
 	"github.com/gdamore/tcell"
 )
@@ -77,6 +78,8 @@ func main() {
 	} else {
 		app.UI.LoggedIn()
 	}
+
+	app.FileList = []string{}
 
 	app.UI.Root.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if !app.HaveAccount {
@@ -241,5 +244,9 @@ func main() {
 
 	if err := app.UI.Root.SetRoot(app.UI.Pages, true).Run(); err != nil {
 		panic(err)
+	}
+
+	for _, f := range app.FileList {
+		os.Remove(f)
 	}
 }

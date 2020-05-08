@@ -100,8 +100,9 @@ func openEditor(app *tview.Application, content string) (string, error) {
 	return strings.TrimSpace(string(text)), nil
 }
 
-func openURL(url string) {
-	exec.Command("xdg-open", url).Start()
+func openURL(conf MediaConfig, url string) {
+	args := append(conf.LinkArgs, url)
+	exec.Command(conf.LinkViewer, args...).Start()
 }
 
 func openMediaType(conf MediaConfig, filenames []string, mediaType string) {
@@ -109,31 +110,33 @@ func openMediaType(conf MediaConfig, filenames []string, mediaType string) {
 	case "image":
 		if conf.ImageSingle {
 			for _, f := range filenames {
-				exec.Command(conf.ImageViewer, f).Run()
+				args := append(conf.ImageArgs, f)
+				exec.Command(conf.ImageViewer, args...).Run()
 			}
 		} else {
-			exec.Command(conf.ImageViewer, filenames...).Run()
+			args := append(conf.ImageArgs, filenames...)
+			exec.Command(conf.ImageViewer, args...).Run()
 		}
 	case "video", "gifv":
 		if conf.VideoSingle {
 			for _, f := range filenames {
-				exec.Command(conf.VideoViewer, f).Run()
+				args := append(conf.VideoArgs, f)
+				exec.Command(conf.VideoViewer, args...).Run()
 			}
 		} else {
-			exec.Command(conf.VideoViewer, filenames...).Run()
+			args := append(conf.VideoArgs, filenames...)
+			exec.Command(conf.VideoViewer, args...).Run()
 		}
 	case "audio":
 		if conf.AudioSingle {
 			for _, f := range filenames {
-				exec.Command(conf.AudioViewer, f).Run()
+				args := append(conf.AudioArgs, f)
+				exec.Command(conf.AudioViewer, args...).Run()
 			}
 		} else {
-			exec.Command(conf.AudioViewer, filenames...).Run()
+			args := append(conf.AudioArgs, filenames...)
+			exec.Command(conf.AudioViewer, args...).Run()
 		}
-	}
-
-	for _, f := range filenames {
-		os.Remove(f)
 	}
 }
 
