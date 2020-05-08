@@ -254,7 +254,7 @@ func ColorKey(style StyleConfig, pre, key, end string) string {
 }
 
 func ColorMark(color tcell.Color) string {
-	return fmt.Sprintf("[#%x]", color.Hex())
+	return fmt.Sprintf("[#%06x]", color.Hex())
 }
 
 func FormatUsername(a mastodon.Account) string {
