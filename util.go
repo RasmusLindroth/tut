@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/gdamore/tcell"
 	"github.com/mattn/go-mastodon"
@@ -94,6 +95,8 @@ func openEditor(app *tview.Application, content string) (string, error) {
 		f.Seek(0, 0)
 		text, err = ioutil.ReadAll(f)
 	})
+	f.Close()
+	time.Sleep(100 * time.Millisecond)
 	if err != nil {
 		return "", err
 	}
