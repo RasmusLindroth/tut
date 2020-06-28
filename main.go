@@ -20,6 +20,7 @@ func main() {
 			CreateDefaultConfig("./config.example.ini")
 			os.Exit(0)
 		case "--help":
+			fallthrough
 		case "-h":
 			fmt.Print("tut - a TUI for Mastodon with vim inspired keys.\n\n")
 			fmt.Print("Usage:\n\n")
@@ -41,6 +42,7 @@ func main() {
 			fmt.Printf("\thttps://github.com/RasmusLindroth/tut\n")
 			os.Exit(0)
 		case "--version":
+			fallthrough
 		case "-v":
 			fmt.Printf("tut version %s\n\n", version)
 			fmt.Printf("https://github.com/RasmusLindroth/tut\n")
