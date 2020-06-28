@@ -320,7 +320,7 @@ link-viewer=xdg-open
 
 # You can also use xrdb colors like this xrdb:color1
 # The program will use colors prefixed with an * first then look
-# for URxvt or XTerm if it can't find any color prefixed with an asterix.
+# for URxvt or XTerm if it can't find any color prefixed with an asterik.
 # If you don't want tut to guess the prefix you can set the prefix yourself.
 # If the xrdb color can't be found a preset color will be used.
 

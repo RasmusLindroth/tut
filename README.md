@@ -46,11 +46,20 @@ You can find an updated configuration file in this repo named `config.example.in
 If there are any new configurations options you can copy them frome that file.
 
 ## Install instructions
-### Using Arch or Manjaro?
+### Arch or Manjaro?
 
-You can find it in the Arch User Repository (AUR).
+You can find it in the Arch User Repository (AUR). I'm the maintainer there.
 
 https://aur.archlinux.org/packages/tut/
+
+### Debian
+
+http://packages.azlux.fr/ (I'm not the maintainer)
+
+### FreeBSD
+
+https://www.freshports.org/net-im/tut (I'm not the maintainer)
+
 
 ## Build it yourself
 If you don't use the binary that you find under releases
