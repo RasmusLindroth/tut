@@ -44,10 +44,12 @@ func (ui *UI) Init() {
 
 	ui.Pages.SetBackgroundColor(ui.app.Config.Style.Background)
 
-	verticalLine := tview.NewBox().SetBackgroundColor(ui.app.Config.Style.Background)
+	verticalLine := tview.NewBox()
 	verticalLine.SetDrawFunc(func(screen tcell.Screen, x int, y int, width int, height int) (int, int, int, int) {
+		var s tcell.Style
+		s = s.Background(ui.app.Config.Style.Background).Foreground(ui.app.Config.Style.Subtle)
 		for cy := y; cy < y+height; cy++ {
-			screen.SetContent(x, cy, tview.BoxDrawingsLightVertical, nil, tcell.StyleDefault.Foreground(ui.app.Config.Style.Subtle))
+			screen.SetContent(x, cy, tview.BoxDrawingsLightVertical, nil, s)
 		}
 		return 0, 0, 0, 0
 	})
@@ -235,10 +237,12 @@ func (ui *UI) SetTopText(s string) {
 func (ui *UI) LoggedIn() {
 	ui.StatusView = NewStatusView(ui.app, ui.Timeline)
 
-	verticalLine := tview.NewBox().SetBackgroundColor(ui.app.Config.Style.Background)
+	verticalLine := tview.NewBox()
 	verticalLine.SetDrawFunc(func(screen tcell.Screen, x int, y int, width int, height int) (int, int, int, int) {
+		var s tcell.Style
+		s = s.Background(ui.app.Config.Style.Background).Foreground(ui.app.Config.Style.Subtle)
 		for cy := y; cy < y+height; cy++ {
-			screen.SetContent(x, cy, tview.BoxDrawingsLightVertical, nil, tcell.StyleDefault.Foreground(ui.app.Config.Style.Subtle))
+			screen.SetContent(x, cy, tview.BoxDrawingsLightVertical, nil, s)
 		}
 		return 0, 0, 0, 0
 	})

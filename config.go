@@ -57,52 +57,81 @@ type MediaConfig struct {
 	LinkArgs    []string
 }
 
-func parseColor(input string, def string) tcell.Color {
+func parseColor(input string, def string, xrdb map[string]string) tcell.Color {
 	if input == "" {
 		return tcell.GetColor(def)
+	}
+
+	if strings.HasPrefix(input, "xrdb:") {
+		key := strings.TrimPrefix(input, "xrdb:")
+		if c, ok := xrdb[key]; ok {
+			return tcell.GetColor(c)
+		} else {
+			return tcell.GetColor(def)
+		}
 	}
 	return tcell.GetColor(input)
 }
 
 func parseStyle(cfg *ini.File) StyleConfig {
+	var xrdbColors map[string]string
+	xrdbMap, _ := GetXrdbColors()
+	prefix := cfg.Section("style").Key("xrdb-prefix").String()
+	if prefix == "" {
+		prefix = "guess"
+	}
+
+	if prefix == "guess" {
+		if m, ok := xrdbMap["*"]; ok {
+			xrdbColors = m
+		} else if m, ok := xrdbMap["URxvt"]; ok {
+			xrdbColors = m
+		} else if m, ok := xrdbMap["XTerm"]; ok {
+			xrdbColors = m
+		}
+	} else {
+		if m, ok := xrdbMap[prefix]; ok {
+			xrdbColors = m
+		}
+	}
 
 	style := StyleConfig{}
 
 	bg := cfg.Section("style").Key("background").String()
-	style.Background = parseColor(bg, "default")
+	style.Background = parseColor(bg, "default", xrdbColors)
 
 	text := cfg.Section("style").Key("text").String()
-	style.Text = parseColor(text, "white")
+	style.Text = parseColor(text, "white", xrdbColors)
 
 	subtle := cfg.Section("style").Key("subtle").String()
-	style.Subtle = parseColor(subtle, "gray")
+	style.Subtle = parseColor(subtle, "gray", xrdbColors)
 
 	warningText := cfg.Section("style").Key("warning-text").String()
-	style.WarningText = parseColor(warningText, "#f92672")
+	style.WarningText = parseColor(warningText, "#f92672", xrdbColors)
 
 	textSpecial1 := cfg.Section("style").Key("text-special-one").String()
-	style.TextSpecial1 = parseColor(textSpecial1, "#ae81ff")
+	style.TextSpecial1 = parseColor(textSpecial1, "#ae81ff", xrdbColors)
 
 	textSpecial2 := cfg.Section("style").Key("text-special-two").String()
-	style.TextSpecial2 = parseColor(textSpecial2, "#a6e22e")
+	style.TextSpecial2 = parseColor(textSpecial2, "#a6e22e", xrdbColors)
 
 	topBarBackround := cfg.Section("style").Key("top-bar-background").String()
-	style.TopBarBackground = parseColor(topBarBackround, "#f92672")
+	style.TopBarBackground = parseColor(topBarBackround, "#f92672", xrdbColors)
 
 	topBarText := cfg.Section("style").Key("top-bar-text").String()
-	style.TopBarText = parseColor(topBarText, "white")
+	style.TopBarText = parseColor(topBarText, "white", xrdbColors)
 
 	statusBarBackround := cfg.Section("style").Key("status-bar-background").String()
-	style.StatusBarBackground = parseColor(statusBarBackround, "#f92672")
+	style.StatusBarBackground = parseColor(statusBarBackround, "#f92672", xrdbColors)
 
 	statusBarText := cfg.Section("style").Key("status-bar-text").String()
-	style.StatusBarText = parseColor(statusBarText, "white")
+	style.StatusBarText = parseColor(statusBarText, "white", xrdbColors)
 
 	listSelectedBackground := cfg.Section("style").Key("list-selected-background").String()
-	style.ListSelectedBackground = parseColor(listSelectedBackground, "#f92672")
+	style.ListSelectedBackground = parseColor(listSelectedBackground, "#f92672", xrdbColors)
 
 	listSelectedText := cfg.Section("style").Key("list-selected-text").String()
-	style.ListSelectedText = parseColor(listSelectedText, "white")
+	style.ListSelectedText = parseColor(listSelectedText, "white", xrdbColors)
 
 	return style
 }
@@ -289,53 +318,63 @@ link-viewer=xdg-open
 # so it will be the same color as your terminal. But this can lead
 # to some artifacts left from a previous paint
 
+# You can also use xrdb colors like this xrdb:color1
+# The program will use colors prefixed with an * first then look
+# for URxvt or XTerm if it can't find any color prefixed with an asterix.
+# If you don't want tut to guess the prefix you can set the prefix yourself.
+# If the xrdb color can't be found a preset color will be used.
+
+# The xrdb prefix used for colors in .Xresources
+# default=guess
+xrdb-prefix=guess
+
 # The background color used on most elements
-# default=default
-background=default
+# default=xrdb:background
+background=xrdb:background
 
 # The text color used on most of the text
-# default=white
-text=white
+# default=xrdb:foreground
+text=xrdb:foreground
 
 # The color to display sublte elements or subtle text. Like lines and help text
-# default=gray
-subtle=gray
+# default=xrdb:color14
+subtle=xrdb:color14
 
 # The color for errors or warnings
-# default=#f92672
-warning-text=#f92672
+# default=xrdb:color1
+warning-text=xrdb:color1
 
 # This color is used to display username
-# default=#ae81ff
-text-special-one=#ae81ff
+# default=xrdb:color5
+text-special-one=xrdb:color5
 
 # This color is used to display username and keys
-# default=#a6e22e
-text-special-two=#a6e22e
+# default=xrdb:color2
+text-special-two=xrdb:color2
 
 # The color of the bar at the top
-# default=#f92672
-top-bar-background=#f92672
+# default=xrdb:color5
+top-bar-background=xrdb:color5
 
 # The color of the text in the bar at the top
-# default=white
-top-bar-text=white
+# default=xrdb:background
+top-bar-text=xrdb:background
 
 # The color of the bar at the bottom
-# default=#f92672
-status-bar-background=#f92672
+# default=xrdb:color0
+status-bar-background=xrdb:color0
 
 # The color of the text in the bar at the bottom
-# default=white
-status-bar-text=white
+# default=xrdb:foreground
+status-bar-text=xrdb:foreground
 
 # Background of selected list items
-# default=#f92672
-list-selected-background=#f92672
+# default=xrdb:color5
+list-selected-background=xrdb:color5
 
 # The text color of selected list items
-# default=white
-list-selected-text=white
+# default=xrdb:background
+list-selected-text=xrdb:background
 `
 	f, err := os.Create(filepath)
 	defer f.Close()

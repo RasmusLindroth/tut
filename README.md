@@ -22,6 +22,13 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:user` followed by a username e.g. `:user rasmus` to narrow a search include 
 the instance like this `:user rasmus@mastodon.acc.sunet.se`.
 
+Keys without description in tut
+* `c` = Compose a new toot
+* `hjkl` = navigation
+* `arrow keys` = navigation
+* `q` = go back and quit
+* `ESC` =  go back
+
 Explanation of the non obvious keys when viewing a toot
 * `V` = view. In this mode you can scroll throught the text of the toot if it doesn't fit the screen
 * `O` = open. Gives you a list of all URLs in the toot. Opens them in your default browser, if it's
@@ -35,8 +42,11 @@ all the options.
 
 You find it in `XDG_CONFIG_HOME/tut/config.ini` which usally equals to `~/.config/tut/config.ini`.
 
+You can find an updated configuration file in this repo named `config.example.ini`.
+If there are any new configurations options you can copy them frome that file.
+
 ## Install instructions
-### Using Arch?
+### Using Arch or Manjaro?
 
 You can find it in the Arch User Repository (AUR).
 
@@ -47,6 +57,10 @@ If you don't use the binary that you find under releases
 you will need Go. Use a newer one that supports modules.
 
 ```bash
+# Fetches and installs tut. Usally /home/user/go/bin
+go get -u github.com/RasmusLindroth/tut
+
+# You can also clone the repo if you like
 # First clone this repository
 git clone https://github.com/RasmusLindroth/tut.git
 
@@ -58,7 +72,7 @@ cd tut
 # Install (usally /home/user/go/bin)
 go install
 
-#Build (same directory i.e. ./ )
+# Build (same directory i.e. ./ )
 go build
 ```
 
