@@ -166,6 +166,10 @@ func (t *StatusView) inputLeft(event *tcell.EventKey) {
 			t.prev()
 		case tcell.KeyDown:
 			t.next()
+		case tcell.KeyPgUp, tcell.KeyCtrlB:
+			t.pgup()
+		case tcell.KeyPgDn, tcell.KeyCtrlF:
+			t.pgdown()
 		case tcell.KeyEsc:
 			if len(t.feeds) > 1 {
 				t.RemoveLatestFeed()
@@ -253,6 +257,34 @@ func (t *StatusView) next() {
 	current := t.list.GetCurrentItem()
 	if (count - current + 1) < 5 {
 		t.loadOlder()
+	}
+}
+
+func (t *StatusView) pgdown() {
+	_, _, _, height := t.list.GetInnerRect()
+	i := t.GetCurrentItem() + height - 1
+	t.list.SetCurrentItem(i)
+	t.feeds[len(t.feeds)-1].DrawToot()
+
+	count := t.list.GetItemCount()
+	current := t.list.GetCurrentItem()
+	if (count - current + 1) < 5 {
+		t.loadOlder()
+	}
+}
+
+func (t *StatusView) pgup() {
+	_, _, _, height := t.list.GetInnerRect()
+	i := t.GetCurrentItem() - height + 1
+	if i < 0 {
+		i = 0
+	}
+	t.list.SetCurrentItem(i)
+	t.feeds[len(t.feeds)-1].DrawToot()
+
+	current := t.list.GetCurrentItem()
+	if current < 4 {
+		t.loadNewer()
 	}
 }
 
