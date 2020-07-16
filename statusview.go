@@ -153,8 +153,14 @@ func (t *StatusView) inputLeft(event *tcell.EventKey) {
 	if event.Key() == tcell.KeyRune {
 		switch event.Rune() {
 		case 'v', 'V':
-			t.app.UI.FocusAt(t.text, "--VIEW--")
+			t.app.UI.SetFocus(RightPaneFocus)
 			t.focus = RightPaneFocus
+			t.app.UI.StatusBar.Text.SetBackgroundColor(
+				t.app.Config.Style.StatusBarViewBackground,
+			)
+			t.app.UI.StatusBar.Text.SetTextColor(
+				t.app.Config.Style.StatusBarViewText,
+			)
 		case 'k', 'K':
 			t.prev()
 		case 'j', 'J':
@@ -186,8 +192,14 @@ func (t *StatusView) inputRight(event *tcell.EventKey) {
 	} else {
 		switch event.Key() {
 		case tcell.KeyEsc:
-			t.app.UI.FocusAt(nil, "--LIST--")
+			t.app.UI.SetFocus(LeftPaneFocus)
 			t.focus = LeftPaneFocus
+			t.app.UI.StatusBar.Text.SetBackgroundColor(
+				t.app.Config.Style.StatusBarBackground,
+			)
+			t.app.UI.StatusBar.Text.SetTextColor(
+				t.app.Config.Style.StatusBarText,
+			)
 		}
 	}
 }

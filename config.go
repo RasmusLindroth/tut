@@ -39,6 +39,9 @@ type StyleConfig struct {
 	StatusBarBackground tcell.Color
 	StatusBarText       tcell.Color
 
+	StatusBarViewBackground tcell.Color
+	StatusBarViewText       tcell.Color
+
 	ListSelectedBackground tcell.Color
 	ListSelectedText       tcell.Color
 }
@@ -126,6 +129,12 @@ func parseStyle(cfg *ini.File) StyleConfig {
 
 	statusBarText := cfg.Section("style").Key("status-bar-text").String()
 	style.StatusBarText = parseColor(statusBarText, "white", xrdbColors)
+
+	statusBarViewBackround := cfg.Section("style").Key("status-bar-view-background").String()
+	style.StatusBarViewBackground = parseColor(statusBarViewBackround, "#ae81ff", xrdbColors)
+
+	statusBarViewText := cfg.Section("style").Key("status-bar-view-text").String()
+	style.StatusBarViewText = parseColor(statusBarViewText, "white", xrdbColors)
 
 	listSelectedBackground := cfg.Section("style").Key("list-selected-background").String()
 	style.ListSelectedBackground = parseColor(listSelectedBackground, "#f92672", xrdbColors)
@@ -361,12 +370,20 @@ top-bar-background=xrdb:color5
 top-bar-text=xrdb:background
 
 # The color of the bar at the bottom
-# default=xrdb:color0
-status-bar-background=xrdb:color0
+# default=xrdb:color5
+status-bar-background=xrdb:color5
 
 # The color of the text in the bar at the bottom
 # default=xrdb:foreground
 status-bar-text=xrdb:foreground
+
+# The color of the bar at the bottom in view mode
+# default=xrdb:color4
+status-bar-view-background=xrdb:color4
+
+# The color of the text in the bar at the bottom in view mode
+# default=xrdb:foreground
+status-bar-view-text=xrdb:foreground
 
 # Background of selected list items
 # default=xrdb:color5

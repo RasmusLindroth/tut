@@ -146,32 +146,26 @@ func (ui *UI) SetFocus(f FocusAt) {
 	ui.Focus = f
 	switch f {
 	case RightPaneFocus:
-		ui.StatusBar.SetText("-- VIEW --")
+		ui.FocusAt(ui.StatusView.text, "-- VIEW --")
 	case CmdBarFocus:
-		ui.StatusBar.SetText("-- CMD --")
-		ui.Root.SetFocus(ui.CmdBar.Input)
+		ui.FocusAt(ui.CmdBar.Input, "-- CMD --")
 	case MessageFocus:
-		ui.StatusBar.SetText("-- TOOT --")
 		ui.Pages.ShowPage("toot")
 		ui.Pages.HidePage("media")
 		ui.Root.SetFocus(ui.MessageBox.View)
+		ui.FocusAt(ui.MessageBox.View, "-- TOOT --")
 	case MessageAttachmentFocus:
 		ui.Pages.ShowPage("media")
 	case LinkOverlayFocus:
-		ui.StatusBar.SetText("-- LINK --")
 		ui.Pages.ShowPage("links")
 		ui.Root.SetFocus(ui.LinkOverlay.List)
+		ui.FocusAt(ui.LinkOverlay.List, "-- LINK --")
 	case AuthOverlayFocus:
-		ui.StatusBar.SetText("-- LOGIN --")
 		ui.Pages.ShowPage("login")
-		ui.Root.SetFocus(ui.AuthOverlay.Input)
+		ui.FocusAt(ui.AuthOverlay.Input, "-- LOGIN --")
 	default:
-		ui.StatusBar.SetText("-- LIST --")
-		ui.Root.SetFocus(ui.Pages)
-		ui.Pages.HidePage("toot")
-		ui.Pages.HidePage("media")
-		ui.Pages.HidePage("links")
-		ui.Pages.HidePage("login")
+		ui.Pages.SwitchToPage("main")
+		ui.FocusAt(nil, "-- LIST --")
 	}
 }
 
