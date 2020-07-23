@@ -32,6 +32,19 @@ func NewUI(app *App) *UI {
 }
 
 func (ui *UI) Init() {
+	tview.Styles = tview.Theme{
+		PrimitiveBackgroundColor:    ui.app.Config.Style.StatusBarViewText, // main text color, selected text
+		ContrastBackgroundColor:     ui.app.Config.Style.Background,
+		MoreContrastBackgroundColor: ui.app.Config.Style.StatusBarBackground, //background color
+		BorderColor:                 ui.app.Config.Style.Subtle,
+		TitleColor:                  ui.app.Config.Style.Text,
+		GraphicsColor:               ui.app.Config.Style.Text,
+		PrimaryTextColor:            ui.app.Config.Style.StatusBarViewBackground, //backround color selected
+		SecondaryTextColor:          ui.app.Config.Style.Text,
+		TertiaryTextColor:           ui.app.Config.Style.Text,
+		InverseTextColor:            ui.app.Config.Style.Text,
+		ContrastSecondaryTextColor:  ui.app.Config.Style.Text,
+	}
 	ui.Top = NewTop(ui.app)
 	ui.Pages = tview.NewPages()
 	ui.Timeline = ui.app.Config.General.StartTimeline

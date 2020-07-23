@@ -23,6 +23,7 @@ func NewStatusView(app *App, tl TimelineType) *StatusView {
 		AddItem(t.text, 0, 9, false).
 		AddItem(t.controls, 1, 0, false)
 
+	t.list.SetMainTextColor(app.Config.Style.Text)
 	t.list.SetBackgroundColor(app.Config.Style.Background)
 	t.list.SetSelectedTextColor(app.Config.Style.ListSelectedText)
 	t.list.SetSelectedBackgroundColor(app.Config.Style.ListSelectedBackground)
