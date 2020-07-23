@@ -16,8 +16,22 @@ type msgToot struct {
 	MediaIDs    []mastodon.ID
 	Sensitive   bool
 	SpoilerText string
-	Visibility  string
 	ScheduledAt *time.Time
+}
+
+func VisibilityToText(s string) string {
+	switch s {
+	case mastodon.VisibilityPublic:
+		return "Public"
+	case mastodon.VisibilityUnlisted:
+		return "Unlisted"
+	case mastodon.VisibilityFollowersOnly:
+		return "Followers"
+	case mastodon.VisibilityDirectMessage:
+		return "Direct"
+	default:
+		return "Public"
+	}
 }
 
 func NewMessageBox(app *App) *MessageBox {
@@ -72,6 +86,12 @@ func (m *MessageBox) composeToot(status *mastodon.Status) {
 		}
 		mt.Status = status
 	}
+	visibility := mastodon.VisibilityPublic
+	if status != nil && status.Visibility == mastodon.VisibilityDirectMessage {
+		visibility = mastodon.VisibilityDirectMessage
+	}
+	m.app.UI.VisibilityOverlay.SetVisibilty(visibility)
+
 	m.currentToot = mt
 }
 
@@ -113,6 +133,8 @@ func (m *MessageBox) Post() {
 		send.MediaIDs = append(send.MediaIDs, a.ID)
 	}
 
+	send.Visibility = m.app.UI.VisibilityOverlay.GetVisibility()
+
 	_, err := m.app.API.Client.PostStatus(context.Background(), &send)
 	if err != nil {
 		m.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't post toot. Error: %v\n", err))
@@ -125,6 +147,7 @@ func (m *MessageBox) Draw() {
 	var items []string
 	items = append(items, ColorKey(m.app.Config.Style, "", "P", "ost"))
 	items = append(items, ColorKey(m.app.Config.Style, "", "E", "dit"))
+	items = append(items, ColorKey(m.app.Config.Style, "", "V", "isibility"))
 	items = append(items, ColorKey(m.app.Config.Style, "", "T", "oggle CW"))
 	items = append(items, ColorKey(m.app.Config.Style, "", "C", "ontent warning text"))
 	items = append(items, ColorKey(m.app.Config.Style, "", "M", "edia attachment"))
@@ -136,6 +159,9 @@ func (m *MessageBox) Draw() {
 
 	subtleColor := ColorMark(m.app.Config.Style.Subtle)
 	warningColor := ColorMark(m.app.Config.Style.WarningText)
+
+	outputHead += subtleColor + VisibilityToText(m.app.UI.VisibilityOverlay.GetVisibility()) + "\n\n"
+
 	if m.currentToot.Status != nil {
 		var acct string
 		if m.currentToot.Status.Account.DisplayName != "" {
@@ -158,7 +184,6 @@ func (m *MessageBox) Draw() {
 		outputHead += tview.Escape(m.currentToot.SpoilerText)
 		outputHead += "\n\n" + subtleColor + "---hidden content below---\n\n"
 	}
-
 	output = outputHead + tview.Escape(m.currentToot.Text)
 
 	m.View.SetText(output)

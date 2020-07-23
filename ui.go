@@ -19,6 +19,7 @@ const (
 	MessageFocus
 	MessageAttachmentFocus
 	LinkOverlayFocus
+	VisibilityOverlayFocus
 	AuthOverlayFocus
 )
 
@@ -39,6 +40,7 @@ func (ui *UI) Init() {
 	ui.StatusBar = NewStatusBar(ui.app)
 	ui.MessageBox = NewMessageBox(ui.app)
 	ui.LinkOverlay = NewLinkOverlay(ui.app)
+	ui.VisibilityOverlay = NewVisibilityOverlay(ui.app)
 	ui.AuthOverlay = NewAuthOverlay(ui.app)
 	ui.MediaOverlay = NewMediaOverlay(ui.app)
 
@@ -86,6 +88,14 @@ func (ui *UI) Init() {
 				AddItem(ui.LinkOverlay.TextBottom, 1, 1, true), 0, 8, false).
 			AddItem(nil, 0, 1, false), 0, 8, true).
 		AddItem(nil, 0, 1, false), true, false)
+	ui.Pages.AddPage("visibility", tview.NewFlex().AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(ui.VisibilityOverlay.Flex.SetDirection(tview.FlexRow).
+				AddItem(ui.VisibilityOverlay.List, 0, 10, true).
+				AddItem(ui.VisibilityOverlay.TextBottom, 1, 1, true), 0, 8, false).
+			AddItem(nil, 0, 1, false), 0, 8, true).
+		AddItem(nil, 0, 1, false), true, false)
 	ui.Pages.AddPage("login",
 		tview.NewFlex().
 			AddItem(nil, 0, 1, false).
@@ -116,19 +126,20 @@ func (ui *UI) Init() {
 }
 
 type UI struct {
-	app          *App
-	Root         *tview.Application
-	Focus        FocusAt
-	Top          *Top
-	MessageBox   *MessageBox
-	CmdBar       *CmdBar
-	StatusBar    *StatusBar
-	Pages        *tview.Pages
-	LinkOverlay  *LinkOverlay
-	AuthOverlay  *AuthOverlay
-	MediaOverlay *MediaView
-	Timeline     TimelineType
-	StatusView   *StatusView
+	app               *App
+	Root              *tview.Application
+	Focus             FocusAt
+	Top               *Top
+	MessageBox        *MessageBox
+	CmdBar            *CmdBar
+	StatusBar         *StatusBar
+	Pages             *tview.Pages
+	LinkOverlay       *LinkOverlay
+	VisibilityOverlay *VisibilityOverlay
+	AuthOverlay       *AuthOverlay
+	MediaOverlay      *MediaView
+	Timeline          TimelineType
+	StatusView        *StatusView
 }
 
 func (ui *UI) FocusAt(p tview.Primitive, s string) {
@@ -150,8 +161,10 @@ func (ui *UI) SetFocus(f FocusAt) {
 	case CmdBarFocus:
 		ui.FocusAt(ui.CmdBar.Input, "-- CMD --")
 	case MessageFocus:
+		ui.MessageBox.Draw()
 		ui.Pages.ShowPage("toot")
 		ui.Pages.HidePage("media")
+		ui.Pages.HidePage("visibility")
 		ui.Root.SetFocus(ui.MessageBox.View)
 		ui.FocusAt(ui.MessageBox.View, "-- TOOT --")
 	case MessageAttachmentFocus:
@@ -160,6 +173,11 @@ func (ui *UI) SetFocus(f FocusAt) {
 		ui.Pages.ShowPage("links")
 		ui.Root.SetFocus(ui.LinkOverlay.List)
 		ui.FocusAt(ui.LinkOverlay.List, "-- LINK --")
+	case VisibilityOverlayFocus:
+		ui.VisibilityOverlay.Show()
+		ui.Pages.ShowPage("visibility")
+		ui.Root.SetFocus(ui.VisibilityOverlay.List)
+		ui.FocusAt(ui.VisibilityOverlay.List, "-- VISIBILITY --")
 	case AuthOverlayFocus:
 		ui.Pages.ShowPage("login")
 		ui.FocusAt(ui.AuthOverlay.Input, "-- LOGIN --")

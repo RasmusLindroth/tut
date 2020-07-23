@@ -134,6 +134,11 @@ func main() {
 			return nil
 		}
 
+		if app.UI.Focus == VisibilityOverlayFocus {
+			app.UI.VisibilityOverlay.InputHandler(event)
+			return nil
+		}
+
 		if app.UI.Focus == CmdBarFocus {
 			switch event.Key() {
 			case tcell.KeyEnter:
@@ -163,6 +168,9 @@ func main() {
 					return nil
 				case 'm', 'M':
 					app.UI.SetFocus(MessageAttachmentFocus)
+					return nil
+				case 'v', 'V':
+					app.UI.SetFocus(VisibilityOverlayFocus)
 					return nil
 				case 'q', 'Q':
 					app.UI.SetFocus(LeftPaneFocus)
