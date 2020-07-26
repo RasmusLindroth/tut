@@ -125,7 +125,7 @@ func (ui *UI) Init() {
 		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 			AddItem(nil, 0, 1, false).
 			AddItem(ui.MediaOverlay.Flex.SetDirection(tview.FlexRow).
-				AddItem(ui.MediaOverlay.TextTop, 1, 1, true).
+				AddItem(ui.MediaOverlay.TextTop, 2, 1, true).
 				AddItem(ui.MediaOverlay.FileList, 0, 10, true).
 				AddItem(ui.MediaOverlay.TextBottom, 1, 1, true).
 				AddItem(ui.MediaOverlay.InputField.View, 2, 1, false), 0, 8, false).
@@ -153,6 +153,7 @@ type UI struct {
 	MediaOverlay      *MediaView
 	Timeline          TimelineType
 	StatusView        *StatusView
+	NotificationView  *NotificationView
 }
 
 func (ui *UI) FocusAt(p tview.Primitive, s string) {
@@ -261,6 +262,7 @@ func (ui *UI) SetTopText(s string) {
 
 func (ui *UI) LoggedIn() {
 	ui.StatusView = NewStatusView(ui.app, ui.Timeline)
+	ui.NotificationView = NewNotificationView(ui.app)
 
 	verticalLine := tview.NewBox()
 	verticalLine.SetDrawFunc(func(screen tcell.Screen, x int, y int, width int, height int) (int, int, int, int) {
@@ -271,13 +273,23 @@ func (ui *UI) LoggedIn() {
 		}
 		return 0, 0, 0, 0
 	})
+
+	notificationText := tview.NewTextView()
+	notificationText.SetBackgroundColor(ui.app.Config.Style.Background)
+	notificationText.SetTextColor(ui.app.Config.Style.Subtle)
+	notificationText.SetText("Notifications")
+	notificationText.SetTextAlign(tview.AlignCenter)
+
 	ui.Pages.RemovePage("main")
 	ui.Pages.AddPage("main",
 		tview.NewFlex().
 			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 				AddItem(ui.Top.Text, 1, 0, false).
 				AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-					AddItem(ui.StatusView.GetLeftView(), 0, 2, false).
+					AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+						AddItem(ui.StatusView.GetLeftView(), 0, 2, false).
+						AddItem(notificationText, 1, 0, false).
+						AddItem(ui.NotificationView.list, 0, 1, false), 0, 2, false).
 					AddItem(verticalLine, 1, 0, false).
 					AddItem(tview.NewBox().SetBackgroundColor(ui.app.Config.Style.Background), 1, 0, false).
 					AddItem(ui.StatusView.GetRightView(),

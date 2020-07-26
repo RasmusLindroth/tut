@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -125,7 +126,18 @@ func (m *MessageBox) Post() {
 
 	attachments := m.app.UI.MediaOverlay.Files
 	for _, ap := range attachments {
-		a, err := m.app.API.Client.UploadMedia(context.Background(), ap)
+		f, err := os.Open(ap.Path)
+		if err != nil {
+			m.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't upload media. Error: %v\n", err))
+			return
+		}
+		media := &mastodon.Media{
+			File: f,
+		}
+		if ap.Description != "" {
+			media.Description = ap.Description
+		}
+		a, err := m.app.API.Client.UploadMediaFromMedia(context.Background(), media)
 		if err != nil {
 			m.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't upload media. Error: %v\n", err))
 			return

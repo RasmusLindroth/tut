@@ -37,6 +37,27 @@ func NewStatusView(app *App, tl TimelineType) *StatusView {
 	t.controls.SetBackgroundColor(app.Config.Style.Background)
 
 	if app.Config.General.AutoLoadNewer {
+		/*
+			go func() {
+				events, err := app.API.Client.StreamingUser(context.Background())
+				if err != nil {
+					log.Panic(err)
+				}
+				for {
+					item := <-events
+					switch e := item.(type) {
+					case *mastodon.UpdateEvent:
+						log.Fatal(*e.Status)
+					case *mastodon.NotificationEvent:
+						log.Fatal(*e.Notification)
+					case *mastodon.DeleteEvent:
+						log.Fatal(e.ID)
+					default:
+						panic(e)
+					}
+				}
+			}()
+		*/
 		go func() {
 			d := time.Second * time.Duration(app.Config.General.AutoLoadSeconds)
 			ticker := time.NewTicker(d)

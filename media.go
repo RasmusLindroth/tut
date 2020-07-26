@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -35,7 +36,7 @@ func NewMediaOverlay(app *App) *MediaView {
 	m.FileList.SetHighlightFullLine(true)
 
 	m.TextTop.SetBackgroundColor(app.Config.Style.Background)
-	m.TextTop.SetTextColor(app.Config.Style.Text)
+	m.TextTop.SetTextColor(app.Config.Style.Subtle)
 
 	m.TextBottom.SetBackgroundColor(app.Config.Style.Background)
 	m.TextBottom.SetTextColor(app.Config.Style.Text)
@@ -59,7 +60,12 @@ type MediaView struct {
 	FileList   *tview.List
 	InputField *MediaInput
 	Focus      MediaFocus
-	Files      []string
+	Files      []UploadFile
+}
+
+type UploadFile struct {
+	Path        string
+	Description string
 }
 
 func (m *MediaView) Reset() {
@@ -70,16 +76,26 @@ func (m *MediaView) Reset() {
 }
 
 func (m *MediaView) AddFile(f string) {
-	m.Files = append(m.Files, f)
+	file := UploadFile{Path: f}
+	m.Files = append(m.Files, file)
 	m.FileList.AddItem(filepath.Base(f), "", 0, nil)
 	m.Draw()
 }
 
 func (m *MediaView) Draw() {
-	m.TextTop.SetText("List of attached files:")
+	topText := "Current file description: "
+
+	index := m.FileList.GetCurrentItem()
+	if len(m.Files) != 0 && index < len(m.Files) && m.Files[index].Description != "" {
+		topText += tview.Escape(m.Files[index].Description)
+	}
+
+	m.TextTop.SetText(topText)
+
 	var items []string
 	items = append(items, ColorKey(m.app.Config.Style, "", "A", "dd file"))
 	items = append(items, ColorKey(m.app.Config.Style, "", "D", "elete file"))
+	items = append(items, ColorKey(m.app.Config.Style, "", "E", "dit desc"))
 	items = append(items, ColorKey(m.app.Config.Style, "", "Esc", " Done"))
 	m.TextBottom.SetText(strings.Join(items, " "))
 }
@@ -110,6 +126,7 @@ func (m *MediaView) Prev() {
 	if index-1 >= 0 {
 		m.FileList.SetCurrentItem(index - 1)
 	}
+	m.Draw()
 }
 
 func (m *MediaView) Next() {
@@ -117,6 +134,7 @@ func (m *MediaView) Next() {
 	if index+1 < m.FileList.GetItemCount() {
 		m.FileList.SetCurrentItem(index + 1)
 	}
+	m.Draw()
 }
 
 func (m *MediaView) Delete() {
@@ -126,6 +144,24 @@ func (m *MediaView) Delete() {
 	}
 	m.FileList.RemoveItem(index)
 	m.Files = append(m.Files[:index], m.Files[index+1:]...)
+	m.Draw()
+}
+
+func (m *MediaView) EditDesc() {
+	index := m.FileList.GetCurrentItem()
+	if len(m.Files) == 0 || index > len(m.Files) {
+		return
+	}
+	file := m.Files[index]
+	desc, err := openEditor(m.app.UI.Root, file.Description)
+	if err != nil {
+		m.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't edit description. Error: %v\n", err))
+		m.Draw()
+		return
+	}
+	file.Description = desc
+	m.Files[index] = file
+	m.Draw()
 }
 
 type MediaInput struct {
