@@ -15,6 +15,7 @@ type FocusAt uint
 const (
 	LeftPaneFocus FocusAt = iota
 	RightPaneFocus
+	NotificationPaneFocus
 	CmdBarFocus
 	MessageFocus
 	MessageAttachmentFocus
@@ -153,7 +154,6 @@ type UI struct {
 	MediaOverlay      *MediaView
 	Timeline          TimelineType
 	StatusView        *StatusView
-	NotificationView  *NotificationView
 }
 
 func (ui *UI) FocusAt(p tview.Primitive, s string) {
@@ -195,7 +195,39 @@ func (ui *UI) SetFocus(f FocusAt) {
 	case AuthOverlayFocus:
 		ui.Pages.ShowPage("login")
 		ui.FocusAt(ui.AuthOverlay.Input, "-- LOGIN --")
+	case NotificationPaneFocus:
+		ui.Pages.SwitchToPage("main")
+		ui.FocusAt(nil, "-- NOTIFICATIONS --")
+
+		ui.StatusView.notificationView.list.SetSelectedBackgroundColor(
+			ui.app.Config.Style.ListSelectedBackground,
+		)
+		ui.StatusView.notificationView.list.SetSelectedTextColor(
+			ui.app.Config.Style.ListSelectedText,
+		)
+
+		ui.StatusView.list.SetSelectedBackgroundColor(
+			ui.app.Config.Style.StatusBarViewBackground,
+		)
+		ui.StatusView.list.SetSelectedTextColor(
+			ui.app.Config.Style.StatusBarViewText,
+		)
 	default:
+		ui.StatusView.list.SetSelectedBackgroundColor(
+			ui.app.Config.Style.ListSelectedBackground,
+		)
+		ui.StatusView.list.SetSelectedTextColor(
+			ui.app.Config.Style.ListSelectedText,
+		)
+
+		if ui.app.Config.General.NotificationFeed {
+			ui.StatusView.notificationView.list.SetSelectedBackgroundColor(
+				ui.app.Config.Style.StatusBarViewBackground,
+			)
+			ui.StatusView.notificationView.list.SetSelectedTextColor(
+				ui.app.Config.Style.StatusBarViewText,
+			)
+		}
 		ui.Pages.SwitchToPage("main")
 		ui.FocusAt(nil, "-- LIST --")
 	}
@@ -262,7 +294,6 @@ func (ui *UI) SetTopText(s string) {
 
 func (ui *UI) LoggedIn() {
 	ui.StatusView = NewStatusView(ui.app, ui.Timeline)
-	ui.NotificationView = NewNotificationView(ui.app)
 
 	verticalLine := tview.NewBox()
 	verticalLine.SetDrawFunc(func(screen tcell.Screen, x int, y int, width int, height int) (int, int, int, int) {
@@ -274,29 +305,45 @@ func (ui *UI) LoggedIn() {
 		return 0, 0, 0, 0
 	})
 
-	notificationText := tview.NewTextView()
-	notificationText.SetBackgroundColor(ui.app.Config.Style.Background)
-	notificationText.SetTextColor(ui.app.Config.Style.Subtle)
-	notificationText.SetText("Notifications")
-	notificationText.SetTextAlign(tview.AlignCenter)
-
 	ui.Pages.RemovePage("main")
-	ui.Pages.AddPage("main",
-		tview.NewFlex().
-			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-				AddItem(ui.Top.Text, 1, 0, false).
-				AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-					AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+	if ui.app.Config.General.NotificationFeed {
+		notificationText := tview.NewTextView()
+		notificationText.SetBackgroundColor(ui.app.Config.Style.Background)
+		notificationText.SetTextColor(ui.app.Config.Style.Subtle)
+		notificationText.SetText("[N]otifications")
+		notificationText.SetTextAlign(tview.AlignCenter)
+
+		ui.Pages.AddPage("main",
+			tview.NewFlex().
+				AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+					AddItem(ui.Top.Text, 1, 0, false).
+					AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+						AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+							AddItem(ui.StatusView.GetLeftView(), 0, 2, false).
+							AddItem(notificationText, 1, 0, false).
+							AddItem(ui.StatusView.GetNotificationView(), 0, 1, false), 0, 2, false).
+						AddItem(verticalLine, 1, 0, false).
+						AddItem(tview.NewBox().SetBackgroundColor(ui.app.Config.Style.Background), 1, 0, false).
+						AddItem(ui.StatusView.GetRightView(),
+							0, 4, false),
+						0, 1, false).
+					AddItem(ui.StatusBar.Text, 1, 1, false).
+					AddItem(ui.CmdBar.Input, 1, 0, false), 0, 1, false), true, true)
+	} else {
+		ui.Pages.AddPage("main",
+			tview.NewFlex().
+				AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+					AddItem(ui.Top.Text, 1, 0, false).
+					AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
 						AddItem(ui.StatusView.GetLeftView(), 0, 2, false).
-						AddItem(notificationText, 1, 0, false).
-						AddItem(ui.NotificationView.list, 0, 1, false), 0, 2, false).
-					AddItem(verticalLine, 1, 0, false).
-					AddItem(tview.NewBox().SetBackgroundColor(ui.app.Config.Style.Background), 1, 0, false).
-					AddItem(ui.StatusView.GetRightView(),
-						0, 4, false),
-					0, 1, false).
-				AddItem(ui.StatusBar.Text, 1, 1, false).
-				AddItem(ui.CmdBar.Input, 1, 0, false), 0, 1, false), true, true)
+						AddItem(verticalLine, 1, 0, false).
+						AddItem(tview.NewBox().SetBackgroundColor(ui.app.Config.Style.Background), 1, 0, false).
+						AddItem(ui.StatusView.GetRightView(),
+							0, 4, false),
+						0, 1, false).
+					AddItem(ui.StatusBar.Text, 1, 1, false).
+					AddItem(ui.CmdBar.Input, 1, 0, false), 0, 1, false), true, true)
+	}
 	ui.Pages.SendToBack("main")
 
 	ui.SetFocus(LeftPaneFocus)

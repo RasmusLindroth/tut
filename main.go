@@ -238,7 +238,7 @@ func main() {
 			return event
 		}
 
-		if app.UI.Focus == LeftPaneFocus || app.UI.Focus == RightPaneFocus {
+		if app.UI.Focus == LeftPaneFocus || app.UI.Focus == RightPaneFocus || app.UI.Focus == NotificationPaneFocus {
 			if event.Key() == tcell.KeyRune {
 				switch event.Rune() {
 				case ':':

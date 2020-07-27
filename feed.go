@@ -911,9 +911,10 @@ func (u *UserFeed) Input(event *tcell.EventKey) {
 	}
 }
 
-func NewNoticifationsFeed(app *App) *NotificationsFeed {
+func NewNotificationFeed(app *App, docked bool) *NotificationsFeed {
 	n := &NotificationsFeed{
-		app: app,
+		app:    app,
+		docked: docked,
 	}
 	n.notifications, _ = n.app.API.GetNotifications()
 	return n
@@ -923,6 +924,7 @@ type NotificationsFeed struct {
 	app           *App
 	timelineType  TimelineType
 	notifications []*mastodon.Notification
+	docked        bool
 	index         int
 	showSpoiler   bool
 }
@@ -936,7 +938,12 @@ func (n *NotificationsFeed) GetDesc() string {
 }
 
 func (n *NotificationsFeed) GetCurrentNotification() *mastodon.Notification {
-	index := n.app.UI.StatusView.GetCurrentItem()
+	var index int
+	if n.docked {
+		index = n.app.UI.StatusView.notificationView.list.GetCurrentItem()
+	} else {
+		index = n.app.UI.StatusView.GetCurrentItem()
+	}
 	if index >= len(n.notifications) {
 		return nil
 	}
@@ -1020,7 +1027,11 @@ func (n *NotificationsFeed) LoadOlder() int {
 }
 
 func (n *NotificationsFeed) DrawList() {
-	n.app.UI.StatusView.SetList(n.GetFeedList())
+	if n.docked {
+		n.app.UI.StatusView.notificationView.SetList(n.GetFeedList())
+	} else {
+		n.app.UI.StatusView.SetList(n.GetFeedList())
+	}
 }
 
 func (n *NotificationsFeed) DrawSpoiler() {
@@ -1029,7 +1040,11 @@ func (n *NotificationsFeed) DrawSpoiler() {
 }
 
 func (n *NotificationsFeed) DrawToot() {
-	n.index = n.app.UI.StatusView.GetCurrentItem()
+	if n.docked {
+		n.index = n.app.UI.StatusView.notificationView.list.GetCurrentItem()
+	} else {
+		n.index = n.app.UI.StatusView.GetCurrentItem()
+	}
 	notification := n.GetCurrentNotification()
 	if notification == nil {
 		n.app.UI.StatusView.SetText("")
