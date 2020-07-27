@@ -252,7 +252,7 @@ func ColorKey(style StyleConfig, pre, key, end string) string {
 	color := ColorMark(style.TextSpecial2)
 	normal := ColorMark(style.Text)
 	key = tview.Escape("[" + key + "]")
-	text := fmt.Sprintf("%s%s%s%s%s", pre, color, key, normal, end)
+	text := fmt.Sprintf("%s%s%s%s%s%s", normal, pre, color, key, normal, end)
 	return text
 }
 

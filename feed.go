@@ -56,6 +56,7 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 
 	strippedContent, urls = cleanTootHTML(status.Content)
 
+	normal := ColorMark(app.Config.Style.Text)
 	subtleColor := ColorMark(app.Config.Style.Subtle)
 	special1 := ColorMark(app.Config.Style.TextSpecial1)
 	special2 := ColorMark(app.Config.Style.TextSpecial2)
@@ -98,14 +99,14 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	output := head
 	content := stripped
 	if content != "" {
-		output += content + "\n\n"
+		output += normal + content + "\n\n"
 	}
 
 	var poll string
 	if status.Poll != nil {
 		poll += subtleColor + "Poll\n"
 		poll += subtleColor + line
-		poll += fmt.Sprintf("Number of votes: %d\n\n", status.Poll.VotesCount)
+		poll += fmt.Sprintf(normal+"Number of votes: %d\n\n", status.Poll.VotesCount)
 		votes := float64(status.Poll.VotesCount)
 		for _, o := range status.Poll.Options {
 			res := 0.0
@@ -122,9 +123,9 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 		media += subtleColor + line
 		media += fmt.Sprintf(subtleColor+"Attached %s\n", att.Type)
 		if att.Description != "" {
-			media += fmt.Sprintf("%s\n\n", tview.Escape(att.Description))
+			media += fmt.Sprintf(normal+"%s\n\n", tview.Escape(att.Description))
 		}
-		media += fmt.Sprintf("%s\n", att.URL)
+		media += fmt.Sprintf(normal+"%s\n", att.URL)
 	}
 	if len(status.MediaAttachments) > 0 {
 		media += "\n"
@@ -135,11 +136,11 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 		card += subtleColor + "Card type: " + status.Card.Type + "\n"
 		card += subtleColor + line
 		if status.Card.Title != "" {
-			card += status.Card.Title + "\n\n"
+			card += normal + status.Card.Title + "\n\n"
 		}
 		desc := strings.TrimSpace(status.Card.Description)
 		if desc != "" {
-			card += desc + "\n\n"
+			card += normal + desc + "\n\n"
 		}
 		card += status.Card.URL
 	}
@@ -195,11 +196,11 @@ func showUser(app *App, user *mastodon.Account, relation *mastodon.Relationship,
 	}
 	text += fmt.Sprintf(s1+"%s\n\n", user.Acct)
 
-	text += fmt.Sprintf("Toots %s%d %sFollowers %s%d %sFollowing %s%d\n\n",
-		s2, user.StatusesCount, n, s2, user.FollowersCount, n, s2, user.FollowingCount)
+	text += fmt.Sprintf("%sToots %s%d %sFollowers %s%d %sFollowing %s%d\n\n",
+		n, s2, user.StatusesCount, n, s2, user.FollowersCount, n, s2, user.FollowingCount)
 
 	note, urls := cleanTootHTML(user.Note)
-	text += note + "\n\n"
+	text += n + note + "\n\n"
 
 	for _, f := range user.Fields {
 		value, fu := cleanTootHTML(f.Value)
