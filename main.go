@@ -195,6 +195,8 @@ func main() {
 					app.UI.MediaOverlay.Prev()
 				case 'd', 'D':
 					app.UI.MediaOverlay.Delete()
+				case 'e', 'E':
+					app.UI.MediaOverlay.EditDesc()
 				case 'a', 'A':
 					app.UI.MediaOverlay.SetFocus(MediaFocusAdd)
 				case 'q', 'Q':

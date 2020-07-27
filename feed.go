@@ -122,7 +122,7 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 		media += subtleColor + line
 		media += fmt.Sprintf(subtleColor+"Attached %s\n", att.Type)
 		if att.Description != "" {
-			media += fmt.Sprintf("%s\n\n", att.Description)
+			media += fmt.Sprintf("%s\n\n", tview.Escape(att.Description))
 		}
 		media += fmt.Sprintf("%s\n", att.URL)
 	}

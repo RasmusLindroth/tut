@@ -125,7 +125,7 @@ func (ui *UI) Init() {
 		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 			AddItem(nil, 0, 1, false).
 			AddItem(ui.MediaOverlay.Flex.SetDirection(tview.FlexRow).
-				AddItem(ui.MediaOverlay.TextTop, 1, 1, true).
+				AddItem(ui.MediaOverlay.TextTop, 2, 1, true).
 				AddItem(ui.MediaOverlay.FileList, 0, 10, true).
 				AddItem(ui.MediaOverlay.TextBottom, 1, 1, true).
 				AddItem(ui.MediaOverlay.InputField.View, 2, 1, false), 0, 8, false).
