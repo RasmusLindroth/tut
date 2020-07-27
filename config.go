@@ -16,11 +16,12 @@ type Config struct {
 }
 
 type GeneralConfig struct {
-	AutoLoadNewer   bool
-	AutoLoadSeconds int
-	DateTodayFormat string
-	DateFormat      string
-	StartTimeline   TimelineType
+	AutoLoadNewer    bool
+	AutoLoadSeconds  int
+	DateTodayFormat  string
+	DateFormat       string
+	StartTimeline    TimelineType
+	NotificationFeed bool
 }
 
 type StyleConfig struct {
@@ -178,6 +179,9 @@ func parseGeneral(cfg *ini.File) GeneralConfig {
 	case "federated":
 		general.StartTimeline = TimelineFederated
 	}
+
+	general.NotificationFeed = cfg.Section("general").Key("notification-feed").MustBool(true)
+
 	return general
 }
 
@@ -287,6 +291,11 @@ date-today-format=15:04
 # Valid values: home, direct, local, federated
 # default=home
 timeline=home
+
+# If you want to display a list of notifications
+# under your timeline feed
+# default=true
+notification-feed=true
 
 [media]
 # Your image viewer

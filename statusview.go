@@ -16,9 +16,14 @@ func NewStatusView(app *App, tl TimelineType) *StatusView {
 		text:         tview.NewTextView(),
 		controls:     tview.NewTextView(),
 		focus:        LeftPaneFocus,
+		lastList:     LeftPaneFocus,
 		loadingNewer: false,
 		loadingOlder: false,
 	}
+	if t.app.Config.General.NotificationFeed {
+		t.notificationView = NewNotificationView(app)
+	}
+
 	t.flex = tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(t.text, 0, 9, false).
 		AddItem(t.controls, 1, 0, false)
@@ -47,20 +52,34 @@ func NewStatusView(app *App, tl TimelineType) *StatusView {
 				}
 			}
 		}()
+		if app.Config.General.NotificationFeed {
+			go func() {
+				d := time.Second * time.Duration(app.Config.General.AutoLoadSeconds)
+				ticker := time.NewTicker(d)
+				for {
+					select {
+					case <-ticker.C:
+						t.notificationView.loadNewer()
+					}
+				}
+			}()
+		}
 	}
 	return t
 }
 
 type StatusView struct {
-	app          *App
-	list         *tview.List
-	flex         *tview.Flex
-	text         *tview.TextView
-	controls     *tview.TextView
-	feeds        []Feed
-	focus        FocusAt
-	loadingNewer bool
-	loadingOlder bool
+	app              *App
+	list             *tview.List
+	flex             *tview.Flex
+	text             *tview.TextView
+	controls         *tview.TextView
+	feeds            []Feed
+	focus            FocusAt
+	lastList         FocusAt
+	loadingNewer     bool
+	loadingOlder     bool
+	notificationView *NotificationView
 }
 
 func (t *StatusView) AddFeed(f Feed) {
@@ -87,6 +106,14 @@ func (t *StatusView) GetLeftView() tview.Primitive {
 		feed.DrawToot()
 	}
 	return t.list
+}
+
+func (t *StatusView) GetNotificationView() tview.Primitive {
+	if t.notificationView != nil {
+		t.notificationView.feed.DrawList()
+		return t.notificationView.list
+	}
+	return nil
 }
 
 func (t *StatusView) GetRightView() tview.Primitive {
@@ -127,12 +154,6 @@ func (t *StatusView) inputBoth(event *tcell.EventKey) {
 			t.home()
 		case 'G':
 			t.end()
-		case 'q', 'Q':
-			if len(t.feeds) > 1 {
-				t.RemoveLatestFeed()
-			} else {
-				t.app.UI.Root.Stop()
-			}
 		}
 	} else {
 		switch event.Key() {
@@ -147,6 +168,25 @@ func (t *StatusView) inputBoth(event *tcell.EventKey) {
 	if len(t.feeds) > 0 {
 		feed := t.feeds[len(t.feeds)-1]
 		feed.Input(event)
+	}
+}
+
+func (t *StatusView) inputBack(q bool) {
+	if t.app.UI.Focus == LeftPaneFocus && len(t.feeds) > 1 {
+		t.RemoveLatestFeed()
+	} else if t.app.UI.Focus == LeftPaneFocus && q {
+		t.app.UI.Root.Stop()
+	} else if t.app.UI.Focus == NotificationPaneFocus {
+		t.app.UI.SetFocus(LeftPaneFocus)
+		t.focus = LeftPaneFocus
+		t.lastList = LeftPaneFocus
+		t.app.UI.StatusBar.Text.SetBackgroundColor(
+			t.app.Config.Style.StatusBarBackground,
+		)
+		t.app.UI.StatusBar.Text.SetTextColor(
+			t.app.Config.Style.StatusBarText,
+		)
+		t.feeds[len(t.feeds)-1].DrawToot()
 	}
 }
 
@@ -166,6 +206,15 @@ func (t *StatusView) inputLeft(event *tcell.EventKey) {
 			t.prev()
 		case 'j', 'J':
 			t.next()
+		case 'n', 'N':
+			if t.app.Config.General.NotificationFeed {
+				t.app.UI.SetFocus(NotificationPaneFocus)
+				t.focus = NotificationPaneFocus
+				t.lastList = NotificationPaneFocus
+				t.notificationView.feed.DrawToot()
+			}
+		case 'q', 'Q':
+			t.inputBack(true)
 		}
 	} else {
 		switch event.Key() {
@@ -178,29 +227,37 @@ func (t *StatusView) inputLeft(event *tcell.EventKey) {
 		case tcell.KeyPgDn, tcell.KeyCtrlF:
 			t.pgdown()
 		case tcell.KeyEsc:
-			if len(t.feeds) > 1 {
-				t.RemoveLatestFeed()
-			}
+			t.inputBack(false)
 		}
 	}
+}
+
+func (t *StatusView) inputRightQuit() {
+	if t.lastList == LeftPaneFocus {
+		t.app.UI.SetFocus(LeftPaneFocus)
+		t.focus = LeftPaneFocus
+	} else if t.lastList == NotificationPaneFocus {
+		t.app.UI.SetFocus(NotificationPaneFocus)
+		t.focus = NotificationPaneFocus
+	}
+	t.app.UI.StatusBar.Text.SetBackgroundColor(
+		t.app.Config.Style.StatusBarBackground,
+	)
+	t.app.UI.StatusBar.Text.SetTextColor(
+		t.app.Config.Style.StatusBarText,
+	)
 }
 
 func (t *StatusView) inputRight(event *tcell.EventKey) {
 	if event.Key() == tcell.KeyRune {
 		switch event.Rune() {
-
+		case 'q', 'Q':
+			t.inputRightQuit()
 		}
 	} else {
 		switch event.Key() {
 		case tcell.KeyEsc:
-			t.app.UI.SetFocus(LeftPaneFocus)
-			t.focus = LeftPaneFocus
-			t.app.UI.StatusBar.Text.SetBackgroundColor(
-				t.app.Config.Style.StatusBarBackground,
-			)
-			t.app.UI.StatusBar.Text.SetTextColor(
-				t.app.Config.Style.StatusBarText,
-			)
+			t.inputRightQuit()
 		}
 	}
 }
@@ -211,10 +268,14 @@ func (t *StatusView) Input(event *tcell.EventKey) *tcell.EventKey {
 		return event
 	}
 
-	if t.focus == LeftPaneFocus {
+	switch t.focus {
+	case LeftPaneFocus:
 		t.inputLeft(event)
 		return nil
-	} else {
+	case NotificationPaneFocus:
+		t.inputLeft(event)
+		return nil
+	default:
 		t.inputRight(event)
 	}
 
@@ -248,69 +309,163 @@ func (t *StatusView) drawDesc() {
 }
 
 func (t *StatusView) prev() {
-	current := t.list.GetCurrentItem()
+	var current int
+	var list *tview.List
+	var feed Feed
+	if t.app.UI.Focus == LeftPaneFocus {
+		current = t.GetCurrentItem()
+		list = t.list
+		feed = t.feeds[len(t.feeds)-1]
+	} else {
+		current = t.notificationView.list.GetCurrentItem()
+		list = t.notificationView.list
+		feed = t.notificationView.feed
+	}
+
 	if current-1 >= 0 {
 		current--
 	}
-	t.list.SetCurrentItem(current)
-	t.feeds[len(t.feeds)-1].DrawToot()
+	list.SetCurrentItem(current)
+	feed.DrawToot()
 
 	if current < 4 {
-		t.loadNewer()
+		switch t.app.UI.Focus {
+		case LeftPaneFocus:
+			t.loadNewer()
+		case NotificationPaneFocus:
+			t.notificationView.loadNewer()
+		}
 	}
 }
 
 func (t *StatusView) next() {
-	t.list.SetCurrentItem(
-		t.list.GetCurrentItem() + 1,
-	)
-	t.feeds[len(t.feeds)-1].DrawToot()
+	var list *tview.List
+	var feed Feed
+	if t.app.UI.Focus == LeftPaneFocus {
+		list = t.list
+		feed = t.feeds[len(t.feeds)-1]
+	} else {
+		list = t.notificationView.list
+		feed = t.notificationView.feed
+	}
 
-	count := t.list.GetItemCount()
-	current := t.list.GetCurrentItem()
+	list.SetCurrentItem(
+		list.GetCurrentItem() + 1,
+	)
+	feed.DrawToot()
+
+	count := list.GetItemCount()
+	current := list.GetCurrentItem()
 	if (count - current + 1) < 5 {
-		t.loadOlder()
+		switch t.app.UI.Focus {
+		case LeftPaneFocus:
+			t.loadOlder()
+		case NotificationPaneFocus:
+			t.notificationView.loadOlder()
+		}
 	}
 }
 
 func (t *StatusView) pgdown() {
-	_, _, _, height := t.list.GetInnerRect()
-	i := t.GetCurrentItem() + height - 1
-	t.list.SetCurrentItem(i)
-	t.feeds[len(t.feeds)-1].DrawToot()
+	var list *tview.List
+	var feed Feed
+	if t.app.UI.Focus == LeftPaneFocus {
+		list = t.list
+		feed = t.feeds[len(t.feeds)-1]
+	} else {
+		list = t.notificationView.list
+		feed = t.notificationView.feed
+	}
 
-	count := t.list.GetItemCount()
-	current := t.list.GetCurrentItem()
+	_, _, _, height := list.GetInnerRect()
+	i := list.GetCurrentItem() + height - 1
+	list.SetCurrentItem(i)
+	feed.DrawToot()
+
+	count := list.GetItemCount()
+	current := list.GetCurrentItem()
 	if (count - current + 1) < 5 {
-		t.loadOlder()
+		switch t.app.UI.Focus {
+		case LeftPaneFocus:
+			t.loadOlder()
+		case NotificationPaneFocus:
+			t.notificationView.loadOlder()
+		}
 	}
 }
 
 func (t *StatusView) pgup() {
-	_, _, _, height := t.list.GetInnerRect()
-	i := t.GetCurrentItem() - height + 1
+	var list *tview.List
+	var feed Feed
+	if t.app.UI.Focus == LeftPaneFocus {
+		list = t.list
+		feed = t.feeds[len(t.feeds)-1]
+	} else {
+		list = t.notificationView.list
+		feed = t.notificationView.feed
+	}
+
+	_, _, _, height := list.GetInnerRect()
+	i := list.GetCurrentItem() - height + 1
 	if i < 0 {
 		i = 0
 	}
-	t.list.SetCurrentItem(i)
-	t.feeds[len(t.feeds)-1].DrawToot()
+	list.SetCurrentItem(i)
+	feed.DrawToot()
 
-	current := t.list.GetCurrentItem()
+	current := list.GetCurrentItem()
 	if current < 4 {
-		t.loadNewer()
+		switch t.app.UI.Focus {
+		case LeftPaneFocus:
+			t.loadNewer()
+		case NotificationPaneFocus:
+			t.notificationView.loadNewer()
+		}
 	}
 }
 
 func (t *StatusView) home() {
-	t.list.SetCurrentItem(0)
-	t.feeds[len(t.feeds)-1].DrawToot()
-	t.loadOlder()
+	var list *tview.List
+	var feed Feed
+	if t.app.UI.Focus == LeftPaneFocus {
+		list = t.list
+		feed = t.feeds[len(t.feeds)-1]
+	} else {
+		list = t.notificationView.list
+		feed = t.notificationView.feed
+	}
+
+	list.SetCurrentItem(0)
+	feed.DrawToot()
+
+	switch t.app.UI.Focus {
+	case LeftPaneFocus:
+		t.loadNewer()
+	case NotificationPaneFocus:
+		t.notificationView.loadNewer()
+	}
 }
 
 func (t *StatusView) end() {
-	t.list.SetCurrentItem(-1)
-	t.feeds[len(t.feeds)-1].DrawToot()
-	t.loadOlder()
+	var list *tview.List
+	var feed Feed
+	if t.app.UI.Focus == LeftPaneFocus {
+		list = t.list
+		feed = t.feeds[len(t.feeds)-1]
+	} else {
+		list = t.notificationView.list
+		feed = t.notificationView.feed
+	}
+
+	list.SetCurrentItem(-1)
+	feed.DrawToot()
+
+	switch t.app.UI.Focus {
+	case LeftPaneFocus:
+		t.loadOlder()
+	case NotificationPaneFocus:
+		t.notificationView.loadOlder()
+	}
 }
 
 func (t *StatusView) loadNewer() {

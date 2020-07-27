@@ -10,7 +10,7 @@ import (
 	"github.com/gdamore/tcell"
 )
 
-const version string = "0.0.14"
+const version string = "0.0.15"
 
 func main() {
 
@@ -195,6 +195,8 @@ func main() {
 					app.UI.MediaOverlay.Prev()
 				case 'd', 'D':
 					app.UI.MediaOverlay.Delete()
+				case 'e', 'E':
+					app.UI.MediaOverlay.EditDesc()
 				case 'a', 'A':
 					app.UI.MediaOverlay.SetFocus(MediaFocusAdd)
 				case 'q', 'Q':
@@ -236,7 +238,7 @@ func main() {
 			return event
 		}
 
-		if app.UI.Focus == LeftPaneFocus || app.UI.Focus == RightPaneFocus {
+		if app.UI.Focus == LeftPaneFocus || app.UI.Focus == RightPaneFocus || app.UI.Focus == NotificationPaneFocus {
 			if event.Key() == tcell.KeyRune {
 				switch event.Rune() {
 				case ':':
