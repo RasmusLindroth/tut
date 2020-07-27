@@ -88,6 +88,12 @@ func (t *StatusView) AddFeed(f Feed) {
 	t.list.SetCurrentItem(f.GetSavedIndex())
 	f.DrawToot()
 	t.drawDesc()
+
+	if t.lastList == NotificationPaneFocus {
+		t.app.UI.SetFocus(LeftPaneFocus)
+		t.focus = LeftPaneFocus
+		t.lastList = LeftPaneFocus
+	}
 }
 
 func (t *StatusView) RemoveLatestFeed() {
@@ -165,9 +171,11 @@ func (t *StatusView) inputBoth(event *tcell.EventKey) {
 			t.end()
 		}
 	}
-	if len(t.feeds) > 0 {
+	if len(t.feeds) > 0 && t.lastList == LeftPaneFocus {
 		feed := t.feeds[len(t.feeds)-1]
 		feed.Input(event)
+	} else if t.lastList == NotificationPaneFocus {
+		t.notificationView.feed.Input(event)
 	}
 }
 
@@ -180,12 +188,6 @@ func (t *StatusView) inputBack(q bool) {
 		t.app.UI.SetFocus(LeftPaneFocus)
 		t.focus = LeftPaneFocus
 		t.lastList = LeftPaneFocus
-		t.app.UI.StatusBar.Text.SetBackgroundColor(
-			t.app.Config.Style.StatusBarBackground,
-		)
-		t.app.UI.StatusBar.Text.SetTextColor(
-			t.app.Config.Style.StatusBarText,
-		)
 		t.feeds[len(t.feeds)-1].DrawToot()
 	}
 }
@@ -425,6 +427,11 @@ func (t *StatusView) pgup() {
 }
 
 func (t *StatusView) home() {
+	if t.focus == RightPaneFocus {
+		t.text.ScrollToBeginning()
+		return
+	}
+
 	var list *tview.List
 	var feed Feed
 	if t.app.UI.Focus == LeftPaneFocus {
@@ -447,6 +454,11 @@ func (t *StatusView) home() {
 }
 
 func (t *StatusView) end() {
+	if t.focus == RightPaneFocus {
+		t.text.ScrollToEnd()
+		return
+	}
+
 	var list *tview.List
 	var feed Feed
 	if t.app.UI.Focus == LeftPaneFocus {
