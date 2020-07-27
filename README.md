@@ -2,7 +2,7 @@
 
 A TUI for Mastodon with vim inspired keys. The program misses some features but they will be added when I get time.
 
-Press `C` to create a new toot.
+Press `C` to create a new toot and `N` to focus on your notifications.
 
 You can find Linux binaries under [releases](https://github.com/RasmusLindroth/tut/releases).
 
