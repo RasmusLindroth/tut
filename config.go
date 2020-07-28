@@ -20,6 +20,7 @@ type GeneralConfig struct {
 	AutoLoadSeconds  int
 	DateTodayFormat  string
 	DateFormat       string
+	DateRelative     int
 	StartTimeline    TimelineType
 	NotificationFeed bool
 }
@@ -168,6 +169,12 @@ func parseGeneral(cfg *ini.File) GeneralConfig {
 	}
 	general.DateTodayFormat = dateTodayFormat
 
+	dateRelative, err := cfg.Section("general").Key("date-relative").Int()
+	if err != nil {
+		dateRelative = -1
+	}
+	general.DateRelative = dateRelative
+
 	tl := cfg.Section("general").Key("timeline").In("home", []string{"home", "direct", "local", "federated"})
 	switch tl {
 	case "home":
@@ -277,7 +284,6 @@ auto-load-newer=true
 # default=60
 auto-load-seconds=60
 
-
 # The date format to be used
 # See https://godoc.org/time#Time.Format
 # default=2006-01-02 15:04
@@ -286,6 +292,22 @@ date-format=2006-01-02 15:04
 # Format for dates the same day
 # default=15:04
 date-today-format=15:04
+
+# This displays relative dates instead
+# for statuses that are one day or older
+# the output is 1y2m1d (1 year 2 months and 1 day) 
+#
+# The value is an integear
+# -1     = don't use relative dates
+#  0     = always use relative dates, except for dates < 1 day
+#  1 - ∞ = number of days to use relative dates
+#
+# Example: date-relative=28 will display a relative date
+# for toots that are between 1-28 days old. Otherwhise it
+# will use the short or long format
+# 
+# default=-1
+date-relative=-1
 
 # The timeline that opens up when you start tut
 # Valid values: home, direct, local, federated
