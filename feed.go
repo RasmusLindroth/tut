@@ -1121,7 +1121,12 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 
 	updated, rc, rt, newS, _ := inputSimple(n.app, event, options, user, status, nil, n)
 	if updated {
-		index := n.app.UI.StatusView.GetCurrentItem()
+		var index int
+		if n.docked {
+			index = n.app.UI.StatusView.notificationView.list.GetCurrentItem()
+		} else {
+			index = n.app.UI.StatusView.GetCurrentItem()
+		}
 		n.notifications[index].Status = newS
 	}
 	if rc {
