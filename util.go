@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/gdamore/tcell"
+	"github.com/icza/gox/timex"
 	"github.com/mattn/go-mastodon"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/rivo/tview"
@@ -270,4 +271,48 @@ func FormatUsername(a mastodon.Account) string {
 func SublteText(style StyleConfig, text string) string {
 	subtle := ColorMark(style.Subtle)
 	return fmt.Sprintf("%s%s", subtle, text)
+}
+
+func FloorDate(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+}
+
+func OutputDate(status time.Time, today time.Time, long, short string, relativeDate int) string {
+	ty, tm, td := today.Date()
+	sy, sm, sd := status.Date()
+
+	format := long
+	sameDay := false
+	displayRelative := false
+
+	if ty == sy && tm == sm && td == sd {
+		format = short
+		sameDay = true
+	}
+
+	todayFloor := FloorDate(today)
+	statusFloor := FloorDate(status)
+
+	if relativeDate > -1 && !sameDay {
+		days := int(todayFloor.Sub(statusFloor).Hours() / 24)
+		if relativeDate == 0 || days <= relativeDate {
+			displayRelative = true
+		}
+	}
+	var dateOutput string
+	if displayRelative {
+		y, m, d, _, _, _ := timex.Diff(statusFloor, todayFloor)
+		if y > 0 {
+			dateOutput = fmt.Sprintf("%s%dy", dateOutput, y)
+		}
+		if dateOutput != "" || m > 0 {
+			dateOutput = fmt.Sprintf("%s%dm", dateOutput, m)
+		}
+		if dateOutput != "" || d > 0 {
+			dateOutput = fmt.Sprintf("%s%dd", dateOutput, d)
+		}
+	} else {
+		dateOutput = status.Format(format)
+	}
+	return dateOutput
 }

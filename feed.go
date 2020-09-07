@@ -61,20 +61,28 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	special1 := ColorMark(app.Config.Style.TextSpecial1)
 	special2 := ColorMark(app.Config.Style.TextSpecial2)
 
+	statusSensitive := false
 	if status.Sensitive {
+		statusSensitive = true
+	}
+	if status.Reblog != nil && status.Reblog.Sensitive {
+		statusSensitive = true
+	}
+
+	if statusSensitive {
 		strippedSpoiler, u = cleanTootHTML(status.SpoilerText)
 		strippedSpoiler = tview.Escape(strippedSpoiler)
 		urls = append(urls, u...)
 	}
-	if status.Sensitive && !showSensitive {
+	if statusSensitive && !showSensitive {
 		strippedSpoiler += "\n" + subtleColor + line
 		strippedSpoiler += subtleColor + tview.Escape("Press [s] to show hidden text")
 		stripped = strippedSpoiler
 	}
-	if status.Sensitive && showSensitive {
+	if statusSensitive && showSensitive {
 		stripped = strippedSpoiler + "\n\n" + tview.Escape(strippedContent)
 	}
-	if !status.Sensitive {
+	if !statusSensitive {
 		stripped = tview.Escape(strippedContent)
 	}
 
@@ -240,20 +248,15 @@ func showUser(app *App, user *mastodon.Account, relation *mastodon.Relationship,
 	return text, controls
 }
 
-func drawStatusList(statuses []*mastodon.Status) <-chan string {
+func drawStatusList(statuses []*mastodon.Status, longFormat, shortFormat string, relativeDate int) <-chan string {
 	ch := make(chan string)
 	go func() {
 		today := time.Now()
-		ty, tm, td := today.Date()
 		for _, s := range statuses {
-
 			sLocal := s.CreatedAt.Local()
-			sy, sm, sd := sLocal.Date()
-			format := "2006-01-02 15:04"
-			if ty == sy && tm == sm && td == sd {
-				format = "15:04"
-			}
-			content := fmt.Sprintf("%s %s", sLocal.Format(format), s.Account.Acct)
+			dateOutput := OutputDate(sLocal, today, longFormat, shortFormat, relativeDate)
+
+			content := fmt.Sprintf("%s %s", dateOutput, s.Account.Acct)
 			ch <- content
 		}
 		close(ch)
@@ -487,7 +490,7 @@ func (t *TimelineFeed) GetCurrentUser() *mastodon.Account {
 }
 
 func (t *TimelineFeed) GetFeedList() <-chan string {
-	return drawStatusList(t.statuses)
+	return drawStatusList(t.statuses, t.app.Config.General.DateFormat, t.app.Config.General.DateTodayFormat, t.app.Config.General.DateRelative)
 }
 
 func (t *TimelineFeed) LoadNewer() int {
@@ -637,7 +640,7 @@ func (t *ThreadFeed) GetCurrentUser() *mastodon.Account {
 }
 
 func (t *ThreadFeed) GetFeedList() <-chan string {
-	return drawStatusList(t.statuses)
+	return drawStatusList(t.statuses, t.app.Config.General.DateFormat, t.app.Config.General.DateTodayFormat, t.app.Config.General.DateRelative)
 }
 
 func (t *ThreadFeed) LoadNewer() int {
@@ -772,7 +775,7 @@ func (u *UserFeed) GetFeedList() <-chan string {
 	ch := make(chan string)
 	go func() {
 		ch <- "Profile"
-		for s := range drawStatusList(u.statuses) {
+		for s := range drawStatusList(u.statuses, u.app.Config.General.DateFormat, u.app.Config.General.DateTodayFormat, u.app.Config.General.DateRelative) {
 			ch <- s
 		}
 		close(ch)
@@ -972,15 +975,15 @@ func (n *NotificationsFeed) GetFeedList() <-chan string {
 	notifications := n.notifications
 	go func() {
 		today := time.Now()
-		ty, tm, td := today.Date()
 		for _, item := range notifications {
 			sLocal := item.CreatedAt.Local()
-			sy, sm, sd := sLocal.Date()
-			format := "2006-01-02 15:04"
-			if ty == sy && tm == sm && td == sd {
-				format = "15:04"
-			}
-			content := fmt.Sprintf("%s %s", sLocal.Format(format), item.Account.Acct)
+			long := n.app.Config.General.DateFormat
+			short := n.app.Config.General.DateTodayFormat
+			relative := n.app.Config.General.DateRelative
+
+			dateOutput := OutputDate(sLocal, today, long, short, relative)
+
+			content := fmt.Sprintf("%s %s", dateOutput, item.Account.Acct)
 			ch <- content
 		}
 		close(ch)
@@ -1126,7 +1129,12 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 
 	updated, rc, rt, newS, _ := inputSimple(n.app, event, options, user, status, nil, n)
 	if updated {
-		index := n.app.UI.StatusView.GetCurrentItem()
+		var index int
+		if n.docked {
+			index = n.app.UI.StatusView.notificationView.list.GetCurrentItem()
+		} else {
+			index = n.app.UI.StatusView.GetCurrentItem()
+		}
 		n.notifications[index].Status = newS
 	}
 	if rc {
@@ -1175,7 +1183,7 @@ func (t *TagFeed) GetCurrentUser() *mastodon.Account {
 }
 
 func (t *TagFeed) GetFeedList() <-chan string {
-	return drawStatusList(t.statuses)
+	return drawStatusList(t.statuses, t.app.Config.General.DateFormat, t.app.Config.General.DateTodayFormat, t.app.Config.General.DateRelative)
 }
 
 func (t *TagFeed) LoadNewer() int {

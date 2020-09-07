@@ -36,7 +36,7 @@ an user or tag they will be opened in tut.
 * `M` = media. Opens the media with `xdg-open`.
 
 ## Configuration
-Tut if configurable, so you can change things like the colors, the default timeline, 
+Tut is configurable, so you can change things like the colors, the default timeline, 
 what image viewer to use and some more. Check out the configuration file to see 
 all the options.
 

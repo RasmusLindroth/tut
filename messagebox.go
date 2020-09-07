@@ -142,6 +142,7 @@ func (m *MessageBox) Post() {
 			m.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't upload media. Error: %v\n", err))
 			return
 		}
+		f.Close()
 		send.MediaIDs = append(send.MediaIDs, a.ID)
 	}
 
