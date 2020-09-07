@@ -168,9 +168,9 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 		info = append(info, ColorKey(app.Config.Style, "", "F", "avorite"))
 	}
 	if status.Reblogged == true {
-		info = append(info, ColorKey(app.Config.Style, "Un", "B", "boost"))
+		info = append(info, ColorKey(app.Config.Style, "Un", "B", "oost"))
 	} else {
-		info = append(info, ColorKey(app.Config.Style, "", "B", "boost"))
+		info = append(info, ColorKey(app.Config.Style, "", "B", "oost"))
 	}
 	info = append(info, ColorKey(app.Config.Style, "", "T", "hread"))
 	info = append(info, ColorKey(app.Config.Style, "", "R", "eply"))
