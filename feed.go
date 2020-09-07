@@ -61,20 +61,28 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	special1 := ColorMark(app.Config.Style.TextSpecial1)
 	special2 := ColorMark(app.Config.Style.TextSpecial2)
 
+	statusSensitive := false
 	if status.Sensitive {
+		statusSensitive = true
+	}
+	if status.Reblog != nil && status.Reblog.Sensitive {
+		statusSensitive = true
+	}
+
+	if statusSensitive {
 		strippedSpoiler, u = cleanTootHTML(status.SpoilerText)
 		strippedSpoiler = tview.Escape(strippedSpoiler)
 		urls = append(urls, u...)
 	}
-	if status.Sensitive && !showSensitive {
+	if statusSensitive && !showSensitive {
 		strippedSpoiler += "\n" + subtleColor + line
 		strippedSpoiler += subtleColor + tview.Escape("Press [s] to show hidden text")
 		stripped = strippedSpoiler
 	}
-	if status.Sensitive && showSensitive {
+	if statusSensitive && showSensitive {
 		stripped = strippedSpoiler + "\n\n" + tview.Escape(strippedContent)
 	}
-	if !status.Sensitive {
+	if !statusSensitive {
 		stripped = tview.Escape(strippedContent)
 	}
 
