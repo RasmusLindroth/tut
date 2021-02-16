@@ -23,6 +23,7 @@ type GeneralConfig struct {
 	DateRelative     int
 	StartTimeline    TimelineType
 	NotificationFeed bool
+	QuoteReply       bool
 }
 
 type StyleConfig struct {
@@ -188,6 +189,8 @@ func parseGeneral(cfg *ini.File) GeneralConfig {
 	}
 
 	general.NotificationFeed = cfg.Section("general").Key("notification-feed").MustBool(true)
+
+	general.QuoteReply = cfg.Section("general").Key("quote-reply").MustBool(false)
 
 	return general
 }

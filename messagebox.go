@@ -220,6 +220,16 @@ func (m *MessageBox) EditText() {
 			users = append(users, "@"+men.Acct)
 		}
 		t = strings.Join(users, " ")
+
+		if m.app.Config.General.QuoteReply {
+			tootText, _ := cleanTootHTML(s.Content)
+
+			t += "\n"
+			for _, line := range strings.Split(tootText, "\n") {
+				t += "> " + line + "\n"
+			}
+			t += "\n"
+		}
 	}
 	text, err := openEditor(m.app.UI.Root, t)
 	if err != nil {
