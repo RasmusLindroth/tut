@@ -7,10 +7,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gdamore/tcell"
+	"github.com/gdamore/tcell/v2"
 )
 
-const version string = "0.0.17"
+const version string = "0.0.18"
 
 func main() {
 
@@ -264,7 +264,7 @@ func main() {
 	})
 
 	app.UI.CmdBar.Input.SetAutocompleteFunc(func(currentText string) (entries []string) {
-		words := strings.Split(":blocking,:boosts,:compose,:favorites,:muting,:profile,:tag,:timeline,:tl,:user,:quit,:q", ",")
+		words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:muting,:profile,:saved,:tag,:timeline,:tl,:user,:quit,:q", ",")
 		if currentText == "" {
 			return
 		}

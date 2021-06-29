@@ -14,10 +14,12 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
   * `:tl` h, l, f, d, n (shorter form)
 * `:blocking` lists users that you have blocked
 * `:boosts` lists users that boosted the toot
+* `:bookmarks` lists all your bookmarks
 * `:compose` compose a new toot
 * `:favorites` lists users that favorited the toot
 * `:muting`  lists users that you have muted
 * `:profile` go to your profile
+* `:saved` alias for bookmarks
 * `:tag` followed by the hashtag e.g. `:tag linux`
 * `:user` followed by a username e.g. `:user rasmus` to narrow a search include 
 the instance like this `:user rasmus@mastodon.acc.sunet.se`.
