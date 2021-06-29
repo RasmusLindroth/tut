@@ -3,7 +3,6 @@ module github.com/RasmusLindroth/tut
 go 1.14
 
 require (
-	github.com/gdamore/tcell v1.4.0
 	github.com/gdamore/tcell/v2 v2.3.11
 	github.com/icza/gox v0.0.0-20200702115100-7dc3510ae515
 	github.com/kyoh86/xdg v1.2.0
