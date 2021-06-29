@@ -88,7 +88,20 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 
 	app.UI.LinkOverlay.SetLinks(urls, status)
 
+	var statusBookmarked = false
+	if status.Bookmarked == true {
+		statusBookmarked = true
+	}
+	if status.Reblog != nil && status.Reblog.Bookmarked == true {
+		statusBookmarked = true
+	}
+
 	var head string
+
+	if statusBookmarked == true {
+		head += fmt.Sprintf(special2 + "You have bookmarked this toot\n\n")
+	}
+
 	if status.Reblog != nil {
 		if status.Account.DisplayName != "" {
 			head += fmt.Sprintf(subtleColor+"%s (%s)\n", status.Account.DisplayName, status.Account.Acct)
@@ -185,6 +198,12 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	info = append(info, ColorKey(app.Config.Style, "", "A", "vatar"))
 	if status.Account.ID == app.Me.ID {
 		info = append(info, ColorKey(app.Config.Style, "", "D", "elete"))
+	}
+
+	if status.Bookmarked == false {
+		info = append(info, ColorKey(app.Config.Style, "", "S", "ave"))
+	} else {
+		info = append(info, ColorKey(app.Config.Style, "Un", "S", "ave"))
 	}
 
 	controls := strings.Join(info, " ")
@@ -290,6 +309,7 @@ const (
 	ControlThread
 	ControlUser
 	ControlSpoiler
+	ControlBookmark
 )
 
 func inputOptions(options []ControlItem) ControlItem {
@@ -360,7 +380,7 @@ func inputSimple(app *App, event *tcell.EventKey, controls ControlItem,
 		if controls&ControlFavorite != 0 {
 			newStatus, err = app.API.FavoriteToogle(status)
 			if err != nil {
-				app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't favorite toot. Error: %v\n", err))
+				app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't toggle favorite on toot. Error: %v\n", err))
 				return
 			}
 			updated = true
@@ -411,6 +431,16 @@ func inputSimple(app *App, event *tcell.EventKey, controls ControlItem,
 	case 's', 'S':
 		if controls&ControlSpoiler != 0 {
 			feed.DrawSpoiler()
+		}
+		if controls&ControlBookmark != 0 {
+			newStatus, err = app.API.BookmarkToogle(status)
+			if err != nil {
+				app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't toggle bookmark on toot. Error: %v\n", err))
+				return
+			}
+			updated = true
+			redrawControls = true
+			redrawToot = true
 		}
 	case 't', 'T':
 		if controls&ControlThread != 0 {
@@ -473,6 +503,8 @@ func (t *TimelineFeed) GetDesc() string {
 		return "Timeline local"
 	case TimelineFederated:
 		return "Timeline federated"
+	case TimelineBookmarked:
+		return "Bookmarks"
 	}
 	return "Timeline"
 }
@@ -580,7 +612,7 @@ func (t *TimelineFeed) Input(event *tcell.EventKey) {
 	controls := []ControlItem{
 		ControlAvatar, ControlThread, ControlUser, ControlSpoiler,
 		ControlCompose, ControlOpen, ControlReply, ControlMedia,
-		ControlFavorite, ControlBoost, ControlDelete,
+		ControlFavorite, ControlBoost, ControlDelete, ControlBookmark,
 	}
 	options := inputOptions(controls)
 
@@ -898,7 +930,7 @@ func (u *UserFeed) Input(event *tcell.EventKey) {
 	controls := []ControlItem{
 		ControlAvatar, ControlThread, ControlSpoiler, ControlCompose,
 		ControlOpen, ControlReply, ControlMedia, ControlFavorite, ControlBoost,
-		ControlDelete, ControlUser,
+		ControlDelete, ControlUser, ControlBookmark,
 	}
 	options := inputOptions(controls)
 
@@ -1123,7 +1155,7 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 	controls := []ControlItem{
 		ControlAvatar, ControlThread, ControlUser, ControlSpoiler,
 		ControlCompose, ControlOpen, ControlReply, ControlMedia,
-		ControlFavorite, ControlBoost, ControlDelete,
+		ControlFavorite, ControlBoost, ControlDelete, ControlBookmark,
 	}
 	options := inputOptions(controls)
 
@@ -1273,7 +1305,7 @@ func (t *TagFeed) Input(event *tcell.EventKey) {
 	controls := []ControlItem{
 		ControlAvatar, ControlThread, ControlUser, ControlSpoiler,
 		ControlCompose, ControlOpen, ControlReply, ControlMedia,
-		ControlFavorite, ControlBoost, ControlDelete,
+		ControlFavorite, ControlBoost, ControlDelete, ControlBookmark,
 	}
 	options := inputOptions(controls)
 

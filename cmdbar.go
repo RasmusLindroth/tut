@@ -34,6 +34,11 @@ func (c *CmdBar) ShowError(s string) {
 	c.Input.SetText(s)
 }
 
+func (c *CmdBar) ShowMsg(s string) {
+	c.Input.SetFieldTextColor(c.app.Config.Style.StatusBarText)
+	c.Input.SetText(s)
+}
+
 func (c *CmdBar) ClearInput() {
 	c.Input.SetFieldTextColor(c.app.Config.Style.Text)
 	c.Input.SetText("")
@@ -58,6 +63,11 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 		c.app.UI.StatusView.AddFeed(NewUserListFeed(c.app, UserListBlocking, ""))
 		c.app.UI.SetFocus(LeftPaneFocus)
 		c.app.UI.CmdBar.ClearInput()
+	case ":bookmarks", ":saved":
+		c.app.UI.StatusView.AddFeed(NewTimelineFeed(c.app, TimelineBookmarked))
+		c.app.UI.SetFocus(LeftPaneFocus)
+		c.app.UI.CmdBar.ClearInput()
+
 	case ":boosts":
 		c.app.UI.CmdBar.ClearInput()
 		status := c.app.UI.StatusView.GetCurrentStatus()

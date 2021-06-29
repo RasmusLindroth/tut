@@ -15,6 +15,7 @@ const (
 	TimelineDirect
 	TimelineLocal
 	TimelineFederated
+	TimelineBookmarked
 )
 
 type UserListType uint
@@ -46,6 +47,13 @@ func (api *API) getStatuses(tl TimelineType, pg *mastodon.Pagination) ([]*mastod
 	var statuses []*mastodon.Status
 	var err error
 
+	var pgMin = mastodon.ID("")
+	var pgMax = mastodon.ID("")
+	if pg != nil {
+		pgMin = pg.MinID
+		pgMax = pg.MaxID
+	}
+
 	switch tl {
 	case TimelineHome:
 		statuses, err = api.Client.GetTimelineHome(context.Background(), pg)
@@ -61,8 +69,22 @@ func (api *API) getStatuses(tl TimelineType, pg *mastodon.Pagination) ([]*mastod
 		statuses, err = api.Client.GetTimelinePublic(context.Background(), true, pg)
 	case TimelineFederated:
 		statuses, err = api.Client.GetTimelinePublic(context.Background(), false, pg)
+	case TimelineBookmarked:
+		statuses, err = api.Client.GetBookmarks(context.Background(), pg)
 	default:
 		err = errors.New("No timeline selected")
+	}
+
+	if err != nil {
+		return statuses, err
+	}
+
+	if pg != nil && len(statuses) > 0 {
+		if pgMin != "" && statuses[0].ID == pgMin {
+			return []*mastodon.Status{}, nil
+		} else if pgMax != "" && statuses[len(statuses)-1].ID == pgMax {
+			return []*mastodon.Status{}, nil
+		}
 	}
 
 	return statuses, err
@@ -186,6 +208,12 @@ func (api *API) getUserList(t UserListType, id string, pg *mastodon.Pagination) 
 	var ud []*UserData
 	var users []*mastodon.Account
 	var err error
+	var pgMin = mastodon.ID("")
+	var pgMax = mastodon.ID("")
+	if pg != nil {
+		pgMin = pg.MinID
+		pgMax = pg.MinID
+	}
 
 	switch t {
 	case UserListSearch:
@@ -203,8 +231,17 @@ func (api *API) getUserList(t UserListType, id string, pg *mastodon.Pagination) 
 	case UserListMuting:
 		users, err = api.Client.GetMutes(context.Background(), pg)
 	}
+
 	if err != nil {
 		return ud, err
+	}
+
+	if pg != nil && len(users) > 0 {
+		if pgMin != "" && users[0].ID == pgMin {
+			return ud, nil
+		} else if pgMax != "" && users[len(users)-1].ID == pgMax {
+			return ud, nil
+		}
 	}
 
 	for _, u := range users {
@@ -285,6 +322,27 @@ func (api *API) Favorite(s *mastodon.Status) (*mastodon.Status, error) {
 
 func (api *API) Unfavorite(s *mastodon.Status) (*mastodon.Status, error) {
 	status, err := api.Client.Unfavourite(context.Background(), s.ID)
+	return status, err
+}
+
+func (api *API) BookmarkToogle(s *mastodon.Status) (*mastodon.Status, error) {
+	if s == nil {
+		return nil, fmt.Errorf("No status")
+	}
+
+	if s.Bookmarked == true {
+		return api.Unbookmark(s)
+	}
+	return api.Bookmark(s)
+}
+
+func (api *API) Bookmark(s *mastodon.Status) (*mastodon.Status, error) {
+	status, err := api.Client.Bookmark(context.Background(), s.ID)
+	return status, err
+}
+
+func (api *API) Unbookmark(s *mastodon.Status) (*mastodon.Status, error) {
+	status, err := api.Client.Unbookmark(context.Background(), s.ID)
 	return status, err
 }
 

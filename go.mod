@@ -7,7 +7,7 @@ require (
 	github.com/gdamore/tcell/v2 v2.3.11
 	github.com/icza/gox v0.0.0-20200702115100-7dc3510ae515
 	github.com/kyoh86/xdg v1.2.0
-	github.com/mattn/go-mastodon v0.0.5-0.20200727014106-315df7d9162e
+	github.com/mattn/go-mastodon v0.0.5-0.20210629151305-d39c10ba5e94
 	github.com/microcosm-cc/bluemonday v1.0.3
 	github.com/pelletier/go-toml v1.8.0
 	github.com/rivo/tview v0.0.0-20210623194135-452d97725245
