@@ -97,7 +97,6 @@ func openEditor(app *tview.Application, content string) (string, error) {
 		text, err = ioutil.ReadAll(f)
 	})
 	f.Close()
-	time.Sleep(100 * time.Millisecond)
 	if err != nil {
 		return "", err
 	}
