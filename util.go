@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gdamore/tcell"
+	"github.com/gdamore/tcell/v2"
 	"github.com/icza/gox/timex"
 	"github.com/mattn/go-mastodon"
 	"github.com/microcosm-cc/bluemonday"
