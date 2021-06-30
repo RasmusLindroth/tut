@@ -76,7 +76,7 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	}
 	if statusSensitive && !showSensitive {
 		strippedSpoiler += "\n" + subtleColor + line
-		strippedSpoiler += subtleColor + tview.Escape("Press [s] to show hidden text")
+		strippedSpoiler += subtleColor + tview.Escape("Press [z] to show hidden text")
 		stripped = strippedSpoiler
 	}
 	if statusSensitive && showSensitive {
@@ -429,9 +429,6 @@ func inputSimple(app *App, event *tcell.EventKey, controls ControlItem,
 			app.UI.Reply(status)
 		}
 	case 's', 'S':
-		if controls&ControlSpoiler != 0 {
-			feed.DrawSpoiler()
-		}
 		if controls&ControlBookmark != 0 {
 			newStatus, err = app.API.BookmarkToogle(status)
 			if err != nil {
@@ -453,6 +450,10 @@ func inputSimple(app *App, event *tcell.EventKey, controls ControlItem,
 			app.UI.StatusView.AddFeed(
 				NewUserFeed(app, user),
 			)
+		}
+	case 'z', 'Z':
+		if controls&ControlSpoiler != 0 {
+			feed.DrawSpoiler()
 		}
 	}
 	return
