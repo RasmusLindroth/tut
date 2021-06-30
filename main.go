@@ -166,6 +166,9 @@ func main() {
 				case 't', 'T':
 					app.UI.MessageBox.ToggleSpoiler()
 					return nil
+				case 'i', 'I':
+					app.UI.MessageBox.IncludeQuote()
+					return nil
 				case 'm', 'M':
 					app.UI.SetFocus(MessageAttachmentFocus)
 					return nil

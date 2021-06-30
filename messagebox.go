@@ -12,12 +12,13 @@ import (
 )
 
 type msgToot struct {
-	Text        string
-	Status      *mastodon.Status
-	MediaIDs    []mastodon.ID
-	Sensitive   bool
-	SpoilerText string
-	ScheduledAt *time.Time
+	Text          string
+	Status        *mastodon.Status
+	MediaIDs      []mastodon.ID
+	Sensitive     bool
+	SpoilerText   string
+	ScheduledAt   *time.Time
+	QuoteIncluded bool
 }
 
 func VisibilityToText(s string) string {
@@ -164,6 +165,7 @@ func (m *MessageBox) Draw() {
 	items = append(items, ColorKey(m.app.Config.Style, "", "T", "oggle CW"))
 	items = append(items, ColorKey(m.app.Config.Style, "", "C", "ontent warning text"))
 	items = append(items, ColorKey(m.app.Config.Style, "", "M", "edia attachment"))
+	items = append(items, ColorKey(m.app.Config.Style, "", "I", "nclude quote"))
 	status := strings.Join(items, " ")
 	m.Controls.SetText(status)
 
@@ -208,6 +210,8 @@ func (m *MessageBox) Draw() {
 func (m *MessageBox) EditText() {
 	t := m.currentToot.Text
 	s := m.currentToot.Status
+	m.currentToot.QuoteIncluded = false
+
 	if t == "" && s != nil {
 		var users []string
 		if s.Account.Acct != m.app.Me.Acct {
@@ -220,18 +224,13 @@ func (m *MessageBox) EditText() {
 			users = append(users, "@"+men.Acct)
 		}
 		t = strings.Join(users, " ")
+		m.currentToot.Text = t
 
 		if m.app.Config.General.QuoteReply {
-			tootText, _ := cleanTootHTML(s.Content)
-
-			t += "\n"
-			for _, line := range strings.Split(tootText, "\n") {
-				t += "> " + line + "\n"
-			}
-			t += "\n"
+			m.IncludeQuote()
 		}
 	}
-	text, err := openEditor(m.app.UI.Root, t)
+	text, err := openEditor(m.app.UI.Root, m.currentToot.Text)
 	if err != nil {
 		m.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't edit toot. Error: %v\n", err))
 		m.Draw()
@@ -239,6 +238,23 @@ func (m *MessageBox) EditText() {
 	}
 	m.currentToot.Text = text
 	m.Draw()
+}
+
+func (m *MessageBox) IncludeQuote() {
+	if m.currentToot.QuoteIncluded {
+		return
+	}
+	t := m.currentToot.Text
+	s := m.currentToot.Status
+	tootText, _ := cleanTootHTML(s.Content)
+
+	t += "\n"
+	for _, line := range strings.Split(tootText, "\n") {
+		t += "> " + line + "\n"
+	}
+	t += "\n"
+	m.currentToot.Text = t
+	m.currentToot.QuoteIncluded = true
 }
 
 func (m *MessageBox) EditSpoiler() {
