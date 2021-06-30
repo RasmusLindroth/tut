@@ -246,6 +246,9 @@ func (m *MessageBox) IncludeQuote() {
 	}
 	t := m.currentToot.Text
 	s := m.currentToot.Status
+	if s == nil {
+		return
+	}
 	tootText, _ := cleanTootHTML(s.Content)
 
 	t += "\n"
