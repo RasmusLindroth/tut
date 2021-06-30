@@ -23,6 +23,7 @@ type GeneralConfig struct {
 	DateRelative     int
 	StartTimeline    TimelineType
 	NotificationFeed bool
+	QuoteReply       bool
 }
 
 type StyleConfig struct {
@@ -189,6 +190,8 @@ func parseGeneral(cfg *ini.File) GeneralConfig {
 
 	general.NotificationFeed = cfg.Section("general").Key("notification-feed").MustBool(true)
 
+	general.QuoteReply = cfg.Section("general").Key("quote-reply").MustBool(false)
+
 	return general
 }
 
@@ -318,6 +321,10 @@ timeline=home
 # under your timeline feed
 # default=true
 notification-feed=true
+
+# If you always want to quote original message when replying
+# default=false
+quote-reply=false
 
 [media]
 # Your image viewer
