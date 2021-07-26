@@ -213,6 +213,12 @@ func (ui *UI) SetFocus(f FocusAt) {
 			ui.app.Config.Style.StatusBarViewText,
 		)
 	default:
+		ui.app.UI.StatusBar.Text.SetBackgroundColor(
+			ui.app.Config.Style.StatusBarBackground,
+		)
+		ui.app.UI.StatusBar.Text.SetTextColor(
+			ui.app.Config.Style.StatusBarText,
+		)
 		ui.StatusView.list.SetSelectedBackgroundColor(
 			ui.app.Config.Style.ListSelectedBackground,
 		)
