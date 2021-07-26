@@ -13,7 +13,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.15
 	github.com/pelletier/go-toml v1.9.3
-	github.com/rivo/tview v0.0.0-20210624165335-29d673af0ce2
+	github.com/rivo/tview v0.0.0-20210624155130-5f8430624688
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	golang.org/x/net v0.0.0-20210716203947-853a461950ff
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
