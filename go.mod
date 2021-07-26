@@ -5,7 +5,9 @@ go 1.14
 require (
 	github.com/atotto/clipboard v0.1.4
 	github.com/gdamore/tcell/v2 v2.4.0
+	github.com/gen2brain/beeep v0.0.0-20210529141713-5586760f0cc1
 	github.com/gobwas/glob v0.2.3
+	github.com/godbus/dbus/v5 v5.0.4 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/icza/gox v0.0.0-20201215141822-6edfac6c05b5
 	github.com/kyoh86/xdg v1.2.0
