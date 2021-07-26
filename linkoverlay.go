@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-mastodon"
@@ -25,7 +27,13 @@ func NewLinkOverlay(app *App) *LinkOverlay {
 	l.List.ShowSecondaryText(false)
 	l.List.SetHighlightFullLine(true)
 	l.Flex.SetDrawFunc(app.Config.ClearContent)
-	l.TextBottom.SetText(ColorKey(app.Config.Style, "", "O", "pen"))
+	var items []string
+	items = append(items, ColorKey(app.Config.Style, "", "O", "pen"))
+	items = append(items, ColorKey(app.Config.Style, "", "Y", "ank"))
+	for _, cust := range app.Config.OpenCustom.OpenCustoms {
+		items = append(items, ColorKey(app.Config.Style, "", fmt.Sprintf("%d", cust.Index), cust.Name))
+	}
+	l.TextBottom.SetText(strings.Join(items, " "))
 	return l
 }
 
@@ -85,7 +93,7 @@ func (l *LinkOverlay) Open() {
 		return
 	}
 	if index < len(l.urls) {
-		openURL(l.app.Config.Media, l.urls[index].URL)
+		openURL(l.app.Config.Media, l.app.Config.OpenPattern, l.urls[index].URL)
 		return
 	}
 	mIndex := index - len(l.urls)
@@ -110,6 +118,48 @@ func (l *LinkOverlay) Open() {
 	}
 }
 
+func (l *LinkOverlay) CopyToClipboard() {
+	text := l.GetURL()
+	if text != "" {
+		e := copyToClipboard(text)
+		if e == false {
+			l.app.UI.CmdBar.ShowError("Couldn't copy to clipboard.")
+		}
+	}
+}
+
+func (l *LinkOverlay) GetURL() string {
+	index := l.List.GetCurrentItem()
+	total := len(l.urls) + len(l.mentions) + len(l.tags)
+	if total == 0 || index >= total {
+		return ""
+	}
+	if index < len(l.urls) {
+		return l.urls[index].URL
+	}
+	mIndex := index - len(l.urls)
+	if mIndex < len(l.mentions) {
+		return l.mentions[mIndex].URL
+	}
+	tIndex := index - len(l.mentions) - len(l.urls)
+	if tIndex < len(l.tags) {
+		return l.tags[tIndex].URL
+	}
+	return ""
+}
+
+func (l *LinkOverlay) OpenCustom(index int) {
+	url := l.GetURL()
+	customs := l.app.Config.OpenCustom.OpenCustoms
+	for _, c := range customs {
+		if c.Index != index {
+			continue
+		}
+		openCustom(c.Program, c.Args, url)
+		return
+	}
+}
+
 func (l *LinkOverlay) InputHandler(event *tcell.EventKey) {
 	if event.Key() == tcell.KeyRune {
 		switch event.Rune() {
@@ -119,6 +169,12 @@ func (l *LinkOverlay) InputHandler(event *tcell.EventKey) {
 			l.Prev()
 		case 'o', 'O':
 			l.Open()
+		case 'y', 'Y':
+			l.CopyToClipboard()
+		case '1', '2', '3', '4', '5':
+			s := string(event.Rune())
+			i, _ := strconv.Atoi(s)
+			l.OpenCustom(i)
 		case 'q', 'Q':
 			l.app.UI.SetFocus(LeftPaneFocus)
 		}

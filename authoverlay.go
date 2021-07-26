@@ -66,7 +66,7 @@ func (a *AuthOverlay) GotInput() {
 			return
 		}
 		a.account = acc
-		openURL(a.app.Config.Media, acc.AuthURI)
+		openURL(a.app.Config.Media, a.app.Config.OpenPattern, acc.AuthURI)
 		a.Input.SetText("")
 		a.authStep = authCodeStep
 		a.Draw()

@@ -3,7 +3,9 @@ module github.com/RasmusLindroth/tut
 go 1.14
 
 require (
+	github.com/atotto/clipboard v0.1.4
 	github.com/gdamore/tcell/v2 v2.3.11
+	github.com/gobwas/glob v0.2.3
 	github.com/icza/gox v0.0.0-20200702115100-7dc3510ae515
 	github.com/kyoh86/xdg v1.2.0
 	github.com/mattn/go-mastodon v0.0.5-0.20210629151305-d39c10ba5e94
