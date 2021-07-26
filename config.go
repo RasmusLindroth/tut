@@ -1,18 +1,22 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/gobwas/glob"
 	"github.com/kyoh86/xdg"
 	"gopkg.in/ini.v1"
 )
 
 type Config struct {
-	General GeneralConfig
-	Style   StyleConfig
-	Media   MediaConfig
+	General     GeneralConfig
+	Style       StyleConfig
+	Media       MediaConfig
+	OpenPattern OpenPatternConfig
+	OpenCustom  OpenCustomConfig
 }
 
 type GeneralConfig struct {
@@ -61,6 +65,28 @@ type MediaConfig struct {
 	AudioSingle bool
 	LinkViewer  string
 	LinkArgs    []string
+}
+
+type Pattern struct {
+	Pattern  string
+	Open     string
+	Compiled glob.Glob
+	Program  string
+	Args     []string
+}
+
+type OpenPatternConfig struct {
+	Patterns []Pattern
+}
+
+type OpenCustom struct {
+	Index   int
+	Name    string
+	Program string
+	Args    []string
+}
+type OpenCustomConfig struct {
+	OpenCustoms []OpenCustom
 }
 
 func parseColor(input string, def string, xrdb map[string]string) tcell.Color {
@@ -239,6 +265,80 @@ func parseMedia(cfg *ini.File) MediaConfig {
 	return media
 }
 
+func ParseOpenPattern(cfg *ini.File) OpenPatternConfig {
+	om := OpenPatternConfig{}
+
+	keys := cfg.Section("open-pattern").KeyStrings()
+	pairs := make(map[string]Pattern)
+	for _, s := range keys {
+		parts := strings.Split(s, "-")
+		if len(parts) < 2 {
+			panic(fmt.Sprintf("Invalid key %s in config. Must end in -pattern or -use", s))
+		}
+		last := parts[len(parts)-1]
+		if last != "pattern" && last != "use" {
+			panic(fmt.Sprintf("Invalid key %s in config. Must end in -pattern or -use", s))
+		}
+
+		name := strings.Join(parts[:len(parts)-1], "-")
+		if _, ok := pairs[name]; !ok {
+			pairs[name] = Pattern{}
+		}
+		if last == "pattern" {
+			tmp := pairs[name]
+			tmp.Pattern = cfg.Section("open-pattern").Key(s).MustString("")
+			pairs[name] = tmp
+		}
+		if last == "use" {
+			tmp := pairs[name]
+			tmp.Open = cfg.Section("open-pattern").Key(s).MustString("")
+			pairs[name] = tmp
+		}
+	}
+
+	for key := range pairs {
+		if pairs[key].Pattern == "" {
+			panic(fmt.Sprintf("Invalid value for key %s in config. Can't be empty", key+"-pattern"))
+		}
+		if pairs[key].Open == "" {
+			panic(fmt.Sprintf("Invalid value for key %s in config. Can't be empty", key+"-use"))
+		}
+
+		compiled, err := glob.Compile(pairs[key].Pattern)
+		if err != nil {
+			panic(fmt.Sprintf("Couldn't compile pattern for key %s in config. Error: %v", key+"-pattern", err))
+		}
+		tmp := pairs[key]
+		tmp.Compiled = compiled
+		comp := strings.Fields(tmp.Open)
+		tmp.Program = comp[0]
+		tmp.Args = comp[1:]
+		om.Patterns = append(om.Patterns, tmp)
+	}
+
+	return om
+}
+
+func ParseCustom(cfg *ini.File) OpenCustomConfig {
+	oc := OpenCustomConfig{}
+
+	for i := 1; i < 6; i++ {
+		name := cfg.Section("open-custom").Key(fmt.Sprintf("c%d-name", i)).MustString("")
+		use := cfg.Section("open-custom").Key(fmt.Sprintf("c%d-use", i)).MustString("")
+		if use == "" {
+			continue
+		}
+		comp := strings.Fields(use)
+		c := OpenCustom{}
+		c.Index = i
+		c.Name = name
+		c.Program = comp[0]
+		c.Args = comp[1:]
+		oc.OpenCustoms = append(oc.OpenCustoms, c)
+	}
+	return oc
+}
+
 func ParseConfig(filepath string) (Config, error) {
 	cfg, err := ini.LoadSources(ini.LoadOptions{
 		SpaceBeforeInlineComment: true,
@@ -250,6 +350,9 @@ func ParseConfig(filepath string) (Config, error) {
 	conf.General = parseGeneral(cfg)
 	conf.Media = parseMedia(cfg)
 	conf.Style = parseStyle(cfg)
+	conf.OpenPattern = ParseOpenPattern(cfg)
+	conf.OpenCustom = ParseCustom(cfg)
+
 	return conf, nil
 }
 
@@ -357,6 +460,43 @@ audio-single=true
 # Your web browser
 # default=xdg-open
 link-viewer=xdg-open
+
+[open-custom]
+# This sections allows you to set up to five custom programs to upen URLs with.
+# If the url points to an image, you can set c1-name to img and c1-use to imv.
+# The name will show up in the UI, so keep it short so all five fits.
+#
+# c1-name=img
+# c1-use=imv
+# 
+# c2-name=
+# c2-use=
+# 
+# c3-name=
+# c3-use=
+# 
+# c4-name=
+# c4-use=
+# 
+# c5-name=
+# c5-use=
+
+[open-pattern]
+# Here you can set your own glob patterns for opening matching URLs in the
+# program you want them to open up in.
+# You could for example open Youtube videos in your video player instead of
+# your default browser.
+#
+# You must name the keys foo-pattern and foo-use, where use is the program 
+# that will open up the URL. To see the syntax for glob pattern you can follow
+# this URL https://github.com/gobwas/glob#syntax
+#
+# Example for youtube.com and youtu.be to open up in mpv instead of the browser
+#
+# y1-pattern=*youtube.com/watch*
+# y1-use=mpv
+# y2-pattern=*youtu.be/*
+# y2-use=mpv
 
 [style]
 # All styles can be represented in their HEX value like #ffffff or

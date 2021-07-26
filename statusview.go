@@ -84,6 +84,8 @@ type StatusView struct {
 
 func (t *StatusView) AddFeed(f Feed) {
 	t.feeds = append(t.feeds, f)
+	t.focus = LeftPaneFocus
+	t.lastList = LeftPaneFocus
 	f.DrawList()
 	t.list.SetCurrentItem(f.GetSavedIndex())
 	f.DrawToot()

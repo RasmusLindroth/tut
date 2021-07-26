@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/atotto/clipboard"
 	"github.com/gdamore/tcell/v2"
 	"github.com/icza/gox/timex"
 	"github.com/mattn/go-mastodon"
@@ -103,7 +104,27 @@ func openEditor(app *tview.Application, content string) (string, error) {
 	return strings.TrimSpace(string(text)), nil
 }
 
-func openURL(conf MediaConfig, url string) {
+func copyToClipboard(text string) bool {
+	if clipboard.Unsupported {
+		return false
+	}
+	clipboard.WriteAll(text)
+	return true
+}
+
+func openCustom(program string, args []string, url string) {
+	args = append(args, url)
+	exec.Command(program, args...).Start()
+}
+
+func openURL(conf MediaConfig, pc OpenPatternConfig, url string) {
+	for _, m := range pc.Patterns {
+		if m.Compiled.Match(url) {
+			args := append(m.Args, url)
+			exec.Command(m.Program, args...).Start()
+			return
+		}
+	}
 	args := append(conf.LinkArgs, url)
 	exec.Command(conf.LinkViewer, args...).Start()
 }
