@@ -43,8 +43,8 @@ github.com/mattn/go-runewidth v0.0.6/go.mod h1:H031xJmbD/WCDINGzjvQ9THkh0rPKHF+m
 github.com/mattn/go-runewidth v0.0.10 h1:CoZ3S2P7pvtP45xOtBw+/mDL2z0RKI576gSkzRRpdGg=
 github.com/mattn/go-runewidth v0.0.10/go.mod h1:RAqKPSqVFrSLVXbA8x7dzmKdmGzieGRCM46jaSJTDAk=
 github.com/mattn/go-tty v0.0.3/go.mod h1:ihxohKRERHTVzN+aSVRwACLCeqIoZAWpoICkkvrWyR0=
-github.com/microcosm-cc/bluemonday v1.0.3 h1:EjVH7OqbU219kdm8acbveoclh2zZFqPJTJw6VUlTLAQ=
-github.com/microcosm-cc/bluemonday v1.0.3/go.mod h1:8iwZnFn2CDDNZ0r6UXhF4xawGvzaqzCRa1n3/lO3W2w=
+github.com/microcosm-cc/bluemonday v1.0.5 h1:cF59UCKMmmUgqN1baLvqU/B1ZsMori+duLVTLpgiG3w=
+github.com/microcosm-cc/bluemonday v1.0.5/go.mod h1:8iwZnFn2CDDNZ0r6UXhF4xawGvzaqzCRa1n3/lO3W2w=
 github.com/pelletier/go-toml v1.8.0 h1:Keo9qb7iRJs2voHvunFtuuYFsbWeOBh8/P9v/kVMFtw=
 github.com/pelletier/go-toml v1.8.0/go.mod h1:D6yutnOGMveHEPV7VQOuvI/gXY61bv+9bAOTRnLElKs=
 github.com/rivo/tview v0.0.0-20210623194135-452d97725245 h1:/pmwdT+x50LT2604pZmlN0JX7OpZg6waCrl11+VIYbs=
