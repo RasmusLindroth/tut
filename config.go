@@ -12,11 +12,12 @@ import (
 )
 
 type Config struct {
-	General     GeneralConfig
-	Style       StyleConfig
-	Media       MediaConfig
-	OpenPattern OpenPatternConfig
-	OpenCustom  OpenCustomConfig
+	General            GeneralConfig
+	Style              StyleConfig
+	Media              MediaConfig
+	OpenPattern        OpenPatternConfig
+	OpenCustom         OpenCustomConfig
+	NotificationConfig NotificationConfig
 }
 
 type GeneralConfig struct {
@@ -87,6 +88,26 @@ type OpenCustom struct {
 }
 type OpenCustomConfig struct {
 	OpenCustoms []OpenCustom
+}
+
+type NotificationType uint
+
+const (
+	NotificationFollower = iota
+	NotificationFavorite
+	NotificationMention
+	NotificationBoost
+	NotificationPoll
+	NotificationPost
+)
+
+type NotificationConfig struct {
+	NotificationFollower bool
+	NotificationFavorite bool
+	NotificationMention  bool
+	NotificationBoost    bool
+	NotificationPoll     bool
+	NotificationPost     bool
 }
 
 func parseColor(input string, def string, xrdb map[string]string) tcell.Color {
@@ -339,6 +360,17 @@ func ParseCustom(cfg *ini.File) OpenCustomConfig {
 	return oc
 }
 
+func ParseNotifications(cfg *ini.File) NotificationConfig {
+	nc := NotificationConfig{}
+	nc.NotificationFollower = cfg.Section("desktop-notification").Key("followers").MustBool(false)
+	nc.NotificationFavorite = cfg.Section("desktop-notification").Key("favorite").MustBool(false)
+	nc.NotificationMention = cfg.Section("desktop-notification").Key("mention").MustBool(false)
+	nc.NotificationBoost = cfg.Section("desktop-notification").Key("boost").MustBool(false)
+	nc.NotificationPoll = cfg.Section("desktop-notification").Key("poll").MustBool(false)
+	nc.NotificationPost = cfg.Section("desktop-notification").Key("posts").MustBool(false)
+	return nc
+}
+
 func ParseConfig(filepath string) (Config, error) {
 	cfg, err := ini.LoadSources(ini.LoadOptions{
 		SpaceBeforeInlineComment: true,
@@ -352,6 +384,7 @@ func ParseConfig(filepath string) (Config, error) {
 	conf.Style = parseStyle(cfg)
 	conf.OpenPattern = ParseOpenPattern(cfg)
 	conf.OpenCustom = ParseCustom(cfg)
+	conf.NotificationConfig = ParseNotifications(cfg)
 
 	return conf, nil
 }
@@ -497,6 +530,33 @@ link-viewer=xdg-open
 # y1-use=mpv
 # y2-pattern=*youtu.be/*
 # y2-use=mpv
+
+[desktop-notification]
+# Under this section you can turn on desktop notifications
+
+# Notification when someone follows you
+# default=false
+followers=false
+
+# Notification when someone favorites one of your toots
+# default=false
+favorite=false
+
+# Notification when someone mentions you
+# default=false
+mention=false
+
+# Notification when someone boosts one of your toots
+# default=false
+boost=false
+
+# Notification of poll results
+# default=false
+poll=false
+
+# New posts in current timeline
+# default=false
+posts=false
 
 [style]
 # All styles can be represented in their HEX value like #ffffff or

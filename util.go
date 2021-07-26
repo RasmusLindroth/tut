@@ -15,6 +15,7 @@ import (
 
 	"github.com/atotto/clipboard"
 	"github.com/gdamore/tcell/v2"
+	"github.com/gen2brain/beeep"
 	"github.com/icza/gox/timex"
 	"github.com/mattn/go-mastodon"
 	"github.com/microcosm-cc/bluemonday"
@@ -335,4 +336,35 @@ func OutputDate(status time.Time, today time.Time, long, short string, relativeD
 		dateOutput = status.Format(format)
 	}
 	return dateOutput
+}
+
+func Notify(nc NotificationConfig, t NotificationType, title string, body string) {
+	switch t {
+	case NotificationFollower:
+		if nc.NotificationFollower == false {
+			return
+		}
+	case NotificationFavorite:
+		if nc.NotificationFavorite == false {
+			return
+		}
+	case NotificationMention:
+		if nc.NotificationMention == false {
+			return
+		}
+	case NotificationBoost:
+		if nc.NotificationBoost == false {
+			return
+		}
+	case NotificationPoll:
+		if nc.NotificationPoll == false {
+			return
+		}
+	case NotificationPost:
+		if nc.NotificationPost == false {
+			return
+		}
+	}
+
+	beeep.Notify(title, body, "")
 }
