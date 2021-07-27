@@ -182,7 +182,11 @@ func main() {
 			} else {
 				switch event.Key() {
 				case tcell.KeyEsc:
-					app.UI.SetFocus(LeftPaneFocus)
+					if app.UI.StatusView.focus == NotificationPaneFocus {
+						app.UI.SetFocus(NotificationPaneFocus)
+					} else {
+						app.UI.SetFocus(LeftPaneFocus)
+					}
 					return nil
 				}
 			}
