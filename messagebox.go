@@ -171,13 +171,13 @@ func (m *MessageBox) TootLength() int {
 
 func (m *MessageBox) Draw() {
 	var items []string
-	items = append(items, ColorKey(m.app.Config.Style, "", "P", "ost"))
-	items = append(items, ColorKey(m.app.Config.Style, "", "E", "dit"))
-	items = append(items, ColorKey(m.app.Config.Style, "", "V", "isibility"))
-	items = append(items, ColorKey(m.app.Config.Style, "", "T", "oggle CW"))
-	items = append(items, ColorKey(m.app.Config.Style, "", "C", "ontent warning text"))
-	items = append(items, ColorKey(m.app.Config.Style, "", "M", "edia attachment"))
-	items = append(items, ColorKey(m.app.Config.Style, "", "I", "nclude quote"))
+	items = append(items, ColorKey(m.app.Config, "", "P", "ost"))
+	items = append(items, ColorKey(m.app.Config, "", "E", "dit"))
+	items = append(items, ColorKey(m.app.Config, "", "V", "isibility"))
+	items = append(items, ColorKey(m.app.Config, "", "T", "oggle CW"))
+	items = append(items, ColorKey(m.app.Config, "", "C", "ontent warning text"))
+	items = append(items, ColorKey(m.app.Config, "", "M", "edia attachment"))
+	items = append(items, ColorKey(m.app.Config, "", "I", "nclude quote"))
 	status := strings.Join(items, " ")
 	m.Controls.SetText(status)
 

@@ -30,6 +30,7 @@ type GeneralConfig struct {
 	NotificationFeed bool
 	QuoteReply       bool
 	CharLimit        int
+	ShortHints       bool
 }
 
 type StyleConfig struct {
@@ -239,6 +240,7 @@ func parseGeneral(cfg *ini.File) GeneralConfig {
 	general.NotificationFeed = cfg.Section("general").Key("notification-feed").MustBool(true)
 	general.QuoteReply = cfg.Section("general").Key("quote-reply").MustBool(false)
 	general.CharLimit = cfg.Section("general").Key("char-limit").MustInt(500)
+	general.ShortHints = cfg.Section("general").Key("short-hints").MustBool(false)
 
 	return general
 }
@@ -466,6 +468,11 @@ quote-reply=false
 # If you're on an instance with a custom character limit you can set it here 
 # default=500
 char-limit=500
+
+# If you've learnt all the shortcut keys you can remove the help text and 
+# only show the key in tui. So it gets less cluttered.
+# default=false
+short-hints=false
 
 [media]
 # Your image viewer
