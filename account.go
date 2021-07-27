@@ -6,21 +6,21 @@ import (
 	"os"
 
 	"github.com/mattn/go-mastodon"
-	"github.com/pelletier/go-toml"
+	"github.com/pelletier/go-toml/v2"
 )
 
-func GetAccounts(filepath string) (AccountData, error) {
+func GetAccounts(filepath string) (*AccountData, error) {
 	f, err := os.Open(filepath)
 	if err != nil {
-		return AccountData{}, err
+		return &AccountData{}, err
 	}
 	defer f.Close()
 	data, err := ioutil.ReadAll(f)
 	if err != nil {
-		return AccountData{}, err
+		return &AccountData{}, err
 	}
-	accounts := AccountData{}
-	err = toml.Unmarshal(data, &accounts)
+	accounts := &AccountData{}
+	err = toml.Unmarshal(data, accounts)
 	return accounts, err
 }
 
@@ -60,6 +60,7 @@ func (a *Account) Login() (*mastodon.Client, error) {
 	}
 	client := mastodon.NewClient(config)
 	_, err := client.GetAccountCurrentUser(context.Background())
+
 	return client, err
 }
 

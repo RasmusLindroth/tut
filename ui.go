@@ -22,6 +22,7 @@ const (
 	LinkOverlayFocus
 	VisibilityOverlayFocus
 	AuthOverlayFocus
+	UserSelectFocus
 )
 
 func NewUI(app *App) *UI {
@@ -56,6 +57,7 @@ func (ui *UI) Init() {
 	ui.LinkOverlay = NewLinkOverlay(ui.app)
 	ui.VisibilityOverlay = NewVisibilityOverlay(ui.app)
 	ui.AuthOverlay = NewAuthOverlay(ui.app)
+	ui.UserSelectOverlay = NewUserSelectOverlay(ui.app)
 	ui.MediaOverlay = NewMediaOverlay(ui.app)
 
 	ui.Pages.SetBackgroundColor(ui.app.Config.Style.Background)
@@ -121,7 +123,17 @@ func (ui *UI) Init() {
 				AddItem(nil, 0, 1, false), 0, 6, true).
 			AddItem(nil, 0, 1, false),
 		true, false)
-
+	ui.Pages.AddPage("userselect",
+		tview.NewFlex().
+			AddItem(nil, 0, 1, false).
+			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+				AddItem(nil, 0, 1, false).
+				AddItem(ui.UserSelectOverlay.Flex.SetDirection(tview.FlexRow).
+					AddItem(ui.UserSelectOverlay.Text, 2, 1, false).
+					AddItem(ui.UserSelectOverlay.List, 0, 9, true), 0, 9, true).
+				AddItem(nil, 0, 1, false), 0, 6, true).
+			AddItem(nil, 0, 1, false),
+		true, false)
 	ui.Pages.AddPage("media", tview.NewFlex().AddItem(nil, 0, 1, false).
 		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 			AddItem(nil, 0, 1, false).
@@ -151,6 +163,7 @@ type UI struct {
 	LinkOverlay       *LinkOverlay
 	VisibilityOverlay *VisibilityOverlay
 	AuthOverlay       *AuthOverlay
+	UserSelectOverlay *UserSelectOverlay
 	MediaOverlay      *MediaView
 	Timeline          TimelineType
 	StatusView        *StatusView
@@ -195,6 +208,10 @@ func (ui *UI) SetFocus(f FocusAt) {
 	case AuthOverlayFocus:
 		ui.Pages.ShowPage("login")
 		ui.FocusAt(ui.AuthOverlay.Input, "-- LOGIN --")
+	case UserSelectFocus:
+		ui.UserSelectOverlay.Draw()
+		ui.Pages.ShowPage("userselect")
+		ui.FocusAt(ui.UserSelectOverlay.List, "-- SELECT USER --")
 	case NotificationPaneFocus:
 		ui.Pages.SwitchToPage("main")
 		ui.FocusAt(nil, "-- NOTIFICATIONS --")
@@ -294,7 +311,7 @@ func (ui *UI) SetTopText(s string) {
 	if s == "" {
 		ui.Top.Text.SetText("tut")
 	} else {
-		ui.Top.Text.SetText(fmt.Sprintf("tut - %s", s))
+		ui.Top.Text.SetText(fmt.Sprintf("tut - %s - %s", s, ui.app.FullUsername))
 	}
 }
 

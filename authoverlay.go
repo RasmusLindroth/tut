@@ -81,22 +81,19 @@ func (a *AuthOverlay) GotInput() {
 		if err != nil {
 			log.Fatalf("Couldn't open the account file for reading. Error: %v", err)
 		}
-		ad := AccountData{
-			Accounts: []Account{
-				{
-					Server:       client.Config.Server,
-					ClientID:     client.Config.ClientID,
-					ClientSecret: client.Config.ClientSecret,
-					AccessToken:  client.Config.AccessToken,
-				},
-			},
+		ad := Account{
+			Server:       client.Config.Server,
+			ClientID:     client.Config.ClientID,
+			ClientSecret: client.Config.ClientSecret,
+			AccessToken:  client.Config.AccessToken,
 		}
-		err = ad.Save(path)
+		a.app.Accounts.Accounts = append(a.app.Accounts.Accounts, ad)
+		err = a.app.Accounts.Save(path)
 		if err != nil {
 			log.Fatalf("Couldn't save the account file. Error: %v", err)
 		}
-		a.app.API.SetClient(client)
-		a.app.HaveAccount = true
+		index := len(a.app.Accounts.Accounts) - 1
+		a.app.Login(index)
 		a.app.UI.LoggedIn()
 	}
 }

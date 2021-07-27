@@ -48,6 +48,9 @@ You can find an updated configuration file in this repo named `config.example.in
 If there are any new configurations options you can copy them frome that file.
 
 ## Install instructions
+### Binary releases
+Head over to https://github.com/RasmusLindroth/tut/releases
+
 ### Arch or Manjaro?
 
 You can find it in the Arch User Repository (AUR). I'm the maintainer there.
@@ -90,13 +93,19 @@ go build
 If you choose to install and want to be able to just run `tut` 
 you will have to add `go/bin` to your `$PATH`.
 
+## Flags and commands
+```
+Commands:
+    example-config - creates the default configuration file in the current directory and names it ./config.example.ini
 
-
-## On my TODO-list:
-* Multiple accounts
-* Support search
-* Support lists
-* Better error handling (in other words, don't crash the whole program)
+Flags:
+    --help -h - prints this message
+    --version -v - prints the version
+    --new-user -n - add one more user to tut
+    --user <name> -u <name> - login directly to user named <name>
+        Don't use a = between --user and the <name> 
+        If two users are named the same. Use full name like tut@fosstodon.org
+```
 
 ## Thanks to
 * [mattn/go-mastodon](https://github.com/mattn/go-mastodon) - used to make calls to the Mastodon API

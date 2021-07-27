@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"os"
@@ -13,15 +12,23 @@ import (
 const version string = "0.0.24"
 
 func main() {
-
+	newUser := false
+	selectedUser := ""
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case "example-config":
 			CreateDefaultConfig("./config.example.ini")
 			os.Exit(0)
-		case "--help":
-			fallthrough
-		case "-h":
+		case "--new-user", "-n":
+			newUser = true
+		case "--user", "-u":
+			if len(os.Args) > 2 {
+				name := os.Args[2]
+				selectedUser = strings.TrimSpace(name)
+			} else {
+				log.Fatalln("--user/-u must be followed by a user name. Like -u tut")
+			}
+		case "--help", "-h":
 			fmt.Print("tut - a TUI for Mastodon with vim inspired keys.\n\n")
 			fmt.Print("Usage:\n\n")
 			fmt.Print("\tTo run the program you just have to write tut\n\n")
@@ -31,7 +38,11 @@ func main() {
 
 			fmt.Print("Flags:\n\n")
 			fmt.Print("\t--help -h - prints this message\n")
-			fmt.Print("\t--version -v - prints the version\n\n")
+			fmt.Print("\t--version -v - prints the version\n")
+			fmt.Print("\t--new-user -n - add one more user to tut\n")
+			fmt.Print("\t--user <name> -u <name> - login directly to user namde <name>\n")
+			fmt.Print("\t\tDon't use a = between --user and the <name>\n")
+			fmt.Print("\t\tIf two users are named the same. Use full name like tut@fosstodon.org\n\n")
 
 			fmt.Print("Configuration:\n\n")
 			fmt.Printf("\tThe config is located in XDG_CONFIG_HOME/tut/config.ini which usally equals to ~/.config/tut/config.ini.\n")
@@ -41,9 +52,7 @@ func main() {
 			fmt.Printf("\t@rasmus@mastodon.acc.sunet.se\n\trasmus@lindroth.xyz\n")
 			fmt.Printf("\thttps://github.com/RasmusLindroth/tut\n")
 			os.Exit(0)
-		case "--version":
-			fallthrough
-		case "-v":
+		case "--version", "-v":
 			fmt.Printf("tut version %s\n\n", version)
 			fmt.Printf("https://github.com/RasmusLindroth/tut\n")
 			os.Exit(0)
@@ -77,6 +86,7 @@ func main() {
 		API:         &API{},
 		HaveAccount: false,
 		Config:      &config,
+		Accounts:    &AccountData{},
 	}
 
 	app.UI = NewUI(app)
@@ -90,29 +100,44 @@ func main() {
 	}
 
 	if exists {
-		accounts, err := GetAccounts(path)
+		app.Accounts, err = GetAccounts(path)
 		if err != nil {
 			log.Fatalln(
 				fmt.Sprintf("Couldn't access accounts.toml. Error: %v", err),
 			)
 		}
-		if len(accounts.Accounts) > 0 {
-			a := accounts.Accounts[0]
-			client, err := a.Login()
-			if err == nil {
-				app.API.SetClient(client)
-				app.HaveAccount = true
-
-				me, err := app.API.Client.GetAccountCurrentUser(context.Background())
-				if err != nil {
-					log.Fatalln(err)
-				}
-				app.Me = me
-			}
+		if len(app.Accounts.Accounts) == 1 && !newUser {
+			app.Login(0)
 		}
 	}
 
-	if !app.HaveAccount {
+	if len(app.Accounts.Accounts) > 1 && !newUser {
+		if selectedUser != "" {
+			useHost := false
+			found := false
+			if strings.Contains(selectedUser, "@") {
+				useHost = true
+			}
+			for i, acc := range app.Accounts.Accounts {
+				accName := acc.Name
+				if useHost {
+					host := strings.TrimPrefix(acc.Server, "https://")
+					host = strings.TrimPrefix(host, "http://")
+					accName += "@" + host
+				}
+				if accName == selectedUser {
+					app.Login(i)
+					app.UI.LoggedIn()
+					found = true
+				}
+			}
+			if found == false {
+				log.Fatalf("Couldn't find a user named %s. Try again", selectedUser)
+			}
+		} else {
+			app.UI.SetFocus(UserSelectFocus)
+		}
+	} else if !app.HaveAccount || newUser {
 		app.UI.SetFocus(AuthOverlayFocus)
 	} else {
 		app.UI.LoggedIn()
@@ -122,11 +147,16 @@ func main() {
 
 	app.UI.Root.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if !app.HaveAccount {
-			if event.Key() == tcell.KeyRune {
-				switch event.Rune() {
+			if app.UI.Focus == UserSelectFocus {
+				app.UI.UserSelectOverlay.InputHandler(event)
+				return nil
+			} else {
+				if event.Key() == tcell.KeyRune {
+					switch event.Rune() {
+					}
 				}
+				return event
 			}
-			return event
 		}
 
 		if app.UI.Focus == LinkOverlayFocus {
@@ -257,18 +287,12 @@ func main() {
 			}
 			return app.UI.StatusView.Input(event)
 		}
-
 		return event
 	})
 
 	app.UI.MediaOverlay.InputField.View.SetChangedFunc(
 		app.UI.MediaOverlay.InputField.HandleChanges,
 	)
-
-	app.UI.CmdBar.Input.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-
-		return event
-	})
 
 	app.UI.CmdBar.Input.SetAutocompleteFunc(func(currentText string) (entries []string) {
 		words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:muting,:profile,:saved,:tag,:timeline,:tl,:user,:quit,:q", ",")
