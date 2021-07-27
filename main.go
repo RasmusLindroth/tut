@@ -10,7 +10,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-const version string = "0.0.23"
+const version string = "0.0.24"
 
 func main() {
 
