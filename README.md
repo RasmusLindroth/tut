@@ -16,7 +16,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
   * [Binary releases](#binary-releases)
   * [Arch and Manjaro](#arch-and-manjaro)
   * [Debian](#debian)
-  * [FreeBsd](#FreeBSD)
+  * [FreeBSD](#freebsd)
 * [Build it yourself](#build-it-yourself)
 * [Flags and commands](#flags-and-commands)
 * [Password manager for secrets](#password-manager-for-secrets)
