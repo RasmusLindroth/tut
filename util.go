@@ -29,6 +29,14 @@ type URL struct {
 	Classes []string
 }
 
+//Runs commands prefixed !CMD!
+func CmdToString(cmd string) (string, error) {
+	cmd = strings.TrimPrefix(cmd, "!CMD!")
+	parts := strings.Split(cmd, " ")
+	s, err := exec.Command(parts[0], parts[1:]...).CombinedOutput()
+	return string(s), err
+}
+
 func getURLs(text string) []URL {
 	urlReg := regexp.MustCompile(`<a\s+?(.+?)>(.+?)<\/a>`)
 	attrReg := regexp.MustCompile(`(\w+?)="(.+?)"`)
