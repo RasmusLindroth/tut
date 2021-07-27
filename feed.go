@@ -533,6 +533,11 @@ func (t *TimelineFeed) LoadNewer() int {
 		statuses, err = t.app.API.GetStatuses(t.timelineType)
 	} else {
 		statuses, err = t.app.API.GetStatusesNewer(t.timelineType, t.statuses[0])
+		newCount := len(statuses)
+		if newCount > 0 {
+			Notify(t.app.Config.NotificationConfig, NotificationPost,
+				fmt.Sprintf("%d new toots", newCount), "")
+		}
 	}
 	if err != nil {
 		t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load new toots. Error: %v\n", err))
@@ -1031,6 +1036,25 @@ func (n *NotificationsFeed) LoadNewer() int {
 		notifications, err = n.app.API.GetNotifications()
 	} else {
 		notifications, err = n.app.API.GetNotificationsNewer(n.notifications[0])
+		for _, o := range notifications {
+			switch o.Type {
+			case "follow":
+				Notify(n.app.Config.NotificationConfig, NotificationFollower,
+					"New follower", fmt.Sprintf("%s follows you", o.Account.Username))
+			case "favourite":
+				Notify(n.app.Config.NotificationConfig, NotificationFavorite,
+					"Favorited your toot", fmt.Sprintf("%s favorited your toot", o.Account.Username))
+			case "reblog":
+				Notify(n.app.Config.NotificationConfig, NotificationBoost,
+					"Boosted your toot", fmt.Sprintf("%s boosted your toot", o.Account.Username))
+			case "mention":
+				Notify(n.app.Config.NotificationConfig, NotificationMention,
+					"Mentioned in toot", fmt.Sprintf("%s mentioned you", o.Account.Username))
+			case "poll":
+				Notify(n.app.Config.NotificationConfig, NotificationPoll,
+					"Poll has ended", "")
+			}
+		}
 	}
 	if err != nil {
 		n.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load new toots. Error: %v\n", err))

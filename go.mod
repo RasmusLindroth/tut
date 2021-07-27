@@ -5,7 +5,9 @@ go 1.14
 require (
 	github.com/atotto/clipboard v0.1.4
 	github.com/gdamore/tcell/v2 v2.4.0
+	github.com/gen2brain/beeep v0.0.0-20210529141713-5586760f0cc1
 	github.com/gobwas/glob v0.2.3
+	github.com/godbus/dbus/v5 v5.0.4 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/icza/gox v0.0.0-20201215141822-6edfac6c05b5
 	github.com/kyoh86/xdg v1.2.0
@@ -14,6 +16,7 @@ require (
 	github.com/microcosm-cc/bluemonday v1.0.15
 	github.com/pelletier/go-toml v1.9.3
 	github.com/rivo/tview v0.0.0-20210624155130-5f8430624688
+	github.com/rivo/uniseg v0.2.0
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	golang.org/x/net v0.0.0-20210716203947-853a461950ff
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect

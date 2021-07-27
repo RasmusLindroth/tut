@@ -9,6 +9,7 @@ import (
 
 	"github.com/mattn/go-mastodon"
 	"github.com/rivo/tview"
+	"github.com/rivo/uniseg"
 )
 
 type msgToot struct {
@@ -113,6 +114,13 @@ func (m *MessageBox) Down() {
 }
 
 func (m *MessageBox) Post() {
+	charsLeft := m.TootLength()
+
+	if charsLeft < 0 {
+		m.app.UI.CmdBar.ShowError(fmt.Sprintf("Reached char limit, make your toot shorter. Length %d\n", charsLeft))
+		return
+	}
+
 	toot := m.currentToot
 	send := mastodon.Toot{
 		Status: strings.TrimSpace(toot.Text),
@@ -157,6 +165,17 @@ func (m *MessageBox) Post() {
 	m.app.UI.SetFocus(LeftPaneFocus)
 }
 
+func (m *MessageBox) TootLength() int {
+	charCount := uniseg.GraphemeClusterCount(m.currentToot.Text)
+	spoilerCount := uniseg.GraphemeClusterCount(m.currentToot.SpoilerText)
+	totalCount := charCount
+	if m.currentToot.Sensitive {
+		totalCount += spoilerCount
+	}
+	charsLeft := 500 - totalCount
+	return charsLeft
+}
+
 func (m *MessageBox) Draw() {
 	var items []string
 	items = append(items, ColorKey(m.app.Config.Style, "", "P", "ost"))
@@ -172,11 +191,18 @@ func (m *MessageBox) Draw() {
 	var outputHead string
 	var output string
 
+	normal := ColorMark(m.app.Config.Style.Text)
 	subtleColor := ColorMark(m.app.Config.Style.Subtle)
 	warningColor := ColorMark(m.app.Config.Style.WarningText)
 
-	outputHead += subtleColor + VisibilityToText(m.app.UI.VisibilityOverlay.GetVisibility()) + "\n\n"
+	charsLeft := m.TootLength()
 
+	outputHead += subtleColor + VisibilityToText(m.app.UI.VisibilityOverlay.GetVisibility()) + ", "
+	if charsLeft > 0 {
+		outputHead += fmt.Sprintf("%d chars left", charsLeft) + "\n\n" + normal
+	} else {
+		outputHead += warningColor + fmt.Sprintf("%d chars left", charsLeft) + "\n\n" + normal
+	}
 	if m.currentToot.Status != nil {
 		var acct string
 		if m.currentToot.Status.Account.DisplayName != "" {
@@ -184,22 +210,22 @@ func (m *MessageBox) Draw() {
 		} else {
 			acct = fmt.Sprintf("%s\n", m.currentToot.Status.Account.Acct)
 		}
-		outputHead += subtleColor + "Replying to " + tview.Escape(acct) + "\n"
+		outputHead += subtleColor + "Replying to " + tview.Escape(acct) + "\n" + normal
 	}
 	if m.currentToot.SpoilerText != "" && !m.currentToot.Sensitive {
-		outputHead += warningColor + "You have entered spoiler text, but haven't set an content warning. Do it by pressing " + tview.Escape("[T]") + "\n\n"
+		outputHead += warningColor + "You have entered spoiler text, but haven't set an content warning. Do it by pressing " + tview.Escape("[T]") + "\n\n" + normal
 	}
 
 	if m.currentToot.Sensitive && m.currentToot.SpoilerText == "" {
-		outputHead += warningColor + "You have added an content warning, but haven't set any text above the hidden text. Do it by pressing " + tview.Escape("[C]") + "\n\n"
+		outputHead += warningColor + "You have added an content warning, but haven't set any text above the hidden text. Do it by pressing " + tview.Escape("[C]") + "\n\n" + normal
 	}
 
 	if m.currentToot.Sensitive && m.currentToot.SpoilerText != "" {
-		outputHead += subtleColor + "Content warning\n\n"
+		outputHead += subtleColor + "Content warning\n\n" + normal
 		outputHead += tview.Escape(m.currentToot.SpoilerText)
-		outputHead += "\n\n" + subtleColor + "---hidden content below---\n\n"
+		outputHead += "\n\n" + subtleColor + "---hidden content below---\n\n" + normal
 	}
-	output = outputHead + tview.Escape(m.currentToot.Text)
+	output = outputHead + normal + tview.Escape(m.currentToot.Text)
 
 	m.View.SetText(output)
 	m.View.ScrollToEnd()

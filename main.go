@@ -10,7 +10,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-const version string = "0.0.22"
+const version string = "0.0.23"
 
 func main() {
 
@@ -182,7 +182,11 @@ func main() {
 			} else {
 				switch event.Key() {
 				case tcell.KeyEsc:
-					app.UI.SetFocus(LeftPaneFocus)
+					if app.UI.StatusView.focus == NotificationPaneFocus {
+						app.UI.SetFocus(NotificationPaneFocus)
+					} else {
+						app.UI.SetFocus(LeftPaneFocus)
+					}
 					return nil
 				}
 			}
