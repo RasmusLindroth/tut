@@ -29,6 +29,7 @@ type GeneralConfig struct {
 	StartTimeline    TimelineType
 	NotificationFeed bool
 	QuoteReply       bool
+	CharLimit        int
 }
 
 type StyleConfig struct {
@@ -236,8 +237,8 @@ func parseGeneral(cfg *ini.File) GeneralConfig {
 	}
 
 	general.NotificationFeed = cfg.Section("general").Key("notification-feed").MustBool(true)
-
 	general.QuoteReply = cfg.Section("general").Key("quote-reply").MustBool(false)
+	general.CharLimit = cfg.Section("general").Key("char-limit").MustInt(500)
 
 	return general
 }
@@ -461,6 +462,10 @@ notification-feed=true
 # If you always want to quote original message when replying
 # default=false
 quote-reply=false
+
+# If you're on an instance with a custom character limit you can set it here 
+# default=500
+char-limit=500
 
 [media]
 # Your image viewer
