@@ -84,8 +84,6 @@ type StatusView struct {
 
 func (t *StatusView) AddFeed(f Feed) {
 	t.feeds = append(t.feeds, f)
-	t.focus = LeftPaneFocus
-	t.lastList = LeftPaneFocus
 	f.DrawList()
 	t.list.SetCurrentItem(f.GetSavedIndex())
 	f.DrawToot()
@@ -94,6 +92,8 @@ func (t *StatusView) AddFeed(f Feed) {
 	if t.lastList == NotificationPaneFocus {
 		t.app.UI.SetFocus(LeftPaneFocus)
 		t.focus = LeftPaneFocus
+		t.lastList = NotificationPaneFocus
+	} else {
 		t.lastList = LeftPaneFocus
 	}
 }
@@ -103,8 +103,20 @@ func (t *StatusView) RemoveLatestFeed() {
 	feed := t.feeds[len(t.feeds)-1]
 	feed.DrawList()
 	t.list.SetCurrentItem(feed.GetSavedIndex())
-	feed.DrawToot()
+
+	if t.lastList == NotificationPaneFocus {
+		t.app.UI.SetFocus(NotificationPaneFocus)
+		t.focus = NotificationPaneFocus
+		t.lastList = NotificationPaneFocus
+		t.notificationView.feed.DrawToot()
+	} else {
+		t.app.UI.SetFocus(LeftPaneFocus)
+		t.focus = LeftPaneFocus
+		t.lastList = LeftPaneFocus
+		feed.DrawToot()
+	}
 	t.drawDesc()
+
 }
 
 func (t *StatusView) GetLeftView() tview.Primitive {
