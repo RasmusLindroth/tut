@@ -14,7 +14,7 @@ require (
 	github.com/mattn/go-mastodon v0.0.5-0.20210629151305-d39c10ba5e94
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.15
-	github.com/pelletier/go-toml v1.9.3
+	github.com/pelletier/go-toml/v2 v2.0.0-beta.3
 	github.com/rivo/tview v0.0.0-20210624155130-5f8430624688
 	github.com/rivo/uniseg v0.2.0
 	github.com/smartystreets/goconvey v1.6.4 // indirect

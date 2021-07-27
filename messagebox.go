@@ -114,13 +114,6 @@ func (m *MessageBox) Down() {
 }
 
 func (m *MessageBox) Post() {
-	charsLeft := m.TootLength()
-
-	if charsLeft < 0 {
-		m.app.UI.CmdBar.ShowError(fmt.Sprintf("Reached char limit, make your toot shorter. Length %d\n", charsLeft))
-		return
-	}
-
 	toot := m.currentToot
 	send := mastodon.Toot{
 		Status: strings.TrimSpace(toot.Text),
@@ -172,7 +165,7 @@ func (m *MessageBox) TootLength() int {
 	if m.currentToot.Sensitive {
 		totalCount += spoilerCount
 	}
-	charsLeft := 500 - totalCount
+	charsLeft := m.app.Config.General.CharLimit - totalCount
 	return charsLeft
 }
 
