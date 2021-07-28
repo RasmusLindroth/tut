@@ -28,10 +28,10 @@ func NewLinkOverlay(app *App) *LinkOverlay {
 	l.List.SetHighlightFullLine(true)
 	l.Flex.SetDrawFunc(app.Config.ClearContent)
 	var items []string
-	items = append(items, ColorKey(app.Config.Style, "", "O", "pen"))
-	items = append(items, ColorKey(app.Config.Style, "", "Y", "ank"))
+	items = append(items, ColorKey(app.Config, "", "O", "pen"))
+	items = append(items, ColorKey(app.Config, "", "Y", "ank"))
 	for _, cust := range app.Config.OpenCustom.OpenCustoms {
-		items = append(items, ColorKey(app.Config.Style, "", fmt.Sprintf("%d", cust.Index), cust.Name))
+		items = append(items, ColorKey(app.Config, "", fmt.Sprintf("%d", cust.Index), cust.Name))
 	}
 	l.TextBottom.SetText(strings.Join(items, " "))
 	return l

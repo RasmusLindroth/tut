@@ -23,7 +23,7 @@ func NewVisibilityOverlay(app *App) *VisibilityOverlay {
 	v.List.ShowSecondaryText(false)
 	v.List.SetHighlightFullLine(true)
 	v.Flex.SetDrawFunc(app.Config.ClearContent)
-	v.TextBottom.SetText(ColorKey(app.Config.Style, "", "Enter", ""))
+	v.TextBottom.SetText(ColorKey(app.Config, "", "Enter", ""))
 	return v
 }
 

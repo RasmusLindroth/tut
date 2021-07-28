@@ -270,10 +270,14 @@ func FindFiles(s string) []string {
 	return files
 }
 
-func ColorKey(style StyleConfig, pre, key, end string) string {
-	color := ColorMark(style.TextSpecial2)
-	normal := ColorMark(style.Text)
+func ColorKey(c *Config, pre, key, end string) string {
+	color := ColorMark(c.Style.TextSpecial2)
+	normal := ColorMark(c.Style.Text)
 	key = tview.Escape("[" + key + "]")
+	if c.General.ShortHints {
+		pre = ""
+		end = ""
+	}
 	text := fmt.Sprintf("%s%s%s%s%s%s", normal, pre, color, key, normal, end)
 	return text
 }

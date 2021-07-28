@@ -93,10 +93,10 @@ func (m *MediaView) Draw() {
 	m.TextTop.SetText(topText)
 
 	var items []string
-	items = append(items, ColorKey(m.app.Config.Style, "", "A", "dd file"))
-	items = append(items, ColorKey(m.app.Config.Style, "", "D", "elete file"))
-	items = append(items, ColorKey(m.app.Config.Style, "", "E", "dit desc"))
-	items = append(items, ColorKey(m.app.Config.Style, "", "Esc", " Done"))
+	items = append(items, ColorKey(m.app.Config, "", "A", "dd file"))
+	items = append(items, ColorKey(m.app.Config, "", "D", "elete file"))
+	items = append(items, ColorKey(m.app.Config, "", "E", "dit desc"))
+	items = append(items, ColorKey(m.app.Config, "", "Esc", " Done"))
 	m.TextBottom.SetText(strings.Join(items, " "))
 }
 
