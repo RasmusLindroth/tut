@@ -8,6 +8,20 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 
 ![Preview](./images/preview.png "Preview")
 
+
+## Table of contents
+* [Currently supported commands](#currently-supported-commands)
+* [Configuration](#configuration)
+* [Install instructions](#install-instructions)
+  * [Binary releases](#binary-releases)
+  * [Arch and Manjaro](#arch-and-manjaro)
+  * [Debian](#debian)
+  * [FreeBSD](#freebsd)
+* [Build it yourself](#build-it-yourself)
+* [Flags and commands](#flags-and-commands)
+* [Password manager for secrets](#password-manager-for-secrets)
+* [Thanks to](#thanks-to)
+
 ## Currently supported commands
 * `:q` `:quit` exit
 * `:timeline` home, local, federated, direct, notifications
@@ -51,7 +65,7 @@ If there are any new configurations options you can copy them frome that file.
 ### Binary releases
 Head over to https://github.com/RasmusLindroth/tut/releases
 
-### Arch or Manjaro?
+### Arch and Manjaro
 
 You can find it in the Arch User Repository (AUR). I'm the maintainer there.
 
@@ -107,8 +121,28 @@ Flags:
         If two users are named the same. Use full name like tut@fosstodon.org
 ```
 
+## Password manager for secrets
+If you run `pass`, `gopass` or  something similar you can protect your secrets.
+You'll have to manually update your `accounts.toml`. It should be located at 
+`~/.config/tut/accounts.toml`. Currently you can only hide `ClientID`, `ClientSecret` and `AccessToken`. The command **must** be prefixed with `!CMD!`. Here's an example 
+of what the file can look like.
+
+```bash
+[[Accounts]]
+Name = 'tut'
+Server = 'https://fosstodon.org'
+ClientID = '!CMD!gopass show -o -f misc/tut-id'
+ClientSecret = '!CMD!gopass show -o -f misc/tut-secret'
+AccessToken = '!CMD!gopass show -o -f misc/tut-token'
+```
+
 ## Thanks to
-* [mattn/go-mastodon](https://github.com/mattn/go-mastodon) - used to make calls to the Mastodon API
-* [rivo/tview](https://github.com/rivo/tview) - used to make the TUI
+* [mattn/go-mastodon](https://github.com/mattn/go-mastodon) - Mastodon API
+* [rivo/tview](https://github.com/rivo/tview) - making the TUI
 * [gdamore/tcell](https://github.com/gdamore/tcell) - used by tview under the hood
 * [microcosm-cc/bluemonday](https://github.com/microcosm-cc/bluemonday) - used to remove HTML-tags
+* [atotto/clipboard](https://github.com/atotto/clipboard) - yanking to clipboard
+* [gen2brain/beeep](https://github.com/gen2brain/beeep) - notifications
+* [gobwas/glob](https://github.com/gobwas/glob) - glob in patterns
+* [pelletier/go-toml](https://github.com/pelletier/go-toml) - toml parser
+* [go-ini/ini](https://github.com/go-ini/ini) - ini parser

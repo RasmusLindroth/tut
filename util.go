@@ -29,6 +29,14 @@ type URL struct {
 	Classes []string
 }
 
+//Runs commands prefixed !CMD!
+func CmdToString(cmd string) (string, error) {
+	cmd = strings.TrimPrefix(cmd, "!CMD!")
+	parts := strings.Split(cmd, " ")
+	s, err := exec.Command(parts[0], parts[1:]...).CombinedOutput()
+	return string(s), err
+}
+
 func getURLs(text string) []URL {
 	urlReg := regexp.MustCompile(`<a\s+?(.+?)>(.+?)<\/a>`)
 	attrReg := regexp.MustCompile(`(\w+?)="(.+?)"`)
@@ -270,10 +278,14 @@ func FindFiles(s string) []string {
 	return files
 }
 
-func ColorKey(style StyleConfig, pre, key, end string) string {
-	color := ColorMark(style.TextSpecial2)
-	normal := ColorMark(style.Text)
+func ColorKey(c *Config, pre, key, end string) string {
+	color := ColorMark(c.Style.TextSpecial2)
+	normal := ColorMark(c.Style.Text)
 	key = tview.Escape("[" + key + "]")
+	if c.General.ShortHints {
+		pre = ""
+		end = ""
+	}
 	text := fmt.Sprintf("%s%s%s%s%s%s", normal, pre, color, key, normal, end)
 	return text
 }
@@ -364,6 +376,8 @@ func Notify(nc NotificationConfig, t NotificationType, title string, body string
 		if nc.NotificationPost == false {
 			return
 		}
+	default:
+		return
 	}
 
 	beeep.Notify(title, body, "")

@@ -176,34 +176,34 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	app.UI.StatusView.ScrollToBeginning()
 	var info []string
 	if status.Favourited == true {
-		info = append(info, ColorKey(app.Config.Style, "Un", "F", "avorite"))
+		info = append(info, ColorKey(app.Config, "Un", "F", "avorite"))
 	} else {
-		info = append(info, ColorKey(app.Config.Style, "", "F", "avorite"))
+		info = append(info, ColorKey(app.Config, "", "F", "avorite"))
 	}
 	if status.Reblogged == true {
-		info = append(info, ColorKey(app.Config.Style, "Un", "B", "oost"))
+		info = append(info, ColorKey(app.Config, "Un", "B", "oost"))
 	} else {
-		info = append(info, ColorKey(app.Config.Style, "", "B", "oost"))
+		info = append(info, ColorKey(app.Config, "", "B", "oost"))
 	}
-	info = append(info, ColorKey(app.Config.Style, "", "T", "hread"))
-	info = append(info, ColorKey(app.Config.Style, "", "R", "eply"))
-	info = append(info, ColorKey(app.Config.Style, "", "V", "iew"))
-	info = append(info, ColorKey(app.Config.Style, "", "U", "ser"))
+	info = append(info, ColorKey(app.Config, "", "T", "hread"))
+	info = append(info, ColorKey(app.Config, "", "R", "eply"))
+	info = append(info, ColorKey(app.Config, "", "V", "iew"))
+	info = append(info, ColorKey(app.Config, "", "U", "ser"))
 	if len(status.MediaAttachments) > 0 {
-		info = append(info, ColorKey(app.Config.Style, "", "M", "edia"))
+		info = append(info, ColorKey(app.Config, "", "M", "edia"))
 	}
 	if len(urls)+len(status.Mentions)+len(status.Tags) > 0 {
-		info = append(info, ColorKey(app.Config.Style, "", "O", "pen"))
+		info = append(info, ColorKey(app.Config, "", "O", "pen"))
 	}
-	info = append(info, ColorKey(app.Config.Style, "", "A", "vatar"))
+	info = append(info, ColorKey(app.Config, "", "A", "vatar"))
 	if status.Account.ID == app.Me.ID {
-		info = append(info, ColorKey(app.Config.Style, "", "D", "elete"))
+		info = append(info, ColorKey(app.Config, "", "D", "elete"))
 	}
 
 	if status.Bookmarked == false {
-		info = append(info, ColorKey(app.Config.Style, "", "S", "ave"))
+		info = append(info, ColorKey(app.Config, "", "S", "ave"))
 	} else {
-		info = append(info, ColorKey(app.Config.Style, "Un", "S", "ave"))
+		info = append(info, ColorKey(app.Config, "Un", "S", "ave"))
 	}
 
 	controls := strings.Join(info, " ")
@@ -240,28 +240,28 @@ func showUser(app *App, user *mastodon.Account, relation *mastodon.Relationship,
 	var controlItems []string
 	if app.Me.ID != user.ID {
 		if relation.Following {
-			controlItems = append(controlItems, ColorKey(app.Config.Style, "Un", "F", "ollow"))
+			controlItems = append(controlItems, ColorKey(app.Config, "Un", "F", "ollow"))
 		} else {
-			controlItems = append(controlItems, ColorKey(app.Config.Style, "", "F", "ollow"))
+			controlItems = append(controlItems, ColorKey(app.Config, "", "F", "ollow"))
 		}
 		if relation.Blocking {
-			controlItems = append(controlItems, ColorKey(app.Config.Style, "Un", "B", "lock"))
+			controlItems = append(controlItems, ColorKey(app.Config, "Un", "B", "lock"))
 		} else {
-			controlItems = append(controlItems, ColorKey(app.Config.Style, "", "B", "lock"))
+			controlItems = append(controlItems, ColorKey(app.Config, "", "B", "lock"))
 		}
 		if relation.Muting {
-			controlItems = append(controlItems, ColorKey(app.Config.Style, "Un", "M", "ute"))
+			controlItems = append(controlItems, ColorKey(app.Config, "Un", "M", "ute"))
 		} else {
-			controlItems = append(controlItems, ColorKey(app.Config.Style, "", "M", "ute"))
+			controlItems = append(controlItems, ColorKey(app.Config, "", "M", "ute"))
 		}
 		if len(urls) > 0 {
-			controlItems = append(controlItems, ColorKey(app.Config.Style, "", "O", "pen"))
+			controlItems = append(controlItems, ColorKey(app.Config, "", "O", "pen"))
 		}
 	}
 	if showUserControl {
-		controlItems = append(controlItems, ColorKey(app.Config.Style, "", "U", "ser"))
+		controlItems = append(controlItems, ColorKey(app.Config, "", "U", "ser"))
 	}
-	controlItems = append(controlItems, ColorKey(app.Config.Style, "", "A", "vatar"))
+	controlItems = append(controlItems, ColorKey(app.Config, "", "A", "vatar"))
 	controls = strings.Join(controlItems, " ")
 
 	return text, controls
@@ -1053,6 +1053,7 @@ func (n *NotificationsFeed) LoadNewer() int {
 			case "poll":
 				Notify(n.app.Config.NotificationConfig, NotificationPoll,
 					"Poll has ended", "")
+			default:
 			}
 		}
 	}
@@ -1119,7 +1120,7 @@ func (n *NotificationsFeed) DrawToot() {
 	switch notification.Type {
 	case "follow":
 		text = SublteText(n.app.Config.Style, FormatUsername(notification.Account)+" started following you\n\n")
-		controls = ColorKey(n.app.Config.Style, "", "U", "ser")
+		controls = ColorKey(n.app.Config, "", "U", "ser")
 	case "favourite":
 		pre := SublteText(n.app.Config.Style, FormatUsername(notification.Account)+" favorited your toot") + "\n\n"
 		text, controls = showTootOptions(n.app, notification.Status, n.showSpoiler)
@@ -1136,6 +1137,9 @@ func (n *NotificationsFeed) DrawToot() {
 		pre := SublteText(n.app.Config.Style, "A poll of yours or one you participated in has ended") + "\n\n"
 		text, controls = showTootOptions(n.app, notification.Status, n.showSpoiler)
 		text = pre + text
+	case "follow_request":
+		text = SublteText(n.app.Config.Style, FormatUsername(notification.Account)+" wants to follow you. This is currently not implementet, so use another app to accept or reject the request.\n\n")
+	default:
 	}
 
 	n.app.UI.StatusView.SetText(text)
@@ -1171,6 +1175,9 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 		return
 	}
 
+	if notification.Type == "follow_request" {
+		return
+	}
 	status := notification.Status
 	if status.Reblog != nil {
 		status = status.Reblog
