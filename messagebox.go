@@ -90,8 +90,8 @@ func (m *MessageBox) composeToot(status *mastodon.Status) {
 		mt.Status = status
 	}
 	visibility := mastodon.VisibilityPublic
-	if status != nil && status.Visibility == mastodon.VisibilityDirectMessage {
-		visibility = mastodon.VisibilityDirectMessage
+	if status != nil {
+		visibility = status.Visibility
 	}
 	m.app.UI.VisibilityOverlay.SetVisibilty(visibility)
 
