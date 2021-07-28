@@ -1138,7 +1138,7 @@ func (n *NotificationsFeed) DrawToot() {
 		text, controls = showTootOptions(n.app, notification.Status, n.showSpoiler)
 		text = pre + text
 	case "follow_request":
-		text = SublteText(n.app.Config.Style, FormatUsername(notification.Account)+" wants to follow you. This is currently not implementet, so use another app to accept or reject the request.\n\n")
+		text = SublteText(n.app.Config.Style, FormatUsername(notification.Account)+" wants to follow you. This is currently not implemented, so use another app to accept or reject the request.\n\n")
 	default:
 	}
 
