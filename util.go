@@ -364,6 +364,8 @@ func Notify(nc NotificationConfig, t NotificationType, title string, body string
 		if nc.NotificationPost == false {
 			return
 		}
+	default:
+		return
 	}
 
 	beeep.Notify(title, body, "")

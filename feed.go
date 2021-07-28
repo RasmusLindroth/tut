@@ -1053,6 +1053,7 @@ func (n *NotificationsFeed) LoadNewer() int {
 			case "poll":
 				Notify(n.app.Config.NotificationConfig, NotificationPoll,
 					"Poll has ended", "")
+			default:
 			}
 		}
 	}
@@ -1136,6 +1137,9 @@ func (n *NotificationsFeed) DrawToot() {
 		pre := SublteText(n.app.Config.Style, "A poll of yours or one you participated in has ended") + "\n\n"
 		text, controls = showTootOptions(n.app, notification.Status, n.showSpoiler)
 		text = pre + text
+	case "follow_request":
+		text = SublteText(n.app.Config.Style, FormatUsername(notification.Account)+" wants to follow you. This is currently not implementet, so use another app to accept or reject the request.\n\n")
+	default:
 	}
 
 	n.app.UI.StatusView.SetText(text)
@@ -1171,6 +1175,9 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 		return
 	}
 
+	if notification.Type == "follow_request" {
+		return
+	}
 	status := notification.Status
 	if status.Reblog != nil {
 		status = status.Reblog
