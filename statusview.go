@@ -127,7 +127,7 @@ func (t *StatusView) CyclePreviousFeed() {
 
 }
 
-func (t *StatusView) RemoveLatestFeed() {
+func (t *StatusView) RemoveCurrentFeed() {
 	t.feeds = t.feeds[:t.feedIndex+copy(t.feeds[t.feedIndex:], t.feeds[t.feedIndex+1:])]
 
 	if t.feedIndex == len(t.feeds) {
@@ -229,7 +229,7 @@ func (t *StatusView) inputBoth(event *tcell.EventKey) {
 
 func (t *StatusView) inputBack(q bool) {
 	if t.app.UI.Focus == LeftPaneFocus && len(t.feeds) > 1 {
-		t.RemoveLatestFeed()
+		t.RemoveCurrentFeed()
 	} else if t.app.UI.Focus == LeftPaneFocus && q {
 		t.app.UI.Root.Stop()
 	} else if t.app.UI.Focus == NotificationPaneFocus {
