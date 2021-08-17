@@ -131,6 +131,7 @@ func (t *StatusView) CyclePreviousFeed() {
 }
 
 func (t *StatusView) RemoveCurrentFeed() {
+	t.feeds[t.feedIndex] = nil
 	t.feeds = t.feeds[:t.feedIndex+copy(t.feeds[t.feedIndex:], t.feeds[t.feedIndex+1:])]
 
 	if t.feedIndex == len(t.feeds) {
