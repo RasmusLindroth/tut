@@ -124,6 +124,9 @@ func (t *StatusView) CyclePreviousFeed() {
 		feed.DrawToot()
 	}
 	t.drawDesc()
+	if feed.GetSavedIndex() < 4 {
+		t.loadNewer()
+	}
 
 }
 
@@ -552,6 +555,7 @@ func (t *StatusView) loadNewer() {
 			}
 			t.list.SetCurrentItem(newIndex)
 			t.loadingNewer = false
+			t.feeds[feedIndex].DrawToot()
 		})
 	}()
 }
