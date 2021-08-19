@@ -92,7 +92,7 @@ func (t *StatusView) AddFeed(f Feed) {
 	f.DrawToot()
 	t.drawDesc()
 
-	if t.lastList == NotificationPaneFocus {
+	if t.focus == NotificationPaneFocus {
 		t.app.UI.SetFocus(LeftPaneFocus)
 		t.focus = LeftPaneFocus
 		t.lastList = NotificationPaneFocus
@@ -230,10 +230,10 @@ func (t *StatusView) inputBoth(event *tcell.EventKey) {
 			t.end()
 		}
 	}
-	if len(t.feeds) > 0 && t.lastList == LeftPaneFocus {
+	if len(t.feeds) > 0 && t.focus == LeftPaneFocus {
 		feed := t.feeds[t.feedIndex]
 		feed.Input(event)
-	} else if t.lastList == NotificationPaneFocus {
+	} else if t.focus == NotificationPaneFocus {
 		t.notificationView.feed.Input(event)
 	}
 }
