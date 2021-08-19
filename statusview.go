@@ -19,7 +19,7 @@ func NewStatusView(app *App, tl TimelineType) *StatusView {
 		lastList:     LeftPaneFocus,
 		loadingNewer: false,
 		loadingOlder: false,
-		feedIndex:     0,
+		feedIndex:    0,
 	}
 	if t.app.Config.General.NotificationFeed {
 		t.notificationView = NewNotificationView(app)
@@ -76,7 +76,7 @@ type StatusView struct {
 	text             *tview.TextView
 	controls         *tview.TextView
 	feeds            []Feed
-	feedIndex	 int
+	feedIndex        int
 	focus            FocusAt
 	lastList         FocusAt
 	loadingNewer     bool
@@ -86,7 +86,7 @@ type StatusView struct {
 
 func (t *StatusView) AddFeed(f Feed) {
 	t.feeds = append(t.feeds, f)
-	t.feedIndex = len(t.feeds)-1
+	t.feedIndex = len(t.feeds) - 1
 	f.DrawList()
 	t.list.SetCurrentItem(f.GetSavedIndex())
 	f.DrawToot()
@@ -101,13 +101,7 @@ func (t *StatusView) AddFeed(f Feed) {
 	}
 }
 
-func (t *StatusView) CyclePreviousFeed() {
-	if t.feedIndex == 0 {
-		t.feedIndex = len(t.feeds)-1
-	} else {
-		t.feedIndex = t.feedIndex-1
-	}
-
+func (t *StatusView) CycleDraw() {
 	feed := t.feeds[t.feedIndex]
 	feed.DrawList()
 	t.list.SetCurrentItem(feed.GetSavedIndex())
@@ -127,7 +121,20 @@ func (t *StatusView) CyclePreviousFeed() {
 	if feed.GetSavedIndex() < 4 {
 		t.loadNewer()
 	}
+}
 
+func (t *StatusView) CyclePreviousFeed() {
+	if t.feedIndex != 0 {
+		t.feedIndex = t.feedIndex - 1
+	}
+	t.CycleDraw()
+}
+
+func (t *StatusView) CycleNextFeed() {
+	if t.feedIndex+1 < len(t.feeds) {
+		t.feedIndex = t.feedIndex + 1
+	}
+	t.CycleDraw()
 }
 
 func (t *StatusView) RemoveCurrentFeed() {
@@ -135,7 +142,7 @@ func (t *StatusView) RemoveCurrentFeed() {
 	t.feeds = t.feeds[:t.feedIndex+copy(t.feeds[t.feedIndex:], t.feeds[t.feedIndex+1:])]
 
 	if t.feedIndex == len(t.feeds) {
-		t.feedIndex = len(t.feeds)-1
+		t.feedIndex = len(t.feeds) - 1
 	}
 
 	feed := t.feeds[t.feedIndex]
@@ -271,6 +278,8 @@ func (t *StatusView) inputLeft(event *tcell.EventKey) {
 			t.inputBack(true)
 		case 'h', 'H':
 			t.CyclePreviousFeed()
+		case 'l', 'L':
+			t.CycleNextFeed()
 		}
 	} else {
 		switch event.Key() {
@@ -357,7 +366,7 @@ func (t *StatusView) drawDesc() {
 		t.app.UI.SetTopText("")
 		return
 	}
-	i := t.feedIndex+1
+	i := t.feedIndex + 1
 	l := len(t.feeds)
 	f := t.feeds[t.feedIndex]
 	t.app.UI.SetTopText(
