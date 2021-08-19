@@ -287,6 +287,10 @@ func (t *StatusView) inputLeft(event *tcell.EventKey) {
 			t.prev()
 		case tcell.KeyDown:
 			t.next()
+		case tcell.KeyLeft:
+			t.CyclePreviousFeed()
+		case tcell.KeyRight:
+			t.CycleNextFeed()
 		case tcell.KeyPgUp, tcell.KeyCtrlB:
 			t.pgup()
 		case tcell.KeyPgDn, tcell.KeyCtrlF:

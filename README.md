@@ -40,8 +40,9 @@ the instance like this `:user rasmus@mastodon.acc.sunet.se`.
 
 Keys without description in tut
 * `c` = Compose a new toot
-* `hjkl` = navigation
-* `arrow keys` = navigation
+* `jk` = navigation up and down in feed
+* `hl` = cycle through feeds without closing them as you do with `q` and `ESC`
+* `arrow keys` = navigation. Same as `jk` and `hl`
 * `q` = go back and quit
 * `ESC` =  go back
 
