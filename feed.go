@@ -70,8 +70,13 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	}
 
 	if statusSensitive {
-		strippedSpoiler, u = cleanTootHTML(status.SpoilerText)
-		strippedSpoiler = tview.Escape(strippedSpoiler)
+		if status.Reblog != nil {
+			strippedSpoiler, u = cleanTootHTML(status.Reblog.SpoilerText)
+			strippedSpoiler = tview.Escape(strippedSpoiler)
+		} else {
+			strippedSpoiler, u = cleanTootHTML(status.SpoilerText)
+			strippedSpoiler = tview.Escape(strippedSpoiler)
+		}
 		urls = append(urls, u...)
 	}
 	if statusSensitive && !showSensitive {
