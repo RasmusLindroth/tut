@@ -19,6 +19,7 @@ func NewStatusView(app *App, tl TimelineType) *StatusView {
 		lastList:     LeftPaneFocus,
 		loadingNewer: false,
 		loadingOlder: false,
+		feedIndex:    0,
 	}
 	if t.app.Config.General.NotificationFeed {
 		t.notificationView = NewNotificationView(app)
@@ -75,6 +76,7 @@ type StatusView struct {
 	text             *tview.TextView
 	controls         *tview.TextView
 	feeds            []Feed
+	feedIndex        int
 	focus            FocusAt
 	lastList         FocusAt
 	loadingNewer     bool
@@ -84,12 +86,13 @@ type StatusView struct {
 
 func (t *StatusView) AddFeed(f Feed) {
 	t.feeds = append(t.feeds, f)
+	t.feedIndex = len(t.feeds) - 1
 	f.DrawList()
 	t.list.SetCurrentItem(f.GetSavedIndex())
 	f.DrawToot()
 	t.drawDesc()
 
-	if t.lastList == NotificationPaneFocus {
+	if t.focus == NotificationPaneFocus {
 		t.app.UI.SetFocus(LeftPaneFocus)
 		t.focus = LeftPaneFocus
 		t.lastList = NotificationPaneFocus
@@ -98,9 +101,51 @@ func (t *StatusView) AddFeed(f Feed) {
 	}
 }
 
-func (t *StatusView) RemoveLatestFeed() {
-	t.feeds = t.feeds[:len(t.feeds)-1]
-	feed := t.feeds[len(t.feeds)-1]
+func (t *StatusView) CycleDraw() {
+	feed := t.feeds[t.feedIndex]
+	feed.DrawList()
+	t.list.SetCurrentItem(feed.GetSavedIndex())
+
+	if t.lastList == NotificationPaneFocus {
+		t.app.UI.SetFocus(NotificationPaneFocus)
+		t.focus = NotificationPaneFocus
+		t.lastList = NotificationPaneFocus
+		t.notificationView.feed.DrawToot()
+	} else {
+		t.app.UI.SetFocus(LeftPaneFocus)
+		t.focus = LeftPaneFocus
+		t.lastList = LeftPaneFocus
+		feed.DrawToot()
+	}
+	t.drawDesc()
+	if feed.GetSavedIndex() < 4 {
+		t.loadNewer()
+	}
+}
+
+func (t *StatusView) CyclePreviousFeed() {
+	if t.feedIndex != 0 {
+		t.feedIndex = t.feedIndex - 1
+	}
+	t.CycleDraw()
+}
+
+func (t *StatusView) CycleNextFeed() {
+	if t.feedIndex+1 < len(t.feeds) {
+		t.feedIndex = t.feedIndex + 1
+	}
+	t.CycleDraw()
+}
+
+func (t *StatusView) RemoveCurrentFeed() {
+	t.feeds[t.feedIndex] = nil
+	t.feeds = t.feeds[:t.feedIndex+copy(t.feeds[t.feedIndex:], t.feeds[t.feedIndex+1:])]
+
+	if t.feedIndex == len(t.feeds) {
+		t.feedIndex = len(t.feeds) - 1
+	}
+
+	feed := t.feeds[t.feedIndex]
 	feed.DrawList()
 	t.list.SetCurrentItem(feed.GetSavedIndex())
 
@@ -121,7 +166,7 @@ func (t *StatusView) RemoveLatestFeed() {
 
 func (t *StatusView) GetLeftView() tview.Primitive {
 	if len(t.feeds) > 0 {
-		feed := t.feeds[len(t.feeds)-1]
+		feed := t.feeds[t.feedIndex]
 		feed.DrawList()
 		feed.DrawToot()
 	}
@@ -153,14 +198,14 @@ func (t *StatusView) GetCurrentStatus() *mastodon.Status {
 	if len(t.feeds) == 0 {
 		return nil
 	}
-	return t.feeds[len(t.feeds)-1].GetCurrentStatus()
+	return t.feeds[t.feedIndex].GetCurrentStatus()
 }
 
 func (t *StatusView) GetCurrentUser() *mastodon.Account {
 	if len(t.feeds) == 0 {
 		return nil
 	}
-	return t.feeds[len(t.feeds)-1].GetCurrentUser()
+	return t.feeds[t.feedIndex].GetCurrentUser()
 }
 
 func (t *StatusView) ScrollToBeginning() {
@@ -185,24 +230,24 @@ func (t *StatusView) inputBoth(event *tcell.EventKey) {
 			t.end()
 		}
 	}
-	if len(t.feeds) > 0 && t.lastList == LeftPaneFocus {
-		feed := t.feeds[len(t.feeds)-1]
+	if len(t.feeds) > 0 && t.focus == LeftPaneFocus {
+		feed := t.feeds[t.feedIndex]
 		feed.Input(event)
-	} else if t.lastList == NotificationPaneFocus {
+	} else if t.focus == NotificationPaneFocus {
 		t.notificationView.feed.Input(event)
 	}
 }
 
 func (t *StatusView) inputBack(q bool) {
 	if t.app.UI.Focus == LeftPaneFocus && len(t.feeds) > 1 {
-		t.RemoveLatestFeed()
+		t.RemoveCurrentFeed()
 	} else if t.app.UI.Focus == LeftPaneFocus && q {
 		t.app.UI.Root.Stop()
 	} else if t.app.UI.Focus == NotificationPaneFocus {
 		t.app.UI.SetFocus(LeftPaneFocus)
 		t.focus = LeftPaneFocus
 		t.lastList = LeftPaneFocus
-		t.feeds[len(t.feeds)-1].DrawToot()
+		t.feeds[t.feedIndex].DrawToot()
 	}
 }
 
@@ -231,6 +276,10 @@ func (t *StatusView) inputLeft(event *tcell.EventKey) {
 			}
 		case 'q', 'Q':
 			t.inputBack(true)
+		case 'h', 'H':
+			t.CyclePreviousFeed()
+		case 'l', 'L':
+			t.CycleNextFeed()
 		}
 	} else {
 		switch event.Key() {
@@ -238,6 +287,10 @@ func (t *StatusView) inputLeft(event *tcell.EventKey) {
 			t.prev()
 		case tcell.KeyDown:
 			t.next()
+		case tcell.KeyLeft:
+			t.CyclePreviousFeed()
+		case tcell.KeyRight:
+			t.CycleNextFeed()
 		case tcell.KeyPgUp, tcell.KeyCtrlB:
 			t.pgup()
 		case tcell.KeyPgDn, tcell.KeyCtrlF:
@@ -317,10 +370,11 @@ func (t *StatusView) drawDesc() {
 		t.app.UI.SetTopText("")
 		return
 	}
+	i := t.feedIndex + 1
 	l := len(t.feeds)
-	f := t.feeds[l-1]
+	f := t.feeds[t.feedIndex]
 	t.app.UI.SetTopText(
-		fmt.Sprintf("%s (%d/%d)", f.GetDesc(), l, l),
+		fmt.Sprintf("%s (%d/%d)", f.GetDesc(), i, l),
 	)
 }
 
@@ -331,7 +385,7 @@ func (t *StatusView) prev() {
 	if t.app.UI.Focus == LeftPaneFocus {
 		current = t.GetCurrentItem()
 		list = t.list
-		feed = t.feeds[len(t.feeds)-1]
+		feed = t.feeds[t.feedIndex]
 	} else {
 		current = t.notificationView.list.GetCurrentItem()
 		list = t.notificationView.list
@@ -359,7 +413,7 @@ func (t *StatusView) next() {
 	var feed Feed
 	if t.app.UI.Focus == LeftPaneFocus {
 		list = t.list
-		feed = t.feeds[len(t.feeds)-1]
+		feed = t.feeds[t.feedIndex]
 	} else {
 		list = t.notificationView.list
 		feed = t.notificationView.feed
@@ -387,7 +441,7 @@ func (t *StatusView) pgdown() {
 	var feed Feed
 	if t.app.UI.Focus == LeftPaneFocus {
 		list = t.list
-		feed = t.feeds[len(t.feeds)-1]
+		feed = t.feeds[t.feedIndex]
 	} else {
 		list = t.notificationView.list
 		feed = t.notificationView.feed
@@ -415,7 +469,7 @@ func (t *StatusView) pgup() {
 	var feed Feed
 	if t.app.UI.Focus == LeftPaneFocus {
 		list = t.list
-		feed = t.feeds[len(t.feeds)-1]
+		feed = t.feeds[t.feedIndex]
 	} else {
 		list = t.notificationView.list
 		feed = t.notificationView.feed
@@ -450,7 +504,7 @@ func (t *StatusView) home() {
 	var feed Feed
 	if t.app.UI.Focus == LeftPaneFocus {
 		list = t.list
-		feed = t.feeds[len(t.feeds)-1]
+		feed = t.feeds[t.feedIndex]
 	} else {
 		list = t.notificationView.list
 		feed = t.notificationView.feed
@@ -477,7 +531,7 @@ func (t *StatusView) end() {
 	var feed Feed
 	if t.app.UI.Focus == LeftPaneFocus {
 		list = t.list
-		feed = t.feeds[len(t.feeds)-1]
+		feed = t.feeds[t.feedIndex]
 	} else {
 		list = t.notificationView.list
 		feed = t.notificationView.feed
@@ -495,14 +549,14 @@ func (t *StatusView) end() {
 }
 
 func (t *StatusView) loadNewer() {
-	feedIndex := len(t.feeds) - 1
+	feedIndex := t.feedIndex
 	if t.loadingNewer || feedIndex < 0 {
 		return
 	}
 	t.loadingNewer = true
 	go func() {
 		new := t.feeds[feedIndex].LoadNewer()
-		if new == 0 || feedIndex != len(t.feeds)-1 {
+		if new == 0 {
 			t.loadingNewer = false
 			return
 		}
@@ -515,19 +569,20 @@ func (t *StatusView) loadNewer() {
 			}
 			t.list.SetCurrentItem(newIndex)
 			t.loadingNewer = false
+			t.feeds[feedIndex].DrawToot()
 		})
 	}()
 }
 
 func (t *StatusView) loadOlder() {
-	feedIndex := len(t.feeds) - 1
+	feedIndex := t.feedIndex
 	if t.loadingOlder || feedIndex < 0 {
 		return
 	}
 	t.loadingOlder = true
 	go func() {
 		new := t.feeds[feedIndex].LoadOlder()
-		if new == 0 || feedIndex != len(t.feeds)-1 {
+		if new == 0 {
 			t.loadingOlder = false
 			return
 		}

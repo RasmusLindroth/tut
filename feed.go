@@ -61,62 +61,54 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	special1 := ColorMark(app.Config.Style.TextSpecial1)
 	special2 := ColorMark(app.Config.Style.TextSpecial2)
 
-	statusSensitive := false
-	if status.Sensitive {
-		statusSensitive = true
-	}
-	if status.Reblog != nil && status.Reblog.Sensitive {
-		statusSensitive = true
+	var head string
+	var reblogText string
+	if status.Reblog != nil {
+		if status.Account.DisplayName != "" {
+			reblogText += fmt.Sprintf(subtleColor+"%s (%s)\n", status.Account.DisplayName, status.Account.Acct)
+		} else {
+			reblogText += fmt.Sprintf(subtleColor+"%s\n", status.Account.Acct)
+		}
+		reblogText += subtleColor + "Boosted\n"
+		reblogText += subtleColor + line
+		status = status.Reblog
 	}
 
-	if statusSensitive {
+	if status.Sensitive {
 		strippedSpoiler, u = cleanTootHTML(status.SpoilerText)
 		strippedSpoiler = tview.Escape(strippedSpoiler)
 		urls = append(urls, u...)
 	}
-	if statusSensitive && !showSensitive {
+	if status.Sensitive && !showSensitive {
 		strippedSpoiler += "\n" + subtleColor + line
 		strippedSpoiler += subtleColor + tview.Escape("Press [z] to show hidden text")
 		stripped = strippedSpoiler
 	}
-	if statusSensitive && showSensitive {
+	if status.Sensitive && showSensitive {
 		stripped = strippedSpoiler + "\n\n" + tview.Escape(strippedContent)
 	}
-	if !statusSensitive {
+	if !status.Sensitive {
 		stripped = tview.Escape(strippedContent)
 	}
 
 	app.UI.LinkOverlay.SetLinks(urls, status)
 
-	var statusBookmarked = false
 	if status.Bookmarked == true {
-		statusBookmarked = true
-	}
-	if status.Reblog != nil && status.Reblog.Bookmarked == true {
-		statusBookmarked = true
-	}
-
-	var head string
-
-	if statusBookmarked == true {
 		head += fmt.Sprintf(special2 + "You have bookmarked this toot\n\n")
 	}
 
-	if status.Reblog != nil {
-		if status.Account.DisplayName != "" {
-			head += fmt.Sprintf(subtleColor+"%s (%s)\n", status.Account.DisplayName, status.Account.Acct)
-		} else {
-			head += fmt.Sprintf(subtleColor+"%s\n", status.Account.Acct)
-		}
-		head += subtleColor + "Boosted\n"
-		head += subtleColor + line
-		status = status.Reblog
-	}
+	head += reblogText
 
+	showedVisibility := false
 	if status.Account.DisplayName != "" {
-		head += fmt.Sprintf(special2+"%s\n", status.Account.DisplayName)
+		showedVisibility = true
+		head += fmt.Sprintf(special1+"(%s) %s%s\n", status.Visibility, special2, status.Account.DisplayName)
 	}
-	head += fmt.Sprintf(special1+"%s\n\n", status.Account.Acct)
+	if !showedVisibility {
+		head += fmt.Sprintf(special2+"(%s) %s%s\n\n", status.Visibility, special1, status.Account.Acct)
+	} else {
+		head += fmt.Sprintf(special1+"%s\n\n", status.Account.Acct)
+	}
 	output := head
 	content := stripped
 	if content != "" {
@@ -321,7 +313,7 @@ func inputOptions(options []ControlItem) ControlItem {
 }
 
 func inputSimple(app *App, event *tcell.EventKey, controls ControlItem,
-	user mastodon.Account, status *mastodon.Status, relation *mastodon.Relationship, feed Feed) (updated bool,
+	user mastodon.Account, status *mastodon.Status, originalStatus *mastodon.Status, relation *mastodon.Relationship, feed Feed) (updated bool,
 	redrawControls bool, redrawToot bool, newStatus *mastodon.Status, newRelation *mastodon.Relationship) {
 
 	newStatus = status
@@ -430,7 +422,13 @@ func inputSimple(app *App, event *tcell.EventKey, controls ControlItem,
 		}
 	case 's', 'S':
 		if controls&ControlBookmark != 0 {
-			newStatus, err = app.API.BookmarkToogle(status)
+			tmpStatus, err := app.API.BookmarkToogle(status)
+			newStatus = originalStatus
+			if newStatus.Reblog != nil {
+				newStatus.Reblog.Bookmarked = tmpStatus.Bookmarked
+			} else {
+				newStatus.Bookmarked = tmpStatus.Bookmarked
+			}
 			if err != nil {
 				app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't toggle bookmark on toot. Error: %v\n", err))
 				return
@@ -607,6 +605,7 @@ func (t *TimelineFeed) GetSavedIndex() int {
 
 func (t *TimelineFeed) Input(event *tcell.EventKey) {
 	status := t.GetCurrentStatus()
+	originalStatus := status
 	if status == nil {
 		return
 	}
@@ -622,7 +621,7 @@ func (t *TimelineFeed) Input(event *tcell.EventKey) {
 	}
 	options := inputOptions(controls)
 
-	updated, rc, rt, newS, _ := inputSimple(t.app, event, options, user, status, nil, t)
+	updated, rc, rt, newS, _ := inputSimple(t.app, event, options, user, status, originalStatus, nil, t)
 	if updated {
 		index := t.app.UI.StatusView.GetCurrentItem()
 		t.statuses[index] = newS
@@ -729,6 +728,7 @@ func (t *ThreadFeed) GetSavedIndex() int {
 
 func (t *ThreadFeed) Input(event *tcell.EventKey) {
 	status := t.GetCurrentStatus()
+	originalStatus := status
 	if status == nil {
 		return
 	}
@@ -747,7 +747,7 @@ func (t *ThreadFeed) Input(event *tcell.EventKey) {
 	}
 	options := inputOptions(controls)
 
-	updated, rc, rt, newS, _ := inputSimple(t.app, event, options, user, status, nil, t)
+	updated, rc, rt, newS, _ := inputSimple(t.app, event, options, user, status, originalStatus, nil, t)
 	if updated {
 		index := t.app.UI.StatusView.GetCurrentItem()
 		t.statuses[index] = newS
@@ -916,7 +916,7 @@ func (u *UserFeed) Input(event *tcell.EventKey) {
 		}
 		options := inputOptions(controls)
 
-		updated, _, _, _, newRel := inputSimple(u.app, event, options, u.user, nil, u.relation, u)
+		updated, _, _, _, newRel := inputSimple(u.app, event, options, u.user, nil, nil, u.relation, u)
 		if updated {
 			u.relation = newRel
 			u.DrawToot()
@@ -925,6 +925,7 @@ func (u *UserFeed) Input(event *tcell.EventKey) {
 	}
 
 	status := u.GetCurrentStatus()
+	originalStatus := status
 	if status == nil {
 		return
 	}
@@ -940,7 +941,7 @@ func (u *UserFeed) Input(event *tcell.EventKey) {
 	}
 	options := inputOptions(controls)
 
-	updated, rc, rt, newS, _ := inputSimple(u.app, event, options, user, status, nil, u)
+	updated, rc, rt, newS, _ := inputSimple(u.app, event, options, user, status, originalStatus, nil, u)
 	if updated {
 		index := u.app.UI.StatusView.GetCurrentItem()
 		u.statuses[index-1] = newS
@@ -1171,7 +1172,7 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 	if notification.Type == "follow" {
 		controls := []ControlItem{ControlUser}
 		options := inputOptions(controls)
-		inputSimple(n.app, event, options, notification.Account, nil, nil, n)
+		inputSimple(n.app, event, options, notification.Account, nil, nil, nil, n)
 		return
 	}
 
@@ -1179,6 +1180,7 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 		return
 	}
 	status := notification.Status
+	originalStatus := status
 	if status.Reblog != nil {
 		status = status.Reblog
 	}
@@ -1191,7 +1193,7 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 	}
 	options := inputOptions(controls)
 
-	updated, rc, rt, newS, _ := inputSimple(n.app, event, options, user, status, nil, n)
+	updated, rc, rt, newS, _ := inputSimple(n.app, event, options, user, status, originalStatus, nil, n)
 	if updated {
 		var index int
 		if n.docked {
@@ -1326,6 +1328,7 @@ func (t *TagFeed) GetSavedIndex() int {
 
 func (t *TagFeed) Input(event *tcell.EventKey) {
 	status := t.GetCurrentStatus()
+	originalStatus := status
 	if status == nil {
 		return
 	}
@@ -1341,7 +1344,7 @@ func (t *TagFeed) Input(event *tcell.EventKey) {
 	}
 	options := inputOptions(controls)
 
-	updated, rc, rt, newS, _ := inputSimple(t.app, event, options, user, status, nil, t)
+	updated, rc, rt, newS, _ := inputSimple(t.app, event, options, user, status, originalStatus, nil, t)
 	if updated {
 		index := t.app.UI.StatusView.GetCurrentItem()
 		t.statuses[index] = newS
@@ -1521,7 +1524,7 @@ func (u *UserListFeed) Input(event *tcell.EventKey) {
 	}
 	options := inputOptions(controls)
 
-	updated, _, _, _, newRel := inputSimple(u.app, event, options, *user.User, nil, user.Relationship, u)
+	updated, _, _, _, newRel := inputSimple(u.app, event, options, *user.User, nil, nil, user.Relationship, u)
 	if updated {
 		u.users[index].Relationship = newRel
 		u.DrawToot()
