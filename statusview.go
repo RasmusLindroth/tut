@@ -569,7 +569,6 @@ func (t *StatusView) loadNewer() {
 			}
 			t.list.SetCurrentItem(newIndex)
 			t.loadingNewer = false
-			t.feeds[feedIndex].DrawToot()
 		})
 	}()
 }

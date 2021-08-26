@@ -161,24 +161,44 @@ func (api *API) GetUserStatusesNewer(u mastodon.Account, s *mastodon.Status) ([]
 	return api.Client.GetAccountStatuses(context.Background(), u.ID, pg)
 }
 
-func (api *API) GetNotifications() ([]*mastodon.Notification, error) {
-	return api.Client.GetNotifications(context.Background(), nil)
-}
+func (api *API) getNotifications(pg *mastodon.Pagination) ([]*Notification, error) {
+	var notifications []*Notification
 
-func (api *API) GetNotificationsOlder(n *mastodon.Notification) ([]*mastodon.Notification, error) {
-	pg := &mastodon.Pagination{
-		MaxID: n.ID,
+	mnot, err := api.Client.GetNotifications(context.Background(), pg)
+	if err != nil {
+		return []*Notification{}, err
 	}
 
-	return api.Client.GetNotifications(context.Background(), pg)
-}
-
-func (api *API) GetNotificationsNewer(n *mastodon.Notification) ([]*mastodon.Notification, error) {
-	pg := &mastodon.Pagination{
-		MinID: n.ID,
+	for _, np := range mnot {
+		var r *mastodon.Relationship
+		if np.Type == "follow" {
+			r, err = api.GetRelation(&np.Account)
+			if err != nil {
+				return notifications, err
+			}
+		}
+		notifications = append(notifications, &Notification{N: np, R: r})
 	}
 
-	return api.Client.GetNotifications(context.Background(), pg)
+	return notifications, err
+}
+
+func (api *API) GetNotifications() ([]*Notification, error) {
+	return api.getNotifications(nil)
+}
+
+func (api *API) GetNotificationsOlder(n *Notification) ([]*Notification, error) {
+	pg := &mastodon.Pagination{
+		MaxID: n.N.ID,
+	}
+	return api.getNotifications(pg)
+}
+
+func (api *API) GetNotificationsNewer(n *Notification) ([]*Notification, error) {
+	pg := &mastodon.Pagination{
+		MinID: n.N.ID,
+	}
+	return api.getNotifications(pg)
 }
 
 type UserData struct {
@@ -193,7 +213,7 @@ func (api *API) GetUsers(s string) ([]*UserData, error) {
 		return nil, err
 	}
 	for _, u := range users {
-		r, err := api.UserRelation(*u)
+		r, err := api.GetRelation(u)
 		if err != nil {
 			return ud, err
 		}
@@ -201,6 +221,10 @@ func (api *API) GetUsers(s string) ([]*UserData, error) {
 	}
 
 	return ud, nil
+}
+
+func (api *API) GetRelation(u *mastodon.Account) (*mastodon.Relationship, error) {
+	return api.UserRelation(*u)
 }
 
 func (api *API) getUserList(t UserListType, id string, pg *mastodon.Pagination) ([]*UserData, error) {

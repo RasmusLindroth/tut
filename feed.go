@@ -350,6 +350,7 @@ func inputSimple(app *App, event *tcell.EventKey, controls ControlItem,
 			}
 			updated = true
 			redrawToot = true
+			redrawControls = true
 		}
 	case 'd', 'D':
 		if controls&ControlDelete != 0 {
@@ -390,6 +391,7 @@ func inputSimple(app *App, event *tcell.EventKey, controls ControlItem,
 			}
 			updated = true
 			redrawToot = true
+			redrawControls = true
 		}
 	case 'c', 'C':
 		if controls&ControlCompose != 0 {
@@ -411,6 +413,7 @@ func inputSimple(app *App, event *tcell.EventKey, controls ControlItem,
 			}
 			updated = true
 			redrawToot = true
+			redrawControls = true
 		}
 	case 'o', 'O':
 		if controls&ControlOpen != 0 {
@@ -963,10 +966,15 @@ func NewNotificationFeed(app *App, docked bool) *NotificationsFeed {
 	return n
 }
 
+type Notification struct {
+	N *mastodon.Notification
+	R *mastodon.Relationship
+}
+
 type NotificationsFeed struct {
 	app           *App
 	timelineType  TimelineType
-	notifications []*mastodon.Notification
+	notifications []*Notification
 	docked        bool
 	index         int
 	showSpoiler   bool
@@ -980,7 +988,7 @@ func (n *NotificationsFeed) GetDesc() string {
 	return "Notifications"
 }
 
-func (n *NotificationsFeed) GetCurrentNotification() *mastodon.Notification {
+func (n *NotificationsFeed) GetCurrentNotification() *Notification {
 	var index int
 	if n.docked {
 		index = n.app.UI.StatusView.notificationView.list.GetCurrentItem()
@@ -995,18 +1003,18 @@ func (n *NotificationsFeed) GetCurrentNotification() *mastodon.Notification {
 
 func (n *NotificationsFeed) GetCurrentStatus() *mastodon.Status {
 	notification := n.GetCurrentNotification()
-	if notification == nil {
+	if notification.N == nil {
 		return nil
 	}
-	return notification.Status
+	return notification.N.Status
 }
 
 func (n *NotificationsFeed) GetCurrentUser() *mastodon.Account {
 	notification := n.GetCurrentNotification()
-	if notification == nil {
+	if notification.N == nil {
 		return nil
 	}
-	return &notification.Account
+	return &notification.N.Account
 }
 
 func (n *NotificationsFeed) GetFeedList() <-chan string {
@@ -1015,14 +1023,14 @@ func (n *NotificationsFeed) GetFeedList() <-chan string {
 	go func() {
 		today := time.Now()
 		for _, item := range notifications {
-			sLocal := item.CreatedAt.Local()
+			sLocal := item.N.CreatedAt.Local()
 			long := n.app.Config.General.DateFormat
 			short := n.app.Config.General.DateTodayFormat
 			relative := n.app.Config.General.DateRelative
 
 			dateOutput := OutputDate(sLocal, today, long, short, relative)
 
-			content := fmt.Sprintf("%s %s", dateOutput, item.Account.Acct)
+			content := fmt.Sprintf("%s %s", dateOutput, item.N.Account.Acct)
 			ch <- content
 		}
 		close(ch)
@@ -1031,26 +1039,26 @@ func (n *NotificationsFeed) GetFeedList() <-chan string {
 }
 
 func (n *NotificationsFeed) LoadNewer() int {
-	var notifications []*mastodon.Notification
+	var notifications []*Notification
 	var err error
 	if len(n.notifications) == 0 {
 		notifications, err = n.app.API.GetNotifications()
 	} else {
 		notifications, err = n.app.API.GetNotificationsNewer(n.notifications[0])
 		for _, o := range notifications {
-			switch o.Type {
+			switch o.N.Type {
 			case "follow":
 				Notify(n.app.Config.NotificationConfig, NotificationFollower,
-					"New follower", fmt.Sprintf("%s follows you", o.Account.Username))
+					"New follower", fmt.Sprintf("%s follows you", o.N.Account.Username))
 			case "favourite":
 				Notify(n.app.Config.NotificationConfig, NotificationFavorite,
-					"Favorited your toot", fmt.Sprintf("%s favorited your toot", o.Account.Username))
+					"Favorited your toot", fmt.Sprintf("%s favorited your toot", o.N.Account.Username))
 			case "reblog":
 				Notify(n.app.Config.NotificationConfig, NotificationBoost,
-					"Boosted your toot", fmt.Sprintf("%s boosted your toot", o.Account.Username))
+					"Boosted your toot", fmt.Sprintf("%s boosted your toot", o.N.Account.Username))
 			case "mention":
 				Notify(n.app.Config.NotificationConfig, NotificationMention,
-					"Mentioned in toot", fmt.Sprintf("%s mentioned you", o.Account.Username))
+					"Mentioned in toot", fmt.Sprintf("%s mentioned you", o.N.Account.Username))
 			case "poll":
 				Notify(n.app.Config.NotificationConfig, NotificationPoll,
 					"Poll has ended", "")
@@ -1071,7 +1079,7 @@ func (n *NotificationsFeed) LoadNewer() int {
 }
 
 func (n *NotificationsFeed) LoadOlder() int {
-	var notifications []*mastodon.Notification
+	var notifications []*Notification
 	var err error
 	if len(n.notifications) == 0 {
 		notifications, err = n.app.API.GetNotifications()
@@ -1118,28 +1126,30 @@ func (n *NotificationsFeed) DrawToot() {
 	var controls string
 	defer func() { n.showSpoiler = false }()
 
-	switch notification.Type {
+	switch notification.N.Type {
 	case "follow":
-		text = SublteText(n.app.Config.Style, FormatUsername(notification.Account)+" started following you\n\n")
-		controls = ColorKey(n.app.Config, "", "U", "ser")
+		text = SublteText(n.app.Config.Style, FormatUsername(notification.N.Account)+" started following you\n\n")
+		var t string
+		t, controls = showUser(n.app, &notification.N.Account, notification.R, true)
+		text += t
 	case "favourite":
-		pre := SublteText(n.app.Config.Style, FormatUsername(notification.Account)+" favorited your toot") + "\n\n"
-		text, controls = showTootOptions(n.app, notification.Status, n.showSpoiler)
+		pre := SublteText(n.app.Config.Style, FormatUsername(notification.N.Account)+" favorited your toot") + "\n\n"
+		text, controls = showTootOptions(n.app, notification.N.Status, n.showSpoiler)
 		text = pre + text
 	case "reblog":
-		pre := SublteText(n.app.Config.Style, FormatUsername(notification.Account)+" boosted your toot") + "\n\n"
-		text, controls = showTootOptions(n.app, notification.Status, n.showSpoiler)
+		pre := SublteText(n.app.Config.Style, FormatUsername(notification.N.Account)+" boosted your toot") + "\n\n"
+		text, controls = showTootOptions(n.app, notification.N.Status, n.showSpoiler)
 		text = pre + text
 	case "mention":
-		pre := SublteText(n.app.Config.Style, FormatUsername(notification.Account)+" mentioned you") + "\n\n"
-		text, controls = showTootOptions(n.app, notification.Status, n.showSpoiler)
+		pre := SublteText(n.app.Config.Style, FormatUsername(notification.N.Account)+" mentioned you") + "\n\n"
+		text, controls = showTootOptions(n.app, notification.N.Status, n.showSpoiler)
 		text = pre + text
 	case "poll":
 		pre := SublteText(n.app.Config.Style, "A poll of yours or one you participated in has ended") + "\n\n"
-		text, controls = showTootOptions(n.app, notification.Status, n.showSpoiler)
+		text, controls = showTootOptions(n.app, notification.N.Status, n.showSpoiler)
 		text = pre + text
 	case "follow_request":
-		text = SublteText(n.app.Config.Style, FormatUsername(notification.Account)+" wants to follow you. This is currently not implemented, so use another app to accept or reject the request.\n\n")
+		text = SublteText(n.app.Config.Style, FormatUsername(notification.N.Account)+" wants to follow you. This is currently not implemented, so use another app to accept or reject the request.\n\n")
 	default:
 	}
 
@@ -1153,9 +1163,12 @@ func (n *NotificationsFeed) RedrawControls() {
 		n.app.UI.StatusView.SetControls("")
 		return
 	}
-	switch notification.Type {
+	switch notification.N.Type {
 	case "favourite", "reblog", "mention", "poll":
-		_, controls := showTootOptions(n.app, notification.Status, n.showSpoiler)
+		_, controls := showTootOptions(n.app, notification.N.Status, n.showSpoiler)
+		n.app.UI.StatusView.SetControls(controls)
+	case "follow":
+		_, controls := showUser(n.app, &notification.N.Account, notification.R, true)
 		n.app.UI.StatusView.SetControls(controls)
 	}
 }
@@ -1169,22 +1182,31 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 	if notification == nil {
 		return
 	}
-	if notification.Type == "follow" {
-		controls := []ControlItem{ControlUser}
+	if notification.N.Type == "follow" {
+		controls := []ControlItem{ControlUser, ControlFollow, ControlBlock, ControlMute, ControlAvatar, ControlOpen}
 		options := inputOptions(controls)
-		inputSimple(n.app, event, options, notification.Account, nil, nil, nil, n)
+		_, rc, _, _, rel := inputSimple(n.app, event, options, notification.N.Account, nil, nil, notification.R, n)
+		if rc {
+			var index int
+			if n.docked {
+				index = n.app.UI.StatusView.notificationView.list.GetCurrentItem()
+			} else {
+				index = n.app.UI.StatusView.GetCurrentItem()
+			}
+			n.notifications[index].R = rel
+			n.RedrawControls()
+		}
 		return
 	}
 
-	if notification.Type == "follow_request" {
+	if notification.N.Type == "follow_request" {
 		return
 	}
-	status := notification.Status
+	status := notification.N.Status
 	originalStatus := status
 	if status.Reblog != nil {
 		status = status.Reblog
 	}
-	user := status.Account
 
 	controls := []ControlItem{
 		ControlAvatar, ControlThread, ControlUser, ControlSpoiler,
@@ -1193,7 +1215,7 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 	}
 	options := inputOptions(controls)
 
-	updated, rc, rt, newS, _ := inputSimple(n.app, event, options, user, status, originalStatus, nil, n)
+	updated, rc, rt, newS, _ := inputSimple(n.app, event, options, notification.N.Account, status, originalStatus, nil, n)
 	if updated {
 		var index int
 		if n.docked {
@@ -1201,7 +1223,7 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 		} else {
 			index = n.app.UI.StatusView.GetCurrentItem()
 		}
-		n.notifications[index].Status = newS
+		n.notifications[index].N.Status = newS
 	}
 	if rc {
 		n.RedrawControls()
