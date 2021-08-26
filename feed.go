@@ -99,7 +99,9 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 
 	head += reblogText
 
-	head += fmt.Sprintf(special1+"(%s) ", status.Visibility)
+	if status.Visibility != "public" {
+		head += fmt.Sprintf(special1+"(%s) ", status.Visibility)
+	}
 	if status.Account.DisplayName != "" {
 		head += fmt.Sprintf("%s%s\n", special2, status.Account.DisplayName)
 		head += fmt.Sprintf("%s%s\n\n", special1, status.Account.Acct)
