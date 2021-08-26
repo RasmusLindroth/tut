@@ -963,6 +963,11 @@ func NewNotificationFeed(app *App, docked bool) *NotificationsFeed {
 	return n
 }
 
+type Notification struct {
+	mastodon.Notification
+	Relationship mastodon.Relationship
+}
+
 type NotificationsFeed struct {
 	app           *App
 	timelineType  TimelineType
@@ -1121,7 +1126,14 @@ func (n *NotificationsFeed) DrawToot() {
 	switch notification.Type {
 	case "follow":
 		text = SublteText(n.app.Config.Style, FormatUsername(notification.Account)+" started following you\n\n")
-		controls = ColorKey(n.app.Config, "", "U", "ser")
+		rel, err := n.app.API.GetRelation(&notification.Account)
+		if err != nil {
+			controls = ColorKey(n.app.Config, "", "U", "ser")
+		} else {
+			var t string
+			t, controls = showUser(n.app, &notification.Account, rel, true)
+			text += t
+		}
 	case "favourite":
 		pre := SublteText(n.app.Config.Style, FormatUsername(notification.Account)+" favorited your toot") + "\n\n"
 		text, controls = showTootOptions(n.app, notification.Status, n.showSpoiler)
@@ -1170,7 +1182,7 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 		return
 	}
 	if notification.Type == "follow" {
-		controls := []ControlItem{ControlUser}
+		controls := []ControlItem{ControlUser, ControlFollow, ControlBlock, ControlMute, ControlAvatar}
 		options := inputOptions(controls)
 		inputSimple(n.app, event, options, notification.Account, nil, nil, nil, n)
 		return
@@ -1184,7 +1196,6 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 	if status.Reblog != nil {
 		status = status.Reblog
 	}
-	user := status.Account
 
 	controls := []ControlItem{
 		ControlAvatar, ControlThread, ControlUser, ControlSpoiler,
@@ -1193,7 +1204,7 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 	}
 	options := inputOptions(controls)
 
-	updated, rc, rt, newS, _ := inputSimple(n.app, event, options, user, status, originalStatus, nil, n)
+	updated, rc, rt, newS, _ := inputSimple(n.app, event, options, notification.Account, status, originalStatus, nil, n)
 	if updated {
 		var index int
 		if n.docked {

@@ -193,7 +193,7 @@ func (api *API) GetUsers(s string) ([]*UserData, error) {
 		return nil, err
 	}
 	for _, u := range users {
-		r, err := api.UserRelation(*u)
+		r, err := api.GetRelation(u)
 		if err != nil {
 			return ud, err
 		}
@@ -201,6 +201,10 @@ func (api *API) GetUsers(s string) ([]*UserData, error) {
 	}
 
 	return ud, nil
+}
+
+func (api *API) GetRelation(u *mastodon.Account) (*mastodon.Relationship, error) {
+	return api.UserRelation(*u)
 }
 
 func (api *API) getUserList(t UserListType, id string, pg *mastodon.Pagination) ([]*UserData, error) {
