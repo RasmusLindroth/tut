@@ -67,7 +67,10 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 		c.app.UI.StatusView.AddFeed(NewTimelineFeed(c.app, TimelineBookmarked))
 		c.app.UI.SetFocus(LeftPaneFocus)
 		c.app.UI.CmdBar.ClearInput()
-
+	case ":favorited":
+		c.app.UI.StatusView.AddFeed(NewTimelineFeed(c.app, TimelineFavorited))
+		c.app.UI.SetFocus(LeftPaneFocus)
+		c.app.UI.CmdBar.ClearInput()
 	case ":boosts":
 		c.app.UI.CmdBar.ClearInput()
 		status := c.app.UI.StatusView.GetCurrentStatus()
@@ -142,6 +145,10 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 			c.app.UI.SetFocus(LeftPaneFocus)
 			c.app.UI.CmdBar.ClearInput()
 		case "notifications", "n":
+			c.app.UI.StatusView.AddFeed(NewNotificationFeed(c.app, false))
+			c.app.UI.SetFocus(LeftPaneFocus)
+			c.app.UI.CmdBar.ClearInput()
+		case "favrotied", "fav":
 			c.app.UI.StatusView.AddFeed(NewNotificationFeed(c.app, false))
 			c.app.UI.SetFocus(LeftPaneFocus)
 			c.app.UI.CmdBar.ClearInput()

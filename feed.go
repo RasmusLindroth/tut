@@ -99,15 +99,14 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 
 	head += reblogText
 
-	showedVisibility := false
-	if status.Account.DisplayName != "" {
-		showedVisibility = true
-		head += fmt.Sprintf(special1+"(%s) %s%s\n", status.Visibility, special2, status.Account.DisplayName)
+	if status.Visibility != "public" {
+		head += fmt.Sprintf(special1+"(%s) ", status.Visibility)
 	}
-	if !showedVisibility {
-		head += fmt.Sprintf(special2+"(%s) %s%s\n\n", status.Visibility, special1, status.Account.Acct)
+	if status.Account.DisplayName != "" {
+		head += fmt.Sprintf("%s%s\n", special2, status.Account.DisplayName)
+		head += fmt.Sprintf("%s%s\n\n", special1, status.Account.Acct)
 	} else {
-		head += fmt.Sprintf(special1+"%s\n\n", status.Account.Acct)
+		head += fmt.Sprintf("%s%s\n\n", special2, status.Account.Acct)
 	}
 	output := head
 	content := stripped
@@ -474,9 +473,11 @@ func NewTimelineFeed(app *App, tl TimelineType) *TimelineFeed {
 	t := &TimelineFeed{
 		app:          app,
 		timelineType: tl,
+		linkPrev:     "",
+		linkNext:     "",
 	}
 	var err error
-	t.statuses, err = t.app.API.GetStatuses(t.timelineType)
+	t.statuses, err = t.app.API.GetStatuses(t)
 	if err != nil {
 		t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load timeline toots. Error: %v\n", err))
 	}
@@ -487,6 +488,8 @@ type TimelineFeed struct {
 	app          *App
 	timelineType TimelineType
 	statuses     []*mastodon.Status
+	linkPrev     mastodon.ID //Only bm and fav
+	linkNext     mastodon.ID //Only bm and fav
 	index        int
 	showSpoiler  bool
 }
@@ -507,6 +510,8 @@ func (t *TimelineFeed) GetDesc() string {
 		return "Timeline federated"
 	case TimelineBookmarked:
 		return "Bookmarks"
+	case TimelineFavorited:
+		return "Favorited"
 	}
 	return "Timeline"
 }
@@ -531,9 +536,9 @@ func (t *TimelineFeed) LoadNewer() int {
 	var statuses []*mastodon.Status
 	var err error
 	if len(t.statuses) == 0 {
-		statuses, err = t.app.API.GetStatuses(t.timelineType)
+		statuses, err = t.app.API.GetStatuses(t)
 	} else {
-		statuses, err = t.app.API.GetStatusesNewer(t.timelineType, t.statuses[0])
+		statuses, err = t.app.API.GetStatusesNewer(t)
 		newCount := len(statuses)
 		if newCount > 0 {
 			Notify(t.app.Config.NotificationConfig, NotificationPost,
@@ -556,9 +561,9 @@ func (t *TimelineFeed) LoadOlder() int {
 	var statuses []*mastodon.Status
 	var err error
 	if len(t.statuses) == 0 {
-		statuses, err = t.app.API.GetStatuses(t.timelineType)
+		statuses, err = t.app.API.GetStatuses(t)
 	} else {
-		statuses, err = t.app.API.GetStatusesOlder(t.timelineType, t.statuses[len(t.statuses)-1])
+		statuses, err = t.app.API.GetStatusesOlder(t)
 	}
 	if err != nil {
 		t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load older toots. Error: %v\n", err))
