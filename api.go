@@ -16,6 +16,7 @@ const (
 	TimelineLocal
 	TimelineFederated
 	TimelineBookmarked
+	TimelineFavorited
 )
 
 type UserListType uint
@@ -43,15 +44,12 @@ func (api *API) SetClient(c *mastodon.Client) {
 	api.Client = c
 }
 
-func (api *API) getStatuses(tl TimelineType, pg *mastodon.Pagination) ([]*mastodon.Status, error) {
-	var statuses []*mastodon.Status
+func (api *API) getStatuses(tl TimelineType, pg *mastodon.Pagination) ([]*mastodon.Status, mastodon.ID, mastodon.ID, error) {
 	var err error
+	var statuses []*mastodon.Status
 
-	var pgMin = mastodon.ID("")
-	var pgMax = mastodon.ID("")
-	if pg != nil {
-		pgMin = pg.MinID
-		pgMax = pg.MaxID
+	if pg == nil {
+		pg = &mastodon.Pagination{}
 	}
 
 	switch tl {
@@ -71,43 +69,95 @@ func (api *API) getStatuses(tl TimelineType, pg *mastodon.Pagination) ([]*mastod
 		statuses, err = api.Client.GetTimelinePublic(context.Background(), false, pg)
 	case TimelineBookmarked:
 		statuses, err = api.Client.GetBookmarks(context.Background(), pg)
+	case TimelineFavorited:
+		statuses, err = api.Client.GetFavourites(context.Background(), pg)
 	default:
 		err = errors.New("No timeline selected")
 	}
 
 	if err != nil {
-		return statuses, err
+		return statuses, "", "", err
 	}
 
-	if pg != nil && len(statuses) > 0 {
-		if pgMin != "" && statuses[0].ID == pgMin {
-			return []*mastodon.Status{}, nil
-		} else if pgMax != "" && statuses[len(statuses)-1].ID == pgMax {
-			return []*mastodon.Status{}, nil
+	min := mastodon.ID("")
+	max := mastodon.ID("")
+	if pg != nil {
+		min = pg.MinID
+		max = pg.MaxID
+		if min == "" {
+			min = "-1"
+		}
+		if max == "" {
+			max = "-1"
 		}
 	}
+	return statuses, min, max, err
+}
 
+func (api *API) GetStatuses(t *TimelineFeed) ([]*mastodon.Status, error) {
+	statuses, pgmin, pgmax, err := api.getStatuses(t.timelineType, nil)
+	switch t.timelineType {
+	case TimelineBookmarked, TimelineFavorited:
+		if err == nil {
+			t.linkPrev = pgmin
+			t.linkNext = pgmax
+		}
+	}
 	return statuses, err
 }
 
-func (api *API) GetStatuses(tl TimelineType) ([]*mastodon.Status, error) {
-	return api.getStatuses(tl, nil)
-}
-
-func (api *API) GetStatusesOlder(tl TimelineType, s *mastodon.Status) ([]*mastodon.Status, error) {
-	pg := &mastodon.Pagination{
-		MaxID: s.ID,
+func (api *API) GetStatusesOlder(t *TimelineFeed) ([]*mastodon.Status, error) {
+	if len(t.statuses) == 0 {
+		return api.GetStatuses(t)
 	}
 
-	return api.getStatuses(tl, pg)
+	switch t.timelineType {
+	case TimelineBookmarked, TimelineFavorited:
+		if t.linkNext == "-1" {
+			return []*mastodon.Status{}, nil
+		}
+		pg := &mastodon.Pagination{
+			MaxID: t.linkNext,
+		}
+		statuses, _, max, err := api.getStatuses(t.timelineType, pg)
+		if err == nil {
+			t.linkNext = max
+		}
+		return statuses, err
+	default:
+		pg := &mastodon.Pagination{
+			MaxID: t.statuses[len(t.statuses)-1].ID,
+		}
+		statuses, _, _, err := api.getStatuses(t.timelineType, pg)
+		return statuses, err
+	}
 }
 
-func (api *API) GetStatusesNewer(tl TimelineType, s *mastodon.Status) ([]*mastodon.Status, error) {
-	pg := &mastodon.Pagination{
-		MinID: s.ID,
+func (api *API) GetStatusesNewer(t *TimelineFeed) ([]*mastodon.Status, error) {
+	if len(t.statuses) == 0 {
+		return api.GetStatuses(t)
 	}
 
-	return api.getStatuses(tl, pg)
+	switch t.timelineType {
+	case TimelineBookmarked, TimelineFavorited:
+		if t.linkPrev == "-1" {
+			return []*mastodon.Status{}, nil
+		}
+		pg := &mastodon.Pagination{
+			MinID: mastodon.ID(t.linkPrev),
+		}
+		statuses, min, _, err := api.getStatuses(t.timelineType, pg)
+		if err == nil {
+			t.linkPrev = min
+		}
+		return statuses, err
+	default:
+		pg := &mastodon.Pagination{
+			MinID: t.statuses[0].ID,
+		}
+		statuses, _, _, err := api.getStatuses(t.timelineType, pg)
+		return statuses, err
+	}
 }
 
 func (api *API) GetTags(tag string) ([]*mastodon.Status, error) {

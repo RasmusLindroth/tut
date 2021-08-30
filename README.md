@@ -24,12 +24,13 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 
 ## Currently supported commands
 * `:q` `:quit` exit
-* `:timeline` home, local, federated, direct, notifications
-  * `:tl` h, l, f, d, n (shorter form)
+* `:timeline` home, local, federated, direct, notifications, favorited
+  * `:tl` h, l, f, d, n, fav (shorter form)
 * `:blocking` lists users that you have blocked
 * `:boosts` lists users that boosted the toot
 * `:bookmarks` lists all your bookmarks
 * `:compose` compose a new toot
+* `:favorited` lists toots you've favorited
 * `:favorites` lists users that favorited the toot
 * `:muting`  lists users that you have muted
 * `:profile` go to your profile

@@ -295,16 +295,16 @@ func main() {
 	)
 
 	app.UI.CmdBar.Input.SetAutocompleteFunc(func(currentText string) (entries []string) {
-		words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:muting,:profile,:saved,:tag,:timeline,:tl,:user,:quit,:q", ",")
+		words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:favorited,:muting,:profile,:saved,:tag,:timeline,:tl,:user,:quit,:q", ",")
 		if currentText == "" {
 			return
 		}
 
 		if len(currentText) > 2 && currentText[:3] == ":tl" {
-			words = strings.Split(":tl home,:tl notifications,:tl local,:tl federated,:tl direct", ",")
+			words = strings.Split(":tl home,:tl notifications,:tl local,:tl federated,:tl direct,:tl favorited", ",")
 		}
 		if len(currentText) > 8 && currentText[:9] == ":timeline" {
-			words = strings.Split(":timeline home,:timeline notifications,:timeline local,:timeline federated,:timeline direct", ",")
+			words = strings.Split(":timeline home,:timeline notifications,:timeline local,:timeline federated,:timeline direct,:timeline favorited", ",")
 		}
 
 		for _, word := range words {
