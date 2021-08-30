@@ -97,6 +97,7 @@ func openEditor(app *tview.Application, content string) (string, error) {
 	cmd := exec.Command(editor, f.Name())
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	var text []byte
 	app.Suspend(func() {
 		err = cmd.Run()
