@@ -57,17 +57,20 @@ type StyleConfig struct {
 }
 
 type MediaConfig struct {
-	ImageViewer string
-	ImageArgs   []string
-	ImageSingle bool
-	VideoViewer string
-	VideoArgs   []string
-	VideoSingle bool
-	AudioViewer string
-	AudioArgs   []string
-	AudioSingle bool
-	LinkViewer  string
-	LinkArgs    []string
+	ImageViewer  string
+	ImageArgs    []string
+	ImageSingle  bool
+	ImageReverse bool
+	VideoViewer  string
+	VideoArgs    []string
+	VideoSingle  bool
+	VideoReverse bool
+	AudioViewer  string
+	AudioArgs    []string
+	AudioSingle  bool
+	AudioReverse bool
+	LinkViewer   string
+	LinkArgs     []string
 }
 
 type Pattern struct {
@@ -256,6 +259,7 @@ func parseMedia(cfg *ini.File) MediaConfig {
 		media.ImageArgs = imageViewerComponents[1:]
 	}
 	media.ImageSingle = cfg.Section("media").Key("image-single").MustBool(true)
+	media.ImageReverse = cfg.Section("media").Key("image-reverse").MustBool(false)
 
 	videoViewerComponents := strings.Fields(cfg.Section("media").Key("video-viewer").String())
 	if len(videoViewerComponents) == 0 {
@@ -266,6 +270,7 @@ func parseMedia(cfg *ini.File) MediaConfig {
 		media.VideoArgs = videoViewerComponents[1:]
 	}
 	media.VideoSingle = cfg.Section("media").Key("video-single").MustBool(true)
+	media.VideoReverse = cfg.Section("media").Key("video-reverse").MustBool(false)
 
 	audioViewerComponents := strings.Fields(cfg.Section("media").Key("audio-viewer").String())
 	if len(audioViewerComponents) == 0 {
@@ -276,6 +281,7 @@ func parseMedia(cfg *ini.File) MediaConfig {
 		media.AudioArgs = audioViewerComponents[1:]
 	}
 	media.AudioSingle = cfg.Section("media").Key("audio-single").MustBool(true)
+	media.AudioReverse = cfg.Section("media").Key("audio-reverse").MustBool(false)
 
 	linkViewerComponents := strings.Fields(cfg.Section("media").Key("link-viewer").String())
 	if len(linkViewerComponents) == 0 {
@@ -486,6 +492,11 @@ image-viewer=xdg-open
 # default=true
 image-single=true
 
+# If you want to open the images in reverse order. In some image viewers 
+# this will display the images in the "right" order.
+# default=false
+image-reverse=false
+
 # Your video viewer
 # default=xdg-open
 video-viewer=xdg-open
@@ -494,9 +505,19 @@ video-viewer=xdg-open
 # default=true
 video-single=true
 
+# If you want to open the videos in reverse order. In some video apps 
+# this will play the files in the "right" order.
+# default=false
+video-reverse=false
+
 # Your audio viewer
 # default=xdg-open
 audio-viewer=xdg-open
+
+# If you want to play the audio files in reverse order. In some audio apps 
+# this will play the files in the "right" order.
+# default=false
+audio-reverse=false
 
 # If audio files should open one by one. See above comment about image-single
 # default=true

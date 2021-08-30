@@ -138,9 +138,23 @@ func openURL(conf MediaConfig, pc OpenPatternConfig, url string) {
 	exec.Command(conf.LinkViewer, args...).Start()
 }
 
+func reverseFiles(filenames []string) []string {
+	if len(filenames) == 0 {
+		return filenames
+	}
+	var f []string
+	for i := len(filenames) - 1; i >= 0; i-- {
+		f = append(f, filenames[i])
+	}
+	return f
+}
+
 func openMediaType(conf MediaConfig, filenames []string, mediaType string) {
 	switch mediaType {
 	case "image":
+		if conf.ImageReverse {
+			filenames = reverseFiles(filenames)
+		}
 		if conf.ImageSingle {
 			for _, f := range filenames {
 				args := append(conf.ImageArgs, f)
@@ -151,6 +165,9 @@ func openMediaType(conf MediaConfig, filenames []string, mediaType string) {
 			exec.Command(conf.ImageViewer, args...).Run()
 		}
 	case "video", "gifv":
+		if conf.VideoReverse {
+			filenames = reverseFiles(filenames)
+		}
 		if conf.VideoSingle {
 			for _, f := range filenames {
 				args := append(conf.VideoArgs, f)
@@ -161,6 +178,9 @@ func openMediaType(conf MediaConfig, filenames []string, mediaType string) {
 			exec.Command(conf.VideoViewer, args...).Run()
 		}
 	case "audio":
+		if conf.AudioReverse {
+			filenames = reverseFiles(filenames)
+		}
 		if conf.AudioSingle {
 			for _, f := range filenames {
 				args := append(conf.AudioArgs, f)
