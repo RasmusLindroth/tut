@@ -474,9 +474,11 @@ func NewTimelineFeed(app *App, tl TimelineType) *TimelineFeed {
 	t := &TimelineFeed{
 		app:          app,
 		timelineType: tl,
+		linkPrev:     "",
+		linkNext:     "",
 	}
 	var err error
-	t.statuses, err = t.app.API.GetStatuses(t.timelineType)
+	t.statuses, err = t.app.API.GetStatuses(t)
 	if err != nil {
 		t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load timeline toots. Error: %v\n", err))
 	}
@@ -487,6 +489,8 @@ type TimelineFeed struct {
 	app          *App
 	timelineType TimelineType
 	statuses     []*mastodon.Status
+	linkPrev     mastodon.ID //Only bm and fav
+	linkNext     mastodon.ID //Only bm and fav
 	index        int
 	showSpoiler  bool
 }
@@ -507,6 +511,8 @@ func (t *TimelineFeed) GetDesc() string {
 		return "Timeline federated"
 	case TimelineBookmarked:
 		return "Bookmarks"
+	case TimelineFavorited:
+		return "Favorited"
 	}
 	return "Timeline"
 }
@@ -531,9 +537,9 @@ func (t *TimelineFeed) LoadNewer() int {
 	var statuses []*mastodon.Status
 	var err error
 	if len(t.statuses) == 0 {
-		statuses, err = t.app.API.GetStatuses(t.timelineType)
+		statuses, err = t.app.API.GetStatuses(t)
 	} else {
-		statuses, err = t.app.API.GetStatusesNewer(t.timelineType, t.statuses[0])
+		statuses, err = t.app.API.GetStatusesNewer(t)
 		newCount := len(statuses)
 		if newCount > 0 {
 			Notify(t.app.Config.NotificationConfig, NotificationPost,
@@ -556,9 +562,9 @@ func (t *TimelineFeed) LoadOlder() int {
 	var statuses []*mastodon.Status
 	var err error
 	if len(t.statuses) == 0 {
-		statuses, err = t.app.API.GetStatuses(t.timelineType)
+		statuses, err = t.app.API.GetStatuses(t)
 	} else {
-		statuses, err = t.app.API.GetStatusesOlder(t.timelineType, t.statuses[len(t.statuses)-1])
+		statuses, err = t.app.API.GetStatusesOlder(t)
 	}
 	if err != nil {
 		t.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load older toots. Error: %v\n", err))
