@@ -99,15 +99,14 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 
 	head += reblogText
 
-	showedVisibility := false
-	if status.Account.DisplayName != "" {
-		showedVisibility = true
-		head += fmt.Sprintf(special1+"(%s) %s%s\n", status.Visibility, special2, status.Account.DisplayName)
+	if status.Visibility != "public" {
+		head += fmt.Sprintf(special1+"(%s) ", status.Visibility)
 	}
-	if !showedVisibility {
-		head += fmt.Sprintf(special2+"(%s) %s%s\n\n", status.Visibility, special1, status.Account.Acct)
+	if status.Account.DisplayName != "" {
+		head += fmt.Sprintf("%s%s\n", special2, status.Account.DisplayName)
+		head += fmt.Sprintf("%s%s\n\n", special1, status.Account.Acct)
 	} else {
-		head += fmt.Sprintf(special1+"%s\n\n", status.Account.Acct)
+		head += fmt.Sprintf("%s%s\n\n", special2, status.Account.Acct)
 	}
 	output := head
 	content := stripped
