@@ -236,6 +236,7 @@ func main() {
 					app.UI.MediaOverlay.EditDesc()
 				case 'a', 'A':
 					app.UI.MediaOverlay.SetFocus(MediaFocusAdd)
+					return nil
 				case 'q', 'Q':
 					app.UI.SetFocus(MessageFocus)
 					return nil
