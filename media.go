@@ -116,6 +116,9 @@ func (m *MediaView) SetFocus(f MediaFocus) {
 				pwd = home
 			}
 		}
+		if !strings.HasSuffix(pwd, "/") {
+			pwd += "/"
+		}
 		m.InputField.View.SetText(pwd)
 	}
 	m.Focus = f
