@@ -15,6 +15,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * [Install instructions](#install-instructions)
   * [Binary releases](#binary-releases)
   * [Arch and Manjaro](#arch-and-manjaro)
+  * [Alpine Linux](#alpine-linux)
   * [Debian](#debian)
   * [FreeBSD](#freebsd)
 * [Build it yourself](#build-it-yourself)
@@ -72,6 +73,12 @@ Head over to https://github.com/RasmusLindroth/tut/releases
 You can find it in the Arch User Repository (AUR). I'm the maintainer there.
 
 https://aur.archlinux.org/packages/tut/
+
+### Alpine Linux
+
+`tut` package is available in the testing repository.
+
+https://pkgs.alpinelinux.org/package/edge/testing/x86_64/tut
 
 ### Debian
 
