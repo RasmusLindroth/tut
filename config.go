@@ -36,6 +36,7 @@ type GeneralConfig struct {
 	HideNotificationText bool
 	ListProportion       int
 	ContentProportion    int
+	ShowIcons            bool
 }
 
 type StyleConfig struct {
@@ -266,6 +267,7 @@ func parseGeneral(cfg *ini.File) GeneralConfig {
 	general.CharLimit = cfg.Section("general").Key("char-limit").MustInt(500)
 	general.ShortHints = cfg.Section("general").Key("short-hints").MustBool(false)
 	general.HideNotificationText = cfg.Section("general").Key("hide-notification-text").MustBool(false)
+	general.ShowIcons = cfg.Section("general").Key("show-icons").MustBool(true)
 
 	lp := cfg.Section("general").Key("list-placement").In("left", []string{"left", "right", "top", "bottom"})
 	switch lp {
@@ -554,6 +556,10 @@ quote-reply=false
 # default=500
 char-limit=500
 
+# If you want to show icons in the list of toots
+# default=true
+show-icons=true
+
 # If you've learnt all the shortcut keys you can remove the help text and 
 # only show the key in tui. So it gets less cluttered.
 # default=false
@@ -744,10 +750,10 @@ list-selected-background=xrdb:color5
 list-selected-text=xrdb:background
 `
 	f, err := os.Create(filepath)
-	defer f.Close()
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 	_, err = f.WriteString(conf)
 	if err != nil {
 		return err

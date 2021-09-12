@@ -33,6 +33,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:compose` compose a new toot
 * `:favorited` lists toots you've favorited
 * `:favorites` lists users that favorited the toot
+* `:lists` show a list of your lists
 * `:muting`  lists users that you have muted
 * `:profile` go to your profile
 * `:saved` alias for bookmarks

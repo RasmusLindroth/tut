@@ -20,10 +20,11 @@ const (
 	UserSearchFeedType
 	NotificationFeedType
 	TagFeedType
+	ListFeedType
 )
 
 type Feed interface {
-	GetFeedList() <-chan string
+	GetFeedList() <-chan ListItem
 	LoadNewer() int
 	LoadOlder() int
 	DrawList()
@@ -258,8 +259,8 @@ func showUser(app *App, user *mastodon.Account, relation *mastodon.Relationship,
 	return text, controls
 }
 
-func drawStatusList(statuses []*mastodon.Status, longFormat, shortFormat string, relativeDate int) <-chan string {
-	ch := make(chan string)
+func drawStatusList(statuses []*mastodon.Status, longFormat, shortFormat string, relativeDate int) <-chan ListItem {
+	ch := make(chan ListItem)
 	go func() {
 		today := time.Now()
 		for _, s := range statuses {
@@ -267,7 +268,15 @@ func drawStatusList(statuses []*mastodon.Status, longFormat, shortFormat string,
 			dateOutput := OutputDate(sLocal, today, longFormat, shortFormat, relativeDate)
 
 			content := fmt.Sprintf("%s %s", dateOutput, s.Account.Acct)
-			ch <- content
+			iconText := ""
+			rs := s
+			if s.Reblog != nil {
+				rs = s.Reblog
+			}
+			if rs.RepliesCount > 0 {
+				iconText = " ⤶ "
+			}
+			ch <- ListItem{Text: content, Icons: iconText}
 		}
 		close(ch)
 	}()
@@ -291,8 +300,10 @@ const (
 	ControlBoost
 	ControlCompose
 	ControlDelete
+	ControlEnter
 	ControlFavorite
 	ControlFollow
+	ControlList
 	ControlMedia
 	ControlMute
 	ControlOpen
@@ -312,16 +323,33 @@ func inputOptions(options []ControlItem) ControlItem {
 }
 
 func inputSimple(app *App, event *tcell.EventKey, controls ControlItem,
-	user mastodon.Account, status *mastodon.Status, originalStatus *mastodon.Status, relation *mastodon.Relationship, feed Feed) (updated bool,
+	user mastodon.Account, status *mastodon.Status, originalStatus *mastodon.Status, relation *mastodon.Relationship, feed Feed, listInfo *ListInfo) (updated bool,
 	redrawControls bool, redrawToot bool, newStatus *mastodon.Status, newRelation *mastodon.Relationship) {
 
 	newStatus = status
 	newRelation = relation
 	var err error
 
+	if event.Key() == tcell.KeyEnter {
+		if controls&ControlEnter == 0 {
+			return
+		}
+		if controls&ControlUser != 0 {
+			app.UI.StatusView.AddFeed(
+				NewUserFeed(app, user),
+			)
+		}
+		if controls&ControlList != 0 {
+			app.UI.StatusView.AddFeed(
+				NewTimelineFeed(app, TimelineList, listInfo),
+			)
+		}
+	}
+
 	if event.Key() != tcell.KeyRune {
 		return
 	}
+
 	switch event.Rune() {
 	case 'a', 'A':
 		if controls&ControlAvatar != 0 {
@@ -418,6 +446,11 @@ func inputSimple(app *App, event *tcell.EventKey, controls ControlItem,
 		if controls&ControlOpen != 0 {
 			app.UI.ShowLinks()
 		}
+		if controls&ControlList != 0 {
+			app.UI.StatusView.AddFeed(
+				NewTimelineFeed(app, TimelineList, listInfo),
+			)
+		}
 	case 'r', 'R':
 		if controls&ControlReply != 0 {
 			app.UI.Reply(status)
@@ -469,12 +502,13 @@ func userFromStatus(s *mastodon.Status) *mastodon.Account {
 	return &s.Account
 }
 
-func NewTimelineFeed(app *App, tl TimelineType) *TimelineFeed {
+func NewTimelineFeed(app *App, tl TimelineType, listInfo *ListInfo) *TimelineFeed {
 	t := &TimelineFeed{
 		app:          app,
 		timelineType: tl,
 		linkPrev:     "",
 		linkNext:     "",
+		listInfo:     listInfo,
 	}
 	var err error
 	t.statuses, err = t.app.API.GetStatuses(t)
@@ -490,6 +524,7 @@ type TimelineFeed struct {
 	statuses     []*mastodon.Status
 	linkPrev     mastodon.ID //Only bm and fav
 	linkNext     mastodon.ID //Only bm and fav
+	listInfo     *ListInfo   //only lists
 	index        int
 	showSpoiler  bool
 }
@@ -512,6 +547,8 @@ func (t *TimelineFeed) GetDesc() string {
 		return "Bookmarks"
 	case TimelineFavorited:
 		return "Favorited"
+	case TimelineList:
+		return fmt.Sprintf("List: %s", t.listInfo.name)
 	}
 	return "Timeline"
 }
@@ -528,7 +565,7 @@ func (t *TimelineFeed) GetCurrentUser() *mastodon.Account {
 	return userFromStatus(t.GetCurrentStatus())
 }
 
-func (t *TimelineFeed) GetFeedList() <-chan string {
+func (t *TimelineFeed) GetFeedList() <-chan ListItem {
 	return drawStatusList(t.statuses, t.app.Config.General.DateFormat, t.app.Config.General.DateTodayFormat, t.app.Config.General.DateRelative)
 }
 
@@ -629,7 +666,7 @@ func (t *TimelineFeed) Input(event *tcell.EventKey) {
 	}
 	options := inputOptions(controls)
 
-	updated, rc, rt, newS, _ := inputSimple(t.app, event, options, user, status, originalStatus, nil, t)
+	updated, rc, rt, newS, _ := inputSimple(t.app, event, options, user, status, originalStatus, nil, t, nil)
 	if updated {
 		index := t.app.UI.StatusView.GetCurrentItem()
 		t.statuses[index] = newS
@@ -684,7 +721,7 @@ func (t *ThreadFeed) GetCurrentUser() *mastodon.Account {
 	return userFromStatus(t.GetCurrentStatus())
 }
 
-func (t *ThreadFeed) GetFeedList() <-chan string {
+func (t *ThreadFeed) GetFeedList() <-chan ListItem {
 	return drawStatusList(t.statuses, t.app.Config.General.DateFormat, t.app.Config.General.DateTodayFormat, t.app.Config.General.DateRelative)
 }
 
@@ -755,7 +792,7 @@ func (t *ThreadFeed) Input(event *tcell.EventKey) {
 	}
 	options := inputOptions(controls)
 
-	updated, rc, rt, newS, _ := inputSimple(t.app, event, options, user, status, originalStatus, nil, t)
+	updated, rc, rt, newS, _ := inputSimple(t.app, event, options, user, status, originalStatus, nil, t, nil)
 	if updated {
 		index := t.app.UI.StatusView.GetCurrentItem()
 		t.statuses[index] = newS
@@ -817,10 +854,10 @@ func (u *UserFeed) GetCurrentUser() *mastodon.Account {
 	return &u.user
 }
 
-func (u *UserFeed) GetFeedList() <-chan string {
-	ch := make(chan string)
+func (u *UserFeed) GetFeedList() <-chan ListItem {
+	ch := make(chan ListItem)
 	go func() {
-		ch <- "Profile"
+		ch <- ListItem{Text: "Profile", Icons: ""}
 		for s := range drawStatusList(u.statuses, u.app.Config.General.DateFormat, u.app.Config.General.DateTodayFormat, u.app.Config.General.DateRelative) {
 			ch <- s
 		}
@@ -924,7 +961,7 @@ func (u *UserFeed) Input(event *tcell.EventKey) {
 		}
 		options := inputOptions(controls)
 
-		updated, _, _, _, newRel := inputSimple(u.app, event, options, u.user, nil, nil, u.relation, u)
+		updated, _, _, _, newRel := inputSimple(u.app, event, options, u.user, nil, nil, u.relation, u, nil)
 		if updated {
 			u.relation = newRel
 			u.DrawToot()
@@ -949,7 +986,7 @@ func (u *UserFeed) Input(event *tcell.EventKey) {
 	}
 	options := inputOptions(controls)
 
-	updated, rc, rt, newS, _ := inputSimple(u.app, event, options, user, status, originalStatus, nil, u)
+	updated, rc, rt, newS, _ := inputSimple(u.app, event, options, user, status, originalStatus, nil, u, nil)
 	if updated {
 		index := u.app.UI.StatusView.GetCurrentItem()
 		u.statuses[index-1] = newS
@@ -978,7 +1015,6 @@ type Notification struct {
 
 type NotificationsFeed struct {
 	app           *App
-	timelineType  TimelineType
 	notifications []*Notification
 	docked        bool
 	index         int
@@ -1022,8 +1058,8 @@ func (n *NotificationsFeed) GetCurrentUser() *mastodon.Account {
 	return &notification.N.Account
 }
 
-func (n *NotificationsFeed) GetFeedList() <-chan string {
-	ch := make(chan string)
+func (n *NotificationsFeed) GetFeedList() <-chan ListItem {
+	ch := make(chan ListItem)
 	notifications := n.notifications
 	go func() {
 		today := time.Now()
@@ -1035,8 +1071,22 @@ func (n *NotificationsFeed) GetFeedList() <-chan string {
 
 			dateOutput := OutputDate(sLocal, today, long, short, relative)
 
+			iconText := ""
+			switch item.N.Type {
+			case "follow", "follow_request":
+				iconText += " + "
+			case "favourite":
+				iconText = " ★ "
+			case "reblog":
+				iconText = " ♺ "
+			case "mention":
+				iconText = " ⤶ "
+			case "poll":
+				iconText = " = "
+			}
+
 			content := fmt.Sprintf("%s %s", dateOutput, item.N.Account.Acct)
-			ch <- content
+			ch <- ListItem{Text: content, Icons: iconText}
 		}
 		close(ch)
 	}()
@@ -1190,7 +1240,7 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 	if notification.N.Type == "follow" {
 		controls := []ControlItem{ControlUser, ControlFollow, ControlBlock, ControlMute, ControlAvatar, ControlOpen}
 		options := inputOptions(controls)
-		_, rc, _, _, rel := inputSimple(n.app, event, options, notification.N.Account, nil, nil, notification.R, n)
+		_, rc, _, _, rel := inputSimple(n.app, event, options, notification.N.Account, nil, nil, notification.R, n, nil)
 		if rc {
 			var index int
 			if n.docked {
@@ -1220,7 +1270,7 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 	}
 	options := inputOptions(controls)
 
-	updated, rc, rt, newS, _ := inputSimple(n.app, event, options, notification.N.Account, status, originalStatus, nil, n)
+	updated, rc, rt, newS, _ := inputSimple(n.app, event, options, notification.N.Account, status, originalStatus, nil, n, nil)
 	if updated {
 		var index int
 		if n.docked {
@@ -1275,7 +1325,7 @@ func (t *TagFeed) GetCurrentUser() *mastodon.Account {
 	return userFromStatus(t.GetCurrentStatus())
 }
 
-func (t *TagFeed) GetFeedList() <-chan string {
+func (t *TagFeed) GetFeedList() <-chan ListItem {
 	return drawStatusList(t.statuses, t.app.Config.General.DateFormat, t.app.Config.General.DateTodayFormat, t.app.Config.General.DateRelative)
 }
 
@@ -1371,7 +1421,7 @@ func (t *TagFeed) Input(event *tcell.EventKey) {
 	}
 	options := inputOptions(controls)
 
-	updated, rc, rt, newS, _ := inputSimple(t.app, event, options, user, status, originalStatus, nil, t)
+	updated, rc, rt, newS, _ := inputSimple(t.app, event, options, user, status, originalStatus, nil, t, nil)
 	if updated {
 		index := t.app.UI.StatusView.GetCurrentItem()
 		t.statuses[index] = newS
@@ -1452,8 +1502,8 @@ func (u *UserListFeed) GetCurrentUserData() *UserData {
 	return u.users[index-1]
 }
 
-func (u *UserListFeed) GetFeedList() <-chan string {
-	ch := make(chan string)
+func (u *UserListFeed) GetFeedList() <-chan ListItem {
+	ch := make(chan ListItem)
 	users := u.users
 	go func() {
 		for _, user := range users {
@@ -1463,7 +1513,7 @@ func (u *UserListFeed) GetFeedList() <-chan string {
 			} else {
 				username = fmt.Sprintf("%s (%s)", user.User.DisplayName, user.User.Acct)
 			}
-			ch <- username
+			ch <- ListItem{Text: username, Icons: ""}
 		}
 		close(ch)
 	}()
@@ -1547,13 +1597,121 @@ func (u *UserListFeed) Input(event *tcell.EventKey) {
 	user := u.users[index]
 
 	controls := []ControlItem{
-		ControlAvatar, ControlFollow, ControlBlock, ControlMute, ControlOpen, ControlUser,
+		ControlAvatar, ControlFollow, ControlBlock, ControlMute, ControlOpen,
+		ControlUser, ControlEnter,
 	}
 	options := inputOptions(controls)
 
-	updated, _, _, _, newRel := inputSimple(u.app, event, options, *user.User, nil, nil, user.Relationship, u)
+	updated, _, _, _, newRel := inputSimple(u.app, event, options, *user.User, nil, nil, user.Relationship, u, nil)
 	if updated {
 		u.users[index].Relationship = newRel
 		u.DrawToot()
 	}
+}
+
+func NewListFeed(app *App) *ListFeed {
+	l := &ListFeed{
+		app: app,
+	}
+	lists, err := app.API.GetLists()
+	if err != nil {
+		l.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load lists. Error: %v\n", err))
+		return l
+	}
+	l.lists = lists
+	return l
+}
+
+type ListInfo struct {
+	name string
+	id   mastodon.ID
+}
+
+type ListFeed struct {
+	app   *App
+	lists []*mastodon.List
+	index int
+}
+
+func (l *ListFeed) FeedType() FeedType {
+	return ListFeedType
+}
+
+func (l *ListFeed) GetDesc() string {
+	return "Lists"
+}
+
+func (l *ListFeed) GetCurrentStatus() *mastodon.Status {
+	return nil
+}
+
+func (l *ListFeed) GetCurrentUser() *mastodon.Account {
+	return nil
+}
+
+func (l *ListFeed) GetFeedList() <-chan ListItem {
+	ch := make(chan ListItem)
+	go func() {
+		for _, list := range l.lists {
+			ch <- ListItem{Text: list.Title, Icons: ""}
+		}
+		close(ch)
+	}()
+	return ch
+}
+
+func (l *ListFeed) LoadNewer() int {
+	return 0
+}
+
+func (l *ListFeed) LoadOlder() int {
+	return 0
+}
+
+func (l *ListFeed) DrawList() {
+	l.app.UI.StatusView.SetList(l.GetFeedList())
+}
+
+func (l *ListFeed) RedrawControls() {
+	//Does not implement
+}
+
+func (l *ListFeed) DrawSpoiler() {
+	//Does not implement
+}
+
+func (l *ListFeed) DrawToot() {
+	l.index = l.app.UI.StatusView.GetCurrentItem()
+	index := l.index
+	if index > len(l.lists)-1 || len(l.lists) == 0 {
+		return
+	}
+	list := l.lists[index]
+
+	text := ColorKey(l.app.Config, "", "O", "pen")
+	text += fmt.Sprintf(" list %s", list.Title)
+
+	l.app.UI.StatusView.SetText(text)
+	l.app.UI.StatusView.SetControls("")
+}
+
+func (l *ListFeed) GetSavedIndex() int {
+	return l.index
+}
+
+func (l *ListFeed) Input(event *tcell.EventKey) {
+	index := l.GetSavedIndex()
+	if index > len(l.lists)-1 || len(l.lists) == 0 {
+		return
+	}
+	list := l.lists[index]
+	li := ListInfo{
+		name: list.Title,
+		id:   list.ID,
+	}
+
+	controls := []ControlItem{ControlEnter, ControlList}
+	options := inputOptions(controls)
+
+	inputSimple(l.app, event, options, mastodon.Account{}, nil, nil, nil, nil, &li)
 }

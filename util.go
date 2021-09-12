@@ -48,7 +48,7 @@ func getURLs(text string) []URL {
 
 		case html.StartTagToken:
 			token := doc.Token()
-			if "a" == token.Data {
+			if token.Data == "a" {
 				url := URL{}
 				var appendUrl = true
 				for _, a := range token.Attr {
@@ -380,27 +380,27 @@ func OutputDate(status time.Time, today time.Time, long, short string, relativeD
 func Notify(nc NotificationConfig, t NotificationType, title string, body string) {
 	switch t {
 	case NotificationFollower:
-		if nc.NotificationFollower == false {
+		if !nc.NotificationFollower {
 			return
 		}
 	case NotificationFavorite:
-		if nc.NotificationFavorite == false {
+		if !nc.NotificationFavorite {
 			return
 		}
 	case NotificationMention:
-		if nc.NotificationMention == false {
+		if !nc.NotificationMention {
 			return
 		}
 	case NotificationBoost:
-		if nc.NotificationBoost == false {
+		if !nc.NotificationBoost {
 			return
 		}
 	case NotificationPoll:
-		if nc.NotificationPoll == false {
+		if !nc.NotificationPoll {
 			return
 		}
 	case NotificationPost:
-		if nc.NotificationPost == false {
+		if !nc.NotificationPost {
 			return
 		}
 	default:

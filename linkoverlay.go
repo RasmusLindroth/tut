@@ -122,7 +122,7 @@ func (l *LinkOverlay) CopyToClipboard() {
 	text := l.GetURL()
 	if text != "" {
 		e := copyToClipboard(text)
-		if e == false {
+		if !e {
 			l.app.UI.CmdBar.ShowError("Couldn't copy to clipboard.")
 		}
 	}
