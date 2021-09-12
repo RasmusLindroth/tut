@@ -21,20 +21,21 @@ type Config struct {
 }
 
 type GeneralConfig struct {
-	AutoLoadNewer     bool
-	AutoLoadSeconds   int
-	DateTodayFormat   string
-	DateFormat        string
-	DateRelative      int
-	StartTimeline     TimelineType
-	NotificationFeed  bool
-	QuoteReply        bool
-	CharLimit         int
-	ShortHints        bool
-	ListPlacement     ListPlacement
-	ListSplit         ListSplit
-	ListProportion    int
-	ContentProportion int
+	AutoLoadNewer        bool
+	AutoLoadSeconds      int
+	DateTodayFormat      string
+	DateFormat           string
+	DateRelative         int
+	StartTimeline        TimelineType
+	NotificationFeed     bool
+	QuoteReply           bool
+	CharLimit            int
+	ShortHints           bool
+	ListPlacement        ListPlacement
+	ListSplit            ListSplit
+	HideNotificationText bool
+	ListProportion       int
+	ContentProportion    int
 }
 
 type StyleConfig struct {
@@ -264,6 +265,7 @@ func parseGeneral(cfg *ini.File) GeneralConfig {
 	general.QuoteReply = cfg.Section("general").Key("quote-reply").MustBool(false)
 	general.CharLimit = cfg.Section("general").Key("char-limit").MustInt(500)
 	general.ShortHints = cfg.Section("general").Key("short-hints").MustBool(false)
+	general.HideNotificationText = cfg.Section("general").Key("hide-notification-text").MustBool(false)
 
 	lp := cfg.Section("general").Key("list-placement").In("left", []string{"left", "right", "top", "bottom"})
 	switch lp {
@@ -528,6 +530,10 @@ list-placement=left
 # or place it to the right of the main list of toots (column)
 # default=row
 list-split=row
+
+# Hide notification text above list in column split
+# default=false
+hide-notification-text=false
 
 # You can change the proportions of the list view
 # in relation to the content view
