@@ -21,16 +21,20 @@ type Config struct {
 }
 
 type GeneralConfig struct {
-	AutoLoadNewer    bool
-	AutoLoadSeconds  int
-	DateTodayFormat  string
-	DateFormat       string
-	DateRelative     int
-	StartTimeline    TimelineType
-	NotificationFeed bool
-	QuoteReply       bool
-	CharLimit        int
-	ShortHints       bool
+	AutoLoadNewer     bool
+	AutoLoadSeconds   int
+	DateTodayFormat   string
+	DateFormat        string
+	DateRelative      int
+	StartTimeline     TimelineType
+	NotificationFeed  bool
+	QuoteReply        bool
+	CharLimit         int
+	ShortHints        bool
+	ListPlacement     ListPlacement
+	ListSplit         ListSplit
+	ListProportion    int
+	ContentProportion int
 }
 
 type StyleConfig struct {
@@ -94,6 +98,22 @@ type OpenCustom struct {
 type OpenCustomConfig struct {
 	OpenCustoms []OpenCustom
 }
+
+type ListPlacement uint
+
+const (
+	ListPlacementTop ListPlacement = iota
+	ListPlacementBottom
+	ListPlacementLeft
+	ListPlacementRight
+)
+
+type ListSplit uint
+
+const (
+	ListRow ListSplit = iota
+	ListColumn
+)
 
 type NotificationType uint
 
@@ -244,6 +264,36 @@ func parseGeneral(cfg *ini.File) GeneralConfig {
 	general.QuoteReply = cfg.Section("general").Key("quote-reply").MustBool(false)
 	general.CharLimit = cfg.Section("general").Key("char-limit").MustInt(500)
 	general.ShortHints = cfg.Section("general").Key("short-hints").MustBool(false)
+
+	lp := cfg.Section("general").Key("list-placement").In("left", []string{"left", "right", "top", "bottom"})
+	switch lp {
+	case "left":
+		general.ListPlacement = ListPlacementLeft
+	case "right":
+		general.ListPlacement = ListPlacementRight
+	case "top":
+		general.ListPlacement = ListPlacementTop
+	case "bottom":
+		general.ListPlacement = ListPlacementBottom
+	}
+	ls := cfg.Section("general").Key("list-split").In("row", []string{"row", "column"})
+	switch ls {
+	case "row":
+		general.ListSplit = ListRow
+	case "column":
+		general.ListSplit = ListColumn
+	}
+
+	listProp := cfg.Section("general").Key("list-proportion").MustInt(1)
+	if listProp < 1 {
+		listProp = 1
+	}
+	contentProp := cfg.Section("general").Key("content-proportion").MustInt(2)
+	if contentProp < 1 {
+		contentProp = 1
+	}
+	general.ListProportion = listProp
+	general.ContentProportion = contentProp
 
 	return general
 }
@@ -466,6 +516,29 @@ timeline=home
 # under your timeline feed
 # default=true
 notification-feed=true
+
+
+# Where do you want the list of toots to be placed
+# Valid values: left, right, top, bottom
+# default=left
+list-placement=left
+
+# If you have notification-feed set to true you can
+# display it under the main list of toots (row)
+# or place it to the right of the main list of toots (column)
+# default=row
+list-split=row
+
+# You can change the proportions of the list view
+# in relation to the content view
+# list-proportion=1 and content-proportoin=3
+# will result in the content taking up 3 times more space
+# Must be n > 0
+# defaults:
+# 	list-proportion=1
+# 	content-proportion=2
+list-proportion=1
+content-proportion=2
 
 # If you always want to quote original message when replying
 # default=false

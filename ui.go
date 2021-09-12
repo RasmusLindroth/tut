@@ -327,42 +327,106 @@ func (ui *UI) LoggedIn() {
 		}
 		return 0, 0, 0, 0
 	})
+	horizontalLine := tview.NewBox()
+	horizontalLine.SetDrawFunc(func(screen tcell.Screen, x int, y int, width int, height int) (int, int, int, int) {
+		var s tcell.Style
+		s = s.Background(ui.app.Config.Style.Background).Foreground(ui.app.Config.Style.Subtle)
+		for cx := x; cx < x+width; cx++ {
+			screen.SetContent(cx, y, tview.BoxDrawingsLightHorizontal, nil, s)
+		}
+		return 0, 0, 0, 0
+	})
 
 	ui.Pages.RemovePage("main")
-	if ui.app.Config.General.NotificationFeed {
-		notificationText := tview.NewTextView()
-		notificationText.SetBackgroundColor(ui.app.Config.Style.Background)
-		notificationText.SetTextColor(ui.app.Config.Style.Subtle)
-		notificationText.SetText("[N]otifications")
-		notificationText.SetTextAlign(tview.AlignCenter)
+	mainText := tview.NewTextView()
+	mainText.SetBackgroundColor(ui.app.Config.Style.Background)
+	mainText.SetTextColor(ui.app.Config.Style.Subtle)
+	mainText.SetText("")
+	mainText.SetTextAlign(tview.AlignCenter)
 
+	notificationText := tview.NewTextView()
+	notificationText.SetBackgroundColor(ui.app.Config.Style.Background)
+	notificationText.SetTextColor(ui.app.Config.Style.Subtle)
+	notificationText.SetText("[N]otifications")
+	notificationText.SetTextAlign(tview.AlignCenter)
+
+	var listViewRow *tview.Flex
+	var listViewColumn *tview.Flex
+	lp := ui.app.Config.General.ListProportion
+	cp := ui.app.Config.General.ContentProportion
+
+	if ui.app.Config.General.NotificationFeed {
+		listViewRow = tview.NewFlex().AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(ui.StatusView.GetLeftView(), 0, 1, false).
+			AddItem(notificationText, 1, 0, false).
+			AddItem(ui.StatusView.GetNotificationView(), 0, 1, false), 0, 1, false)
+
+		listViewColumn = tview.NewFlex().AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+				AddItem(mainText, 1, 0, false).
+				AddItem(ui.StatusView.GetLeftView(), 0, 1, false), 0, 1, false).
+			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+				AddItem(notificationText, 1, 0, false).
+				AddItem(ui.StatusView.GetNotificationView(), 0, 1, false), 0, 1, false), 0, 1, false)
+	} else {
+		listViewRow = tview.NewFlex().AddItem(ui.StatusView.GetLeftView(), 0, 1, false)
+		listViewColumn = tview.NewFlex().AddItem(ui.StatusView.GetLeftView(), 0, 1, false)
+	}
+
+	var listViewChoice *tview.Flex
+	if ui.app.Config.General.ListSplit == ListRow {
+		listViewChoice = listViewRow
+	} else {
+		listViewChoice = listViewColumn
+	}
+
+	switch ui.app.Config.General.ListPlacement {
+	case ListPlacementLeft:
 		ui.Pages.AddPage("main",
 			tview.NewFlex().
 				AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 					AddItem(ui.Top.Text, 1, 0, false).
 					AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-						AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-							AddItem(ui.StatusView.GetLeftView(), 0, 2, false).
-							AddItem(notificationText, 1, 0, false).
-							AddItem(ui.StatusView.GetNotificationView(), 0, 1, false), 0, 2, false).
+						AddItem(listViewChoice, 0, lp, false).
 						AddItem(verticalLine, 1, 0, false).
 						AddItem(tview.NewBox().SetBackgroundColor(ui.app.Config.Style.Background), 1, 0, false).
-						AddItem(ui.StatusView.GetRightView(),
-							0, 4, false),
+						AddItem(ui.StatusView.GetRightView(), 0, cp, false),
 						0, 1, false).
 					AddItem(ui.StatusBar.Text, 1, 1, false).
 					AddItem(ui.CmdBar.Input, 1, 0, false), 0, 1, false), true, true)
-	} else {
+	case ListPlacementRight:
 		ui.Pages.AddPage("main",
 			tview.NewFlex().
 				AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 					AddItem(ui.Top.Text, 1, 0, false).
 					AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-						AddItem(ui.StatusView.GetLeftView(), 0, 2, false).
-						AddItem(verticalLine, 1, 0, false).
 						AddItem(tview.NewBox().SetBackgroundColor(ui.app.Config.Style.Background), 1, 0, false).
-						AddItem(ui.StatusView.GetRightView(),
-							0, 4, false),
+						AddItem(ui.StatusView.GetRightView(), 0, cp, false).
+						AddItem(verticalLine, 1, 0, false).
+						AddItem(listViewChoice, 0, 1, false), 0, lp, false).
+					AddItem(ui.StatusBar.Text, 1, 1, false).
+					AddItem(ui.CmdBar.Input, 1, 0, false), 0, 1, false), true, true)
+	case ListPlacementTop:
+		ui.Pages.AddPage("main",
+			tview.NewFlex().
+				AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+					AddItem(ui.Top.Text, 1, 0, false).
+					AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+						AddItem(listViewChoice, 0, lp, false).
+						AddItem(horizontalLine, 1, 0, false).
+						AddItem(ui.StatusView.GetRightView(), 0, cp, false),
+						0, 1, false).
+					AddItem(ui.StatusBar.Text, 1, 1, false).
+					AddItem(ui.CmdBar.Input, 1, 0, false), 0, 1, false), true, true)
+	case ListPlacementBottom:
+		ui.Pages.AddPage("main",
+			tview.NewFlex().
+				AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+					AddItem(ui.Top.Text, 1, 0, false).
+					AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+						AddItem(ui.StatusView.GetRightView(), 0, cp, false).
+						AddItem(horizontalLine, 1, 0, false).
+						AddItem(listViewChoice, 0, lp, false),
 						0, 1, false).
 					AddItem(ui.StatusBar.Text, 1, 1, false).
 					AddItem(ui.CmdBar.Input, 1, 0, false), 0, 1, false), true, true)
