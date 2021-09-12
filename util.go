@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"time"
 
@@ -38,32 +37,39 @@ func CmdToString(cmd string) (string, error) {
 }
 
 func getURLs(text string) []URL {
-	urlReg := regexp.MustCompile(`<a\s+?(.+?)>(.+?)<\/a>`)
-	attrReg := regexp.MustCompile(`(\w+?)="(.+?)"`)
-	matches := urlReg.FindAllStringSubmatch(text, -1)
-
+	doc := html.NewTokenizer(strings.NewReader(text))
 	var urls []URL
-	for _, m := range matches {
-		url := URL{
-			Text: m[2],
-		}
-		attrs := attrReg.FindAllStringSubmatch(m[1], -1)
-		if attrs == nil {
-			continue
-		}
-		for _, a := range attrs {
-			switch a[1] {
-			case "href":
-				url.URL = a[2]
-			case "class":
-				url.Classes = strings.Split(a[2], " ")
+
+	for {
+		n := doc.Next()
+		switch n {
+		case html.ErrorToken:
+			return urls
+
+		case html.StartTagToken:
+			token := doc.Token()
+			if "a" == token.Data {
+				url := URL{}
+				var appendUrl = true
+				for _, a := range token.Attr {
+					switch a.Key {
+					case "href":
+						url.URL = a.Val
+						url.Text = a.Val
+					case "class":
+						url.Classes = strings.Split(a.Val, " ")
+						if strings.Contains(a.Val, "hashtag") ||
+							strings.Contains(a.Val, "mention") {
+							appendUrl = false
+						}
+					}
+				}
+				if appendUrl {
+					urls = append(urls, url)
+				}
 			}
 		}
-		if len(url.Classes) == 0 {
-			urls = append(urls, url)
-		}
 	}
-	return urls
 }
 
 func cleanTootHTML(content string) (string, []URL) {
