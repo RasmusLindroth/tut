@@ -354,6 +354,10 @@ func (ui *UI) LoggedIn() {
 	var listViewColumn *tview.Flex
 	lp := ui.app.Config.General.ListProportion
 	cp := ui.app.Config.General.ContentProportion
+	nf := 1
+	if ui.app.Config.General.HideNotificationText {
+		nf = 0
+	}
 
 	if ui.app.Config.General.NotificationFeed {
 		listViewRow = tview.NewFlex().AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
@@ -363,10 +367,10 @@ func (ui *UI) LoggedIn() {
 
 		listViewColumn = tview.NewFlex().AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
 			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-				AddItem(mainText, 1, 0, false).
+				AddItem(mainText, nf, 0, false).
 				AddItem(ui.StatusView.GetLeftView(), 0, 1, false), 0, 1, false).
 			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-				AddItem(notificationText, 1, 0, false).
+				AddItem(notificationText, nf, 0, false).
 				AddItem(ui.StatusView.GetNotificationView(), 0, 1, false), 0, 1, false), 0, 1, false)
 	} else {
 		listViewRow = tview.NewFlex().AddItem(ui.StatusView.GetLeftView(), 0, 1, false)
