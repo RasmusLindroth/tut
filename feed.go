@@ -273,7 +273,7 @@ func drawStatusList(statuses []*mastodon.Status, longFormat, shortFormat string,
 			if s.Reblog != nil {
 				rs = s.Reblog
 			}
-			if rs.RepliesCount > 0 {
+			if rs.RepliesCount > 0 || (rs.InReplyToID != nil && rs.InReplyToID != "") {
 				iconText = " ⤶ "
 			}
 			ch <- ListItem{Text: content, Icons: iconText}
