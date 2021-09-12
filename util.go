@@ -58,8 +58,8 @@ func getURLs(text string) []URL {
 						url.Text = a.Val
 					case "class":
 						url.Classes = strings.Split(a.Val, " ")
-						if strings.Contains(a.Val, "hashtag") || 
-							strings.Contains(a.Val, "mention"){
+						if strings.Contains(a.Val, "hashtag") ||
+							strings.Contains(a.Val, "mention") {
 							appendUrl = false
 						}
 					}
@@ -70,7 +70,6 @@ func getURLs(text string) []URL {
 			}
 		}
 	}
-	return urls
 }
 
 func cleanTootHTML(content string) (string, []URL) {
