@@ -23,7 +23,7 @@ const (
 )
 
 type Feed interface {
-	GetFeedList() <-chan string
+	GetFeedList() <-chan ListItem
 	LoadNewer() int
 	LoadOlder() int
 	DrawList()
@@ -258,8 +258,8 @@ func showUser(app *App, user *mastodon.Account, relation *mastodon.Relationship,
 	return text, controls
 }
 
-func drawStatusList(statuses []*mastodon.Status, longFormat, shortFormat string, relativeDate int) <-chan string {
-	ch := make(chan string)
+func drawStatusList(statuses []*mastodon.Status, longFormat, shortFormat string, relativeDate int) <-chan ListItem {
+	ch := make(chan ListItem)
 	go func() {
 		today := time.Now()
 		for _, s := range statuses {
@@ -267,7 +267,15 @@ func drawStatusList(statuses []*mastodon.Status, longFormat, shortFormat string,
 			dateOutput := OutputDate(sLocal, today, longFormat, shortFormat, relativeDate)
 
 			content := fmt.Sprintf("%s %s", dateOutput, s.Account.Acct)
-			ch <- content
+			iconText := ""
+			rs := s
+			if s.Reblog != nil {
+				rs = s.Reblog
+			}
+			if rs.RepliesCount > 0 {
+				iconText = " ⤶ "
+			}
+			ch <- ListItem{Text: content, Icons: iconText}
 		}
 		close(ch)
 	}()
@@ -528,7 +536,7 @@ func (t *TimelineFeed) GetCurrentUser() *mastodon.Account {
 	return userFromStatus(t.GetCurrentStatus())
 }
 
-func (t *TimelineFeed) GetFeedList() <-chan string {
+func (t *TimelineFeed) GetFeedList() <-chan ListItem {
 	return drawStatusList(t.statuses, t.app.Config.General.DateFormat, t.app.Config.General.DateTodayFormat, t.app.Config.General.DateRelative)
 }
 
@@ -684,7 +692,7 @@ func (t *ThreadFeed) GetCurrentUser() *mastodon.Account {
 	return userFromStatus(t.GetCurrentStatus())
 }
 
-func (t *ThreadFeed) GetFeedList() <-chan string {
+func (t *ThreadFeed) GetFeedList() <-chan ListItem {
 	return drawStatusList(t.statuses, t.app.Config.General.DateFormat, t.app.Config.General.DateTodayFormat, t.app.Config.General.DateRelative)
 }
 
@@ -817,10 +825,10 @@ func (u *UserFeed) GetCurrentUser() *mastodon.Account {
 	return &u.user
 }
 
-func (u *UserFeed) GetFeedList() <-chan string {
-	ch := make(chan string)
+func (u *UserFeed) GetFeedList() <-chan ListItem {
+	ch := make(chan ListItem)
 	go func() {
-		ch <- "Profile"
+		ch <- ListItem{Text: "Profile", Icons: ""}
 		for s := range drawStatusList(u.statuses, u.app.Config.General.DateFormat, u.app.Config.General.DateTodayFormat, u.app.Config.General.DateRelative) {
 			ch <- s
 		}
@@ -1022,8 +1030,8 @@ func (n *NotificationsFeed) GetCurrentUser() *mastodon.Account {
 	return &notification.N.Account
 }
 
-func (n *NotificationsFeed) GetFeedList() <-chan string {
-	ch := make(chan string)
+func (n *NotificationsFeed) GetFeedList() <-chan ListItem {
+	ch := make(chan ListItem)
 	notifications := n.notifications
 	go func() {
 		today := time.Now()
@@ -1035,8 +1043,22 @@ func (n *NotificationsFeed) GetFeedList() <-chan string {
 
 			dateOutput := OutputDate(sLocal, today, long, short, relative)
 
+			iconText := ""
+			switch item.N.Type {
+			case "follow", "follow_request":
+				iconText += " + "
+			case "favourite":
+				iconText = " ★ "
+			case "reblog":
+				iconText = " ♺ "
+			case "mention":
+				iconText = " ⤶ "
+			case "poll":
+				iconText = " = "
+			}
+
 			content := fmt.Sprintf("%s %s", dateOutput, item.N.Account.Acct)
-			ch <- content
+			ch <- ListItem{Text: content, Icons: iconText}
 		}
 		close(ch)
 	}()
@@ -1275,7 +1297,7 @@ func (t *TagFeed) GetCurrentUser() *mastodon.Account {
 	return userFromStatus(t.GetCurrentStatus())
 }
 
-func (t *TagFeed) GetFeedList() <-chan string {
+func (t *TagFeed) GetFeedList() <-chan ListItem {
 	return drawStatusList(t.statuses, t.app.Config.General.DateFormat, t.app.Config.General.DateTodayFormat, t.app.Config.General.DateRelative)
 }
 
@@ -1452,8 +1474,8 @@ func (u *UserListFeed) GetCurrentUserData() *UserData {
 	return u.users[index-1]
 }
 
-func (u *UserListFeed) GetFeedList() <-chan string {
-	ch := make(chan string)
+func (u *UserListFeed) GetFeedList() <-chan ListItem {
+	ch := make(chan ListItem)
 	users := u.users
 	go func() {
 		for _, user := range users {
@@ -1463,7 +1485,7 @@ func (u *UserListFeed) GetFeedList() <-chan string {
 			} else {
 				username = fmt.Sprintf("%s (%s)", user.User.DisplayName, user.User.Acct)
 			}
-			ch <- username
+			ch <- ListItem{Text: username, Icons: ""}
 		}
 		close(ch)
 	}()

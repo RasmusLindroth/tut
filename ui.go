@@ -229,6 +229,19 @@ func (ui *UI) SetFocus(f FocusAt) {
 		ui.StatusView.list.SetSelectedTextColor(
 			ui.app.Config.Style.StatusBarViewText,
 		)
+		ui.StatusView.notificationView.iconList.SetSelectedBackgroundColor(
+			ui.app.Config.Style.ListSelectedBackground,
+		)
+		ui.StatusView.notificationView.iconList.SetSelectedTextColor(
+			ui.app.Config.Style.ListSelectedText,
+		)
+
+		ui.StatusView.iconList.SetSelectedBackgroundColor(
+			ui.app.Config.Style.StatusBarViewBackground,
+		)
+		ui.StatusView.iconList.SetSelectedTextColor(
+			ui.app.Config.Style.StatusBarViewText,
+		)
 	default:
 		ui.app.UI.StatusBar.Text.SetBackgroundColor(
 			ui.app.Config.Style.StatusBarBackground,
@@ -242,12 +255,24 @@ func (ui *UI) SetFocus(f FocusAt) {
 		ui.StatusView.list.SetSelectedTextColor(
 			ui.app.Config.Style.ListSelectedText,
 		)
+		ui.StatusView.iconList.SetSelectedBackgroundColor(
+			ui.app.Config.Style.ListSelectedBackground,
+		)
+		ui.StatusView.iconList.SetSelectedTextColor(
+			ui.app.Config.Style.ListSelectedText,
+		)
 
 		if ui.app.Config.General.NotificationFeed {
 			ui.StatusView.notificationView.list.SetSelectedBackgroundColor(
 				ui.app.Config.Style.StatusBarViewBackground,
 			)
 			ui.StatusView.notificationView.list.SetSelectedTextColor(
+				ui.app.Config.Style.StatusBarViewText,
+			)
+			ui.StatusView.notificationView.iconList.SetSelectedBackgroundColor(
+				ui.app.Config.Style.StatusBarViewBackground,
+			)
+			ui.StatusView.notificationView.iconList.SetSelectedTextColor(
 				ui.app.Config.Style.StatusBarViewText,
 			)
 		}
