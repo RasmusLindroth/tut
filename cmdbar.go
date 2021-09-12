@@ -64,11 +64,11 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 		c.app.UI.SetFocus(LeftPaneFocus)
 		c.app.UI.CmdBar.ClearInput()
 	case ":bookmarks", ":saved":
-		c.app.UI.StatusView.AddFeed(NewTimelineFeed(c.app, TimelineBookmarked))
+		c.app.UI.StatusView.AddFeed(NewTimelineFeed(c.app, TimelineBookmarked, nil))
 		c.app.UI.SetFocus(LeftPaneFocus)
 		c.app.UI.CmdBar.ClearInput()
 	case ":favorited":
-		c.app.UI.StatusView.AddFeed(NewTimelineFeed(c.app, TimelineFavorited))
+		c.app.UI.StatusView.AddFeed(NewTimelineFeed(c.app, TimelineFavorited, nil))
 		c.app.UI.SetFocus(LeftPaneFocus)
 		c.app.UI.CmdBar.ClearInput()
 	case ":boosts":
@@ -129,19 +129,19 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 		}
 		switch parts[1] {
 		case "local", "l":
-			c.app.UI.StatusView.AddFeed(NewTimelineFeed(c.app, TimelineLocal))
+			c.app.UI.StatusView.AddFeed(NewTimelineFeed(c.app, TimelineLocal, nil))
 			c.app.UI.SetFocus(LeftPaneFocus)
 			c.app.UI.CmdBar.ClearInput()
 		case "federated", "f":
-			c.app.UI.StatusView.AddFeed(NewTimelineFeed(c.app, TimelineFederated))
+			c.app.UI.StatusView.AddFeed(NewTimelineFeed(c.app, TimelineFederated, nil))
 			c.app.UI.SetFocus(LeftPaneFocus)
 			c.app.UI.CmdBar.ClearInput()
 		case "direct", "d":
-			c.app.UI.StatusView.AddFeed(NewTimelineFeed(c.app, TimelineDirect))
+			c.app.UI.StatusView.AddFeed(NewTimelineFeed(c.app, TimelineDirect, nil))
 			c.app.UI.SetFocus(LeftPaneFocus)
 			c.app.UI.CmdBar.ClearInput()
 		case "home", "h":
-			c.app.UI.StatusView.AddFeed(NewTimelineFeed(c.app, TimelineHome))
+			c.app.UI.StatusView.AddFeed(NewTimelineFeed(c.app, TimelineHome, nil))
 			c.app.UI.SetFocus(LeftPaneFocus)
 			c.app.UI.CmdBar.ClearInput()
 		case "notifications", "n":
@@ -173,6 +173,10 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 			break
 		}
 		c.app.UI.StatusView.AddFeed(NewUserListFeed(c.app, UserListSearch, user))
+		c.app.UI.SetFocus(LeftPaneFocus)
+		c.app.UI.CmdBar.ClearInput()
+	case ":lists":
+		c.app.UI.StatusView.AddFeed(NewListFeed(c.app))
 		c.app.UI.SetFocus(LeftPaneFocus)
 		c.app.UI.CmdBar.ClearInput()
 	}

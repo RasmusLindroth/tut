@@ -470,7 +470,7 @@ func (ui *UI) LoggedIn() {
 	}
 	ui.app.Me = me
 	ui.StatusView.AddFeed(
-		NewTimelineFeed(ui.app, ui.Timeline),
+		NewTimelineFeed(ui.app, ui.Timeline, nil),
 	)
 }
 

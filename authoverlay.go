@@ -37,13 +37,12 @@ func NewAuthOverlay(app *App) *AuthOverlay {
 }
 
 type AuthOverlay struct {
-	app         *App
-	Flex        *tview.Flex
-	Input       *tview.InputField
-	Text        *tview.TextView
-	authStep    authStep
-	account     AccountRegister
-	redirectURL string
+	app      *App
+	Flex     *tview.Flex
+	Input    *tview.InputField
+	Text     *tview.TextView
+	authStep authStep
+	account  AccountRegister
 }
 
 func (a *AuthOverlay) GotInput() {

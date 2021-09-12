@@ -54,22 +54,17 @@ func NewStatusView(app *App, tl TimelineType) *StatusView {
 		go func() {
 			d := time.Second * time.Duration(app.Config.General.AutoLoadSeconds)
 			ticker := time.NewTicker(d)
-			for {
-				select {
-				case <-ticker.C:
-					t.loadNewer()
-				}
+
+			for range ticker.C {
+				t.loadNewer()
 			}
 		}()
 		if app.Config.General.NotificationFeed {
 			go func() {
 				d := time.Second * time.Duration(app.Config.General.AutoLoadSeconds)
 				ticker := time.NewTicker(d)
-				for {
-					select {
-					case <-ticker.C:
-						t.notificationView.loadNewer()
-					}
+				for range ticker.C {
+					t.notificationView.loadNewer()
 				}
 			}()
 		}

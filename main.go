@@ -131,7 +131,7 @@ func main() {
 					found = true
 				}
 			}
-			if found == false {
+			if !found {
 				log.Fatalf("Couldn't find a user named %s. Try again", selectedUser)
 			}
 		} else {
@@ -296,7 +296,7 @@ func main() {
 	)
 
 	app.UI.CmdBar.Input.SetAutocompleteFunc(func(currentText string) (entries []string) {
-		words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:favorited,:muting,:profile,:saved,:tag,:timeline,:tl,:user,:quit,:q", ",")
+		words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:favorited,:lists,:muting,:profile,:saved,:tag,:timeline,:tl,:user,:quit,:q", ",")
 		if currentText == "" {
 			return
 		}

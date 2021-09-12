@@ -17,6 +17,7 @@ const (
 	TimelineFederated
 	TimelineBookmarked
 	TimelineFavorited
+	TimelineList
 )
 
 type UserListType uint
@@ -44,7 +45,7 @@ func (api *API) SetClient(c *mastodon.Client) {
 	api.Client = c
 }
 
-func (api *API) getStatuses(tl TimelineType, pg *mastodon.Pagination) ([]*mastodon.Status, mastodon.ID, mastodon.ID, error) {
+func (api *API) getStatuses(tl TimelineType, listInfo *ListInfo, pg *mastodon.Pagination) ([]*mastodon.Status, mastodon.ID, mastodon.ID, error) {
 	var err error
 	var statuses []*mastodon.Status
 
@@ -71,8 +72,14 @@ func (api *API) getStatuses(tl TimelineType, pg *mastodon.Pagination) ([]*mastod
 		statuses, err = api.Client.GetBookmarks(context.Background(), pg)
 	case TimelineFavorited:
 		statuses, err = api.Client.GetFavourites(context.Background(), pg)
+	case TimelineList:
+		if listInfo == nil {
+			err = errors.New("no list id")
+			return statuses, "", "", err
+		}
+		statuses, err = api.Client.GetTimelineList(context.Background(), listInfo.id, pg)
 	default:
-		err = errors.New("No timeline selected")
+		err = errors.New("no timeline selected")
 	}
 
 	if err != nil {
@@ -95,7 +102,7 @@ func (api *API) getStatuses(tl TimelineType, pg *mastodon.Pagination) ([]*mastod
 }
 
 func (api *API) GetStatuses(t *TimelineFeed) ([]*mastodon.Status, error) {
-	statuses, pgmin, pgmax, err := api.getStatuses(t.timelineType, nil)
+	statuses, pgmin, pgmax, err := api.getStatuses(t.timelineType, t.listInfo, nil)
 	switch t.timelineType {
 	case TimelineBookmarked, TimelineFavorited:
 		if err == nil {
@@ -119,7 +126,7 @@ func (api *API) GetStatusesOlder(t *TimelineFeed) ([]*mastodon.Status, error) {
 		pg := &mastodon.Pagination{
 			MaxID: t.linkNext,
 		}
-		statuses, _, max, err := api.getStatuses(t.timelineType, pg)
+		statuses, _, max, err := api.getStatuses(t.timelineType, t.listInfo, pg)
 		if err == nil {
 			t.linkNext = max
 		}
@@ -128,7 +135,7 @@ func (api *API) GetStatusesOlder(t *TimelineFeed) ([]*mastodon.Status, error) {
 		pg := &mastodon.Pagination{
 			MaxID: t.statuses[len(t.statuses)-1].ID,
 		}
-		statuses, _, _, err := api.getStatuses(t.timelineType, pg)
+		statuses, _, _, err := api.getStatuses(t.timelineType, t.listInfo, pg)
 		return statuses, err
 	}
 }
@@ -146,7 +153,7 @@ func (api *API) GetStatusesNewer(t *TimelineFeed) ([]*mastodon.Status, error) {
 		pg := &mastodon.Pagination{
 			MinID: mastodon.ID(t.linkPrev),
 		}
-		statuses, min, _, err := api.getStatuses(t.timelineType, pg)
+		statuses, min, _, err := api.getStatuses(t.timelineType, t.listInfo, pg)
 		if err == nil {
 			t.linkPrev = min
 		}
@@ -155,7 +162,7 @@ func (api *API) GetStatusesNewer(t *TimelineFeed) ([]*mastodon.Status, error) {
 		pg := &mastodon.Pagination{
 			MinID: t.statuses[0].ID,
 		}
-		statuses, _, _, err := api.getStatuses(t.timelineType, pg)
+		statuses, _, _, err := api.getStatuses(t.timelineType, t.listInfo, pg)
 		return statuses, err
 	}
 }
@@ -357,9 +364,13 @@ func (api *API) GetUserByID(id mastodon.ID) (*mastodon.Account, error) {
 	return a, err
 }
 
+func (api *API) GetLists() ([]*mastodon.List, error) {
+	return api.Client.GetLists(context.Background())
+}
+
 func (api *API) BoostToggle(s *mastodon.Status) (*mastodon.Status, error) {
 	if s == nil {
-		return nil, fmt.Errorf("No status")
+		return nil, fmt.Errorf("no status")
 	}
 
 	if s.Reblogged == true {
@@ -380,7 +391,7 @@ func (api *API) Unboost(s *mastodon.Status) (*mastodon.Status, error) {
 
 func (api *API) FavoriteToogle(s *mastodon.Status) (*mastodon.Status, error) {
 	if s == nil {
-		return nil, fmt.Errorf("No status")
+		return nil, fmt.Errorf("no status")
 	}
 
 	if s.Favourited == true {
@@ -401,7 +412,7 @@ func (api *API) Unfavorite(s *mastodon.Status) (*mastodon.Status, error) {
 
 func (api *API) BookmarkToogle(s *mastodon.Status) (*mastodon.Status, error) {
 	if s == nil {
-		return nil, fmt.Errorf("No status")
+		return nil, fmt.Errorf("no status")
 	}
 
 	if s.Bookmarked == true {

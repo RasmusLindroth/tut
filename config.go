@@ -750,10 +750,10 @@ list-selected-background=xrdb:color5
 list-selected-text=xrdb:background
 `
 	f, err := os.Create(filepath)
-	defer f.Close()
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 	_, err = f.WriteString(conf)
 	if err != nil {
 		return err
