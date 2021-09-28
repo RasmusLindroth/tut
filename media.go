@@ -170,15 +170,16 @@ func (m *MediaView) EditDesc() {
 type MediaInput struct {
 	app                  *App
 	View                 *tview.InputField
+	text                 string
 	autocompleteIndex    int
 	autocompleteList     []string
-	originalText         string
 	isAutocompleteChange bool
 }
 
 func (m *MediaInput) AddRune(r rune) {
 	newText := m.View.GetText() + string(r)
-	m.View.SetText(newText)
+	m.text = newText
+	m.View.SetText(m.text)
 	m.saveAutocompleteState()
 }
 
@@ -192,7 +193,7 @@ func (m *MediaInput) HandleChanges(text string) {
 
 func (m *MediaInput) saveAutocompleteState() {
 	text := m.View.GetText()
-	m.originalText = text
+	m.text = text
 	m.autocompleteList = FindFiles(text)
 	m.autocompleteIndex = 0
 }
@@ -207,6 +208,34 @@ func (m *MediaInput) AutocompletePrev() {
 	}
 	m.autocompleteIndex = index
 	m.showAutocomplete()
+}
+
+func (m *MediaInput) AutocompleteTab() {
+	if len(m.autocompleteList) == 0 {
+		return
+	}
+	same := ""
+	for i := 0; i < len(m.autocompleteList[0]); i++ {
+		match := true
+		c := m.autocompleteList[0][i]
+		for _, item := range m.autocompleteList {
+			if i >= len(item) || c != item[i] {
+				match = false
+				break
+			}
+		}
+		if !match {
+			break
+		}
+		same += string(c)
+	}
+	if same != m.text {
+		m.text = same
+		m.View.SetText(same)
+		m.saveAutocompleteState()
+	} else {
+		m.AutocompleteNext()
+	}
 }
 
 func (m *MediaInput) AutocompleteNext() {

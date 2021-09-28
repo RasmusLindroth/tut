@@ -17,7 +17,6 @@ const (
 	ThreadFeedType
 	UserFeedType
 	UserListFeedType
-	UserSearchFeedType
 	NotificationFeedType
 	TagFeedType
 	ListFeedType
