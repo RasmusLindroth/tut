@@ -228,6 +228,7 @@ func (m *MessageBox) Draw() {
 	m.View.ScrollToEnd()
 	m.maxIndex, _ = m.View.GetScrollOffset()
 	m.View.ScrollTo(m.Index, 0)
+	m.app.UI.Root.Sync()
 }
 
 func (m *MessageBox) EditText() {

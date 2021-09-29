@@ -98,6 +98,7 @@ func (m *MediaView) Draw() {
 	items = append(items, ColorKey(m.app.Config, "", "E", "dit desc"))
 	items = append(items, ColorKey(m.app.Config, "", "Esc", " Done"))
 	m.TextBottom.SetText(strings.Join(items, " "))
+	m.app.UI.Root.Sync()
 }
 
 func (m *MediaView) SetFocus(f MediaFocus) {
