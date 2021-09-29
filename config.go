@@ -26,6 +26,7 @@ type GeneralConfig struct {
 	DateTodayFormat      string
 	DateFormat           string
 	DateRelative         int
+	MaxWidth             int
 	StartTimeline        TimelineType
 	NotificationFeed     bool
 	QuoteReply           bool
@@ -265,6 +266,7 @@ func parseGeneral(cfg *ini.File) GeneralConfig {
 	general.NotificationFeed = cfg.Section("general").Key("notification-feed").MustBool(true)
 	general.QuoteReply = cfg.Section("general").Key("quote-reply").MustBool(false)
 	general.CharLimit = cfg.Section("general").Key("char-limit").MustInt(500)
+	general.MaxWidth = cfg.Section("general").Key("max-width").MustInt(0)
 	general.ShortHints = cfg.Section("general").Key("short-hints").MustBool(false)
 	general.HideNotificationText = cfg.Section("general").Key("hide-notification-text").MustBool(false)
 	general.ShowIcons = cfg.Section("general").Key("show-icons").MustBool(true)
@@ -516,11 +518,15 @@ date-relative=-1
 # default=home
 timeline=home
 
+# The max width of text before it wraps when displaying toots
+# 0 = no restriction
+# default=0
+max-width=0
+
 # If you want to display a list of notifications
 # under your timeline feed
 # default=true
 notification-feed=true
-
 
 # Where do you want the list of toots to be placed
 # Valid values: left, right, top, bottom
