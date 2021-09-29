@@ -261,7 +261,10 @@ func main() {
 				return nil
 			}
 			switch event.Key() {
-			case tcell.KeyTab, tcell.KeyDown:
+			case tcell.KeyTAB:
+				app.UI.MediaOverlay.InputField.AutocompleteTab()
+				return nil
+			case tcell.KeyDown:
 				app.UI.MediaOverlay.InputField.AutocompleteNext()
 				return nil
 			case tcell.KeyBacktab, tcell.KeyUp:
