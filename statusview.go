@@ -256,10 +256,22 @@ func (t *StatusView) inputBoth(event *tcell.EventKey) {
 			t.end()
 		}
 	}
-	if len(t.feeds) > 0 && t.focus == LeftPaneFocus {
+	allowedLeft := t.lastList == LeftPaneFocus || t.focus == LeftPaneFocus
+	allowedNotification := t.lastList == NotificationPaneFocus || t.focus == NotificationPaneFocus
+	if t.focus == RightPaneFocus {
+		switch event.Rune() {
+		case 'g', 'G', 'j', 'k', 'h', 'l', 'q', 'Q':
+			allowedLeft = false
+		}
+		switch event.Key() {
+		case tcell.KeyEsc:
+			allowedLeft = false
+		}
+	}
+	if len(t.feeds) > 0 && allowedLeft {
 		feed := t.feeds[t.feedIndex]
 		feed.Input(event)
-	} else if t.focus == NotificationPaneFocus {
+	} else if allowedNotification {
 		t.notificationView.feed.Input(event)
 	}
 }
