@@ -48,20 +48,38 @@ type LinkOverlay struct {
 }
 
 func (l *LinkOverlay) SetLinks(urls []URL, status *mastodon.Status) {
+	realUrls := []URL{}
 	l.urls = []URL{}
 	l.mentions = []mastodon.Mention{}
 	l.tags = []mastodon.Tag{}
 
 	if urls != nil {
-		l.urls = urls
+		if status != nil {
+			for _, url := range urls {
+				isNotMention := true
+				for _, mention := range status.Mentions {
+					if mention.URL == url.URL {
+						isNotMention = false
+					}
+				}
+				if isNotMention {
+					realUrls = append(realUrls, url)
+				}
+			}
+
+		} else {
+			realUrls = urls
+		}
+		l.urls = realUrls
 	}
+
 	if status != nil {
 		l.mentions = status.Mentions
 		l.tags = status.Tags
 	}
 
 	l.List.Clear()
-	for _, url := range urls {
+	for _, url := range realUrls {
 		l.List.AddItem(url.Text, "", 0, nil)
 	}
 	for _, mention := range l.mentions {

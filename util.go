@@ -58,8 +58,8 @@ func getURLs(text string) []URL {
 						url.Text = a.Val
 					case "class":
 						url.Classes = strings.Split(a.Val, " ")
-						if strings.Contains(a.Val, "hashtag") ||
-							strings.Contains(a.Val, "mention") {
+
+						if strings.Contains(a.Val, "hashtag") {
 							appendUrl = false
 						}
 					}
