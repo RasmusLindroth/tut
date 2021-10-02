@@ -150,7 +150,7 @@ curl -o toot.tmpl https://raw.githubusercontent.com/RasmusLindroth/tut/master/to
 wget https://raw.githubusercontent.com/RasmusLindroth/tut/master/toot.tmpl
 ```
 
-The data available for you is two structs. The first one is the `Toot`-struct, you can see all fields in [./feed.go](./feed.go). The second one is the `StyleConfig`-struct. You can find the fields in [.config.go](./config.go).
+The data available for you is two structs. The first one is the `Toot`-struct, you can see all fields in [./feed.go](./feed.go). The second one is the `StyleConfig`-struct. You can find the fields in [./config.go](./config.go).
 
 You acces them with `.Toot` and `.Style` in your template file.
 
