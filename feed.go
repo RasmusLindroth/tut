@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 	"time"
@@ -38,40 +39,118 @@ type Feed interface {
 	Input(event *tcell.EventKey)
 }
 
+type Poll struct {
+	ID         string
+	ExpiresAt  time.Time
+	Expired    bool
+	Multiple   bool
+	VotesCount int64
+	Options    []PollOption
+	Voted      bool
+}
+
+type PollOption struct {
+	Title      string
+	VotesCount int64
+	Percent    string
+}
+
+type Media struct {
+	Type        string
+	Description string
+	URL         string
+}
+
+type Card struct {
+	Type        string
+	Title       string
+	Description string
+	URL         string
+}
+
+type Toot struct {
+	Visibility         string
+	Boosted            bool
+	BoostedDisplayName string
+	BoostedAcct        string
+	Bookmarked         bool
+	AccountDisplayName string
+	Account            string
+	Spoiler            bool
+	SpoilerText        string
+	ShowSpoiler        bool
+	ContentText        string
+	Width              int
+	HasExtra           bool
+	Poll               Poll
+	Media              []Media
+	Card               Card
+	Replies            int
+	Boosts             int
+	Favorites          int
+	Controls           string
+}
+
+type DisplayTootData struct {
+	Toot  Toot
+	Style StyleConfig
+}
+
 func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (string, string) {
-	var line string
-	width := app.UI.StatusView.GetTextWidth()
-	for i := 0; i < width; i++ {
-		line += "-"
-	}
-	line += "\n"
-
-	shouldDisplay := !status.Sensitive || showSensitive
-
-	var stripped string
 	var strippedContent string
 	var strippedSpoiler string
 	var urls []URL
 	var u []URL
 
 	strippedContent, urls = cleanTootHTML(status.Content)
+	strippedContent = tview.Escape(strippedContent)
 
-	normal := ColorMark(app.Config.Style.Text)
-	subtleColor := ColorMark(app.Config.Style.Subtle)
-	special1 := ColorMark(app.Config.Style.TextSpecial1)
-	special2 := ColorMark(app.Config.Style.TextSpecial2)
+	toot := Toot{
+		Width:              app.UI.StatusView.GetTextWidth(),
+		ContentText:        strippedContent,
+		Boosted:            status.Reblog != nil,
+		BoostedDisplayName: status.Account.DisplayName,
+		BoostedAcct:        status.Account.Acct,
+		ShowSpoiler:        showSensitive,
+	}
 
-	var head string
-	var reblogText string
 	if status.Reblog != nil {
-		if status.Account.DisplayName != "" {
-			reblogText += fmt.Sprintf(subtleColor+"%s (%s)\n", status.Account.DisplayName, status.Account.Acct)
-		} else {
-			reblogText += fmt.Sprintf(subtleColor+"%s\n", status.Account.Acct)
-		}
-		reblogText += subtleColor + "Boosted\n"
-		reblogText += subtleColor + line
 		status = status.Reblog
+	}
+
+	toot.AccountDisplayName = status.Account.DisplayName
+	toot.Account = status.Account.Acct
+	toot.Bookmarked = status.Bookmarked.(bool)
+	toot.Visibility = status.Visibility
+	toot.Spoiler = status.Sensitive
+
+	if status.Poll != nil {
+		p := *status.Poll
+		toot.Poll = Poll{
+			ID:         string(p.ID),
+			ExpiresAt:  p.ExpiresAt,
+			Expired:    p.Expired,
+			Multiple:   p.Multiple,
+			VotesCount: p.VotesCount,
+			Voted:      p.Voted,
+			Options:    []PollOption{},
+		}
+		for _, item := range p.Options {
+			percent := 0.0
+			if p.VotesCount > 0 {
+				percent = float64(item.VotesCount) / float64(p.VotesCount) * 100
+			}
+
+			o := PollOption{
+				Title:      tview.Escape(item.Title),
+				VotesCount: item.VotesCount,
+				Percent:    fmt.Sprintf("%.2f", percent),
+			}
+			toot.Poll.Options = append(toot.Poll.Options, o)
+		}
+
+	} else {
+		toot.Poll = Poll{}
 	}
 
 	if status.Sensitive {
@@ -79,92 +158,39 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 		strippedSpoiler = tview.Escape(strippedSpoiler)
 		urls = append(urls, u...)
 	}
-	if status.Sensitive && !showSensitive {
-		strippedSpoiler += "\n" + subtleColor + line
-		strippedSpoiler += subtleColor + tview.Escape("Press [z] to show hidden text")
-		stripped = strippedSpoiler
-	}
-	if status.Sensitive && showSensitive {
-		stripped = strippedSpoiler + "\n\n" + tview.Escape(strippedContent)
-	}
-	if !status.Sensitive {
-		stripped = tview.Escape(strippedContent)
-	}
 
+	toot.SpoilerText = strippedSpoiler
 	app.UI.LinkOverlay.SetLinks(urls, status)
 
-	if status.Bookmarked == true {
-		head += fmt.Sprintf(special2 + "You have bookmarked this toot\n\n")
-	}
-
-	head += reblogText
-
-	if status.Visibility != "public" {
-		head += fmt.Sprintf(special1+"(%s) ", status.Visibility)
-	}
-	if status.Account.DisplayName != "" {
-		head += fmt.Sprintf("%s%s\n", special2, status.Account.DisplayName)
-		head += fmt.Sprintf("%s%s\n\n", special1, status.Account.Acct)
-	} else {
-		head += fmt.Sprintf("%s%s\n\n", special2, status.Account.Acct)
-	}
-	output := head
-	content := stripped
-	if content != "" {
-		output += normal + content + "\n\n"
-	}
-
-	var poll string
-	if status.Poll != nil {
-		poll += subtleColor + "Poll\n"
-		poll += subtleColor + line
-		poll += fmt.Sprintf(normal+"Number of votes: %d\n\n", status.Poll.VotesCount)
-		votes := float64(status.Poll.VotesCount)
-		for _, o := range status.Poll.Options {
-			res := 0.0
-			if votes != 0 {
-				res = float64(o.VotesCount) / votes * 100
-			}
-			poll += fmt.Sprintf("%s - %.2f%% (%d)\n", tview.Escape(o.Title), res, o.VotesCount)
-		}
-		poll += "\n"
-	}
-
-	var media string
+	media := []Media{}
 	for _, att := range status.MediaAttachments {
-		media += subtleColor + line
-		media += fmt.Sprintf(subtleColor+"Attached %s\n", att.Type)
-		if att.Description != "" {
-			media += fmt.Sprintf(normal+"%s\n\n", tview.Escape(att.Description))
+		m := Media{
+			Type:        att.Type,
+			Description: tview.Escape(att.Description),
+			URL:         att.URL,
 		}
-		media += fmt.Sprintf(normal+"%s\n", att.URL)
+		media = append(media, m)
 	}
-	if len(status.MediaAttachments) > 0 {
-		media += "\n"
-	}
+	toot.Media = media
 
-	var card string
 	if status.Card != nil {
-		card += subtleColor + "Card type: " + status.Card.Type + "\n"
-		card += subtleColor + line
-		if status.Card.Title != "" {
-			card += normal + status.Card.Title + "\n\n"
+		toot.Card = Card{
+			Type:        status.Card.Type,
+			Title:       tview.Escape(strings.TrimSpace(status.Card.Title)),
+			Description: tview.Escape(strings.TrimSpace(status.Card.Description)),
+			URL:         status.Card.URL,
 		}
-		desc := strings.TrimSpace(status.Card.Description)
-		if desc != "" {
-			card += normal + desc + "\n\n"
-		}
-		card += status.Card.URL
+	} else {
+		toot.Card = Card{}
 	}
 
-	if shouldDisplay {
-		output += poll + media + card
-	}
-	output += "\n" + subtleColor + line
-	output += fmt.Sprintf("%sReplies %s%d %sBoosts %s%d %sFavorites %s%d\n\n",
-		subtleColor, special1, status.RepliesCount, subtleColor, special1, status.ReblogsCount, subtleColor, special1, status.FavouritesCount)
+	toot.HasExtra = len(status.MediaAttachments) > 0 || status.Card != nil || status.Poll != nil
+	toot.Replies = int(status.RepliesCount)
+	toot.Boosts = int(status.ReblogsCount)
+	toot.Favorites = int(status.FavouritesCount)
 
 	app.UI.StatusView.ScrollToBeginning()
+
 	var info []string
 	if status.Favourited == true {
 		info = append(info, ColorKey(app.Config, "Un", "F", "avorite"))
@@ -198,7 +224,18 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	}
 
 	controls := strings.Join(info, " ")
-	return output, controls
+
+	td := DisplayTootData{
+		Toot:  toot,
+		Style: app.Config.Style,
+	}
+	var output bytes.Buffer
+	err := app.Config.Templates.TootTemplate.ExecuteTemplate(&output, "toot.tmpl", td)
+	if err != nil {
+		panic(err)
+	}
+
+	return output.String(), controls
 }
 
 func showUser(app *App, user *mastodon.Account, relation *mastodon.Relationship, showUserControl bool) (string, string) {

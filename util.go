@@ -249,7 +249,7 @@ func GetAccountsPath() (string, error) {
 }
 
 func GetConfigPath() (string, error) {
-	return testConfigPath("config.yaml")
+	return testConfigPath("config.ini")
 }
 
 func CheckPath(input string, inclHidden bool) (string, bool) {
@@ -308,13 +308,17 @@ func FindFiles(s string) []string {
 func ColorKey(c *Config, pre, key, end string) string {
 	color := ColorMark(c.Style.TextSpecial2)
 	normal := ColorMark(c.Style.Text)
-	key = tview.Escape("[" + key + "]")
+	key = TextFlags("b") + key + TextFlags("-")
 	if c.General.ShortHints {
 		pre = ""
 		end = ""
 	}
 	text := fmt.Sprintf("%s%s%s%s%s%s", normal, pre, color, key, normal, end)
 	return text
+}
+
+func TextFlags(s string) string {
+	return fmt.Sprintf("[::%s]", s)
 }
 
 func ColorMark(color tcell.Color) string {
