@@ -26,6 +26,17 @@ func NewStatusView(app *App, tl TimelineType) *StatusView {
 		t.notificationView = NewNotificationView(app)
 	}
 
+	if app.Config.General.MaxWidth > 0 {
+		mw := app.Config.General.MaxWidth
+		t.text.SetDrawFunc(func(screen tcell.Screen, x int, y int, width int, height int) (int, int, int, int) {
+			rWidth := width
+			if rWidth > mw {
+				rWidth = mw
+			}
+			return x, y, rWidth, height
+		})
+	}
+
 	t.flex = tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(t.text, 0, 9, false).
 		AddItem(t.controls, 1, 0, false)

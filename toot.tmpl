@@ -1,0 +1,63 @@
+{{- if .Toot.Boosted -}}
+{{ Color .Style.Subtle }}
+{{- if ne .Toot.BoostedDisplayName "" -}}
+{{- .Toot.BoostedDisplayName}} ({{.Toot.BoostedAcct}}) boosted
+{{ else -}}
+{{- .Toot.BoostedAcct}} boosted
+{{ end -}}
+{{ Color .Style.Text -}}
+{{ end }}
+{{- if .Toot.Bookmarked -}}
+{{ Color .Style.TextSpecial2 }}You have bookmarked this toot
+
+{{ end }}
+{{- if ne .Toot.Visibility "public" -}}{{ Color .Style.TextSpecial1 }}({{ .Toot.Visibility}}) {{ end }}
+{{- if ne .Toot.AccountDisplayName "" -}}
+{{- Color .Style.TextSpecial2 }}{{ .Toot.AccountDisplayName }}
+{{ Color .Style.TextSpecial1 }}{{ .Toot.Account }}
+{{- else -}}
+{{ Color .Style.TextSpecial2 }}{{- .Toot.Account }}
+{{- end }}
+
+{{ if .Toot.Spoiler -}}
+{{ Color .Style.Text }}{{ .Toot.SpoilerText }}
+{{ if not .Toot.ShowSpoiler }}
+{{ Color .Style.Subtle }}Press [z[] to show hidden text{{ Color .Style.Text }}
+{{ end }}
+{{ end -}}
+{{- if or (not .Toot.Spoiler) (.Toot.ShowSpoiler) -}}
+{{ Color .Style.Text }}{{ .Toot.ContentText }}
+{{ if ne .Toot.Poll.ID "" }}
+{{ Color .Style.Subtle }}{{ Flags "b" }}Poll{{ Flags "-" }}
+{{ Color .Style.Text }}Number of votes: {{ .Toot.Poll.VotesCount }}
+
+{{ range .Toot.Poll.Options }}
+{{- .Title }} - {{ .Percent }}% ({{ .VotesCount }})
+{{ end -}}
+{{ end -}}
+{{ range .Toot.Media }}
+{{ Color $.Style.Subtle }}{{ Flags "b" }}Attached {{ .Type }}{{ Flags "-" }}
+{{- if ne .Description "" }}
+{{ Color $.Style.Text }}{{ .Description }}
+{{ end }}
+{{ Color $.Style.Text }}{{ Flags "i" }}{{ .URL }}{{ Flags "-" }}
+{{ end -}}
+{{ end }}
+{{- if ne .Toot.Card.Type "" }}
+{{ Color .Style.Subtle }}{{ Flags "b" }}Card: {{ .Toot.Card.Type }}{{ Flags "-" }}
+{{- if ne .Toot.Card.Title "" }}
+{{ Color .Style.TextSpecial2 }}{{ .Toot.Card.Title }}
+{{ end }}
+{{- if ne .Toot.Card.Description "" }}
+{{ Color .Style.Text }}{{ .Toot.Card.Description }}
+{{ end }}
+{{- if ne .Toot.Card.URL "" }}
+{{ Color .Style.Text }}{{ Flags "i" }}{{ .Toot.Card.URL }}{{ Flags "-" }}
+{{ end }}
+{{ end }}
+{{ Color .Style.Subtle }}Replies
+{{- Color .Style.TextSpecial1 }} {{ .Toot.Replies }}
+{{- Color .Style.Subtle }} Boosts
+{{- Color .Style.TextSpecial1 }} {{ .Toot.Boosts }}
+{{- Color .Style.Subtle }} Favorites
+{{- Color .Style.TextSpecial1 }} {{ .Toot.Favorites }}

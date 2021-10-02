@@ -20,6 +20,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
   * [FreeBSD](#freebsd)
 * [Build it yourself](#build-it-yourself)
 * [Flags and commands](#flags-and-commands)
+* [Templates](#templates)
 * [Password manager for secrets](#password-manager-for-secrets)
 * [Thanks to](#thanks-to)
 
@@ -130,6 +131,28 @@ Flags:
         Don't use a = between --user and the <name> 
         If two users are named the same. Use full name like tut@fosstodon.org
 ```
+
+## Templates
+You can customise how toots are displayed with a Go [text/template](https://pkg.go.dev/text/template).
+
+You'll have to place a file named `toot.tmpl` in `XDG_CONFIG_HOME/tut/` which
+usually equals to `~/.config/tut/`.
+
+You can copy [toot.tmpl](./toot.tmpl) from this repo manually or with `curl` or `wget`.
+
+```bash
+cd ~/.config/tut
+
+# using curl
+curl -o toot.tmpl https://raw.githubusercontent.com/RasmusLindroth/tut/master/toot.tmpl
+
+# using wget
+wget https://raw.githubusercontent.com/RasmusLindroth/tut/master/toot.tmpl
+```
+
+The data available for you is two structs. The first one is the `Toot`-struct, you can see all fields in [./feed.go](./feed.go). The second one is the `StyleConfig`-struct. You can find the fields in [./config.go](./config.go).
+
+You acces them with `.Toot` and `.Style` in your template file.
 
 ## Password manager for secrets
 If you run `pass`, `gopass` or  something similar you can protect your secrets.

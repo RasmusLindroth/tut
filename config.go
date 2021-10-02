@@ -1,15 +1,21 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
+	"log"
 	"os"
 	"strings"
+	"text/template"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/gobwas/glob"
 	"github.com/kyoh86/xdg"
 	"gopkg.in/ini.v1"
 )
+
+//go:embed toot.tmpl
+var tootTemplate string
 
 type Config struct {
 	General            GeneralConfig
@@ -18,6 +24,7 @@ type Config struct {
 	OpenPattern        OpenPatternConfig
 	OpenCustom         OpenCustomConfig
 	NotificationConfig NotificationConfig
+	Templates          TemplatesConfig
 }
 
 type GeneralConfig struct {
@@ -26,6 +33,7 @@ type GeneralConfig struct {
 	DateTodayFormat      string
 	DateFormat           string
 	DateRelative         int
+	MaxWidth             int
 	StartTimeline        TimelineType
 	NotificationFeed     bool
 	QuoteReply           bool
@@ -135,6 +143,10 @@ type NotificationConfig struct {
 	NotificationBoost    bool
 	NotificationPoll     bool
 	NotificationPost     bool
+}
+
+type TemplatesConfig struct {
+	TootTemplate *template.Template
 }
 
 func parseColor(input string, def string, xrdb map[string]string) tcell.Color {
@@ -265,6 +277,7 @@ func parseGeneral(cfg *ini.File) GeneralConfig {
 	general.NotificationFeed = cfg.Section("general").Key("notification-feed").MustBool(true)
 	general.QuoteReply = cfg.Section("general").Key("quote-reply").MustBool(false)
 	general.CharLimit = cfg.Section("general").Key("char-limit").MustInt(500)
+	general.MaxWidth = cfg.Section("general").Key("max-width").MustInt(0)
 	general.ShortHints = cfg.Section("general").Key("short-hints").MustBool(false)
 	general.HideNotificationText = cfg.Section("general").Key("hide-notification-text").MustBool(false)
 	general.ShowIcons = cfg.Section("general").Key("show-icons").MustBool(true)
@@ -434,6 +447,34 @@ func ParseNotifications(cfg *ini.File) NotificationConfig {
 	return nc
 }
 
+func ParseTemplates(cfg *ini.File) TemplatesConfig {
+	var tootTmpl *template.Template
+	tootTmplPath, exists, err := CheckConfig("toot.tmpl")
+	if err != nil {
+		log.Fatalln(
+			fmt.Sprintf("Couldn't access toot.tmpl. Error: %v", err),
+		)
+	}
+	if exists {
+		tootTmpl, err = template.New("toot.tmpl").Funcs(template.FuncMap{
+			"Color": ColorMark,
+			"Flags": TextFlags,
+		}).ParseFiles(tootTmplPath)
+	}
+	if !exists || err != nil {
+		tootTmpl, err = template.New("toot.tmpl").Funcs(template.FuncMap{
+			"Color": ColorMark,
+			"Flags": TextFlags,
+		}).Parse(tootTemplate)
+	}
+	if err != nil {
+		log.Fatalf("Couldn't parse toot.tmpl. Error: %v", err)
+	}
+	return TemplatesConfig{
+		TootTemplate: tootTmpl,
+	}
+}
+
 func ParseConfig(filepath string) (Config, error) {
 	cfg, err := ini.LoadSources(ini.LoadOptions{
 		SpaceBeforeInlineComment: true,
@@ -448,6 +489,7 @@ func ParseConfig(filepath string) (Config, error) {
 	conf.OpenPattern = ParseOpenPattern(cfg)
 	conf.OpenCustom = ParseCustom(cfg)
 	conf.NotificationConfig = ParseNotifications(cfg)
+	conf.Templates = ParseTemplates(cfg)
 
 	return conf, nil
 }
@@ -516,11 +558,15 @@ date-relative=-1
 # default=home
 timeline=home
 
+# The max width of text before it wraps when displaying toots
+# 0 = no restriction
+# default=0
+max-width=0
+
 # If you want to display a list of notifications
 # under your timeline feed
 # default=true
 notification-feed=true
-
 
 # Where do you want the list of toots to be placed
 # Valid values: left, right, top, bottom
