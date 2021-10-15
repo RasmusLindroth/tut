@@ -78,9 +78,9 @@ https://aur.archlinux.org/packages/tut/
 
 ### Alpine Linux
 
-`tut` package is available in the testing repository.
+`tut` package is available in the community repository.
 
-https://pkgs.alpinelinux.org/package/edge/testing/x86_64/tut
+https://pkgs.alpinelinux.org/package/edge/community/x86_64/tut
 
 ### Debian
 
