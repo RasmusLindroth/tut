@@ -100,7 +100,7 @@ func openEditor(app *tview.Application, content string) (string, error) {
 			return "", err
 		}
 	}
-	cmd := exec.Command(editor, f.Name())
+	cmd := exec.Command("/bin/sh", "-c", editor + " " + f.Name())
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
