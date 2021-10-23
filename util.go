@@ -90,6 +90,12 @@ func openEditor(app *tview.Application, content string) (string, error) {
 	if !exists || editor == "" {
 		editor = "vi"
 	}
+	args := []string{}
+	parts := strings.Split(editor, " ")
+	if len(parts) > 1 {
+		args = append(args, parts[1:]...)
+		editor = parts[0]
+	}
 	f, err := ioutil.TempFile("", "tut")
 	if err != nil {
 		return "", err
@@ -100,7 +106,8 @@ func openEditor(app *tview.Application, content string) (string, error) {
 			return "", err
 		}
 	}
-	cmd := exec.Command(editor, f.Name())
+	args = append(args, f.Name())
+	cmd := exec.Command(editor, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
