@@ -111,7 +111,7 @@ func (l *LinkOverlay) Open() {
 		return
 	}
 	if index < len(l.urls) {
-		openURL(l.app.Config.Media, l.app.Config.OpenPattern, l.urls[index].URL)
+		openURL(l.app.UI.Root, l.app.Config.Media, l.app.Config.OpenPattern, l.urls[index].URL)
 		return
 	}
 	mIndex := index - len(l.urls)

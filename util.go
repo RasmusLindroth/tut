@@ -90,6 +90,12 @@ func openEditor(app *tview.Application, content string) (string, error) {
 	if !exists || editor == "" {
 		editor = "vi"
 	}
+	args := []string{}
+	parts := strings.Split(editor, " ")
+	if len(parts) > 1 {
+		args = append(args, parts[1:]...)
+		editor = parts[0]
+	}
 	f, err := ioutil.TempFile("", "tut")
 	if err != nil {
 		return "", err
@@ -100,7 +106,8 @@ func openEditor(app *tview.Application, content string) (string, error) {
 			return "", err
 		}
 	}
-	cmd := exec.Command(editor, f.Name())
+	args = append(args, f.Name())
+	cmd := exec.Command(editor, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -133,16 +140,20 @@ func openCustom(program string, args []string, url string) {
 	exec.Command(program, args...).Start()
 }
 
-func openURL(conf MediaConfig, pc OpenPatternConfig, url string) {
+func openURL(app *tview.Application, conf MediaConfig, pc OpenPatternConfig, url string) {
 	for _, m := range pc.Patterns {
 		if m.Compiled.Match(url) {
 			args := append(m.Args, url)
-			exec.Command(m.Program, args...).Start()
+			exec.Command(m.Program, args...).Run()
 			return
 		}
 	}
 	args := append(conf.LinkArgs, url)
-	exec.Command(conf.LinkViewer, args...).Start()
+	if conf.LinkTerminal {
+		openInTerminal(app, conf.LinkViewer, args...)
+	} else {
+		exec.Command(conf.LinkViewer, args...).Start()
+	}
 }
 
 func reverseFiles(filenames []string) []string {
@@ -156,7 +167,23 @@ func reverseFiles(filenames []string) []string {
 	return f
 }
 
-func openMediaType(conf MediaConfig, filenames []string, mediaType string) {
+type runProgram struct {
+	Name     string
+	Args     []string
+	Terminal bool
+}
+
+func newRunProgram(name string, args ...string) runProgram {
+	return runProgram{
+		Name: name,
+		Args: args,
+	}
+}
+
+func openMediaType(app *tview.Application, conf MediaConfig, filenames []string, mediaType string) {
+	terminal := []runProgram{}
+	external := []runProgram{}
+
 	switch mediaType {
 	case "image":
 		if conf.ImageReverse {
@@ -165,11 +192,21 @@ func openMediaType(conf MediaConfig, filenames []string, mediaType string) {
 		if conf.ImageSingle {
 			for _, f := range filenames {
 				args := append(conf.ImageArgs, f)
-				exec.Command(conf.ImageViewer, args...).Run()
+				c := newRunProgram(conf.ImageViewer, args...)
+				if conf.ImageTerminal {
+					terminal = append(terminal, c)
+				} else {
+					external = append(external, c)
+				}
 			}
 		} else {
 			args := append(conf.ImageArgs, filenames...)
-			exec.Command(conf.ImageViewer, args...).Run()
+			c := newRunProgram(conf.ImageViewer, args...)
+			if conf.ImageTerminal {
+				terminal = append(terminal, c)
+			} else {
+				external = append(external, c)
+			}
 		}
 	case "video", "gifv":
 		if conf.VideoReverse {
@@ -178,11 +215,21 @@ func openMediaType(conf MediaConfig, filenames []string, mediaType string) {
 		if conf.VideoSingle {
 			for _, f := range filenames {
 				args := append(conf.VideoArgs, f)
-				exec.Command(conf.VideoViewer, args...).Run()
+				c := newRunProgram(conf.VideoViewer, args...)
+				if conf.VideoTerminal {
+					terminal = append(terminal, c)
+				} else {
+					external = append(external, c)
+				}
 			}
 		} else {
 			args := append(conf.VideoArgs, filenames...)
-			exec.Command(conf.VideoViewer, args...).Run()
+			c := newRunProgram(conf.VideoViewer, args...)
+			if conf.VideoTerminal {
+				terminal = append(terminal, c)
+			} else {
+				external = append(external, c)
+			}
 		}
 	case "audio":
 		if conf.AudioReverse {
@@ -191,13 +238,46 @@ func openMediaType(conf MediaConfig, filenames []string, mediaType string) {
 		if conf.AudioSingle {
 			for _, f := range filenames {
 				args := append(conf.AudioArgs, f)
-				exec.Command(conf.AudioViewer, args...).Run()
+				c := newRunProgram(conf.AudioViewer, args...)
+				if conf.AudioTerminal {
+					terminal = append(terminal, c)
+				} else {
+					external = append(external, c)
+				}
 			}
 		} else {
 			args := append(conf.AudioArgs, filenames...)
-			exec.Command(conf.AudioViewer, args...).Run()
+			c := newRunProgram(conf.AudioViewer, args...)
+			if conf.AudioTerminal {
+				terminal = append(terminal, c)
+			} else {
+				external = append(external, c)
+			}
 		}
 	}
+	go func() {
+		for _, ext := range external {
+			exec.Command(ext.Name, ext.Args...).Run()
+		}
+	}()
+	for _, term := range terminal {
+		openInTerminal(app, term.Name, term.Args...)
+	}
+}
+
+func openInTerminal(app *tview.Application, command string, args ...string) error {
+	cmd := exec.Command(command, args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	var err error
+	app.Suspend(func() {
+		err = cmd.Run()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	})
+	return err
 }
 
 func downloadFile(url string) (string, error) {
