@@ -71,20 +71,24 @@ type StyleConfig struct {
 }
 
 type MediaConfig struct {
-	ImageViewer  string
-	ImageArgs    []string
-	ImageSingle  bool
-	ImageReverse bool
-	VideoViewer  string
-	VideoArgs    []string
-	VideoSingle  bool
-	VideoReverse bool
-	AudioViewer  string
-	AudioArgs    []string
-	AudioSingle  bool
-	AudioReverse bool
-	LinkViewer   string
-	LinkArgs     []string
+	ImageViewer   string
+	ImageArgs     []string
+	ImageTerminal bool
+	ImageSingle   bool
+	ImageReverse  bool
+	VideoViewer   string
+	VideoArgs     []string
+	VideoTerminal bool
+	VideoSingle   bool
+	VideoReverse  bool
+	AudioViewer   string
+	AudioArgs     []string
+	AudioTerminal bool
+	AudioSingle   bool
+	AudioReverse  bool
+	LinkViewer    string
+	LinkArgs      []string
+	LinkTerminal  bool
 }
 
 type Pattern struct {
@@ -325,6 +329,7 @@ func parseMedia(cfg *ini.File) MediaConfig {
 		media.ImageViewer = imageViewerComponents[0]
 		media.ImageArgs = imageViewerComponents[1:]
 	}
+	media.ImageTerminal = cfg.Section("media").Key("image-terminal").MustBool(false)
 	media.ImageSingle = cfg.Section("media").Key("image-single").MustBool(true)
 	media.ImageReverse = cfg.Section("media").Key("image-reverse").MustBool(false)
 
@@ -336,6 +341,7 @@ func parseMedia(cfg *ini.File) MediaConfig {
 		media.VideoViewer = videoViewerComponents[0]
 		media.VideoArgs = videoViewerComponents[1:]
 	}
+	media.VideoTerminal = cfg.Section("media").Key("video-terminal").MustBool(false)
 	media.VideoSingle = cfg.Section("media").Key("video-single").MustBool(true)
 	media.VideoReverse = cfg.Section("media").Key("video-reverse").MustBool(false)
 
@@ -347,6 +353,7 @@ func parseMedia(cfg *ini.File) MediaConfig {
 		media.AudioViewer = audioViewerComponents[0]
 		media.AudioArgs = audioViewerComponents[1:]
 	}
+	media.AudioTerminal = cfg.Section("media").Key("audio-terminal").MustBool(false)
 	media.AudioSingle = cfg.Section("media").Key("audio-single").MustBool(true)
 	media.AudioReverse = cfg.Section("media").Key("audio-reverse").MustBool(false)
 
@@ -358,6 +365,7 @@ func parseMedia(cfg *ini.File) MediaConfig {
 		media.LinkViewer = linkViewerComponents[0]
 		media.LinkArgs = linkViewerComponents[1:]
 	}
+	media.LinkTerminal = cfg.Section("media").Key("link-terminal").MustBool(false)
 
 	return media
 }
@@ -616,6 +624,11 @@ short-hints=false
 # default=xdg-open
 image-viewer=xdg-open
 
+# Open in the same terminal as toot
+# for terminal based viewers
+# default=false
+image-terminal=false
+
 # If image should open one by one e.g. "imv image.png" multiple times
 # If set to false all images will open at the same time like this 
 # "imv image1.png image2.png image3.png".
@@ -632,6 +645,11 @@ image-reverse=false
 # default=xdg-open
 video-viewer=xdg-open
 
+# Open in the same terminal as toot
+# for terminal based players
+# default=false
+video-terminal=false
+
 # If videos should open one by one. See above comment about image-single
 # default=true
 video-single=true
@@ -645,6 +663,11 @@ video-reverse=false
 # default=xdg-open
 audio-viewer=xdg-open
 
+# Open in the same terminal as toot
+# for terminal based players
+# default=false
+audio-terminal=false
+
 # If you want to play the audio files in reverse order. In some audio apps 
 # this will play the files in the "right" order.
 # default=false
@@ -657,6 +680,11 @@ audio-single=true
 # Your web browser
 # default=xdg-open
 link-viewer=xdg-open
+
+# Open in the same terminal as toot
+# for terminal based browser
+# default=false
+link-terminal=false
 
 [open-custom]
 # This sections allows you to set up to five custom programs to upen URLs with.
