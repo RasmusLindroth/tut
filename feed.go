@@ -327,7 +327,7 @@ func openAvatar(app *App, user mastodon.Account) {
 		app.UI.CmdBar.ShowError("Couldn't open avatar")
 		return
 	}
-	go openMediaType(app.Config.Media, []string{f}, "image")
+	openMediaType(app.UI.Root, app.Config.Media, []string{f}, "image")
 }
 
 type ControlItem uint
