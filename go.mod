@@ -11,7 +11,6 @@ require (
 	github.com/gopherjs/gopherjs v0.0.0-20211101210129-f9bde24e5ca2 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/icza/gox v0.0.0-20210726201659-cd40a3f8d324
-	github.com/kyoh86/xdg v1.2.0
 	github.com/mattn/go-mastodon v0.0.5-0.20210629151305-d39c10ba5e94
 	github.com/microcosm-cc/bluemonday v1.0.16
 	github.com/pelletier/go-toml/v2 v2.0.0-beta.4

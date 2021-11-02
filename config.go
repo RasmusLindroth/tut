@@ -10,7 +10,6 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/gobwas/glob"
-	"github.com/kyoh86/xdg"
 	"gopkg.in/ini.v1"
 )
 
@@ -512,12 +511,20 @@ func ParseConfig(filepath string) (Config, error) {
 }
 
 func CreateConfigDir() error {
-	path := xdg.ConfigHome() + "/tut"
+	cd, err := os.UserConfigDir()
+	if err != nil {
+		log.Fatalf("couldn't find $HOME. Err %v", err)
+	}
+	path := cd + "/tut"
 	return os.MkdirAll(path, os.ModePerm)
 }
 
 func CheckConfig(filename string) (path string, exists bool, err error) {
-	dir := xdg.ConfigHome() + "/tut/"
+	cd, err := os.UserConfigDir()
+	if err != nil {
+		log.Fatalf("couldn't find $HOME. Err %v", err)
+	}
+	dir := cd + "/tut/"
 	path = dir + filename
 	_, err = os.Stat(path)
 	if os.IsNotExist(err) {

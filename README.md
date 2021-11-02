@@ -182,3 +182,5 @@ AccessToken = '!CMD!gopass show -o -f misc/tut-token'
 * [gobwas/glob](https://github.com/gobwas/glob) - glob in patterns
 * [pelletier/go-toml](https://github.com/pelletier/go-toml) - toml parser
 * [go-ini/ini](https://github.com/go-ini/ini) - ini parser
+* [atotto/clipboard](https://github.com/atotto/clipboard) - copy to clipboard
+* [icza/gox](https://github.com/icza/gox) - diff between two `time.Time`
