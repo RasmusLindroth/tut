@@ -1,6 +1,7 @@
 # Tut - a Mastodon TUI
 
-A TUI for Mastodon with vim inspired keys. The program misses some features but they will be added when I get time.
+A TUI for Mastodon with vim inspired keys. The program has most of features you 
+would find in the web client. 
 
 Press `C` to create a new toot and `N` to focus on your notifications.
 
@@ -47,8 +48,10 @@ Keys without description in tut
 * `jk` = navigation up and down in feed
 * `hl` = cycle through feeds without closing them as you do with `q` and `ESC`
 * `arrow keys` = navigation. Same as `jk` and `hl`
+* `g` or `Home` = go to top
+* `G` or `End` = go to bottom
 * `q` = go back and quit
-* `ESC` =  go back
+* `ESC` = go back
 
 Explanation of the non obvious keys when viewing a toot
 * `V` = view. In this mode you can scroll throught the text of the toot if it doesn't fit the screen
@@ -179,3 +182,4 @@ AccessToken = '!CMD!gopass show -o -f misc/tut-token'
 * [gobwas/glob](https://github.com/gobwas/glob) - glob in patterns
 * [pelletier/go-toml](https://github.com/pelletier/go-toml) - toml parser
 * [go-ini/ini](https://github.com/go-ini/ini) - ini parser
+* [icza/gox](https://github.com/icza/gox) - diff between two `time.Time`

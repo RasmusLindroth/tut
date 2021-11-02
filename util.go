@@ -135,16 +135,24 @@ func copyToClipboard(text string) bool {
 	return true
 }
 
-func openCustom(program string, args []string, url string) {
+func openCustom(app *tview.Application, program string, args []string, terminal bool, url string) {
 	args = append(args, url)
-	exec.Command(program, args...).Start()
+	if terminal {
+		openInTerminal(app, program, args...)
+	} else {
+		exec.Command(program, args...).Start()
+	}
 }
 
 func openURL(app *tview.Application, conf MediaConfig, pc OpenPatternConfig, url string) {
 	for _, m := range pc.Patterns {
 		if m.Compiled.Match(url) {
 			args := append(m.Args, url)
-			exec.Command(m.Program, args...).Run()
+			if m.Terminal {
+				openInTerminal(app, m.Program, args...)
+			} else {
+				exec.Command(m.Program, args...).Start()
+			}
 			return
 		}
 	}

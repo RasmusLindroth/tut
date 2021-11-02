@@ -222,6 +222,7 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	} else {
 		info = append(info, ColorKey(app.Config, "Un", "S", "ave"))
 	}
+	info = append(info, ColorKey(app.Config, "", "Y", "ank"))
 
 	controls := strings.Join(info, " ")
 
@@ -290,6 +291,7 @@ func showUser(app *App, user *mastodon.Account, relation *mastodon.Relationship,
 		controlItems = append(controlItems, ColorKey(app.Config, "", "U", "ser"))
 	}
 	controlItems = append(controlItems, ColorKey(app.Config, "", "A", "vatar"))
+	controlItems = append(controlItems, ColorKey(app.Config, "", "Y", "ank"))
 	controls = strings.Join(controlItems, " ")
 
 	return text, controls
@@ -348,6 +350,8 @@ const (
 	ControlUser
 	ControlSpoiler
 	ControlBookmark
+	ControlYankStatus
+	ControlYankUser
 )
 
 func inputOptions(options []ControlItem) ControlItem {
@@ -519,6 +523,13 @@ func inputSimple(app *App, event *tcell.EventKey, controls ControlItem,
 			app.UI.StatusView.AddFeed(
 				NewUserFeed(app, user),
 			)
+		}
+	case 'y', 'Y':
+		if controls&ControlYankStatus != 0 {
+			copyToClipboard(status.URL)
+		}
+		if controls&ControlYankUser != 0 {
+			copyToClipboard(user.URL)
 		}
 	case 'z', 'Z':
 		if controls&ControlSpoiler != 0 {
@@ -700,6 +711,7 @@ func (t *TimelineFeed) Input(event *tcell.EventKey) {
 		ControlAvatar, ControlThread, ControlUser, ControlSpoiler,
 		ControlCompose, ControlOpen, ControlReply, ControlMedia,
 		ControlFavorite, ControlBoost, ControlDelete, ControlBookmark,
+		ControlYankStatus,
 	}
 	options := inputOptions(controls)
 
@@ -823,7 +835,8 @@ func (t *ThreadFeed) Input(event *tcell.EventKey) {
 	controls := []ControlItem{
 		ControlAvatar, ControlUser, ControlSpoiler,
 		ControlCompose, ControlOpen, ControlReply, ControlMedia,
-		ControlFavorite, ControlBoost, ControlDelete,
+		ControlFavorite, ControlBoost, ControlDelete, ControlBookmark,
+		ControlYankStatus,
 	}
 	if status.ID != t.status.ID {
 		controls = append(controls, ControlThread)
@@ -997,6 +1010,7 @@ func (u *UserFeed) Input(event *tcell.EventKey) {
 	if index == 0 {
 		controls := []ControlItem{
 			ControlAvatar, ControlFollow, ControlBlock, ControlMute, ControlOpen,
+			ControlYankUser,
 		}
 		options := inputOptions(controls)
 
@@ -1021,7 +1035,7 @@ func (u *UserFeed) Input(event *tcell.EventKey) {
 	controls := []ControlItem{
 		ControlAvatar, ControlThread, ControlSpoiler, ControlCompose,
 		ControlOpen, ControlReply, ControlMedia, ControlFavorite, ControlBoost,
-		ControlDelete, ControlUser, ControlBookmark,
+		ControlDelete, ControlUser, ControlBookmark, ControlYankStatus,
 	}
 	options := inputOptions(controls)
 
@@ -1278,7 +1292,11 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 		return
 	}
 	if notification.N.Type == "follow" {
-		controls := []ControlItem{ControlUser, ControlFollow, ControlBlock, ControlMute, ControlAvatar, ControlOpen}
+		controls := []ControlItem{
+			ControlUser, ControlFollow, ControlBlock,
+			ControlMute, ControlAvatar, ControlOpen,
+			ControlYankUser,
+		}
 		options := inputOptions(controls)
 		_, rc, _, _, rel := inputSimple(n.app, event, options, notification.N.Account, nil, nil, notification.R, n, nil)
 		if rc {
@@ -1307,6 +1325,7 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 		ControlAvatar, ControlThread, ControlUser, ControlSpoiler,
 		ControlCompose, ControlOpen, ControlReply, ControlMedia,
 		ControlFavorite, ControlBoost, ControlDelete, ControlBookmark,
+		ControlYankStatus,
 	}
 	options := inputOptions(controls)
 
@@ -1459,6 +1478,7 @@ func (t *TagFeed) Input(event *tcell.EventKey) {
 		ControlAvatar, ControlThread, ControlUser, ControlSpoiler,
 		ControlCompose, ControlOpen, ControlReply, ControlMedia,
 		ControlFavorite, ControlBoost, ControlDelete, ControlBookmark,
+		ControlYankStatus,
 	}
 	options := inputOptions(controls)
 
@@ -1640,7 +1660,7 @@ func (u *UserListFeed) Input(event *tcell.EventKey) {
 
 	controls := []ControlItem{
 		ControlAvatar, ControlFollow, ControlBlock, ControlMute, ControlOpen,
-		ControlUser, ControlEnter,
+		ControlUser, ControlEnter, ControlYankUser,
 	}
 	options := inputOptions(controls)
 

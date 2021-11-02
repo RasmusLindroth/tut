@@ -10,7 +10,6 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/gobwas/glob"
-	"github.com/kyoh86/xdg"
 	"gopkg.in/ini.v1"
 )
 
@@ -97,6 +96,7 @@ type Pattern struct {
 	Compiled glob.Glob
 	Program  string
 	Args     []string
+	Terminal bool
 }
 
 type OpenPatternConfig struct {
@@ -104,10 +104,11 @@ type OpenPatternConfig struct {
 }
 
 type OpenCustom struct {
-	Index   int
-	Name    string
-	Program string
-	Args    []string
+	Index    int
+	Name     string
+	Program  string
+	Args     []string
+	Terminal bool
 }
 type OpenCustomConfig struct {
 	OpenCustoms []OpenCustom
@@ -378,11 +379,11 @@ func ParseOpenPattern(cfg *ini.File) OpenPatternConfig {
 	for _, s := range keys {
 		parts := strings.Split(s, "-")
 		if len(parts) < 2 {
-			panic(fmt.Sprintf("Invalid key %s in config. Must end in -pattern or -use", s))
+			panic(fmt.Sprintf("Invalid key %s in config. Must end in -pattern, -use or -terminal", s))
 		}
 		last := parts[len(parts)-1]
-		if last != "pattern" && last != "use" {
-			panic(fmt.Sprintf("Invalid key %s in config. Must end in -pattern or -use", s))
+		if last != "pattern" && last != "use" && last != "terminal" {
+			panic(fmt.Sprintf("Invalid key %s in config. Must end in -pattern, -use or -terminal", s))
 		}
 
 		name := strings.Join(parts[:len(parts)-1], "-")
@@ -397,6 +398,11 @@ func ParseOpenPattern(cfg *ini.File) OpenPatternConfig {
 		if last == "use" {
 			tmp := pairs[name]
 			tmp.Open = cfg.Section("open-pattern").Key(s).MustString("")
+			pairs[name] = tmp
+		}
+		if last == "terminal" {
+			tmp := pairs[name]
+			tmp.Terminal = cfg.Section("open-pattern").Key(s).MustBool(false)
 			pairs[name] = tmp
 		}
 	}
@@ -430,6 +436,7 @@ func ParseCustom(cfg *ini.File) OpenCustomConfig {
 	for i := 1; i < 6; i++ {
 		name := cfg.Section("open-custom").Key(fmt.Sprintf("c%d-name", i)).MustString("")
 		use := cfg.Section("open-custom").Key(fmt.Sprintf("c%d-use", i)).MustString("")
+		terminal := cfg.Section("open-custom").Key(fmt.Sprintf("c%d-terminal", i)).MustBool(false)
 		if use == "" {
 			continue
 		}
@@ -439,6 +446,7 @@ func ParseCustom(cfg *ini.File) OpenCustomConfig {
 		c.Name = name
 		c.Program = comp[0]
 		c.Args = comp[1:]
+		c.Terminal = terminal
 		oc.OpenCustoms = append(oc.OpenCustoms, c)
 	}
 	return oc
@@ -503,12 +511,20 @@ func ParseConfig(filepath string) (Config, error) {
 }
 
 func CreateConfigDir() error {
-	path := xdg.ConfigHome() + "/tut"
+	cd, err := os.UserConfigDir()
+	if err != nil {
+		log.Fatalf("couldn't find $HOME. Err %v", err)
+	}
+	path := cd + "/tut"
 	return os.MkdirAll(path, os.ModePerm)
 }
 
 func CheckConfig(filename string) (path string, exists bool, err error) {
-	dir := xdg.ConfigHome() + "/tut/"
+	cd, err := os.UserConfigDir()
+	if err != nil {
+		log.Fatalf("couldn't find $HOME. Err %v", err)
+	}
+	dir := cd + "/tut/"
 	path = dir + filename
 	_, err = os.Stat(path)
 	if os.IsNotExist(err) {
@@ -689,22 +705,29 @@ link-terminal=false
 [open-custom]
 # This sections allows you to set up to five custom programs to upen URLs with.
 # If the url points to an image, you can set c1-name to img and c1-use to imv.
+# If the program runs in a terminal and you want to run it in the same terminal
+# as tut. Set cX-terminal to true.
 # The name will show up in the UI, so keep it short so all five fits.
 #
 # c1-name=img
 # c1-use=imv
+# c1-terminal=false
 # 
 # c2-name=
 # c2-use=
+# c2-terminal=false
 # 
 # c3-name=
 # c3-use=
+# c3-terminal=false
 # 
 # c4-name=
 # c4-use=
+# c4-terminal=false
 # 
 # c5-name=
 # c5-use=
+# c5-terminal=false
 
 [open-pattern]
 # Here you can set your own glob patterns for opening matching URLs in the
@@ -712,16 +735,21 @@ link-terminal=false
 # You could for example open Youtube videos in your video player instead of
 # your default browser.
 #
-# You must name the keys foo-pattern and foo-use, where use is the program 
-# that will open up the URL. To see the syntax for glob pattern you can follow
+# You must name the keys foo-pattern, foo-use and foo-terminal where foo-use is the 
+# program that will open up the URL.
+# foo-pattern is the glob pattern. To see the syntax for glob pattern you can follow
 # this URL https://github.com/gobwas/glob#syntax
+# foo-terminal is for programs that runs in the terminal and you want it to open
+# up in the same terminal as tut.
 #
 # Example for youtube.com and youtu.be to open up in mpv instead of the browser
 #
 # y1-pattern=*youtube.com/watch*
 # y1-use=mpv
+# y1-terminal=false
 # y2-pattern=*youtu.be/*
 # y2-use=mpv
+# y2-terminal=false
 
 [desktop-notification]
 # Under this section you can turn on desktop notifications
