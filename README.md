@@ -79,6 +79,15 @@ You can find it in the Arch User Repository (AUR). I'm the maintainer there.
 
 https://aur.archlinux.org/packages/tut/
 
+You can also use `tut-mastodon`. Currently `aur/tut` collides with a package 
+named `tut` if you're running Manjaro ARM. So if you face the same problem you 
+can use this package instead. I suggest you add an alias for tut-mastodon to
+tut in the config for your shell. Usually `.bashrc` or `.zshrc`.
+
+`alias tut='tut-mastodon'`
+
+https://aur.archlinux.org/packages/tut-mastodon/
+
 ### Alpine Linux
 
 `tut` package is available in the community repository.
