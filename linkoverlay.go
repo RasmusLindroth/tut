@@ -173,7 +173,7 @@ func (l *LinkOverlay) OpenCustom(index int) {
 		if c.Index != index {
 			continue
 		}
-		openCustom(c.Program, c.Args, url)
+		openCustom(l.app.UI.Root, c.Program, c.Args, c.Terminal, url)
 		return
 	}
 }
