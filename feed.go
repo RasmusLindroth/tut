@@ -286,6 +286,7 @@ func showUser(app *App, user *mastodon.Account, relation *mastodon.Relationship,
 		AvatarStatic:   user.AvatarStatic,
 		Header:         user.Header,
 		HeaderStatic:   user.HeaderStatic,
+		Bot:            user.Bot,
 	}
 
 	var controls string

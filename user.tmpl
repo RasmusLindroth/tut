@@ -1,3 +1,6 @@
+{{- if .User.Bot -}}
+{{ Color .Style.Subtle }}The user is a bot
+{{ end -}}
 {{- if ne .User.DisplayName "" -}}
 {{- Color .Style.TextSpecial2 }}{{ .User.DisplayName }}
 {{ Color .Style.TextSpecial1 }}{{ .User.Account }}
