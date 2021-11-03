@@ -348,64 +348,6 @@ func showUser(app *App, user *mastodon.Account, relation *mastodon.Relationship,
 	return output.String(), controls
 }
 
-func showUserBak(app *App, user *mastodon.Account, relation *mastodon.Relationship, showUserControl bool) (string, string) {
-	var text string
-	var controls string
-
-	n := ColorMark(app.Config.Style.Text)
-	s1 := ColorMark(app.Config.Style.TextSpecial1)
-	s2 := ColorMark(app.Config.Style.TextSpecial2)
-
-	if user.DisplayName != "" {
-		text = fmt.Sprintf(s2+"%s\n", user.DisplayName)
-	}
-	text += fmt.Sprintf(s1+"%s\n\n", user.Acct)
-
-	text += fmt.Sprintf("%sToots %s%d %sFollowers %s%d %sFollowing %s%d\n\n",
-		n, s2, user.StatusesCount, n, s2, user.FollowersCount, n, s2, user.FollowingCount)
-
-	note, urls := cleanTootHTML(user.Note)
-	text += n + note + "\n\n"
-
-	for _, f := range user.Fields {
-		value, fu := cleanTootHTML(f.Value)
-		text += fmt.Sprintf("%s%s: %s%s\n", s2, f.Name, n, value)
-		urls = append(urls, fu...)
-	}
-
-	app.UI.LinkOverlay.SetLinks(urls, nil)
-
-	var controlItems []string
-	if app.Me.ID != user.ID {
-		if relation.Following {
-			controlItems = append(controlItems, ColorKey(app.Config, "Un", "F", "ollow"))
-		} else {
-			controlItems = append(controlItems, ColorKey(app.Config, "", "F", "ollow"))
-		}
-		if relation.Blocking {
-			controlItems = append(controlItems, ColorKey(app.Config, "Un", "B", "lock"))
-		} else {
-			controlItems = append(controlItems, ColorKey(app.Config, "", "B", "lock"))
-		}
-		if relation.Muting {
-			controlItems = append(controlItems, ColorKey(app.Config, "Un", "M", "ute"))
-		} else {
-			controlItems = append(controlItems, ColorKey(app.Config, "", "M", "ute"))
-		}
-		if len(urls) > 0 {
-			controlItems = append(controlItems, ColorKey(app.Config, "", "O", "pen"))
-		}
-	}
-	if showUserControl {
-		controlItems = append(controlItems, ColorKey(app.Config, "", "U", "ser"))
-	}
-	controlItems = append(controlItems, ColorKey(app.Config, "", "A", "vatar"))
-	controlItems = append(controlItems, ColorKey(app.Config, "", "Y", "ank"))
-	controls = strings.Join(controlItems, " ")
-
-	return text, controls
-}
-
 func drawStatusList(statuses []*mastodon.Status, longFormat, shortFormat string, relativeDate int) <-chan ListItem {
 	ch := make(chan ListItem)
 	go func() {
