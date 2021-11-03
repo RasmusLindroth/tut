@@ -109,8 +109,8 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 		Width:              app.UI.StatusView.GetTextWidth(),
 		ContentText:        strippedContent,
 		Boosted:            status.Reblog != nil,
-		BoostedDisplayName: status.Account.DisplayName,
-		BoostedAcct:        status.Account.Acct,
+		BoostedDisplayName: tview.Escape(status.Account.DisplayName),
+		BoostedAcct:        tview.Escape(status.Account.Acct),
 		ShowSpoiler:        showSensitive,
 	}
 
@@ -118,8 +118,8 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 		status = status.Reblog
 	}
 
-	toot.AccountDisplayName = status.Account.DisplayName
-	toot.Account = status.Account.Acct
+	toot.AccountDisplayName = tview.Escape(status.Account.DisplayName)
+	toot.Account = tview.Escape(status.Account.Acct)
 	toot.Bookmarked = status.Bookmarked.(bool)
 	toot.Visibility = status.Visibility
 	toot.Spoiler = status.Sensitive
@@ -239,7 +239,115 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	return output.String(), controls
 }
 
+type User struct {
+	Username       string
+	Account        string
+	DisplayName    string
+	Locked         bool
+	CreatedAt      time.Time
+	FollowersCount int64
+	FollowingCount int64
+	StatusCount    int64
+	Note           string
+	URL            string
+	Avatar         string
+	AvatarStatic   string
+	Header         string
+	HeaderStatic   string
+	Fields         []Field
+	Bot            bool
+	//Emojis         []Emoji
+	//Moved *Account `json:"moved"`
+}
+
+type Field struct {
+	Name       string
+	Value      string
+	VerifiedAt time.Time
+}
+
+type DisplayUserData struct {
+	User  User
+	Style StyleConfig
+}
+
 func showUser(app *App, user *mastodon.Account, relation *mastodon.Relationship, showUserControl bool) (string, string) {
+	u := User{
+		Username:       tview.Escape(user.Username),
+		Account:        tview.Escape(user.Acct),
+		DisplayName:    tview.Escape(user.DisplayName),
+		Locked:         user.Locked,
+		CreatedAt:      user.CreatedAt,
+		FollowersCount: user.FollowersCount,
+		FollowingCount: user.FollowingCount,
+		StatusCount:    user.StatusesCount,
+		URL:            user.URL,
+		Avatar:         user.Avatar,
+		AvatarStatic:   user.AvatarStatic,
+		Header:         user.Header,
+		HeaderStatic:   user.HeaderStatic,
+	}
+
+	var controls string
+
+	var urls []URL
+	fields := []Field{}
+	u.Note, urls = cleanTootHTML(user.Note)
+	for _, f := range user.Fields {
+		value, fu := cleanTootHTML(f.Value)
+		fields = append(fields, Field{
+			Name:       tview.Escape(f.Name),
+			Value:      tview.Escape(value),
+			VerifiedAt: f.VerifiedAt,
+		})
+		urls = append(urls, fu...)
+	}
+	u.Fields = fields
+
+	app.UI.LinkOverlay.SetLinks(urls, nil)
+
+	var controlItems []string
+	if app.Me.ID != user.ID {
+		if relation.Following {
+			controlItems = append(controlItems, ColorKey(app.Config, "Un", "F", "ollow"))
+		} else {
+			controlItems = append(controlItems, ColorKey(app.Config, "", "F", "ollow"))
+		}
+		if relation.Blocking {
+			controlItems = append(controlItems, ColorKey(app.Config, "Un", "B", "lock"))
+		} else {
+			controlItems = append(controlItems, ColorKey(app.Config, "", "B", "lock"))
+		}
+		if relation.Muting {
+			controlItems = append(controlItems, ColorKey(app.Config, "Un", "M", "ute"))
+		} else {
+			controlItems = append(controlItems, ColorKey(app.Config, "", "M", "ute"))
+		}
+		if len(urls) > 0 {
+			controlItems = append(controlItems, ColorKey(app.Config, "", "O", "pen"))
+		}
+	}
+	if showUserControl {
+		controlItems = append(controlItems, ColorKey(app.Config, "", "U", "ser"))
+	}
+	controlItems = append(controlItems, ColorKey(app.Config, "", "A", "vatar"))
+	controlItems = append(controlItems, ColorKey(app.Config, "", "Y", "ank"))
+	controls = strings.Join(controlItems, " ")
+
+	ud := DisplayUserData{
+		User:  u,
+		Style: app.Config.Style,
+	}
+	var output bytes.Buffer
+	err := app.Config.Templates.UserTemplate.ExecuteTemplate(&output, "user.tmpl", ud)
+	if err != nil {
+		panic(err)
+	}
+
+	return output.String(), controls
+}
+
+func showUserBak(app *App, user *mastodon.Account, relation *mastodon.Relationship, showUserControl bool) (string, string) {
 	var text string
 	var controls string
 

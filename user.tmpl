@@ -1,0 +1,15 @@
+{{- if ne .User.DisplayName "" -}}
+{{- Color .Style.TextSpecial2 }}{{ .User.DisplayName }}
+{{ Color .Style.TextSpecial1 }}{{ .User.Account }}
+{{- else -}}
+{{ Color .Style.TextSpecial2 }}{{- .User.Account }}
+{{ end }}
+
+{{ Color .Style.Text }}Toots {{ Color .Style.TextSpecial2 }}{{ .User.StatusCount -}}
+{{- Color .Style.Text }} Followers {{ Color .Style.TextSpecial2 }}{{ .User.FollowersCount -}}
+{{- Color .Style.Text }} Following {{ Color .Style.TextSpecial2 }}{{ .User.FollowingCount }}
+
+{{ Color .Style.Text }}{{ .User.Note }}
+{{ range .User.Fields }}
+{{ Color $.Style.TextSpecial2 }}{{ .Name }}:{{ Color $.Style.Text }} {{ .Value -}}
+{{ end }}

@@ -16,6 +16,9 @@ import (
 //go:embed toot.tmpl
 var tootTemplate string
 
+//go:embed user.tmpl
+var userTemplate string
+
 type Config struct {
 	General            GeneralConfig
 	Style              StyleConfig
@@ -152,6 +155,7 @@ type NotificationConfig struct {
 
 type TemplatesConfig struct {
 	TootTemplate *template.Template
+	UserTemplate *template.Template
 }
 
 func parseColor(input string, def string, xrdb map[string]string) tcell.Color {
@@ -486,8 +490,31 @@ func ParseTemplates(cfg *ini.File) TemplatesConfig {
 	if err != nil {
 		log.Fatalf("Couldn't parse toot.tmpl. Error: %v", err)
 	}
+	var userTmpl *template.Template
+	userTmplPath, exists, err := CheckConfig("user.tmpl")
+	if err != nil {
+		log.Fatalln(
+			fmt.Sprintf("Couldn't access user.tmpl. Error: %v", err),
+		)
+	}
+	if exists {
+		userTmpl, err = template.New("user.tmpl").Funcs(template.FuncMap{
+			"Color": ColorMark,
+			"Flags": TextFlags,
+		}).ParseFiles(userTmplPath)
+	}
+	if !exists || err != nil {
+		userTmpl, err = template.New("user.tmpl").Funcs(template.FuncMap{
+			"Color": ColorMark,
+			"Flags": TextFlags,
+		}).Parse(userTemplate)
+	}
+	if err != nil {
+		log.Fatalf("Couldn't parse user.tmpl. Error: %v", err)
+	}
 	return TemplatesConfig{
 		TootTemplate: tootTmpl,
+		UserTemplate: userTmpl,
 	}
 }
 
