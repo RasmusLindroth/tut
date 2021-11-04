@@ -145,12 +145,14 @@ Flags:
 ```
 
 ## Templates
-You can customise how toots are displayed with a Go [text/template](https://pkg.go.dev/text/template).
+You can customise how toots and user profiles are displayed with a
+Go [text/template](https://pkg.go.dev/text/template).
 
-You'll have to place a file named `toot.tmpl` in `XDG_CONFIG_HOME/tut/` which
-usually equals to `~/.config/tut/`.
+You'll have to place a file named `toot.tmpl` and/or `user.tmpl`
+in `XDG_CONFIG_HOME/tut/` which usually equals to `~/.config/tut/`.
 
-You can copy [toot.tmpl](./toot.tmpl) from this repo manually or with `curl` or `wget`.
+You can copy [toot.tmpl](./toot.tmpl) and [user.tmpl](./user.tmpl)
+from this repo manually or with `curl` or `wget`.
 
 ```bash
 cd ~/.config/tut
@@ -158,13 +160,21 @@ cd ~/.config/tut
 # using curl
 curl -o toot.tmpl https://raw.githubusercontent.com/RasmusLindroth/tut/master/toot.tmpl
 
+curl -o user.tmpl https://raw.githubusercontent.com/RasmusLindroth/tut/master/user.tmpl
+
 # using wget
 wget https://raw.githubusercontent.com/RasmusLindroth/tut/master/toot.tmpl
+
+wget https://raw.githubusercontent.com/RasmusLindroth/tut/master/user.tmpl
 ```
 
-The data available for you is two structs. The first one is the `Toot`-struct, you can see all fields in [./feed.go](./feed.go). The second one is the `StyleConfig`-struct. You can find the fields in [./config.go](./config.go).
+The data available for you in `toot.tmpl` is two structs. The first one is the `Toot`-struct, you can see all fields in [./feed.go](./feed.go). The second one is the `StyleConfig`-struct. You can find the fields in [./config.go](./config.go).
 
 You acces them with `.Toot` and `.Style` in your template file.
+
+The data available in `user.tmpl` is almost the same. You still have the
+`StyleConfig` but instead of `Toot` you have a struct named `User`. You can see
+all fields in [./feed.go](./feed.go).
 
 ## Password manager for secrets
 If you run `pass`, `gopass` or  something similar you can protect your secrets.

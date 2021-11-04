@@ -28,11 +28,21 @@
 {{- if or (not .Toot.Spoiler) (.Toot.ShowSpoiler) -}}
 {{ Color .Style.Text }}{{ .Toot.ContentText }}
 {{ if ne .Toot.Poll.ID "" }}
-{{ Color .Style.Subtle }}{{ Flags "b" }}Poll{{ Flags "-" }}
+{{ if .Toot.Poll.Voted -}}
+{{- Color .Style.Subtle }}{{ Flags "b" }}Poll - you have voted{{ Flags "-" -}}
+{{ else if not .Toot.Poll.Expired }}
+{{- Color .Style.Subtle }}{{ Flags "b" }}Poll - press [p[] to vote{{ Flags "-" -}}
+{{ else }}
+{{- Color .Style.Subtle }}{{ Flags "b" }}Poll - expired {{ Flags "-" -}}
+{{ end }}
 {{ Color .Style.Text }}Number of votes: {{ .Toot.Poll.VotesCount }}
 
 {{ range .Toot.Poll.Options }}
+{{- if or ($.Toot.Poll.Voted) ($.Toot.Poll.Expired) -}}
 {{- .Title }} - {{ .Percent }}% ({{ .VotesCount }})
+{{- else -}}
+{{- .Title -}}
+{{ end }}
 {{ end -}}
 {{ end -}}
 {{ range .Toot.Media }}

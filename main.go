@@ -9,7 +9,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-const version string = "0.0.37"
+const version string = "0.0.38"
 
 func main() {
 	newUser := false
@@ -151,10 +151,6 @@ func main() {
 				app.UI.UserSelectOverlay.InputHandler(event)
 				return nil
 			} else {
-				if event.Key() == tcell.KeyRune {
-					switch event.Rune() {
-					}
-				}
 				return event
 			}
 		}
@@ -166,6 +162,11 @@ func main() {
 
 		if app.UI.Focus == VisibilityOverlayFocus {
 			app.UI.VisibilityOverlay.InputHandler(event)
+			return nil
+		}
+
+		if app.UI.Focus == VoteOverlayFocus {
+			app.UI.VoteOverlay.InputHandler(event)
 			return nil
 		}
 
@@ -206,7 +207,11 @@ func main() {
 					app.UI.SetFocus(VisibilityOverlayFocus)
 					return nil
 				case 'q', 'Q':
-					app.UI.SetFocus(LeftPaneFocus)
+					if app.UI.StatusView.lastList == NotificationPaneFocus {
+						app.UI.SetFocus(NotificationPaneFocus)
+					} else {
+						app.UI.SetFocus(LeftPaneFocus)
+					}
 					return nil
 				}
 			} else {

@@ -30,6 +30,7 @@ type Feed interface {
 	DrawList()
 	DrawToot()
 	DrawSpoiler()
+	RedrawPoll(*mastodon.Poll)
 	RedrawControls()
 	GetCurrentUser() *mastodon.Account
 	GetCurrentStatus() *mastodon.Status
@@ -109,8 +110,8 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 		Width:              app.UI.StatusView.GetTextWidth(),
 		ContentText:        strippedContent,
 		Boosted:            status.Reblog != nil,
-		BoostedDisplayName: status.Account.DisplayName,
-		BoostedAcct:        status.Account.Acct,
+		BoostedDisplayName: tview.Escape(status.Account.DisplayName),
+		BoostedAcct:        tview.Escape(status.Account.Acct),
 		ShowSpoiler:        showSensitive,
 	}
 
@@ -118,13 +119,14 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 		status = status.Reblog
 	}
 
-	toot.AccountDisplayName = status.Account.DisplayName
-	toot.Account = status.Account.Acct
+	toot.AccountDisplayName = tview.Escape(status.Account.DisplayName)
+	toot.Account = tview.Escape(status.Account.Acct)
 	toot.Bookmarked = status.Bookmarked.(bool)
 	toot.Visibility = status.Visibility
 	toot.Spoiler = status.Sensitive
 
 	if status.Poll != nil {
+		app.UI.VoteOverlay.SetPoll(status.Poll)
 		p := *status.Poll
 		toot.Poll = Poll{
 			ID:         string(p.ID),
@@ -239,30 +241,71 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	return output.String(), controls
 }
 
+type User struct {
+	Username       string
+	Account        string
+	DisplayName    string
+	Locked         bool
+	CreatedAt      time.Time
+	FollowersCount int64
+	FollowingCount int64
+	StatusCount    int64
+	Note           string
+	URL            string
+	Avatar         string
+	AvatarStatic   string
+	Header         string
+	HeaderStatic   string
+	Fields         []Field
+	Bot            bool
+	//Emojis         []Emoji
+	//Moved *Account `json:"moved"`
+}
+
+type Field struct {
+	Name       string
+	Value      string
+	VerifiedAt time.Time
+}
+
+type DisplayUserData struct {
+	User  User
+	Style StyleConfig
+}
+
 func showUser(app *App, user *mastodon.Account, relation *mastodon.Relationship, showUserControl bool) (string, string) {
-	var text string
+	u := User{
+		Username:       tview.Escape(user.Username),
+		Account:        tview.Escape(user.Acct),
+		DisplayName:    tview.Escape(user.DisplayName),
+		Locked:         user.Locked,
+		CreatedAt:      user.CreatedAt,
+		FollowersCount: user.FollowersCount,
+		FollowingCount: user.FollowingCount,
+		StatusCount:    user.StatusesCount,
+		URL:            user.URL,
+		Avatar:         user.Avatar,
+		AvatarStatic:   user.AvatarStatic,
+		Header:         user.Header,
+		HeaderStatic:   user.HeaderStatic,
+		Bot:            user.Bot,
+	}
+
 	var controls string
 
-	n := ColorMark(app.Config.Style.Text)
-	s1 := ColorMark(app.Config.Style.TextSpecial1)
-	s2 := ColorMark(app.Config.Style.TextSpecial2)
-
-	if user.DisplayName != "" {
-		text = fmt.Sprintf(s2+"%s\n", user.DisplayName)
-	}
-	text += fmt.Sprintf(s1+"%s\n\n", user.Acct)
-
-	text += fmt.Sprintf("%sToots %s%d %sFollowers %s%d %sFollowing %s%d\n\n",
-		n, s2, user.StatusesCount, n, s2, user.FollowersCount, n, s2, user.FollowingCount)
-
-	note, urls := cleanTootHTML(user.Note)
-	text += n + note + "\n\n"
-
+	var urls []URL
+	fields := []Field{}
+	u.Note, urls = cleanTootHTML(user.Note)
 	for _, f := range user.Fields {
 		value, fu := cleanTootHTML(f.Value)
-		text += fmt.Sprintf("%s%s: %s%s\n", s2, f.Name, n, value)
+		fields = append(fields, Field{
+			Name:       tview.Escape(f.Name),
+			Value:      tview.Escape(value),
+			VerifiedAt: f.VerifiedAt,
+		})
 		urls = append(urls, fu...)
 	}
+	u.Fields = fields
 
 	app.UI.LinkOverlay.SetLinks(urls, nil)
 
@@ -294,7 +337,17 @@ func showUser(app *App, user *mastodon.Account, relation *mastodon.Relationship,
 	controlItems = append(controlItems, ColorKey(app.Config, "", "Y", "ank"))
 	controls = strings.Join(controlItems, " ")
 
-	return text, controls
+	ud := DisplayUserData{
+		User:  u,
+		Style: app.Config.Style,
+	}
+	var output bytes.Buffer
+	err := app.Config.Templates.UserTemplate.ExecuteTemplate(&output, "user.tmpl", ud)
+	if err != nil {
+		panic(err)
+	}
+
+	return output.String(), controls
 }
 
 func drawStatusList(statuses []*mastodon.Status, longFormat, shortFormat string, relativeDate int) <-chan ListItem {
@@ -348,6 +401,7 @@ const (
 	ControlReply
 	ControlThread
 	ControlUser
+	ControlVote
 	ControlSpoiler
 	ControlBookmark
 	ControlYankStatus
@@ -490,6 +544,10 @@ func inputSimple(app *App, event *tcell.EventKey, controls ControlItem,
 			app.UI.StatusView.AddFeed(
 				NewTimelineFeed(app, TimelineList, listInfo),
 			)
+		}
+	case 'p', 'P':
+		if controls&ControlVote != 0 {
+			app.UI.ShowVote()
 		}
 	case 'r', 'R':
 		if controls&ControlReply != 0 {
@@ -696,6 +754,15 @@ func (t *TimelineFeed) GetSavedIndex() int {
 	return t.index
 }
 
+func (t *TimelineFeed) RedrawPoll(p *mastodon.Poll) {
+	s := t.GetCurrentStatus()
+	if s == nil {
+		return
+	}
+	s.Poll = p
+	t.DrawToot()
+}
+
 func (t *TimelineFeed) Input(event *tcell.EventKey) {
 	status := t.GetCurrentStatus()
 	originalStatus := status
@@ -712,6 +779,11 @@ func (t *TimelineFeed) Input(event *tcell.EventKey) {
 		ControlCompose, ControlOpen, ControlReply, ControlMedia,
 		ControlFavorite, ControlBoost, ControlDelete, ControlBookmark,
 		ControlYankStatus,
+	}
+	if status.Poll != nil {
+		if !status.Poll.Expired && !status.Poll.Voted {
+			controls = append(controls, ControlVote)
+		}
 	}
 	options := inputOptions(controls)
 
@@ -821,6 +893,15 @@ func (t *ThreadFeed) GetSavedIndex() int {
 	return t.index
 }
 
+func (t *ThreadFeed) RedrawPoll(p *mastodon.Poll) {
+	s := t.GetCurrentStatus()
+	if s == nil {
+		return
+	}
+	s.Poll = p
+	t.DrawToot()
+}
+
 func (t *ThreadFeed) Input(event *tcell.EventKey) {
 	status := t.GetCurrentStatus()
 	originalStatus := status
@@ -840,6 +921,11 @@ func (t *ThreadFeed) Input(event *tcell.EventKey) {
 	}
 	if status.ID != t.status.ID {
 		controls = append(controls, ControlThread)
+	}
+	if status.Poll != nil {
+		if !status.Poll.Expired && !status.Poll.Voted {
+			controls = append(controls, ControlVote)
+		}
 	}
 	options := inputOptions(controls)
 
@@ -1004,6 +1090,15 @@ func (u *UserFeed) GetSavedIndex() int {
 	return u.index
 }
 
+func (u *UserFeed) RedrawPoll(p *mastodon.Poll) {
+	s := u.GetCurrentStatus()
+	if s == nil {
+		return
+	}
+	s.Poll = p
+	u.DrawToot()
+}
+
 func (u *UserFeed) Input(event *tcell.EventKey) {
 	index := u.GetSavedIndex()
 
@@ -1036,6 +1131,11 @@ func (u *UserFeed) Input(event *tcell.EventKey) {
 		ControlAvatar, ControlThread, ControlSpoiler, ControlCompose,
 		ControlOpen, ControlReply, ControlMedia, ControlFavorite, ControlBoost,
 		ControlDelete, ControlUser, ControlBookmark, ControlYankStatus,
+	}
+	if status.Poll != nil {
+		if !status.Poll.Expired && !status.Poll.Voted {
+			controls = append(controls, ControlVote)
+		}
 	}
 	options := inputOptions(controls)
 
@@ -1286,6 +1386,15 @@ func (n *NotificationsFeed) GetSavedIndex() int {
 	return n.index
 }
 
+func (n *NotificationsFeed) RedrawPoll(p *mastodon.Poll) {
+	s := n.GetCurrentStatus()
+	if s == nil {
+		return
+	}
+	s.Poll = p
+	n.DrawToot()
+}
+
 func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 	notification := n.GetCurrentNotification()
 	if notification == nil {
@@ -1326,6 +1435,11 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 		ControlCompose, ControlOpen, ControlReply, ControlMedia,
 		ControlFavorite, ControlBoost, ControlDelete, ControlBookmark,
 		ControlYankStatus,
+	}
+	if status.Poll != nil {
+		if !status.Poll.Expired && !status.Poll.Voted {
+			controls = append(controls, ControlVote)
+		}
 	}
 	options := inputOptions(controls)
 
@@ -1463,6 +1577,15 @@ func (t *TagFeed) GetSavedIndex() int {
 	return t.index
 }
 
+func (t *TagFeed) RedrawPoll(p *mastodon.Poll) {
+	s := t.GetCurrentStatus()
+	if s == nil {
+		return
+	}
+	s.Poll = p
+	t.DrawToot()
+}
+
 func (t *TagFeed) Input(event *tcell.EventKey) {
 	status := t.GetCurrentStatus()
 	originalStatus := status
@@ -1479,6 +1602,11 @@ func (t *TagFeed) Input(event *tcell.EventKey) {
 		ControlCompose, ControlOpen, ControlReply, ControlMedia,
 		ControlFavorite, ControlBoost, ControlDelete, ControlBookmark,
 		ControlYankStatus,
+	}
+	if status.Poll != nil {
+		if !status.Poll.Expired && !status.Poll.Voted {
+			controls = append(controls, ControlVote)
+		}
 	}
 	options := inputOptions(controls)
 
@@ -1651,6 +1779,9 @@ func (u *UserListFeed) GetSavedIndex() int {
 	return u.index
 }
 
+func (u *UserListFeed) RedrawPoll(p *mastodon.Poll) {
+}
+
 func (u *UserListFeed) Input(event *tcell.EventKey) {
 	index := u.GetSavedIndex()
 	if index > len(u.users)-1 || len(u.users) == 0 {
@@ -1760,6 +1891,10 @@ func (l *ListFeed) DrawToot() {
 
 func (l *ListFeed) GetSavedIndex() int {
 	return l.index
+
+}
+
+func (t *ListFeed) RedrawPoll(p *mastodon.Poll) {
 }
 
 func (l *ListFeed) Input(event *tcell.EventKey) {
