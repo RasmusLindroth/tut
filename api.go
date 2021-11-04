@@ -504,3 +504,7 @@ func (api *API) MuteUser(u mastodon.Account) (*mastodon.Relationship, error) {
 func (api *API) UnmuteUser(u mastodon.Account) (*mastodon.Relationship, error) {
 	return api.Client.AccountUnmute(context.Background(), u.ID)
 }
+
+func (api *API) Vote(poll *mastodon.Poll, choices ...int) (*mastodon.Poll, error) {
+	return api.Client.PollVote(context.Background(), poll.ID, choices...)
+}

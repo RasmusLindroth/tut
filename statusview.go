@@ -227,6 +227,13 @@ func (t *StatusView) GetTextWidth() int {
 	return width
 }
 
+func (t *StatusView) RedrawPoll(p *mastodon.Poll) {
+	if len(t.feeds) == 0 {
+		return
+	}
+	t.feeds[t.feedIndex].RedrawPoll(p)
+}
+
 func (t *StatusView) GetCurrentItem() int {
 	return t.list.GetCurrentItem()
 }

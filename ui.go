@@ -21,6 +21,7 @@ const (
 	MessageAttachmentFocus
 	LinkOverlayFocus
 	VisibilityOverlayFocus
+	VoteOverlayFocus
 	AuthOverlayFocus
 	UserSelectFocus
 )
@@ -56,6 +57,7 @@ func (ui *UI) Init() {
 	ui.MessageBox = NewMessageBox(ui.app)
 	ui.LinkOverlay = NewLinkOverlay(ui.app)
 	ui.VisibilityOverlay = NewVisibilityOverlay(ui.app)
+	ui.VoteOverlay = NewVoteOverlay(ui.app)
 	ui.AuthOverlay = NewAuthOverlay(ui.app)
 	ui.UserSelectOverlay = NewUserSelectOverlay(ui.app)
 	ui.MediaOverlay = NewMediaOverlay(ui.app)
@@ -112,6 +114,15 @@ func (ui *UI) Init() {
 				AddItem(ui.VisibilityOverlay.TextBottom, 1, 1, true), 0, 8, false).
 			AddItem(nil, 0, 1, false), 0, 8, true).
 		AddItem(nil, 0, 1, false), true, false)
+	ui.Pages.AddPage("vote", tview.NewFlex().AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(ui.VoteOverlay.Flex.SetDirection(tview.FlexRow).
+				AddItem(ui.VoteOverlay.TextTop, 3, 1, true).
+				AddItem(ui.VoteOverlay.List, 0, 10, true).
+				AddItem(ui.VoteOverlay.TextBottom, 1, 1, true), 0, 8, false).
+			AddItem(nil, 0, 1, false), 0, 8, true).
+		AddItem(nil, 0, 1, false), true, false)
 	ui.Pages.AddPage("login",
 		tview.NewFlex().
 			AddItem(nil, 0, 1, false).
@@ -162,6 +173,7 @@ type UI struct {
 	Pages             *tview.Pages
 	LinkOverlay       *LinkOverlay
 	VisibilityOverlay *VisibilityOverlay
+	VoteOverlay       *VoteOverlay
 	AuthOverlay       *AuthOverlay
 	UserSelectOverlay *UserSelectOverlay
 	MediaOverlay      *MediaView
@@ -200,6 +212,10 @@ func (ui *UI) SetFocus(f FocusAt) {
 		ui.Pages.ShowPage("links")
 		ui.Root.SetFocus(ui.LinkOverlay.List)
 		ui.FocusAt(ui.LinkOverlay.List, "-- LINK --")
+	case VoteOverlayFocus:
+		ui.Pages.ShowPage("vote")
+		ui.Root.SetFocus(ui.VoteOverlay.List)
+		ui.FocusAt(ui.VoteOverlay.List, "-- VOTE --")
 	case VisibilityOverlayFocus:
 		ui.VisibilityOverlay.Show()
 		ui.Pages.ShowPage("visibility")
@@ -301,6 +317,10 @@ func (ui *UI) Reply(status *mastodon.Status) {
 
 func (ui *UI) ShowLinks() {
 	ui.SetFocus(LinkOverlayFocus)
+}
+
+func (ui *UI) ShowVote() {
+	ui.SetFocus(VoteOverlayFocus)
 }
 
 func (ui *UI) OpenMedia(status *mastodon.Status) {

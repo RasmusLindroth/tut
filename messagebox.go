@@ -159,6 +159,11 @@ func (m *MessageBox) Post() {
 		m.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't post toot. Error: %v\n", err))
 		return
 	}
+	if m.app.UI.StatusView.lastList == NotificationPaneFocus {
+		m.app.UI.SetFocus(NotificationPaneFocus)
+	} else {
+		m.app.UI.SetFocus(LeftPaneFocus)
+	}
 	m.app.UI.SetFocus(LeftPaneFocus)
 }
 

@@ -165,6 +165,11 @@ func main() {
 			return nil
 		}
 
+		if app.UI.Focus == VoteOverlayFocus {
+			app.UI.VoteOverlay.InputHandler(event)
+			return nil
+		}
+
 		if app.UI.Focus == CmdBarFocus {
 			switch event.Key() {
 			case tcell.KeyEnter:
