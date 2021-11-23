@@ -13,6 +13,7 @@ func NewCmdBar(app *App) *CmdBar {
 		Input: tview.NewInputField(),
 	}
 
+	c.Input.SetBackgroundColor(app.Config.Style.Background)
 	c.Input.SetFieldBackgroundColor(app.Config.Style.Background)
 	c.Input.SetFieldTextColor(app.Config.Style.Text)
 	c.Input.SetDoneFunc(c.DoneFunc)
