@@ -121,7 +121,7 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 
 	toot.AccountDisplayName = tview.Escape(status.Account.DisplayName)
 	toot.Account = tview.Escape(status.Account.Acct)
-	toot.Bookmarked = status.Bookmarked.(bool)
+	toot.Bookmarked = status.Bookmarked == true
 	toot.Visibility = status.Visibility
 	toot.Spoiler = status.Sensitive
 
