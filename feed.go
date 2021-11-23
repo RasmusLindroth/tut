@@ -1236,6 +1236,8 @@ func (n *NotificationsFeed) GetFeedList() <-chan ListItem {
 				iconText = " ⤶ "
 			case "poll":
 				iconText = " = "
+			case "status":
+				iconText = " ⤶ "
 			}
 
 			content := fmt.Sprintf("%s %s", dateOutput, item.N.Account.Acct)
@@ -1267,6 +1269,9 @@ func (n *NotificationsFeed) LoadNewer() int {
 			case "mention":
 				Notify(n.app.Config.NotificationConfig, NotificationMention,
 					"Mentioned in toot", fmt.Sprintf("%s mentioned you", o.N.Account.Username))
+			case "status":
+				Notify(n.app.Config.NotificationConfig, NotificationMention,
+					"From following", fmt.Sprintf("%s posted a new toot", o.N.Account.Username))
 			case "poll":
 				Notify(n.app.Config.NotificationConfig, NotificationPoll,
 					"Poll has ended", "")
@@ -1352,6 +1357,10 @@ func (n *NotificationsFeed) DrawToot() {
 		pre := SublteText(n.app.Config.Style, FormatUsername(notification.N.Account)+" mentioned you") + "\n\n"
 		text, controls = showTootOptions(n.app, notification.N.Status, n.showSpoiler)
 		text = pre + text
+	case "status":
+		pre := SublteText(n.app.Config.Style, FormatUsername(notification.N.Account)+" posted a new toot") + "\n\n"
+		text, controls = showTootOptions(n.app, notification.N.Status, n.showSpoiler)
+		text = pre + text
 	case "poll":
 		pre := SublteText(n.app.Config.Style, "A poll of yours or one you participated in has ended") + "\n\n"
 		text, controls = showTootOptions(n.app, notification.N.Status, n.showSpoiler)
@@ -1373,7 +1382,7 @@ func (n *NotificationsFeed) RedrawControls() {
 		return
 	}
 	switch notification.N.Type {
-	case "favourite", "reblog", "mention", "poll":
+	case "favourite", "reblog", "mention", "poll", "status":
 		_, controls := showTootOptions(n.app, notification.N.Status, n.showSpoiler)
 		n.app.UI.StatusView.SetControls(controls)
 	case "follow":
@@ -1425,6 +1434,9 @@ func (n *NotificationsFeed) Input(event *tcell.EventKey) {
 		return
 	}
 	status := notification.N.Status
+	if status == nil {
+		return
+	}
 	originalStatus := status
 	if status.Reblog != nil {
 		status = status.Reblog
