@@ -1,7 +1,7 @@
 # Tut - a Mastodon TUI
 
-A TUI for Mastodon with vim inspired keys. The program has most of features you 
-would find in the web client. 
+A TUI for Mastodon with vim inspired keys. The program has most of the 
+features you can find in the web client. 
 
 Press `C` to create a new toot and `N` to focus on your notifications.
 

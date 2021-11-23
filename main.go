@@ -40,7 +40,7 @@ func main() {
 			fmt.Print("\t--help -h - prints this message\n")
 			fmt.Print("\t--version -v - prints the version\n")
 			fmt.Print("\t--new-user -n - add one more user to tut\n")
-			fmt.Print("\t--user <name> -u <name> - login directly to user namde <name>\n")
+			fmt.Print("\t--user <name> -u <name> - login directly to user named <name>\n")
 			fmt.Print("\t\tDon't use a = between --user and the <name>\n")
 			fmt.Print("\t\tIf two users are named the same. Use full name like tut@fosstodon.org\n\n")
 
