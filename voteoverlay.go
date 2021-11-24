@@ -141,11 +141,7 @@ func (v *VoteOverlay) Vote() {
 		return
 	}
 	v.app.UI.StatusView.RedrawPoll(p)
-	if v.app.UI.StatusView.lastList == NotificationPaneFocus {
-		v.app.UI.SetFocus(NotificationPaneFocus)
-	} else {
-		v.app.UI.SetFocus(LeftPaneFocus)
-	}
+	v.app.UI.StatusView.giveBackFocus()
 }
 
 func (v *VoteOverlay) InputHandler(event *tcell.EventKey) {
@@ -160,11 +156,7 @@ func (v *VoteOverlay) InputHandler(event *tcell.EventKey) {
 		case ' ':
 			v.ToggleSelect()
 		case 'q', 'Q':
-			if v.app.UI.StatusView.lastList == NotificationPaneFocus {
-				v.app.UI.SetFocus(NotificationPaneFocus)
-			} else {
-				v.app.UI.SetFocus(LeftPaneFocus)
-			}
+			v.app.UI.StatusView.giveBackFocus()
 		}
 	} else {
 		switch event.Key() {
@@ -175,11 +167,7 @@ func (v *VoteOverlay) InputHandler(event *tcell.EventKey) {
 		case tcell.KeyDown:
 			v.Next()
 		case tcell.KeyEsc:
-			if v.app.UI.StatusView.lastList == NotificationPaneFocus {
-				v.app.UI.SetFocus(NotificationPaneFocus)
-			} else {
-				v.app.UI.SetFocus(LeftPaneFocus)
-			}
+			v.app.UI.StatusView.giveBackFocus()
 		}
 	}
 }

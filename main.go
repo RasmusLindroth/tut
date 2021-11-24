@@ -207,21 +207,13 @@ func main() {
 					app.UI.SetFocus(VisibilityOverlayFocus)
 					return nil
 				case 'q', 'Q':
-					if app.UI.StatusView.lastList == NotificationPaneFocus {
-						app.UI.SetFocus(NotificationPaneFocus)
-					} else {
-						app.UI.SetFocus(LeftPaneFocus)
-					}
+					app.UI.StatusView.giveBackFocus()
 					return nil
 				}
 			} else {
 				switch event.Key() {
 				case tcell.KeyEsc:
-					if app.UI.StatusView.lastList == NotificationPaneFocus {
-						app.UI.SetFocus(NotificationPaneFocus)
-					} else {
-						app.UI.SetFocus(LeftPaneFocus)
-					}
+					app.UI.StatusView.giveBackFocus()
 					return nil
 				}
 			}

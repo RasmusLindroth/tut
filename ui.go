@@ -196,6 +196,7 @@ func (ui *UI) SetFocus(f FocusAt) {
 	ui.Focus = f
 	switch f {
 	case RightPaneFocus:
+		ui.Pages.SwitchToPage("main")
 		ui.FocusAt(ui.StatusView.text, "-- VIEW --")
 	case CmdBarFocus:
 		ui.FocusAt(ui.CmdBar.Input, "-- CMD --")
