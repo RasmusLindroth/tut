@@ -226,6 +226,7 @@ func (ui *UI) SetFocus(f FocusAt) {
 		ui.FocusAt(ui.LinkOverlay.List, "-- LINK --")
 	case HelpOverlayFocus:
 		ui.Pages.ShowPage("help")
+		ui.CmdBar.ClearInput()
 		ui.Root.SetFocus(ui.HelpOverlay.TextMain)
 		ui.FocusAt(ui.HelpOverlay.TextMain, "-- HELP --")
 	case VoteOverlayFocus:
@@ -378,6 +379,7 @@ func (ui *UI) SetTopText(s string) {
 }
 
 func (ui *UI) LoggedIn() {
+	ui.CmdBar.ShowMsg("Press ? or :help to learn how tut functions")
 	ui.StatusView = NewStatusView(ui.app, ui.Timeline)
 
 	verticalLine := tview.NewBox()
