@@ -24,6 +24,7 @@ const (
 	VoteOverlayFocus
 	AuthOverlayFocus
 	UserSelectFocus
+	HelpOverlayFocus
 )
 
 func NewUI(app *App) *UI {
@@ -61,6 +62,7 @@ func (ui *UI) Init() {
 	ui.AuthOverlay = NewAuthOverlay(ui.app)
 	ui.UserSelectOverlay = NewUserSelectOverlay(ui.app)
 	ui.MediaOverlay = NewMediaOverlay(ui.app)
+	ui.HelpOverlay = NewHelpOverlay(ui.app)
 
 	ui.Pages.SetBackgroundColor(ui.app.Config.Style.Background)
 
@@ -155,6 +157,14 @@ func (ui *UI) Init() {
 				AddItem(ui.MediaOverlay.InputField.View, 2, 1, false), 0, 8, false).
 			AddItem(nil, 0, 1, false), 0, 8, true).
 		AddItem(nil, 0, 1, false), true, false)
+	ui.Pages.AddPage("help", tview.NewFlex().AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(ui.HelpOverlay.Flex.SetDirection(tview.FlexRow).
+				AddItem(ui.HelpOverlay.TextMain, 0, 10, true).
+				AddItem(ui.HelpOverlay.TextBottom, 1, 1, true), 0, 8, false).
+			AddItem(nil, 0, 1, false), 0, 8, true).
+		AddItem(nil, 0, 1, false), true, false)
 
 	ui.Root.SetBeforeDrawFunc(func(screen tcell.Screen) bool {
 		screen.Clear()
@@ -179,6 +189,7 @@ type UI struct {
 	MediaOverlay      *MediaView
 	Timeline          TimelineType
 	StatusView        *StatusView
+	HelpOverlay       *HelpOverlay
 }
 
 func (ui *UI) FocusAt(p tview.Primitive, s string) {
@@ -213,6 +224,10 @@ func (ui *UI) SetFocus(f FocusAt) {
 		ui.Pages.ShowPage("links")
 		ui.Root.SetFocus(ui.LinkOverlay.List)
 		ui.FocusAt(ui.LinkOverlay.List, "-- LINK --")
+	case HelpOverlayFocus:
+		ui.Pages.ShowPage("help")
+		ui.Root.SetFocus(ui.HelpOverlay.TextMain)
+		ui.FocusAt(ui.HelpOverlay.TextMain, "-- HELP --")
 	case VoteOverlayFocus:
 		ui.Pages.ShowPage("vote")
 		ui.Root.SetFocus(ui.VoteOverlay.List)

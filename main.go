@@ -165,6 +165,11 @@ func main() {
 			return nil
 		}
 
+		if app.UI.Focus == HelpOverlayFocus {
+			ev := app.UI.HelpOverlay.InputHandler(event)
+			return ev
+		}
+
 		if app.UI.Focus == VoteOverlayFocus {
 			app.UI.VoteOverlay.InputHandler(event)
 			return nil
@@ -296,7 +301,7 @@ func main() {
 	)
 
 	app.UI.CmdBar.Input.SetAutocompleteFunc(func(currentText string) (entries []string) {
-		words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:favorited,:lists,:muting,:profile,:saved,:tag,:timeline,:tl,:user,:quit,:q", ",")
+		words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:favorited,:help,:h,:lists,:muting,:profile,:saved,:tag,:timeline,:tl,:user,:quit,:q", ",")
 		if currentText == "" {
 			return
 		}

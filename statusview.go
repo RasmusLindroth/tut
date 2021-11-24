@@ -263,6 +263,8 @@ func (t *StatusView) inputBoth(event *tcell.EventKey) {
 			t.home()
 		case 'G':
 			t.end()
+		case '?':
+			t.app.UI.SetFocus(HelpOverlayFocus)
 		}
 	} else {
 		switch event.Key() {

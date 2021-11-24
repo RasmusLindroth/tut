@@ -19,6 +19,9 @@ var tootTemplate string
 //go:embed user.tmpl
 var userTemplate string
 
+//go:embed help.tmpl
+var helpTemplate string
+
 type Config struct {
 	General            GeneralConfig
 	Style              StyleConfig
@@ -156,6 +159,7 @@ type NotificationConfig struct {
 type TemplatesConfig struct {
 	TootTemplate *template.Template
 	UserTemplate *template.Template
+	HelpTemplate *template.Template
 }
 
 func parseColor(input string, def string, xrdb map[string]string) tcell.Color {
@@ -512,9 +516,18 @@ func ParseTemplates(cfg *ini.File) TemplatesConfig {
 	if err != nil {
 		log.Fatalf("Couldn't parse user.tmpl. Error: %v", err)
 	}
+	var helpTmpl *template.Template
+	helpTmpl, err = template.New("help.tmpl").Funcs(template.FuncMap{
+		"Color": ColorMark,
+		"Flags": TextFlags,
+	}).Parse(helpTemplate)
+	if err != nil {
+		log.Fatalf("Couldn't parse help.tmpl. Error: %v", err)
+	}
 	return TemplatesConfig{
 		TootTemplate: tootTmpl,
 		UserTemplate: userTmpl,
+		HelpTemplate: helpTmpl,
 	}
 }
 
