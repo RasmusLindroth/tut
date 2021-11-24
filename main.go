@@ -9,7 +9,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-const version string = "0.0.40"
+const version string = "0.0.41"
 
 func main() {
 	newUser := false
