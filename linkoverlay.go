@@ -194,11 +194,7 @@ func (l *LinkOverlay) InputHandler(event *tcell.EventKey) {
 			i, _ := strconv.Atoi(s)
 			l.OpenCustom(i)
 		case 'q', 'Q':
-			if l.app.UI.StatusView.lastList == NotificationPaneFocus {
-				l.app.UI.SetFocus(NotificationPaneFocus)
-			} else {
-				l.app.UI.SetFocus(LeftPaneFocus)
-			}
+			l.app.UI.StatusView.giveBackFocus()
 		}
 	} else {
 		switch event.Key() {
@@ -209,11 +205,7 @@ func (l *LinkOverlay) InputHandler(event *tcell.EventKey) {
 		case tcell.KeyDown:
 			l.Next()
 		case tcell.KeyEsc:
-			if l.app.UI.StatusView.lastList == NotificationPaneFocus {
-				l.app.UI.SetFocus(NotificationPaneFocus)
-			} else {
-				l.app.UI.SetFocus(LeftPaneFocus)
-			}
+			l.app.UI.StatusView.giveBackFocus()
 		}
 	}
 }

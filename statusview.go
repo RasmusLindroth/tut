@@ -263,6 +263,8 @@ func (t *StatusView) inputBoth(event *tcell.EventKey) {
 			t.home()
 		case 'G':
 			t.end()
+		case '?':
+			t.app.UI.SetFocus(HelpOverlayFocus)
 		}
 	} else {
 		switch event.Key() {
@@ -674,4 +676,30 @@ func (t *StatusView) loadOlder() {
 			t.loadingOlder = false
 		})
 	}()
+}
+
+func (t *StatusView) giveBackFocus() {
+	if t.focus == RightPaneFocus {
+		t.app.UI.SetFocus(RightPaneFocus)
+		t.focus = RightPaneFocus
+		t.app.UI.StatusBar.Text.SetBackgroundColor(
+			t.app.Config.Style.StatusBarViewBackground,
+		)
+		t.app.UI.StatusBar.Text.SetTextColor(
+			t.app.Config.Style.StatusBarViewText,
+		)
+		return
+	} else if t.lastList == LeftPaneFocus {
+		t.app.UI.SetFocus(LeftPaneFocus)
+		t.focus = LeftPaneFocus
+	} else if t.lastList == NotificationPaneFocus {
+		t.app.UI.SetFocus(NotificationPaneFocus)
+		t.focus = NotificationPaneFocus
+	}
+	t.app.UI.StatusBar.Text.SetBackgroundColor(
+		t.app.Config.Style.StatusBarBackground,
+	)
+	t.app.UI.StatusBar.Text.SetTextColor(
+		t.app.Config.Style.StatusBarText,
+	)
 }

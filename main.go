@@ -9,7 +9,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-const version string = "0.0.40"
+const version string = "0.0.41"
 
 func main() {
 	newUser := false
@@ -165,6 +165,11 @@ func main() {
 			return nil
 		}
 
+		if app.UI.Focus == HelpOverlayFocus {
+			ev := app.UI.HelpOverlay.InputHandler(event)
+			return ev
+		}
+
 		if app.UI.Focus == VoteOverlayFocus {
 			app.UI.VoteOverlay.InputHandler(event)
 			return nil
@@ -207,21 +212,13 @@ func main() {
 					app.UI.SetFocus(VisibilityOverlayFocus)
 					return nil
 				case 'q', 'Q':
-					if app.UI.StatusView.lastList == NotificationPaneFocus {
-						app.UI.SetFocus(NotificationPaneFocus)
-					} else {
-						app.UI.SetFocus(LeftPaneFocus)
-					}
+					app.UI.StatusView.giveBackFocus()
 					return nil
 				}
 			} else {
 				switch event.Key() {
 				case tcell.KeyEsc:
-					if app.UI.StatusView.lastList == NotificationPaneFocus {
-						app.UI.SetFocus(NotificationPaneFocus)
-					} else {
-						app.UI.SetFocus(LeftPaneFocus)
-					}
+					app.UI.StatusView.giveBackFocus()
 					return nil
 				}
 			}
@@ -304,7 +301,7 @@ func main() {
 	)
 
 	app.UI.CmdBar.Input.SetAutocompleteFunc(func(currentText string) (entries []string) {
-		words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:favorited,:lists,:muting,:profile,:saved,:tag,:timeline,:tl,:user,:quit,:q", ",")
+		words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:favorited,:help,:h,:lists,:muting,:profile,:saved,:tag,:timeline,:tl,:user,:quit,:q", ",")
 		if currentText == "" {
 			return
 		}

@@ -1,0 +1,87 @@
+{{ Color .Style.Text }}{{ Flags "b" }}Keys and navigation{{ Flags "-" }}
+
+Below are the keys that doesn't have hints in the TUI. All other keys have hints in the TUI. E.g. you're viewing a toot, down at the bottom you'll see {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}F{{ Flags "-" }}{{ Color .Style.Text }}avorite.
+That means that you'll have to press {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}F{{ Flags "-" }}{{ Color .Style.Text }} to favorite a toot.
+
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}c{{ Flags "-" }}{{ Color .Style.Text }} - Compose a new toot
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}j{{ Flags "-" }}{{ Color .Style.Text }} or
+    {{- Color .Style.TextSpecial2 }}{{ Flags "b" }} Down arrow{{ Flags "-" }}{{ Color .Style.Text }} - Navigate down in feed list or toot
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}k{{ Flags "-" }}{{ Color .Style.Text }} or
+    {{- Color .Style.TextSpecial2 }}{{ Flags "b" }} Up arrow{{ Flags "-" }}{{ Color .Style.Text }} - Navigate up in feed list or toot
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}h{{ Flags "-" }}{{ Color .Style.Text }} or
+    {{- Color .Style.TextSpecial2 }}{{ Flags "b" }} Left arrow{{ Flags "-" }}{{ Color .Style.Text }} - Cycle back between feeds
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}l{{ Flags "-" }}{{ Color .Style.Text }} or
+    {{- Color .Style.TextSpecial2 }}{{ Flags "b" }} Right arrow{{ Flags "-" }}{{ Color .Style.Text }} - Cycle forward between feeds
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}g{{ Flags "-" }}{{ Color .Style.Text }} or
+    {{- Color .Style.TextSpecial2 }}{{ Flags "b" }} Home{{ Flags "-" }}{{ Color .Style.Text }} - Go to top in feed list or toot
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}G{{ Flags "-" }}{{ Color .Style.Text }} or
+    {{- Color .Style.TextSpecial2 }}{{ Flags "b" }} End{{ Flags "-" }}{{ Color .Style.Text }} - Go to bottom in feed list or toot
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}?{{ Flags "-" }}{{ Color .Style.Text }} - View help
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}q{{ Flags "-" }}{{ Color .Style.Text }} - Go back or quit
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}ESC{{ Flags "-" }}{{ Color .Style.Text }} - Go back
+
+{{ Color .Style.Text }}{{ Flags "b" }}Commands{{ Flags "-" }}
+
+All commands start with {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:{{ Flags "-" }}{{ Color .Style.Text }}. And you run the command by hitting {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}Enter{{ Flags "-" }}{{ Color .Style.Text }}.
+
+Here's a list of supported commands.
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:q{{ Flags "-" }}{{ Color .Style.Text }} or
+{{- Color .Style.TextSpecial2 }}{{ Flags "b" }} :quit{{ Flags "-" }}{{ Color .Style.Text }}
+	Exit the program
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:timeline{{ Flags "-" }}{{ Color .Style.Text }} home|local|federated|direct|notifications|favorited
+	Open selected timeline
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:tl{{ Flags "-" }}{{ Color .Style.Text }} h|l|f|d|n|fav
+	Shorter form of the former command *:timeline*
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:blocking{{ Flags "-" }}{{ Color .Style.Text }}
+	Lists users that you have blocked
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:boosts{{ Flags "-" }}{{ Color .Style.Text }}
+	Lists users that boosted the toot
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:bookmarks{{ Flags "-" }}{{ Color .Style.Text }}
+	Lists all your bookmarks
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:compose{{ Flags "-" }}{{ Color .Style.Text }}
+	Compose a new toot
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:favorited{{ Flags "-" }}{{ Color .Style.Text }}
+	Lists toots you've favorited
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:favorites{{ Flags "-" }}{{ Color .Style.Text }}
+	Lists users that favorited the toot
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:h{{ Flags "-" }}{{ Color .Style.Text }} or
+{{- Color .Style.TextSpecial2 }}{{ Flags "b" }} :help{{ Flags "-" }}{{ Color .Style.Text }}
+	View this help message
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:lists{{ Flags "-" }}{{ Color .Style.Text }}
+	Show a list of your lists
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:muting{{ Flags "-" }}{{ Color .Style.Text }}
+	lists users that you have muted
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:profile{{ Flags "-" }}{{ Color .Style.Text }}
+	Go to your own profile
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:saved{{ Flags "-" }}{{ Color .Style.Text }}
+	Alias for :bookmarks
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:tag{{ Flags "-" }}{{ Color .Style.Text }} tagname
+	See toots for a tag. E.g. :tag linux
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:user{{ Flags "-" }}{{ Color .Style.Text }} username
+	Go to profile for <username>. E.g. :user rasmus
+    To narrow a search include the instance like this :user rasmus@mastodon.acc.sunet.se
+
+{{ Color .Style.Text }}{{ Flags "b" }}Configuration{{ Flags "-" }}
+
+tut searches for a config file in the following locations:
+
+    1. $XDG_CONFIG_HOME/tut/config.ini
+    2. $HOME/.config/tut/config.ini
+
+For information on the config file format go to <https://tut.anv.nu/config>.

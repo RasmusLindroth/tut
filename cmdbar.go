@@ -180,5 +180,9 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 		c.app.UI.StatusView.AddFeed(NewListFeed(c.app))
 		c.app.UI.SetFocus(LeftPaneFocus)
 		c.app.UI.CmdBar.ClearInput()
+	case ":help", ":h":
+		c.app.UI.SetFocus(HelpOverlayFocus)
+		c.app.UI.CmdBar.ClearInput()
 	}
+
 }

@@ -35,6 +35,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:compose` compose a new toot
 * `:favorited` lists toots you've favorited
 * `:favorites` lists users that favorited the toot
+* `:h` `:help` view help 
 * `:lists` show a list of your lists
 * `:muting`  lists users that you have muted
 * `:profile` go to your profile
@@ -50,6 +51,7 @@ Keys without description in tut
 * `arrow keys` = navigation. Same as `jk` and `hl`
 * `g` or `Home` = go to top
 * `G` or `End` = go to bottom
+* `?` = view help
 * `q` = go back and quit
 * `ESC` = go back
 

@@ -19,6 +19,9 @@ var tootTemplate string
 //go:embed user.tmpl
 var userTemplate string
 
+//go:embed help.tmpl
+var helpTemplate string
+
 type Config struct {
 	General            GeneralConfig
 	Style              StyleConfig
@@ -47,6 +50,7 @@ type GeneralConfig struct {
 	ListProportion       int
 	ContentProportion    int
 	ShowIcons            bool
+	ShowHelp             bool
 }
 
 type StyleConfig struct {
@@ -156,6 +160,7 @@ type NotificationConfig struct {
 type TemplatesConfig struct {
 	TootTemplate *template.Template
 	UserTemplate *template.Template
+	HelpTemplate *template.Template
 }
 
 func parseColor(input string, def string, xrdb map[string]string) tcell.Color {
@@ -290,6 +295,7 @@ func parseGeneral(cfg *ini.File) GeneralConfig {
 	general.ShortHints = cfg.Section("general").Key("short-hints").MustBool(false)
 	general.HideNotificationText = cfg.Section("general").Key("hide-notification-text").MustBool(false)
 	general.ShowIcons = cfg.Section("general").Key("show-icons").MustBool(true)
+	general.ShowHelp = cfg.Section("general").Key("show-help").MustBool(true)
 
 	lp := cfg.Section("general").Key("list-placement").In("left", []string{"left", "right", "top", "bottom"})
 	switch lp {
@@ -512,9 +518,18 @@ func ParseTemplates(cfg *ini.File) TemplatesConfig {
 	if err != nil {
 		log.Fatalf("Couldn't parse user.tmpl. Error: %v", err)
 	}
+	var helpTmpl *template.Template
+	helpTmpl, err = template.New("help.tmpl").Funcs(template.FuncMap{
+		"Color": ColorMark,
+		"Flags": TextFlags,
+	}).Parse(helpTemplate)
+	if err != nil {
+		log.Fatalf("Couldn't parse help.tmpl. Error: %v", err)
+	}
 	return TemplatesConfig{
 		TootTemplate: tootTmpl,
 		UserTemplate: userTmpl,
+		HelpTemplate: helpTmpl,
 	}
 }
 
@@ -656,6 +671,10 @@ char-limit=500
 # If you want to show icons in the list of toots
 # default=true
 show-icons=true
+
+# If you want to show a message in the cmdbar how you can view the help message
+# default=true
+show-help=true
 
 # If you've learnt all the shortcut keys you can remove the help text and 
 # only show the key in tui. So it gets less cluttered.
