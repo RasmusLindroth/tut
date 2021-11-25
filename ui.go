@@ -368,7 +368,7 @@ func (ui *UI) OpenMedia(status *mastodon.Status) {
 		}
 		openMediaType(ui.Root, ui.app.Config.Media, files, key)
 		ui.app.FileList = append(ui.app.FileList, files...)
-		ui.Root.Sync()
+		ui.ShouldSync()
 	}
 }
 
@@ -538,4 +538,11 @@ func (conf *Config) ClearContent(screen tcell.Screen, x int, y int, width int, h
 	screen.SetContent(x+width, y, tview.BoxDrawingsLightDownAndLeft, nil, tcell.StyleDefault.Foreground(conf.Style.Subtle))
 	screen.SetContent(x+width, y+height, tview.BoxDrawingsLightUpAndLeft, nil, tcell.StyleDefault.Foreground(conf.Style.Subtle))
 	return x + 1, y + 1, width - 1, height - 1
+}
+
+func (ui *UI) ShouldSync() {
+	if !ui.app.Config.General.RedrawUI {
+		return
+	}
+	ui.app.UI.Root.Sync()
 }

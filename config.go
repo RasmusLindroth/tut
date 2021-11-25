@@ -51,6 +51,7 @@ type GeneralConfig struct {
 	ContentProportion    int
 	ShowIcons            bool
 	ShowHelp             bool
+	RedrawUI             bool
 }
 
 type StyleConfig struct {
@@ -296,6 +297,7 @@ func parseGeneral(cfg *ini.File) GeneralConfig {
 	general.HideNotificationText = cfg.Section("general").Key("hide-notification-text").MustBool(false)
 	general.ShowIcons = cfg.Section("general").Key("show-icons").MustBool(true)
 	general.ShowHelp = cfg.Section("general").Key("show-help").MustBool(true)
+	general.RedrawUI = cfg.Section("general").Key("redraw-ui").MustBool(true)
 
 	lp := cfg.Section("general").Key("list-placement").In("left", []string{"left", "right", "top", "bottom"})
 	switch lp {

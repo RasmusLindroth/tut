@@ -736,9 +736,10 @@ func (t *TimelineFeed) DrawToot() {
 	t.index = t.app.UI.StatusView.GetCurrentItem()
 	text, controls := showTootOptions(t.app, t.statuses[t.index], t.showSpoiler)
 	t.showSpoiler = false
+	t.app.UI.StatusView.text.Clear()
 	t.app.UI.StatusView.SetText(text)
 	t.app.UI.StatusView.SetControls(controls)
-	t.app.UI.Root.Sync()
+	//t.app.UI.ShouldSync()
 }
 
 func (t *TimelineFeed) RedrawControls() {
@@ -875,7 +876,7 @@ func (t *ThreadFeed) DrawToot() {
 	t.showSpoiler = false
 	t.app.UI.StatusView.SetText(text)
 	t.app.UI.StatusView.SetControls(controls)
-	t.app.UI.Root.Sync()
+	t.app.UI.ShouldSync()
 }
 
 func (t *ThreadFeed) RedrawControls() {
@@ -1072,7 +1073,7 @@ func (u *UserFeed) DrawToot() {
 
 	u.app.UI.StatusView.SetText(text)
 	u.app.UI.StatusView.SetControls(controls)
-	u.app.UI.Root.Sync()
+	u.app.UI.ShouldSync()
 }
 
 func (u *UserFeed) RedrawControls() {
@@ -1372,7 +1373,7 @@ func (n *NotificationsFeed) DrawToot() {
 
 	n.app.UI.StatusView.SetText(text)
 	n.app.UI.StatusView.SetControls(controls)
-	n.app.UI.Root.Sync()
+	n.app.UI.ShouldSync()
 }
 
 func (n *NotificationsFeed) RedrawControls() {
@@ -1573,7 +1574,7 @@ func (t *TagFeed) DrawToot() {
 	t.showSpoiler = false
 	t.app.UI.StatusView.SetText(text)
 	t.app.UI.StatusView.SetControls(controls)
-	t.app.UI.Root.Sync()
+	t.app.UI.ShouldSync()
 }
 
 func (t *TagFeed) RedrawControls() {
@@ -1784,7 +1785,7 @@ func (u *UserListFeed) DrawToot() {
 
 	u.app.UI.StatusView.SetText(text)
 	u.app.UI.StatusView.SetControls(controls)
-	u.app.UI.Root.Sync()
+	u.app.UI.ShouldSync()
 }
 
 func (u *UserListFeed) GetSavedIndex() int {
@@ -1898,7 +1899,7 @@ func (l *ListFeed) DrawToot() {
 
 	l.app.UI.StatusView.SetText(text)
 	l.app.UI.StatusView.SetControls("")
-	l.app.UI.Root.Sync()
+	l.app.UI.ShouldSync()
 }
 
 func (l *ListFeed) GetSavedIndex() int {
