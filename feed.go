@@ -739,7 +739,7 @@ func (t *TimelineFeed) DrawToot() {
 	t.app.UI.StatusView.text.Clear()
 	t.app.UI.StatusView.SetText(text)
 	t.app.UI.StatusView.SetControls(controls)
-	//t.app.UI.ShouldSync()
+	t.app.UI.ShouldSync()
 }
 
 func (t *TimelineFeed) RedrawControls() {
