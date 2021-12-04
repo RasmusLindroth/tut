@@ -51,6 +51,7 @@ type GeneralConfig struct {
 	ContentProportion    int
 	ShowIcons            bool
 	ShowHelp             bool
+	RedrawUI             bool
 }
 
 type StyleConfig struct {
@@ -296,6 +297,7 @@ func parseGeneral(cfg *ini.File) GeneralConfig {
 	general.HideNotificationText = cfg.Section("general").Key("hide-notification-text").MustBool(false)
 	general.ShowIcons = cfg.Section("general").Key("show-icons").MustBool(true)
 	general.ShowHelp = cfg.Section("general").Key("show-help").MustBool(true)
+	general.RedrawUI = cfg.Section("general").Key("redraw-ui").MustBool(true)
 
 	lp := cfg.Section("general").Key("list-placement").In("left", []string{"left", "right", "top", "bottom"})
 	switch lp {
@@ -680,6 +682,14 @@ show-help=true
 # only show the key in tui. So it gets less cluttered.
 # default=false
 short-hints=false
+
+# If you don't want the whole UI to update, and only the text content you can
+# set this option to true.
+# This will lead to some artifacts being left on the screen when emojis are 
+# present. But it will keep the UI from flashing on every single toot in some
+# terminals.
+# default=true
+redraw-ui=true
 
 [media]
 # Your image viewer

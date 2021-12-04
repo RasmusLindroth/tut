@@ -13,11 +13,11 @@ require (
 	github.com/mattn/go-mastodon v0.0.5-0.20211104150201-58c389181352
 	github.com/microcosm-cc/bluemonday v1.0.16
 	github.com/pelletier/go-toml/v2 v2.0.0-beta.4
-	github.com/rivo/tview v0.0.0-20211109175620-badfa0f0b301
+	github.com/rivo/tview v0.0.0-20211202162923-2a6de950f73b
 	github.com/rivo/uniseg v0.2.0
-	golang.org/x/net v0.0.0-20211118161319-6a13c67c3ce4
-	golang.org/x/sys v0.0.0-20211117180635-dee7805ff2e1 // indirect
+	golang.org/x/net v0.0.0-20211203184738-4852103109b8
+	golang.org/x/sys v0.0.0-20211124211545-fe61309f8881 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	gopkg.in/ini.v1 v1.64.0
+	gopkg.in/ini.v1 v1.66.2
 )
