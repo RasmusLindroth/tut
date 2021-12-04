@@ -33,7 +33,7 @@ func CmdToString(cmd string) (string, error) {
 	cmd = strings.TrimPrefix(cmd, "!CMD!")
 	parts := strings.Split(cmd, " ")
 	s, err := exec.Command(parts[0], parts[1:]...).CombinedOutput()
-	return string(s), err
+	return strings.TrimSpace(string(s)), err
 }
 
 func getURLs(text string) []URL {
