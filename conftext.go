@@ -1,4 +1,6 @@
-# Configuration file for tut
+package main
+
+var conftext = `# Configuration file for tut
 
 [general]
 # If the program should check for new toots without user interaction. If you
@@ -313,3 +315,4 @@ list-selected-background=xrdb:color5
 # default=xrdb:background
 list-selected-text=xrdb:background
 
+`
