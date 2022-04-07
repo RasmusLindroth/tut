@@ -103,7 +103,11 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	var urls []URL
 	var u []URL
 
-	strippedContent, urls = cleanTootHTML(status.Content)
+	if status.Reblog != nil {
+		strippedContent, urls = cleanTootHTML(status.Reblog.Content)
+	} else {
+		strippedContent, urls = cleanTootHTML(status.Content)
+	}
 	strippedContent = tview.Escape(strippedContent)
 
 	toot := Toot{
