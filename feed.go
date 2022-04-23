@@ -103,20 +103,21 @@ func showTootOptions(app *App, status *mastodon.Status, showSensitive bool) (str
 	var urls []URL
 	var u []URL
 
+	so := status
+	if status.Reblog != nil {
+		status = status.Reblog
+	}
+
 	strippedContent, urls = cleanTootHTML(status.Content)
 	strippedContent = tview.Escape(strippedContent)
 
 	toot := Toot{
 		Width:              app.UI.StatusView.GetTextWidth(),
 		ContentText:        strippedContent,
-		Boosted:            status.Reblog != nil,
-		BoostedDisplayName: tview.Escape(status.Account.DisplayName),
-		BoostedAcct:        tview.Escape(status.Account.Acct),
+		Boosted:            so.Reblog != nil,
+		BoostedDisplayName: tview.Escape(so.Account.DisplayName),
+		BoostedAcct:        tview.Escape(so.Account.Acct),
 		ShowSpoiler:        showSensitive,
-	}
-
-	if status.Reblog != nil {
-		status = status.Reblog
 	}
 
 	toot.AccountDisplayName = tview.Escape(status.Account.DisplayName)
