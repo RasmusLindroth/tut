@@ -47,6 +47,9 @@ func (c *CmdBar) ClearInput() {
 }
 
 func (c *CmdBar) DoneFunc(key tcell.Key) {
+	if key == tcell.KeyTAB {
+		return
+	}
 	input := c.GetInput()
 	parts := strings.Split(input, " ")
 	if len(parts) == 0 {
