@@ -79,6 +79,8 @@ func (m *MediaView) AddFile(f string) {
 	file := UploadFile{Path: f}
 	m.Files = append(m.Files, file)
 	m.FileList.AddItem(filepath.Base(f), "", 0, nil)
+	index := m.FileList.GetItemCount()
+	m.FileList.SetCurrentItem(index - 1)
 	m.Draw()
 }
 
