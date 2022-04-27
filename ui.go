@@ -525,18 +525,18 @@ func (conf *Config) ClearContent(screen tcell.Screen, x int, y int, width int, h
 	}
 	y2 := y + height
 	for cx := x + 1; cx < width+x; cx++ {
-		screen.SetContent(cx, y, tview.BoxDrawingsLightHorizontal, nil, tcell.StyleDefault.Foreground(conf.Style.Subtle))
-		screen.SetContent(cx, y2, tview.BoxDrawingsLightHorizontal, nil, tcell.StyleDefault.Foreground(conf.Style.Subtle))
+		screen.SetContent(cx, y, tview.BoxDrawingsLightHorizontal, nil, tcell.StyleDefault.Foreground(conf.Style.Subtle).Background(conf.Style.Background))
+		screen.SetContent(cx, y2, tview.BoxDrawingsLightHorizontal, nil, tcell.StyleDefault.Foreground(conf.Style.Subtle).Background(conf.Style.Background))
 	}
 	x2 := x + width
 	for cy := y + 1; cy < height+y; cy++ {
-		screen.SetContent(x, cy, tview.BoxDrawingsLightVertical, nil, tcell.StyleDefault.Foreground(conf.Style.Subtle))
-		screen.SetContent(x2, cy, tview.BoxDrawingsLightVertical, nil, tcell.StyleDefault.Foreground(conf.Style.Subtle))
+		screen.SetContent(x, cy, tview.BoxDrawingsLightVertical, nil, tcell.StyleDefault.Foreground(conf.Style.Subtle).Background(conf.Style.Background))
+		screen.SetContent(x2, cy, tview.BoxDrawingsLightVertical, nil, tcell.StyleDefault.Foreground(conf.Style.Subtle).Background(conf.Style.Background))
 	}
-	screen.SetContent(x, y, tview.BoxDrawingsLightDownAndRight, nil, tcell.StyleDefault.Foreground(conf.Style.Subtle))
-	screen.SetContent(x, y+height, tview.BoxDrawingsLightUpAndRight, nil, tcell.StyleDefault.Foreground(conf.Style.Subtle))
-	screen.SetContent(x+width, y, tview.BoxDrawingsLightDownAndLeft, nil, tcell.StyleDefault.Foreground(conf.Style.Subtle))
-	screen.SetContent(x+width, y+height, tview.BoxDrawingsLightUpAndLeft, nil, tcell.StyleDefault.Foreground(conf.Style.Subtle))
+	screen.SetContent(x, y, tview.BoxDrawingsLightDownAndRight, nil, tcell.StyleDefault.Foreground(conf.Style.Subtle).Background(conf.Style.Background))
+	screen.SetContent(x, y+height, tview.BoxDrawingsLightUpAndRight, nil, tcell.StyleDefault.Foreground(conf.Style.Subtle).Background(conf.Style.Background))
+	screen.SetContent(x+width, y, tview.BoxDrawingsLightDownAndLeft, nil, tcell.StyleDefault.Foreground(conf.Style.Subtle).Background(conf.Style.Background))
+	screen.SetContent(x+width, y+height, tview.BoxDrawingsLightUpAndLeft, nil, tcell.StyleDefault.Foreground(conf.Style.Subtle).Background(conf.Style.Background))
 	return x + 1, y + 1, width - 1, height - 1
 }
 
