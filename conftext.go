@@ -246,7 +246,9 @@ posts=false
 
 [style]
 # You can use some themes that comes bundled with tut
-# check out the themes available on this URL
+# check out the themes available on the URL below.
+# if a theme is named "nord.ini" you just write theme=nord
+#
 # https://github.com/RasmusLindroth/tut/tree/master/themes
 
 # If you want to use your own theme set theme to none
