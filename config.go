@@ -321,7 +321,7 @@ func parseStyle(cfg *ini.File) StyleConfig {
 func parseGeneral(cfg *ini.File) GeneralConfig {
 	general := GeneralConfig{}
 
-	general.AutoLoadNewer = cfg.Section("media").Key("auto-load-newer").MustBool(true)
+	general.AutoLoadNewer = cfg.Section("general").Key("auto-load-newer").MustBool(true)
 	autoLoadSeconds, err := cfg.Section("general").Key("auto-load-seconds").Int()
 	if err != nil {
 		autoLoadSeconds = 60
