@@ -703,6 +703,8 @@ func GetTheme(fname string) (*ini.File, error) {
 		"top-bar-text",
 		"status-bar-background",
 		"status-bar-text",
+		"status-bar-view-background",
+		"status-bar-view-text",
 		"list-selected-background",
 		"list-selected-text",
 	}
