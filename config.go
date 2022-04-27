@@ -1,10 +1,12 @@
 package main
 
 import (
-	_ "embed"
+	"embed"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -21,6 +23,9 @@ var userTemplate string
 
 //go:embed help.tmpl
 var helpTemplate string
+
+//go:embed themes/*
+var themesFS embed.FS
 
 type Config struct {
 	General            GeneralConfig
@@ -55,6 +60,8 @@ type GeneralConfig struct {
 }
 
 type StyleConfig struct {
+	Theme string
+
 	Background tcell.Color
 	Text       tcell.Color
 
@@ -203,48 +210,110 @@ func parseStyle(cfg *ini.File) StyleConfig {
 	}
 
 	style := StyleConfig{}
+	theme := cfg.Section("style").Key("theme").String()
+	if theme != "none" && theme != "" {
+		themes, err := GetThemes()
+		if err != nil {
+			log.Fatalf("Couldn't load themes. Error: %s\n", err)
+		}
+		found := false
+		for _, t := range themes {
+			if filepath.Base(t) == fmt.Sprintf("%s.ini", theme) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Fatalf("Couldn't find theme %s\n", theme)
+		}
+		tcfg, err := GetTheme(theme)
+		if err != nil {
+			log.Fatalf("Couldn't load theme. Error: %s\n", err)
+		}
+		bg := tcfg.Section("").Key("background").String()
+		style.Background = parseColor(bg, "default", xrdbColors)
 
-	bg := cfg.Section("style").Key("background").String()
-	style.Background = parseColor(bg, "default", xrdbColors)
+		text := tcfg.Section("").Key("text").String()
+		style.Text = tcell.GetColor(text)
 
-	text := cfg.Section("style").Key("text").String()
-	style.Text = parseColor(text, "white", xrdbColors)
+		subtle := tcfg.Section("").Key("subtle").String()
+		style.Subtle = tcell.GetColor(subtle)
 
-	subtle := cfg.Section("style").Key("subtle").String()
-	style.Subtle = parseColor(subtle, "gray", xrdbColors)
+		warningText := tcfg.Section("").Key("warning-text").String()
+		style.WarningText = tcell.GetColor(warningText)
 
-	warningText := cfg.Section("style").Key("warning-text").String()
-	style.WarningText = parseColor(warningText, "#f92672", xrdbColors)
+		textSpecial1 := tcfg.Section("").Key("text-special-one").String()
+		style.TextSpecial1 = tcell.GetColor(textSpecial1)
 
-	textSpecial1 := cfg.Section("style").Key("text-special-one").String()
-	style.TextSpecial1 = parseColor(textSpecial1, "#ae81ff", xrdbColors)
+		textSpecial2 := tcfg.Section("").Key("text-special-two").String()
+		style.TextSpecial2 = tcell.GetColor(textSpecial2)
 
-	textSpecial2 := cfg.Section("style").Key("text-special-two").String()
-	style.TextSpecial2 = parseColor(textSpecial2, "#a6e22e", xrdbColors)
+		topBarBackround := tcfg.Section("").Key("top-bar-background").String()
+		style.TopBarBackground = tcell.GetColor(topBarBackround)
 
-	topBarBackround := cfg.Section("style").Key("top-bar-background").String()
-	style.TopBarBackground = parseColor(topBarBackround, "#f92672", xrdbColors)
+		topBarText := tcfg.Section("").Key("top-bar-text").String()
+		style.TopBarText = tcell.GetColor(topBarText)
 
-	topBarText := cfg.Section("style").Key("top-bar-text").String()
-	style.TopBarText = parseColor(topBarText, "white", xrdbColors)
+		statusBarBackround := tcfg.Section("").Key("status-bar-background").String()
+		style.StatusBarBackground = tcell.GetColor(statusBarBackround)
 
-	statusBarBackround := cfg.Section("style").Key("status-bar-background").String()
-	style.StatusBarBackground = parseColor(statusBarBackround, "#f92672", xrdbColors)
+		statusBarText := tcfg.Section("").Key("status-bar-text").String()
+		style.StatusBarText = tcell.GetColor(statusBarText)
 
-	statusBarText := cfg.Section("style").Key("status-bar-text").String()
-	style.StatusBarText = parseColor(statusBarText, "white", xrdbColors)
+		statusBarViewBackround := tcfg.Section("").Key("status-bar-view-background").String()
+		style.StatusBarViewBackground = tcell.GetColor(statusBarViewBackround)
 
-	statusBarViewBackround := cfg.Section("style").Key("status-bar-view-background").String()
-	style.StatusBarViewBackground = parseColor(statusBarViewBackround, "#ae81ff", xrdbColors)
+		statusBarViewText := tcfg.Section("").Key("status-bar-view-text").String()
+		style.StatusBarViewText = tcell.GetColor(statusBarViewText)
 
-	statusBarViewText := cfg.Section("style").Key("status-bar-view-text").String()
-	style.StatusBarViewText = parseColor(statusBarViewText, "white", xrdbColors)
+		listSelectedBackground := tcfg.Section("").Key("list-selected-background").String()
+		style.ListSelectedBackground = tcell.GetColor(listSelectedBackground)
 
-	listSelectedBackground := cfg.Section("style").Key("list-selected-background").String()
-	style.ListSelectedBackground = parseColor(listSelectedBackground, "#f92672", xrdbColors)
+		listSelectedText := tcfg.Section("").Key("list-selected-text").String()
+		style.ListSelectedText = tcell.GetColor(listSelectedText)
+	} else {
+		bg := cfg.Section("style").Key("background").String()
+		style.Background = parseColor(bg, "default", xrdbColors)
 
-	listSelectedText := cfg.Section("style").Key("list-selected-text").String()
-	style.ListSelectedText = parseColor(listSelectedText, "white", xrdbColors)
+		text := cfg.Section("style").Key("text").String()
+		style.Text = parseColor(text, "white", xrdbColors)
+
+		subtle := cfg.Section("style").Key("subtle").String()
+		style.Subtle = parseColor(subtle, "gray", xrdbColors)
+
+		warningText := cfg.Section("style").Key("warning-text").String()
+		style.WarningText = parseColor(warningText, "#f92672", xrdbColors)
+
+		textSpecial1 := cfg.Section("style").Key("text-special-one").String()
+		style.TextSpecial1 = parseColor(textSpecial1, "#ae81ff", xrdbColors)
+
+		textSpecial2 := cfg.Section("style").Key("text-special-two").String()
+		style.TextSpecial2 = parseColor(textSpecial2, "#a6e22e", xrdbColors)
+
+		topBarBackround := cfg.Section("style").Key("top-bar-background").String()
+		style.TopBarBackground = parseColor(topBarBackround, "#f92672", xrdbColors)
+
+		topBarText := cfg.Section("style").Key("top-bar-text").String()
+		style.TopBarText = parseColor(topBarText, "white", xrdbColors)
+
+		statusBarBackround := cfg.Section("style").Key("status-bar-background").String()
+		style.StatusBarBackground = parseColor(statusBarBackround, "#f92672", xrdbColors)
+
+		statusBarText := cfg.Section("style").Key("status-bar-text").String()
+		style.StatusBarText = parseColor(statusBarText, "white", xrdbColors)
+
+		statusBarViewBackround := cfg.Section("style").Key("status-bar-view-background").String()
+		style.StatusBarViewBackground = parseColor(statusBarViewBackround, "#ae81ff", xrdbColors)
+
+		statusBarViewText := cfg.Section("style").Key("status-bar-view-text").String()
+		style.StatusBarViewText = parseColor(statusBarViewText, "white", xrdbColors)
+
+		listSelectedBackground := cfg.Section("style").Key("list-selected-background").String()
+		style.ListSelectedBackground = parseColor(listSelectedBackground, "#f92672", xrdbColors)
+
+		listSelectedText := cfg.Section("style").Key("list-selected-text").String()
+		style.ListSelectedText = parseColor(listSelectedText, "white", xrdbColors)
+	}
 
 	return style
 }
@@ -252,7 +321,7 @@ func parseStyle(cfg *ini.File) StyleConfig {
 func parseGeneral(cfg *ini.File) GeneralConfig {
 	general := GeneralConfig{}
 
-	general.AutoLoadNewer = cfg.Section("media").Key("auto-load-newer").MustBool(true)
+	general.AutoLoadNewer = cfg.Section("general").Key("auto-load-newer").MustBool(true)
 	autoLoadSeconds, err := cfg.Section("general").Key("auto-load-seconds").Int()
 	if err != nil {
 		autoLoadSeconds = 60
@@ -590,4 +659,57 @@ func CreateDefaultConfig(filepath string) error {
 		return err
 	}
 	return nil
+}
+
+func GetThemes() ([]string, error) {
+	entries, err := themesFS.ReadDir("themes")
+	files := []string{}
+	if err != nil {
+		return []string{}, err
+	}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		fp := filepath.Join("themes/", entry.Name())
+		files = append(files, fp)
+	}
+	return files, nil
+}
+
+func GetTheme(fname string) (*ini.File, error) {
+	f, err := themesFS.Open(fmt.Sprintf("themes/%s.ini", strings.TrimSpace(fname)))
+	if err != nil {
+		return nil, err
+	}
+	content, err := ioutil.ReadAll(f)
+	if err != nil {
+		return nil, err
+	}
+	cfg, err := ini.LoadSources(ini.LoadOptions{
+		SpaceBeforeInlineComment: true,
+	}, content)
+	if err != nil {
+		return nil, err
+	}
+	keys := []string{
+		"background",
+		"text",
+		"subtle",
+		"warning-text",
+		"text-special-one",
+		"text-special-two",
+		"top-bar-background",
+		"top-bar-text",
+		"status-bar-background",
+		"status-bar-text",
+		"list-selected-background",
+		"list-selected-text",
+	}
+	for _, k := range keys {
+		if !cfg.Section("").HasKey(k) {
+			return nil, fmt.Errorf("theme %s is missing %s", fname, k)
+		}
+	}
+	return cfg, nil
 }
