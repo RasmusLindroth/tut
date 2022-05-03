@@ -1,18 +1,8 @@
-# Configuration file for tut
+package config
+
+var conftext = `# Configuration file for tut
 
 [general]
-# If the program should check for new toots without user interaction. If you
-# don't enable this the program will only look for new toots when you reach the
-# bottom or top of your feed. With this enabled it will check for new toots
-# every x second.
-# default=true
-auto-load-newer=true
-
-# How many seconds between each pulling of new toots if you have enabled
-# auto-load-newer
-# default=60
-auto-load-seconds=60
-
 # The date format to be used. See https://godoc.org/time#Time.Format
 # default=2006-01-02 15:04
 date-format=2006-01-02 15:04
@@ -313,3 +303,4 @@ list-selected-background=xrdb:color5
 # default=xrdb:background
 list-selected-text=xrdb:background
 
+`
