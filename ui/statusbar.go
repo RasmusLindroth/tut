@@ -29,6 +29,7 @@ const (
 	NotificationsMode
 	ScrollMode
 	UserMode
+	VoteMode
 )
 
 func (sb *StatusBar) SetMode(m ViewMode) {
@@ -49,6 +50,8 @@ func (sb *StatusBar) SetMode(m ViewMode) {
 		sb.View.SetText("-- MEDIA --")
 	case NotificationsMode:
 		sb.View.SetText("-- NOTIFICATIONS --")
+	case VoteMode:
+		sb.View.SetText("-- VOTE --")
 	case ScrollMode:
 		sb.View.SetBackgroundColor(sb.tutView.tut.Config.Style.StatusBarViewBackground)
 		sb.View.SetTextColor(sb.tutView.tut.Config.Style.StatusBarViewText)

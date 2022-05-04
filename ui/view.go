@@ -16,6 +16,7 @@ const (
 	MediaFocus
 	MediaAddFocus
 	CmdFocus
+	VoteFocus
 )
 
 func (tv *TutView) GetCurrentItem() (api.Item, error) {
@@ -40,6 +41,30 @@ func (tv *TutView) RedrawContent() {
 	item, err := f.Data.Item(f.List.Text.GetCurrentItem())
 	if err != nil {
 		return
+	}
+	DrawItem(tv.tut, item, f.Content.Main, f.Content.Controls)
+}
+func (tv *TutView) RedrawPoll(poll *mastodon.Poll) {
+	foc := tv.TimelineFocus
+	var f *Feed
+	if foc == FeedFocus {
+		f = tv.Timeline.Feeds[tv.Timeline.FeedIndex]
+	} else {
+		f = tv.Timeline.Notifications
+	}
+	item, err := f.Data.Item(f.List.Text.GetCurrentItem())
+	if err != nil {
+		return
+	}
+	if item.Type() != api.StatusType {
+		tv.RedrawContent()
+		return
+	}
+	so := item.Raw().(*mastodon.Status)
+	if so.Reblog != nil {
+		so.Reblog.Poll = poll
+	} else {
+		so.Poll = poll
 	}
 	DrawItem(tv.tut, item, f.Content.Main, f.Content.Controls)
 }
@@ -101,6 +126,12 @@ func (tv *TutView) SetPage(f PageFocusAt) {
 		tv.tut.App.SetFocus(tv.Shared.Bottom.Cmd.View)
 		tv.Shared.Bottom.StatusBar.SetMode(CmdMode)
 		tv.Shared.Bottom.Cmd.ClearInput()
+	case VoteFocus:
+		tv.PageFocus = VoteFocus
+		tv.View.SwitchToPage("vote")
+		tv.tut.App.SetFocus(tv.View)
+		tv.Shared.Bottom.StatusBar.SetMode(VoteMode)
+		tv.Shared.Top.SetText("select link with <Enter>")
 	case ModalFocus:
 		tv.PageFocus = ModalFocus
 		tv.View.SwitchToPage("modal")

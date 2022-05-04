@@ -32,6 +32,8 @@ func (tv *TutView) Input(event *tcell.EventKey) *tcell.EventKey {
 		return tv.InputMedia(event)
 	case MediaAddFocus:
 		return tv.InputMediaAdd(event)
+	case VoteFocus:
+		return tv.InputVote(event)
 	default:
 		return event
 	}
@@ -282,10 +284,11 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 		tv.SetPage(LinkFocus)
 		return nil
 	case 'p', 'P':
-		//vote
-		if hasPoll {
+		if !hasPoll {
 			return nil
 		}
+		tv.VoteView.SetPoll(sr.Poll)
+		tv.SetPage(VoteFocus)
 		return nil
 	case 'r', 'R':
 		tv.InitPost(status)
@@ -549,6 +552,41 @@ func (tv *TutView) InputMediaAdd(event *tcell.EventKey) *tcell.EventKey {
 	case tcell.KeyEsc:
 		tv.SetPage(MediaFocus)
 		tv.ComposeView.media.SetFocus(true)
+		return nil
+	}
+	return event
+}
+
+func (tv *TutView) InputVote(event *tcell.EventKey) *tcell.EventKey {
+	switch event.Rune() {
+	case 'j', 'J':
+		tv.VoteView.Next()
+		return nil
+	case 'k', 'K':
+		tv.VoteView.Prev()
+		return nil
+	case 'v', 'V':
+		tv.VoteView.Vote()
+		return nil
+	case ' ':
+		tv.VoteView.ToggleSelect()
+		return nil
+	case 'q', 'Q':
+		tv.FocusMainNoHistory()
+		return nil
+	}
+	switch event.Key() {
+	case tcell.KeyDown, tcell.KeyTAB:
+		tv.VoteView.Next()
+		return nil
+	case tcell.KeyUp, tcell.KeyBacktab:
+		tv.VoteView.Prev()
+		return nil
+	case tcell.KeyEnter:
+		tv.VoteView.ToggleSelect()
+		return nil
+	case tcell.KeyEsc:
+		tv.FocusMainNoHistory()
 		return nil
 	}
 	return event

@@ -42,6 +42,7 @@ type TutView struct {
 	MainView    *MainView
 	LinkView    *LinkView
 	ComposeView *ComposeView
+	VoteView    *VoteView
 	ModalView   *ModalView
 
 	FileList []string
@@ -113,10 +114,12 @@ func (tv *TutView) loggedIn(acc auth.Account) {
 	tv.MainView = NewMainView(tv, update)
 	tv.ComposeView = NewComposeView(tv)
 	tv.ModalView = NewModalView(tv)
+	tv.VoteView = NewVoteView(tv)
 
 	tv.View.AddPage("main", tv.MainView.View, true, false)
 	tv.View.AddPage("link", tv.LinkView.View, true, false)
 	tv.View.AddPage("compose", tv.ComposeView.View, true, false)
+	tv.View.AddPage("vote", tv.VoteView.View, true, false)
 	tv.View.AddPage("modal", tv.ModalView.View, true, false)
 	tv.SetPage(MainFocus)
 }
