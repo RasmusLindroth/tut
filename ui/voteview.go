@@ -7,7 +7,6 @@ import (
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/config"
-	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
@@ -145,32 +144,4 @@ func (v *VoteView) Vote() {
 	}
 	v.tutView.FocusMainNoHistory()
 	v.tutView.RedrawPoll(p)
-}
-
-func (v *VoteView) InputHandler(event *tcell.EventKey) {
-	if event.Key() == tcell.KeyRune {
-		switch event.Rune() {
-		case 'j', 'J':
-			v.Next()
-		case 'k', 'K':
-			v.Prev()
-		case 'v', 'V':
-			v.Vote()
-		case ' ':
-			v.ToggleSelect()
-		case 'q', 'Q':
-			//v.app.UI.StatusView.giveBackFocus()
-		}
-	} else {
-		switch event.Key() {
-		case tcell.KeyEnter:
-			v.ToggleSelect()
-		case tcell.KeyUp:
-			v.Prev()
-		case tcell.KeyDown:
-			v.Next()
-		case tcell.KeyEsc:
-			//v.app.UI.StatusView.giveBackFocus()
-		}
-	}
 }
