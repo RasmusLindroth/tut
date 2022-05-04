@@ -131,7 +131,7 @@ func (tv *TutView) SetPage(f PageFocusAt) {
 		tv.View.SwitchToPage("vote")
 		tv.tut.App.SetFocus(tv.View)
 		tv.Shared.Bottom.StatusBar.SetMode(VoteMode)
-		tv.Shared.Top.SetText("select link with <Enter>")
+		tv.Shared.Top.SetText("vote on poll")
 	case ModalFocus:
 		tv.PageFocus = ModalFocus
 		tv.View.SwitchToPage("modal")
