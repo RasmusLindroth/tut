@@ -9,7 +9,6 @@ import (
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
 	"github.com/RasmusLindroth/tut/config"
-	"github.com/RasmusLindroth/tut/tut"
 	"github.com/RasmusLindroth/tut/util"
 	"github.com/rivo/tview"
 )
@@ -71,7 +70,7 @@ type DisplayTootData struct {
 	Style config.Style
 }
 
-func drawStatus(tut *tut.Tut, item api.Item, status *mastodon.Status, main *tview.TextView, controls *tview.TextView, additional string) {
+func drawStatus(tut *Tut, item api.Item, status *mastodon.Status, main *tview.TextView, controls *tview.TextView, additional string) {
 	showSensitive := item.ShowSpoiler()
 
 	var strippedContent string

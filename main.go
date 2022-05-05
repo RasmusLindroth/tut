@@ -5,7 +5,6 @@ import (
 
 	"github.com/RasmusLindroth/tut/auth"
 	"github.com/RasmusLindroth/tut/config"
-	"github.com/RasmusLindroth/tut/tut"
 	"github.com/RasmusLindroth/tut/ui"
 	"github.com/rivo/tview"
 )
@@ -17,7 +16,7 @@ func main() {
 	accs := auth.StartAuth(newUser)
 
 	app := tview.NewApplication()
-	t := &tut.Tut{
+	t := &ui.Tut{
 		App:    app,
 		Config: config.Load(),
 	}

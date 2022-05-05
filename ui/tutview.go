@@ -10,7 +10,7 @@ import (
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
 	"github.com/RasmusLindroth/tut/auth"
-	"github.com/RasmusLindroth/tut/tut"
+	"github.com/RasmusLindroth/tut/config"
 	"github.com/rivo/tview"
 )
 
@@ -28,8 +28,14 @@ const (
 	ContentFocus
 )
 
+type Tut struct {
+	Client *api.AccountClient
+	App    *tview.Application
+	Config *config.Config
+}
+
 type TutView struct {
-	tut           *tut.Tut
+	tut           *Tut
 	Timeline      *Timeline
 	PageFocus     PageFocusAt
 	PrevPageFocus PageFocusAt
@@ -49,7 +55,7 @@ type TutView struct {
 	FileList []string
 }
 
-func NewTutView(t *tut.Tut, accs *auth.AccountData, selectedUser string) *TutView {
+func NewTutView(t *Tut, accs *auth.AccountData, selectedUser string) *TutView {
 	tv := &TutView{
 		tut:      t,
 		View:     tview.NewPages(),

@@ -8,7 +8,6 @@ import (
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
 	"github.com/RasmusLindroth/tut/config"
-	"github.com/RasmusLindroth/tut/tut"
 	"github.com/icza/gox/timex"
 	"github.com/rivo/tview"
 )
@@ -59,7 +58,7 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 	}
 }
 
-func DrawItem(tut *tut.Tut, item api.Item, main *tview.TextView, controls *tview.TextView) {
+func DrawItem(tut *Tut, item api.Item, main *tview.TextView, controls *tview.TextView) {
 	switch item.Type() {
 	case api.StatusType:
 		drawStatus(tut, item, item.Raw().(*mastodon.Status), main, controls, "")
@@ -72,7 +71,7 @@ func DrawItem(tut *tut.Tut, item api.Item, main *tview.TextView, controls *tview
 	}
 }
 
-func DrawItemControls(tut *tut.Tut, item api.Item, controls *tview.TextView) {
+func DrawItemControls(tut *Tut, item api.Item, controls *tview.TextView) {
 	switch item.Type() {
 	case api.StatusType:
 		drawStatus(tut, item, item.Raw().(*mastodon.Status), nil, controls, "")

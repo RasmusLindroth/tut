@@ -5,14 +5,13 @@ import (
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/config"
-	"github.com/RasmusLindroth/tut/tut"
 	"github.com/rivo/tview"
 )
 
 type List struct {
 }
 
-func drawList(tut *tut.Tut, data *mastodon.List, main *tview.TextView, controls *tview.TextView) {
+func drawList(tut *Tut, data *mastodon.List, main *tview.TextView, controls *tview.TextView) {
 
 	controlItem := config.ColorKey(tut.Config, "", "O", "pen")
 

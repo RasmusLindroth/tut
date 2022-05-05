@@ -8,7 +8,6 @@ import (
 	"github.com/RasmusLindroth/tut/api"
 	"github.com/RasmusLindroth/tut/config"
 	"github.com/RasmusLindroth/tut/feed"
-	"github.com/RasmusLindroth/tut/tut"
 	"github.com/gdamore/tcell/v2"
 	"github.com/gen2brain/beeep"
 	"github.com/rivo/tview"
@@ -425,7 +424,7 @@ func NewMuting(tv *TutView) *Feed {
 	return fd
 }
 
-func NewFeedList(t *tut.Tut) *FeedList {
+func NewFeedList(t *Tut) *FeedList {
 	fl := &FeedList{
 		Text:   NewList(t.Config),
 		Symbol: NewList(t.Config),
@@ -509,7 +508,7 @@ type FeedContent struct {
 	Controls *tview.TextView
 }
 
-func NewFeedContent(t *tut.Tut) *FeedContent {
+func NewFeedContent(t *Tut) *FeedContent {
 	m := NewTextView(t.Config)
 
 	if t.Config.General.MaxWidth > 0 {

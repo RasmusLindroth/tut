@@ -8,7 +8,6 @@ import (
 
 	"github.com/RasmusLindroth/tut/api"
 	"github.com/RasmusLindroth/tut/config"
-	"github.com/RasmusLindroth/tut/tut"
 	"github.com/RasmusLindroth/tut/util"
 	"github.com/rivo/tview"
 )
@@ -45,7 +44,7 @@ type DisplayUserData struct {
 	Style config.Style
 }
 
-func drawUser(tut *tut.Tut, data *api.User, main *tview.TextView, controls *tview.TextView, additional string) {
+func drawUser(tut *Tut, data *api.User, main *tview.TextView, controls *tview.TextView, additional string) {
 	user := data.Data
 	relation := data.Relation
 	showUserControl := true
