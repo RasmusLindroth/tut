@@ -36,6 +36,7 @@ func NewTimeline(tv *TutView, update chan bool) *Timeline {
 	}
 	tl.Feeds = append(tl.Feeds, nf)
 	tl.Notifications = NewNotificationFeed(tv)
+	tl.Notifications.ListOutFocus()
 
 	return tl
 }

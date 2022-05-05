@@ -193,7 +193,10 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 			)
 			c.Back()
 		case "favorited", "fav":
-			c.ClearInput()
+			c.tutView.Timeline.AddFeed(
+				NewFavoritedFeed(c.tutView),
+			)
+			c.Back()
 		}
 		c.ClearInput()
 	case ":tag":

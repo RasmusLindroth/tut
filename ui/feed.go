@@ -6,6 +6,7 @@ import (
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
+	"github.com/RasmusLindroth/tut/config"
 	"github.com/RasmusLindroth/tut/feed"
 	"github.com/RasmusLindroth/tut/tut"
 	"github.com/gdamore/tcell/v2"
@@ -18,12 +19,44 @@ type FeedList struct {
 	Symbol *tview.List
 }
 
+func (fl *FeedList) InFocus(style config.Style) {
+	inFocus(fl.Text, style)
+	inFocus(fl.Symbol, style)
+}
+
+func inFocus(l *tview.List, style config.Style) {
+	l.SetBackgroundColor(style.Background)
+	l.SetMainTextColor(style.Text)
+	l.SetSelectedBackgroundColor(style.ListSelectedBackground)
+	l.SetSelectedTextColor(style.ListSelectedText)
+}
+
+func (fl *FeedList) OutFocus(style config.Style) {
+	outFocus(fl.Text, style)
+	outFocus(fl.Symbol, style)
+}
+
+func outFocus(l *tview.List, style config.Style) {
+	l.SetBackgroundColor(style.Background)
+	l.SetMainTextColor(style.Text)
+	l.SetSelectedBackgroundColor(style.StatusBarViewBackground)
+	l.SetSelectedTextColor(style.StatusBarViewText)
+}
+
 type Feed struct {
 	tutView   *TutView
 	Data      *feed.Feed
 	ListIndex int
 	List      *FeedList
 	Content   *FeedContent
+}
+
+func (f *Feed) ListInFocus() {
+	f.List.InFocus(f.tutView.tut.Config.Style)
+}
+
+func (f *Feed) ListOutFocus() {
+	f.List.OutFocus(f.tutView.tut.Config.Style)
 }
 
 func (f *Feed) LoadOlder() {

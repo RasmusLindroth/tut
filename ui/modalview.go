@@ -13,7 +13,7 @@ type ModalView struct {
 func NewModalView(tv *TutView) *ModalView {
 	mv := &ModalView{
 		tutView: tv,
-		View:    tview.NewModal(),
+		View:    NewModal(tv.tut.Config),
 		res:     make(chan bool, 1),
 	}
 	mv.View.SetText("Are you sure?").

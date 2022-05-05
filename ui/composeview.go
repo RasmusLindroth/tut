@@ -65,7 +65,7 @@ func newComposeUI(cv *ComposeView) *tview.Flex {
 		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
 			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 				AddItem(cv.content, 0, 2, false), 0, 2, false).
-			AddItem(tview.NewBox(), 1, 0, false).
+			AddItem(tview.NewBox(), 2, 0, false).
 			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 				AddItem(cv.visibility, 1, 0, false).
 				AddItem(cv.info, 4, 0, false).

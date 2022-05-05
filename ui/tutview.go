@@ -129,10 +129,18 @@ func (tv *TutView) loggedIn(acc auth.Account) {
 
 func (tv *TutView) FocusNotification() {
 	tv.TimelineFocus = NotificationFocus
+	for _, f := range tv.Timeline.Feeds {
+		f.ListOutFocus()
+	}
+	tv.Timeline.Notifications.ListInFocus()
 	tv.Timeline.update <- true
 }
 
 func (tv *TutView) FocusFeed() {
 	tv.TimelineFocus = FeedFocus
+	for _, f := range tv.Timeline.Feeds {
+		f.ListInFocus()
+	}
+	tv.Timeline.Notifications.ListOutFocus()
 	tv.Timeline.update <- true
 }

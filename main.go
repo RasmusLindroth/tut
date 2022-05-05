@@ -25,14 +25,14 @@ func main() {
 		PrimitiveBackgroundColor:    t.Config.Style.Background,              // background
 		ContrastBackgroundColor:     t.Config.Style.Text,                    //background for button, checkbox, form, modal
 		MoreContrastBackgroundColor: t.Config.Style.Text,                    //background for dropdown
-		BorderColor:                 t.Config.Style.Text,                    //border
+		BorderColor:                 t.Config.Style.Background,              //border
 		TitleColor:                  t.Config.Style.Text,                    //titles
 		GraphicsColor:               t.Config.Style.Text,                    //borders
 		PrimaryTextColor:            t.Config.Style.StatusBarViewBackground, //backround color selected
 		SecondaryTextColor:          t.Config.Style.Text,                    //text
 		TertiaryTextColor:           t.Config.Style.Text,                    //list secondary
 		InverseTextColor:            t.Config.Style.Text,                    //label activated
-		ContrastSecondaryTextColor:  t.Config.Style.Subtle,                  //foreground on input and prefix on dropdown
+		ContrastSecondaryTextColor:  t.Config.Style.Text,                    //foreground on input and prefix on dropdown
 	}
 	main := ui.NewTutView(t, accs, selectedUser)
 	app.SetInputCapture(main.Input)
