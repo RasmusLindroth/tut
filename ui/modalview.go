@@ -38,6 +38,10 @@ func (mv *ModalView) run(text string) (chan bool, func()) {
 	}
 }
 func (mv *ModalView) Run(text string, fn func()) {
+	if !mv.tutView.tut.Config.General.Confirmation {
+		fn()
+		return
+	}
 	r, f := mv.run(text)
 	go func() {
 		if <-r {

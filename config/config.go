@@ -39,6 +39,7 @@ type Config struct {
 }
 
 type General struct {
+	Confirmation         bool
 	DateTodayFormat      string
 	DateFormat           string
 	DateRelative         int
@@ -333,6 +334,7 @@ func parseStyle(cfg *ini.File) Style {
 func parseGeneral(cfg *ini.File) General {
 	general := General{}
 
+	general.Confirmation = cfg.Section("general").Key("confirmation").MustBool(true)
 	dateFormat := cfg.Section("general").Key("date-format").String()
 	if dateFormat == "" {
 		dateFormat = "2006-01-02 15:04"

@@ -441,6 +441,11 @@ func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User) *tcell.Event
 		copyToClipboard(user.Data.URL)
 		return nil
 	}
+	switch event.Key() {
+	case tcell.KeyEnter:
+		tv.Timeline.AddFeed(NewUserFeed(tv, api.NewUserItem(user, true)))
+		return nil
+	}
 	return event
 }
 
@@ -526,13 +531,19 @@ func (tv *TutView) InputComposeView(event *tcell.EventKey) *tcell.EventKey {
 			tv.ComposeView.FocusVisibility()
 			return nil
 		case 'q', 'Q':
-			tv.FocusMainNoHistory()
+			tv.ModalView.Run(
+				"Do you want exit the compose view?", func() {
+					tv.FocusMainNoHistory()
+				})
 			return nil
 		}
 	} else {
 		switch event.Key() {
 		case tcell.KeyEsc:
-			tv.FocusMainNoHistory()
+			tv.ModalView.Run(
+				"Do you want exit the compose view?", func() {
+					tv.FocusMainNoHistory()
+				})
 			return nil
 		}
 	}
