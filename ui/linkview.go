@@ -92,7 +92,6 @@ func (lv *LinkView) Open() {
 	if mIndex < len(mentions) {
 		u, err := lv.tutView.tut.Client.GetUserByID(mentions[mIndex].ID)
 		if err != nil {
-			//l.app.UI.CmdBar.ShowError(fmt.Sprintf("Couldn't load user. Error: %v\n", err))
 			fmt.Printf("Couldn't load user. Error:%v\n", err)
 			os.Exit(1)
 			return
@@ -113,29 +112,50 @@ func (lv *LinkView) Open() {
 	}
 }
 
-func (lv *LinkView) Yank() {
+func (lv *LinkView) getURL() string {
 	item, err := lv.tutView.GetCurrentItem()
 	if err != nil {
-		return
+		return ""
 	}
 	urls, mentions, tags, total := item.URLs()
 	index := lv.list.GetCurrentItem()
 
 	if total == 0 || index >= total {
-		return
+		return ""
 	}
 	if index < len(urls) {
-		copyToClipboard(urls[index].URL)
-		return
+		return urls[index].URL
 	}
 	mIndex := index - len(urls)
 	if mIndex < len(mentions) {
-		copyToClipboard(mentions[mIndex].URL)
-		return
+		return mentions[mIndex].URL
 	}
 	tIndex := index - len(mentions) - len(urls)
 	if tIndex < len(tags) {
-		copyToClipboard(tags[tIndex].URL)
+		return tags[tIndex].URL
+	}
+	return ""
+}
+
+func (lv *LinkView) Yank() {
+	url := lv.getURL()
+	if url == "" {
+		return
+	}
+	copyToClipboard(url)
+}
+
+func (lv *LinkView) OpenCustom(index int) {
+	url := lv.getURL()
+	if url == "" {
+		return
+	}
+	customs := lv.tutView.tut.Config.OpenCustom.OpenCustoms
+	for _, c := range customs {
+		if c.Index != index {
+			continue
+		}
+		openCustom(lv.tutView, c.Program, c.Args, c.Terminal, url)
 		return
 	}
 }

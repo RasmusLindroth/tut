@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
@@ -468,6 +469,11 @@ func (tv *TutView) InputLinkView(event *tcell.EventKey) *tcell.EventKey {
 			return nil
 		case 'y', 'Y':
 			tv.LinkView.Yank()
+			return nil
+		case '1', '2', '3', '4', '5':
+			s := string(event.Rune())
+			i, _ := strconv.Atoi(s)
+			tv.LinkView.OpenCustom(i)
 			return nil
 		case 'q', 'Q':
 			tv.SetPage(MainFocus)

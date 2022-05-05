@@ -43,6 +43,15 @@ func openInTerminal(tv *TutView, command string, args ...string) error {
 	return err
 }
 
+func openCustom(tv *TutView, program string, args []string, terminal bool, url string) {
+	args = append(args, url)
+	if terminal {
+		openInTerminal(tv, program, args...)
+	} else {
+		exec.Command(program, args...).Start()
+	}
+}
+
 func OpenEditor(tv *TutView, content string) (string, error) {
 	editor, exists := os.LookupEnv("EDITOR")
 	if !exists || editor == "" {
