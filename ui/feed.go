@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 
 	"github.com/RasmusLindroth/go-mastodon"
@@ -193,8 +192,7 @@ func NewConversationsFeed(tv *TutView) *Feed {
 
 func NewUserFeed(tv *TutView, item api.Item) *Feed {
 	if item.Type() != api.UserType && item.Type() != api.ProfileType {
-		fmt.Printf("Can't open user. Wrong type.\n")
-		os.Exit(1)
+		panic("Can't open user. Wrong type.\n")
 	}
 	u := item.Raw().(*api.User)
 	f := feed.NewUserProfile(tv.tut.Client, u)

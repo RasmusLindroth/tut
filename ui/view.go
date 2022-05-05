@@ -70,6 +70,9 @@ func (tv *TutView) RedrawControls() {
 }
 
 func (tv *TutView) SetPage(f PageFocusAt) {
+	if f == tv.PageFocus {
+		return
+	}
 	tv.PrevPageFocus = tv.PageFocus
 	if tv.PrevPageFocus == LoginFocus {
 		tv.PrevPageFocus = MainFocus
@@ -150,6 +153,10 @@ func (tv *TutView) PrevFocus() {
 func (tv *TutView) InitPost(status *mastodon.Status) {
 	tv.ComposeView.SetStatus(status)
 	tv.SetPage(ComposeFocus)
+}
+
+func (tv *TutView) ShowError(s string) {
+	tv.Shared.Bottom.Cmd.ShowError(s)
 }
 
 func (tv *TutView) ShouldSync() {

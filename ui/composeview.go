@@ -172,8 +172,9 @@ func (cv *ComposeView) getAccs() string {
 func (cv *ComposeView) EditText() {
 	text, err := OpenEditor(cv.tutView, cv.msg.Text)
 	if err != nil {
-		fmt.Printf("error: %v", err)
-		os.Exit(1)
+		cv.tutView.ShowError(
+			fmt.Sprintf("Couldn't open editor. Error: %v", err),
+		)
 		return
 	}
 	cv.msg.Text = text
@@ -183,8 +184,9 @@ func (cv *ComposeView) EditText() {
 func (cv *ComposeView) EditSpoiler() {
 	text, err := OpenEditor(cv.tutView, cv.msg.SpoilerText)
 	if err != nil {
-		fmt.Printf("error: %v", err)
-		os.Exit(1)
+		cv.tutView.ShowError(
+			fmt.Sprintf("Couldn't open editor. Error: %v", err),
+		)
 		return
 	}
 	cv.msg.SpoilerText = text
@@ -308,8 +310,10 @@ func (cv *ComposeView) Post() {
 	for _, ap := range attachments {
 		f, err := os.Open(ap.Path)
 		if err != nil {
-			fmt.Printf("Couldn't upload media. Error: %v\n", err)
-			os.Exit(1)
+			cv.tutView.ShowError(
+				fmt.Sprintf("Couldn't upload media. Error: %v\n", err),
+			)
+			f.Close()
 			return
 		}
 		media := &mastodon.Media{
@@ -320,8 +324,10 @@ func (cv *ComposeView) Post() {
 		}
 		a, err := cv.tutView.tut.Client.Client.UploadMediaFromMedia(context.Background(), media)
 		if err != nil {
-			fmt.Printf("Couldn't upload media. Error: %v\n", err)
-			os.Exit(1)
+			cv.tutView.ShowError(
+				fmt.Sprintf("Couldn't upload media. Error: %v\n", err),
+			)
+			f.Close()
 			return
 		}
 		f.Close()
@@ -331,8 +337,9 @@ func (cv *ComposeView) Post() {
 
 	_, err := cv.tutView.tut.Client.Client.PostStatus(context.Background(), &send)
 	if err != nil {
-		fmt.Printf("Couldn't post toot. Error: %v\n", err)
-		os.Exit(1)
+		cv.tutView.ShowError(
+			fmt.Sprintf("Couldn't post toot. Error: %v\n", err),
+		)
 		return
 	}
 	cv.tutView.SetPage(MainFocus)
@@ -447,8 +454,9 @@ func (m *MediaList) EditDesc() {
 	file := m.Files[index]
 	desc, err := OpenEditor(m.tutView, file.Description)
 	if err != nil {
-		fmt.Printf("Couldn't edit description. Error: %v\n", err)
-		os.Exit(1)
+		m.tutView.ShowError(
+			fmt.Sprintf("Couldn't edit description. Error: %v\n", err),
+		)
 		return
 	}
 	file.Description = desc

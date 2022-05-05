@@ -5,7 +5,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"os/exec"
 
 	"github.com/RasmusLindroth/go-mastodon"
@@ -36,8 +35,9 @@ func downloadFile(url string) (string, error) {
 func openAvatar(tv *TutView, user mastodon.Account) {
 	f, err := downloadFile(user.AvatarStatic)
 	if err != nil {
-		fmt.Printf("Couldn't open avatar. Error: %v\n", err)
-		os.Exit(1)
+		tv.ShowError(
+			fmt.Sprintf("Couldn't open avatar. Error: %v\n", err),
+		)
 		return
 	}
 	openMediaType(tv, []string{f}, "image")

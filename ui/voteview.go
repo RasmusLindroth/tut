@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/RasmusLindroth/go-mastodon"
@@ -138,8 +137,9 @@ func (v *VoteView) Vote() {
 	}
 	p, err := v.tutView.tut.Client.Vote(v.poll, v.selected...)
 	if err != nil {
-		fmt.Printf("Couldn't vote. Error: %v\n", err)
-		os.Exit(1)
+		v.tutView.ShowError(
+			fmt.Sprintf("Couldn't vote. Error: %v\n", err),
+		)
 		return
 	}
 	v.tutView.FocusMainNoHistory()

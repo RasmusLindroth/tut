@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/RasmusLindroth/tut/api"
@@ -92,8 +91,9 @@ func (lv *LinkView) Open() {
 	if mIndex < len(mentions) {
 		u, err := lv.tutView.tut.Client.GetUserByID(mentions[mIndex].ID)
 		if err != nil {
-			fmt.Printf("Couldn't load user. Error:%v\n", err)
-			os.Exit(1)
+			lv.tutView.ShowError(
+				fmt.Sprintf("Couldn't load user. Error:%v\n", err),
+			)
 			return
 		}
 		lv.tutView.Timeline.AddFeed(

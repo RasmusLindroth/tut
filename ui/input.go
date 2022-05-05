@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 
 	"github.com/RasmusLindroth/go-mastodon"
@@ -16,6 +15,8 @@ func (tv *TutView) Input(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Rune() {
 		case ':':
 			tv.SetPage(CmdFocus)
+		case '?':
+			tv.SetPage(HelpFocus)
 		}
 	}
 	switch tv.PageFocus {
@@ -265,8 +266,10 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 			fmt.Sprintf("Do you want to %s this toot?", txt), func() {
 				ns, err := tv.tut.Client.BoostToggle(status)
 				if err != nil {
-					fmt.Printf("Couldn't boost toot. Error: %v\n", err)
-					os.Exit(1)
+					tv.ShowError(
+						fmt.Sprintf("Couldn't boost toot. Error: %v\n", err),
+					)
+					return
 				}
 				*status = *ns
 				tv.RedrawControls()
@@ -279,8 +282,10 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 		tv.ModalView.Run("Do you want to delete this toot?", func() {
 			err := tv.tut.Client.DeleteStatus(sr)
 			if err != nil {
-				fmt.Printf("Couldn't delete toot. Error: %v\n", err)
-				os.Exit(1)
+				tv.ShowError(
+					fmt.Sprintf("Couldn't delete toot. Error: %v\n", err),
+				)
+				return
 			}
 			status.Card = nil
 			status.Sensitive = false
@@ -301,8 +306,10 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 			func() {
 				ns, err := tv.tut.Client.FavoriteToogle(status)
 				if err != nil {
-					fmt.Printf("Couldn't favorite toot. Error: %v\n", err)
-					os.Exit(1)
+					tv.ShowError(
+						fmt.Sprintf("Couldn't favorite toot. Error: %v\n", err),
+					)
+					return
 				}
 				*status = *ns
 				tv.RedrawControls()
@@ -335,8 +342,10 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 			func() {
 				ns, err := tv.tut.Client.BookmarkToogle(status)
 				if err != nil {
-					fmt.Printf("Couldn't bookmark toot. Error: %v\n", err)
-					os.Exit(1)
+					tv.ShowError(
+						fmt.Sprintf("Couldn't bookmark toot. Error: %v\n", err),
+					)
+					return
 				}
 				*status = *ns
 				tv.RedrawControls()
@@ -389,8 +398,10 @@ func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User) *tcell.Event
 			func() {
 				rel, err := tv.tut.Client.BlockToggle(user)
 				if err != nil {
-					fmt.Printf("Couldn't block user. Error: %v\n", err)
-					os.Exit(1)
+					tv.ShowError(
+						fmt.Sprintf("Couldn't block user. Error: %v\n", err),
+					)
+					return
 				}
 				user.Relation = rel
 				tv.RedrawControls()
@@ -405,8 +416,10 @@ func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User) *tcell.Event
 			func() {
 				rel, err := tv.tut.Client.FollowToggle(user)
 				if err != nil {
-					fmt.Printf("Couldn't follow user. Error: %v\n", err)
-					os.Exit(1)
+					tv.ShowError(
+						fmt.Sprintf("Couldn't follow user. Error: %v\n", err),
+					)
+					return
 				}
 				user.Relation = rel
 				tv.RedrawControls()
@@ -421,8 +434,10 @@ func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User) *tcell.Event
 			func() {
 				rel, err := tv.tut.Client.MuteToggle(user)
 				if err != nil {
-					fmt.Printf("Couldn't follow user. Error: %v\n", err)
-					os.Exit(1)
+					tv.ShowError(
+						fmt.Sprintf("Couldn't follow user. Error: %v\n", err),
+					)
+					return
 				}
 				user.Relation = rel
 				tv.RedrawControls()

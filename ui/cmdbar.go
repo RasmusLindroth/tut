@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/RasmusLindroth/go-mastodon"
@@ -25,6 +24,10 @@ func NewCmdBar(tv *TutView) *CmdBar {
 	c.View.SetAutocompleteFunc(c.Autocomplete)
 	c.View.SetDoneFunc(c.DoneFunc)
 
+	if tv.tut.Config.General.ShowHelp {
+		c.ShowMsg("Press ? or :help to learn how tut functions")
+	}
+
 	return c
 }
 
@@ -33,14 +36,17 @@ func (c *CmdBar) GetInput() string {
 }
 
 func (c *CmdBar) ShowError(s string) {
+	c.View.SetFieldTextColor(c.tutView.tut.Config.Style.WarningText)
 	c.View.SetText(s)
 }
 
 func (c *CmdBar) ShowMsg(s string) {
+	c.View.SetFieldTextColor(c.tutView.tut.Config.Style.StatusBarText)
 	c.View.SetText(s)
 }
 
 func (c *CmdBar) ClearInput() {
+	c.View.SetFieldTextColor(c.tutView.tut.Config.Style.StatusBarText)
 	c.View.SetText("")
 }
 
@@ -149,8 +155,8 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 	case ":profile":
 		item, err := c.tutView.tut.Client.GetUserByID(c.tutView.tut.Client.Me.ID)
 		if err != nil {
-			fmt.Printf("Couldn't load user. Error: %v\n", err)
-			os.Exit(1)
+			c.ShowError(fmt.Sprintf("Couldn't load user. Error: %v\n", err))
+			c.Back()
 		}
 		c.tutView.Timeline.AddFeed(
 			NewUserFeed(c.tutView, item),
