@@ -23,7 +23,18 @@ func NewTimeline(tv *TutView, update chan bool) *Timeline {
 		Notifications: nil,
 		update:        update,
 	}
-	tl.Feeds = append(tl.Feeds, NewHomeFeed(tv))
+	var nf *Feed
+	switch tv.tut.Config.General.StartTimeline {
+	case feed.TimelineFederated:
+		nf = NewFederatedFeed(tv)
+	case feed.TimelineLocal:
+		nf = NewLocalFeed(tv)
+	case feed.Conversations:
+		nf = NewConversationsFeed(tv)
+	default:
+		nf = NewHomeFeed(tv)
+	}
+	tl.Feeds = append(tl.Feeds, nf)
 	tl.Notifications = NewNotificationFeed(tv)
 
 	return tl

@@ -353,14 +353,14 @@ func parseGeneral(cfg *ini.File) General {
 
 	tl := cfg.Section("general").Key("timeline").In("home", []string{"home", "direct", "local", "federated"})
 	switch tl {
-	case "home":
-		general.StartTimeline = feed.TimelineHome
 	case "direct":
 		general.StartTimeline = feed.Conversations
 	case "local":
 		general.StartTimeline = feed.TimelineLocal
 	case "federated":
 		general.StartTimeline = feed.TimelineFederated
+	default:
+		general.StartTimeline = feed.TimelineHome
 	}
 
 	general.NotificationFeed = cfg.Section("general").Key("notification-feed").MustBool(true)
