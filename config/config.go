@@ -147,7 +147,7 @@ const (
 type NotificationType uint
 
 const (
-	NotificationFollower = iota
+	NotificationFollower NotificationType = iota
 	NotificationFavorite
 	NotificationMention
 	NotificationBoost

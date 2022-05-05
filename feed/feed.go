@@ -47,6 +47,18 @@ type LoadingLock struct {
 	last time.Time
 }
 
+type DesktopNotificationType uint
+
+const (
+	DekstopNotificationNone DesktopNotificationType = iota
+	DesktopNotificationFollower
+	DesktopNotificationFavorite
+	DesktopNotificationMention
+	DesktopNotificationBoost
+	DesktopNotificationPoll
+	DesktopNotificationPost
+)
+
 type Feed struct {
 	accountClient *api.AccountClient
 	feedType      FeedType
@@ -56,7 +68,7 @@ type Feed struct {
 	loadingOlder  *LoadingLock
 	loadNewer     func()
 	loadOlder     func()
-	Update        chan bool
+	Update        chan DesktopNotificationType
 	apiData       *api.RequestData
 	apiDataMux    sync.Mutex
 	stream        *api.Receiver
@@ -83,11 +95,11 @@ func (f *Feed) Item(index int) (api.Item, error) {
 	return f.items[index], nil
 }
 
-func (f *Feed) Updated() {
+func (f *Feed) Updated(nt DesktopNotificationType) {
 	if len(f.Update) > 0 {
 		return
 	}
-	f.Update <- true
+	f.Update <- nt
 }
 
 func (f *Feed) LoadNewer() {
@@ -103,7 +115,7 @@ func (f *Feed) LoadNewer() {
 		return
 	}
 	f.loadNewer()
-	f.Updated()
+	f.Updated(DekstopNotificationNone)
 	f.loadingNewer.last = time.Now()
 	f.loadingNewer.mux.Unlock()
 }
@@ -121,7 +133,7 @@ func (f *Feed) LoadOlder() {
 		return
 	}
 	f.loadOlder()
-	f.Updated()
+	f.Updated(DekstopNotificationNone)
 	f.loadingOlder.last = time.Now()
 	f.loadingOlder.mux.Unlock()
 }
@@ -148,7 +160,7 @@ func (f *Feed) singleNewerSearch(fn apiSearchFunc, search string) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(items, f.items...)
-		f.Updated()
+		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
 }
@@ -161,7 +173,7 @@ func (f *Feed) singleThread(fn apiThreadFunc, status *mastodon.Status) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(items, f.items...)
-		f.Updated()
+		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
 }
@@ -185,7 +197,7 @@ func (f *Feed) normalNewer(fn apiFunc) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(items, f.items...)
-		f.Updated()
+		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
 }
@@ -209,7 +221,7 @@ func (f *Feed) normalOlder(fn apiFunc) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(f.items, items...)
-		f.Updated()
+		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
 }
@@ -231,7 +243,7 @@ func (f *Feed) newerSearchPG(fn apiSearchPGFunc, search string) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(items, f.items...)
-		f.Updated()
+		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
 }
@@ -253,7 +265,7 @@ func (f *Feed) olderSearchPG(fn apiSearchPGFunc, search string) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(f.items, items...)
-		f.Updated()
+		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
 }
@@ -280,7 +292,7 @@ func (f *Feed) normalNewerUser(fn apiIDFunc, id mastodon.ID) {
 			newItems = append(newItems, f.items[1:]...)
 		}
 		f.items = newItems
-		f.Updated()
+		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
 }
@@ -302,7 +314,7 @@ func (f *Feed) normalOlderUser(fn apiIDFunc, id mastodon.ID) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(f.items, items...)
-		f.Updated()
+		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
 }
@@ -324,7 +336,7 @@ func (f *Feed) normalNewerID(fn apiIDFunc, id mastodon.ID) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(items, f.items...)
-		f.Updated()
+		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
 }
@@ -346,7 +358,7 @@ func (f *Feed) normalOlderID(fn apiIDFunc, id mastodon.ID) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(f.items, items...)
-		f.Updated()
+		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
 }
@@ -359,7 +371,7 @@ func (f *Feed) normalEmpty(fn apiEmptyFunc) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(f.items, items...)
-		f.Updated()
+		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
 }
@@ -385,7 +397,7 @@ func (f *Feed) linkNewer(fn apiFunc) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(items, f.items...)
-		f.Updated()
+		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
 }
@@ -410,7 +422,7 @@ func (f *Feed) linkOlder(fn apiFunc) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(f.items, items...)
-		f.Updated()
+		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
 }
@@ -436,7 +448,7 @@ func (f *Feed) linkNewerID(fn apiIDFunc, id mastodon.ID) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(items, f.items...)
-		f.Updated()
+		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
 }
@@ -461,7 +473,7 @@ func (f *Feed) linkOlderID(fn apiIDFunc, id mastodon.ID) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(f.items, items...)
-		f.Updated()
+		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
 }
@@ -478,7 +490,7 @@ func (f *Feed) startStream(rec *api.Receiver, err error) {
 				s := api.NewStatusItem(t.Status)
 				f.itemsMux.Lock()
 				f.items = append([]api.Item{s}, f.items...)
-				f.Updated()
+				f.Updated(DesktopNotificationPost)
 				f.itemsMux.Unlock()
 			}
 		}
@@ -509,7 +521,22 @@ func (f *Feed) startStreamNotification(rec *api.Receiver, err error) {
 					})
 				f.itemsMux.Lock()
 				f.items = append([]api.Item{s}, f.items...)
-				f.Updated()
+				nft := DekstopNotificationNone
+				switch t.Notification.Type {
+				case "follow", "follow_request":
+					nft = DesktopNotificationFollower
+				case "favourite":
+					nft = DesktopNotificationFollower
+				case "reblog":
+					nft = DesktopNotificationBoost
+				case "mention":
+					nft = DesktopNotificationMention
+				case "status":
+					nft = DesktopNotificationPost
+				case "poll":
+					nft = DesktopNotificationPoll
+				}
+				f.Updated(nft)
 				f.itemsMux.Unlock()
 			}
 		}
@@ -523,7 +550,7 @@ func NewTimelineHome(ac *api.AccountClient) *Feed {
 		items:         make([]api.Item, 0),
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
-		Update:        make(chan bool, 1),
+		Update:        make(chan DesktopNotificationType, 1),
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
 	}
@@ -543,7 +570,7 @@ func NewTimelineFederated(ac *api.AccountClient) *Feed {
 		items:         make([]api.Item, 0),
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
-		Update:        make(chan bool, 1),
+		Update:        make(chan DesktopNotificationType, 1),
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
 	}
@@ -563,7 +590,7 @@ func NewTimelineLocal(ac *api.AccountClient) *Feed {
 		items:         make([]api.Item, 0),
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
-		Update:        make(chan bool, 1),
+		Update:        make(chan DesktopNotificationType, 1),
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
 	}
@@ -583,7 +610,7 @@ func NewConversations(ac *api.AccountClient) *Feed {
 		items:         make([]api.Item, 0),
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
-		Update:        make(chan bool, 1),
+		Update:        make(chan DesktopNotificationType, 1),
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
 	}
@@ -603,7 +630,7 @@ func NewNotifications(ac *api.AccountClient) *Feed {
 		items:         make([]api.Item, 0),
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
-		Update:        make(chan bool, 1),
+		Update:        make(chan DesktopNotificationType, 1),
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
 	}
@@ -622,7 +649,7 @@ func NewFavorites(ac *api.AccountClient) *Feed {
 		feedType:      Favorited,
 		items:         make([]api.Item, 0),
 		apiData:       &api.RequestData{},
-		Update:        make(chan bool, 1),
+		Update:        make(chan DesktopNotificationType, 1),
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
 	}
@@ -639,7 +666,7 @@ func NewBookmarks(ac *api.AccountClient) *Feed {
 		feedType:      Favorites,
 		items:         make([]api.Item, 0),
 		apiData:       &api.RequestData{},
-		Update:        make(chan bool, 1),
+		Update:        make(chan DesktopNotificationType, 1),
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
 	}
@@ -657,7 +684,7 @@ func NewUserSearch(ac *api.AccountClient, search string) *Feed {
 		items:         make([]api.Item, 0),
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
-		Update:        make(chan bool, 1),
+		Update:        make(chan DesktopNotificationType, 1),
 		name:          search,
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
@@ -675,7 +702,7 @@ func NewUserProfile(ac *api.AccountClient, user *api.User) *Feed {
 		items:         make([]api.Item, 0),
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
-		Update:        make(chan bool, 1),
+		Update:        make(chan DesktopNotificationType, 1),
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
 	}
@@ -693,7 +720,7 @@ func NewThread(ac *api.AccountClient, status *mastodon.Status) *Feed {
 		items:         make([]api.Item, 0),
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
-		Update:        make(chan bool, 1),
+		Update:        make(chan DesktopNotificationType, 1),
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
 	}
@@ -710,7 +737,7 @@ func NewTag(ac *api.AccountClient, search string) *Feed {
 		items:         make([]api.Item, 0),
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
-		Update:        make(chan bool, 1),
+		Update:        make(chan DesktopNotificationType, 1),
 		name:          search,
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
@@ -731,7 +758,7 @@ func NewListList(ac *api.AccountClient) *Feed {
 		items:         make([]api.Item, 0),
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
-		Update:        make(chan bool, 1),
+		Update:        make(chan DesktopNotificationType, 1),
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
 	}
@@ -748,7 +775,7 @@ func NewList(ac *api.AccountClient, list *mastodon.List) *Feed {
 		items:         make([]api.Item, 0),
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
-		Update:        make(chan bool, 1),
+		Update:        make(chan DesktopNotificationType, 1),
 		name:          list.Title,
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
@@ -767,7 +794,7 @@ func NewFavoritesStatus(ac *api.AccountClient, id mastodon.ID) *Feed {
 		feedType:      Favorites,
 		items:         make([]api.Item, 0),
 		apiData:       &api.RequestData{},
-		Update:        make(chan bool, 1),
+		Update:        make(chan DesktopNotificationType, 1),
 		loadOlder:     func() {},
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
@@ -790,7 +817,7 @@ func NewBoosts(ac *api.AccountClient, id mastodon.ID) *Feed {
 		feedType:      Boosts,
 		items:         make([]api.Item, 0),
 		apiData:       &api.RequestData{},
-		Update:        make(chan bool, 1),
+		Update:        make(chan DesktopNotificationType, 1),
 		loadOlder:     func() {},
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
@@ -813,7 +840,7 @@ func NewFollowers(ac *api.AccountClient, id mastodon.ID) *Feed {
 		feedType:      Followers,
 		items:         make([]api.Item, 0),
 		apiData:       &api.RequestData{},
-		Update:        make(chan bool, 1),
+		Update:        make(chan DesktopNotificationType, 1),
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
 	}
@@ -836,7 +863,7 @@ func NewFollowing(ac *api.AccountClient, id mastodon.ID) *Feed {
 		feedType:      Following,
 		items:         make([]api.Item, 0),
 		apiData:       &api.RequestData{},
-		Update:        make(chan bool, 1),
+		Update:        make(chan DesktopNotificationType, 1),
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
 	}
@@ -859,7 +886,7 @@ func NewBlocking(ac *api.AccountClient) *Feed {
 		feedType:      Blocking,
 		items:         make([]api.Item, 0),
 		apiData:       &api.RequestData{},
-		Update:        make(chan bool, 1),
+		Update:        make(chan DesktopNotificationType, 1),
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
 	}
@@ -885,7 +912,7 @@ func NewMuting(ac *api.AccountClient) *Feed {
 		feedType:      Muting,
 		items:         make([]api.Item, 0),
 		apiData:       &api.RequestData{},
-		Update:        make(chan bool, 1),
+		Update:        make(chan DesktopNotificationType, 1),
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
 	}

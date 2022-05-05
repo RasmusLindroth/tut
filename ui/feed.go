@@ -10,6 +10,7 @@ import (
 	"github.com/RasmusLindroth/tut/feed"
 	"github.com/RasmusLindroth/tut/tut"
 	"github.com/gdamore/tcell/v2"
+	"github.com/gen2brain/beeep"
 	"github.com/rivo/tview"
 )
 
@@ -50,7 +51,33 @@ func (f *Feed) DrawContent() {
 }
 
 func (f *Feed) update() {
-	for range f.Data.Update {
+	for nft := range f.Data.Update {
+		switch nft {
+		case feed.DesktopNotificationFollower:
+			if f.tutView.tut.Config.NotificationConfig.NotificationFollower {
+				beeep.Notify("New follower", "", "")
+			}
+		case feed.DesktopNotificationFavorite:
+			if f.tutView.tut.Config.NotificationConfig.NotificationFavorite {
+				beeep.Notify("Favorited your toot", "", "")
+			}
+		case feed.DesktopNotificationMention:
+			if f.tutView.tut.Config.NotificationConfig.NotificationMention {
+				beeep.Notify("Mentioned you", "", "")
+			}
+		case feed.DesktopNotificationBoost:
+			if f.tutView.tut.Config.NotificationConfig.NotificationBoost {
+				beeep.Notify("Boosted your toot", "", "")
+			}
+		case feed.DesktopNotificationPoll:
+			if f.tutView.tut.Config.NotificationConfig.NotificationPoll {
+				beeep.Notify("Poll has ended", "", "")
+			}
+		case feed.DesktopNotificationPost:
+			if f.tutView.tut.Config.NotificationConfig.NotificationPost {
+				beeep.Notify("New post", "", "")
+			}
+		}
 		f.tutView.tut.App.QueueUpdateDraw(func() {
 			lLen := f.List.GetItemCount()
 			curr := f.List.GetCurrentID()
