@@ -1,4 +1,6 @@
-# Configuration file for tut
+package config
+
+var conftext = `# Configuration file for tut
 
 [general]
 # Shows a confirmation view before actions such as favorite, delete toot, boost
@@ -316,3 +318,4 @@ list-selected-background=xrdb:color5
 # The text color of selected list items.
 # default=xrdb:background
 list-selected-text=xrdb:background
+`
