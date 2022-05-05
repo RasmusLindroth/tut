@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
@@ -41,13 +42,18 @@ const (
 	List
 )
 
+type LoadingLock struct {
+	mux  sync.Mutex
+	last time.Time
+}
+
 type Feed struct {
 	accountClient *api.AccountClient
 	feedType      FeedType
 	items         []api.Item
 	itemsMux      sync.RWMutex
-	loadingNewer  sync.Mutex
-	loadingOlder  sync.Mutex
+	loadingNewer  *LoadingLock
+	loadingOlder  *LoadingLock
 	loadNewer     func()
 	loadOlder     func()
 	Update        chan bool
@@ -88,26 +94,36 @@ func (f *Feed) LoadNewer() {
 	if f.loadNewer == nil {
 		return
 	}
-	lock := f.loadingNewer.TryLock()
+	lock := f.loadingNewer.mux.TryLock()
 	if !lock {
+		return
+	}
+	if time.Since(f.loadingNewer.last) < (500 * time.Millisecond) {
+		f.loadingNewer.mux.Unlock()
 		return
 	}
 	f.loadNewer()
 	f.Updated()
-	f.loadingNewer.Unlock()
+	f.loadingNewer.last = time.Now()
+	f.loadingNewer.mux.Unlock()
 }
 
 func (f *Feed) LoadOlder() {
 	if f.loadOlder == nil {
 		return
 	}
-	lock := f.loadingOlder.TryLock()
+	lock := f.loadingOlder.mux.TryLock()
 	if !lock {
+		return
+	}
+	if time.Since(f.loadingOlder.last) < (500 * time.Microsecond) {
+		f.loadingOlder.mux.Unlock()
 		return
 	}
 	f.loadOlder()
 	f.Updated()
-	f.loadingOlder.Unlock()
+	f.loadingOlder.last = time.Now()
+	f.loadingOlder.mux.Unlock()
 }
 
 func (f *Feed) HasStream() bool {
@@ -508,6 +524,8 @@ func NewTimelineHome(ac *api.AccountClient) *Feed {
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
 		Update:        make(chan bool, 1),
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
 	}
 
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetTimeline) }
@@ -526,6 +544,8 @@ func NewTimelineFederated(ac *api.AccountClient) *Feed {
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
 		Update:        make(chan bool, 1),
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
 	}
 
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetTimelineFederated) }
@@ -544,6 +564,8 @@ func NewTimelineLocal(ac *api.AccountClient) *Feed {
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
 		Update:        make(chan bool, 1),
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
 	}
 
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetTimelineLocal) }
@@ -562,6 +584,8 @@ func NewConversations(ac *api.AccountClient) *Feed {
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
 		Update:        make(chan bool, 1),
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
 	}
 
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetConversations) }
@@ -580,6 +604,8 @@ func NewNotifications(ac *api.AccountClient) *Feed {
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
 		Update:        make(chan bool, 1),
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
 	}
 
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetNotifications) }
@@ -597,6 +623,8 @@ func NewFavorites(ac *api.AccountClient) *Feed {
 		items:         make([]api.Item, 0),
 		apiData:       &api.RequestData{},
 		Update:        make(chan bool, 1),
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
 	}
 
 	feed.loadNewer = func() { feed.linkNewer(feed.accountClient.GetFavorites) }
@@ -612,6 +640,8 @@ func NewBookmarks(ac *api.AccountClient) *Feed {
 		items:         make([]api.Item, 0),
 		apiData:       &api.RequestData{},
 		Update:        make(chan bool, 1),
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
 	}
 
 	feed.loadNewer = func() { feed.linkNewer(feed.accountClient.GetBookmarks) }
@@ -629,6 +659,8 @@ func NewUserSearch(ac *api.AccountClient, search string) *Feed {
 		apiData:       &api.RequestData{},
 		Update:        make(chan bool, 1),
 		name:          search,
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
 	}
 
 	feed.loadNewer = func() { feed.singleNewerSearch(feed.accountClient.GetUsers, search) }
@@ -644,6 +676,8 @@ func NewUserProfile(ac *api.AccountClient, user *api.User) *Feed {
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
 		Update:        make(chan bool, 1),
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
 	}
 	feed.items = append(feed.items, api.NewUserItem(user, true))
 	feed.loadNewer = func() { feed.normalNewerUser(feed.accountClient.GetUser, user.Data.ID) }
@@ -660,6 +694,8 @@ func NewThread(ac *api.AccountClient, status *mastodon.Status) *Feed {
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
 		Update:        make(chan bool, 1),
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
 	}
 
 	feed.loadNewer = func() { feed.singleThread(feed.accountClient.GetThread, status) }
@@ -676,6 +712,8 @@ func NewTag(ac *api.AccountClient, search string) *Feed {
 		apiData:       &api.RequestData{},
 		Update:        make(chan bool, 1),
 		name:          search,
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
 	}
 
 	feed.loadNewer = func() { feed.newerSearchPG(feed.accountClient.GetTag, search) }
@@ -694,6 +732,8 @@ func NewListList(ac *api.AccountClient) *Feed {
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
 		Update:        make(chan bool, 1),
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
 	}
 
 	feed.loadNewer = func() { feed.normalEmpty(feed.accountClient.GetLists) }
@@ -710,6 +750,8 @@ func NewList(ac *api.AccountClient, list *mastodon.List) *Feed {
 		apiData:       &api.RequestData{},
 		Update:        make(chan bool, 1),
 		name:          list.Title,
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
 	}
 	feed.loadNewer = func() { feed.normalNewerID(feed.accountClient.GetListStatuses, list.ID) }
 	feed.loadOlder = func() { feed.normalOlderID(feed.accountClient.GetListStatuses, list.ID) }
@@ -727,6 +769,8 @@ func NewFavoritesStatus(ac *api.AccountClient, id mastodon.ID) *Feed {
 		apiData:       &api.RequestData{},
 		Update:        make(chan bool, 1),
 		loadOlder:     func() {},
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
 	}
 
 	once := true
@@ -748,6 +792,8 @@ func NewBoosts(ac *api.AccountClient, id mastodon.ID) *Feed {
 		apiData:       &api.RequestData{},
 		Update:        make(chan bool, 1),
 		loadOlder:     func() {},
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
 	}
 
 	once := true
@@ -768,6 +814,8 @@ func NewFollowers(ac *api.AccountClient, id mastodon.ID) *Feed {
 		items:         make([]api.Item, 0),
 		apiData:       &api.RequestData{},
 		Update:        make(chan bool, 1),
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
 	}
 
 	once := true
@@ -789,6 +837,8 @@ func NewFollowing(ac *api.AccountClient, id mastodon.ID) *Feed {
 		items:         make([]api.Item, 0),
 		apiData:       &api.RequestData{},
 		Update:        make(chan bool, 1),
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
 	}
 
 	once := true
@@ -810,6 +860,8 @@ func NewBlocking(ac *api.AccountClient) *Feed {
 		items:         make([]api.Item, 0),
 		apiData:       &api.RequestData{},
 		Update:        make(chan bool, 1),
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
 	}
 
 	feed.loadNewer = func() { feed.linkNewer(feed.accountClient.GetBlocking) }
@@ -834,6 +886,8 @@ func NewMuting(ac *api.AccountClient) *Feed {
 		items:         make([]api.Item, 0),
 		apiData:       &api.RequestData{},
 		Update:        make(chan bool, 1),
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
 	}
 
 	once := true
