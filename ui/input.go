@@ -22,6 +22,8 @@ func (tv *TutView) Input(event *tcell.EventKey) *tcell.EventKey {
 		return tv.InputLoginView(event)
 	case MainFocus:
 		return tv.InputMainView(event)
+	case ViewFocus:
+		return tv.InputViewItem(event)
 	case ComposeFocus:
 		return tv.InputComposeView(event)
 	case LinkFocus:
@@ -165,6 +167,20 @@ func (tv *TutView) InputMainViewContent(event *tcell.EventKey) *tcell.EventKey {
 		}
 	}
 	return tv.InputItem(event)
+}
+
+func (tv *TutView) InputViewItem(event *tcell.EventKey) *tcell.EventKey {
+	switch event.Rune() {
+	case 'q':
+		tv.FocusMainNoHistory()
+		return nil
+	}
+	switch event.Key() {
+	case tcell.KeyEsc:
+		tv.FocusMainNoHistory()
+		return nil
+	}
+	return event
 }
 
 func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
@@ -318,6 +334,9 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 			return nil
 		}
 		tv.Timeline.AddFeed(NewUserFeed(tv, user))
+		return nil
+	case 'v', 'V':
+		tv.SetPage(ViewFocus)
 		return nil
 	case 'y', 'Y':
 		copyToClipboard(status.URL)

@@ -10,6 +10,7 @@ type PageFocusAt uint
 const (
 	LoginFocus PageFocusAt = iota
 	MainFocus
+	ViewFocus
 	ModalFocus
 	LinkFocus
 	ComposeFocus
@@ -19,25 +20,21 @@ const (
 	VoteFocus
 )
 
-func (tv *TutView) GetCurrentItem() (api.Item, error) {
+func (tv *TutView) GetCurrentFeed() *Feed {
 	foc := tv.TimelineFocus
-	var f *Feed
 	if foc == FeedFocus {
-		f = tv.Timeline.Feeds[tv.Timeline.FeedIndex]
-	} else {
-		f = tv.Timeline.Notifications
+		return tv.Timeline.Feeds[tv.Timeline.FeedIndex]
 	}
+	return tv.Timeline.Notifications
+}
+
+func (tv *TutView) GetCurrentItem() (api.Item, error) {
+	f := tv.GetCurrentFeed()
 	return f.Data.Item(f.List.Text.GetCurrentItem())
 }
 
 func (tv *TutView) RedrawContent() {
-	foc := tv.TimelineFocus
-	var f *Feed
-	if foc == FeedFocus {
-		f = tv.Timeline.Feeds[tv.Timeline.FeedIndex]
-	} else {
-		f = tv.Timeline.Notifications
-	}
+	f := tv.GetCurrentFeed()
 	item, err := f.Data.Item(f.List.Text.GetCurrentItem())
 	if err != nil {
 		return
@@ -45,13 +42,7 @@ func (tv *TutView) RedrawContent() {
 	DrawItem(tv.tut, item, f.Content.Main, f.Content.Controls)
 }
 func (tv *TutView) RedrawPoll(poll *mastodon.Poll) {
-	foc := tv.TimelineFocus
-	var f *Feed
-	if foc == FeedFocus {
-		f = tv.Timeline.Feeds[tv.Timeline.FeedIndex]
-	} else {
-		f = tv.Timeline.Notifications
-	}
+	f := tv.GetCurrentFeed()
 	item, err := f.Data.Item(f.List.Text.GetCurrentItem())
 	if err != nil {
 		return
@@ -69,13 +60,7 @@ func (tv *TutView) RedrawPoll(poll *mastodon.Poll) {
 	DrawItem(tv.tut, item, f.Content.Main, f.Content.Controls)
 }
 func (tv *TutView) RedrawControls() {
-	foc := tv.TimelineFocus
-	var f *Feed
-	if foc == FeedFocus {
-		f = tv.Timeline.Feeds[tv.Timeline.FeedIndex]
-	} else {
-		f = tv.Timeline.Notifications
-	}
+	f := tv.GetCurrentFeed()
 	item, err := f.Data.Item(f.List.Text.GetCurrentItem())
 	if err != nil {
 		return
@@ -101,6 +86,11 @@ func (tv *TutView) SetPage(f PageFocusAt) {
 		tv.Shared.Bottom.StatusBar.SetMode(ListMode)
 		tv.Shared.Top.SetText(tv.Timeline.GetTitle())
 		tv.tut.App.SetFocus(tv.View)
+	case ViewFocus:
+		f := tv.GetCurrentFeed()
+		tv.PageFocus = ViewFocus
+		tv.Shared.Bottom.StatusBar.SetMode(ScrollMode)
+		tv.tut.App.SetFocus(f.Content.Main)
 	case LinkFocus:
 		tv.PageFocus = LinkFocus
 		tv.View.SwitchToPage("link")
