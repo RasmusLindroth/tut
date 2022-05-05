@@ -220,7 +220,10 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 		)
 		c.Back()
 	case ":help", ":h":
+		c.tutView.PageFocus = c.tutView.PrevPageFocus
+		c.tutView.SetPage(HelpFocus)
 		c.ClearInput()
+		c.View.Autocomplete()
 	}
 }
 

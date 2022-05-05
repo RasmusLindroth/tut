@@ -36,6 +36,8 @@ func (tv *TutView) Input(event *tcell.EventKey) *tcell.EventKey {
 		return tv.InputMediaAdd(event)
 	case VoteFocus:
 		return tv.InputVote(event)
+	case HelpFocus:
+		return tv.InputHelp(event)
 	default:
 		return event
 	}
@@ -167,6 +169,20 @@ func (tv *TutView) InputMainViewContent(event *tcell.EventKey) *tcell.EventKey {
 		}
 	}
 	return tv.InputItem(event)
+}
+
+func (tv *TutView) InputHelp(event *tcell.EventKey) *tcell.EventKey {
+	switch event.Rune() {
+	case 'q':
+		tv.PrevFocus()
+		return nil
+	}
+	switch event.Key() {
+	case tcell.KeyEsc:
+		tv.PrevFocus()
+		return nil
+	}
+	return event
 }
 
 func (tv *TutView) InputViewItem(event *tcell.EventKey) *tcell.EventKey {

@@ -18,6 +18,7 @@ const (
 	MediaAddFocus
 	CmdFocus
 	VoteFocus
+	HelpFocus
 )
 
 func (tv *TutView) GetCurrentFeed() *Feed {
@@ -122,6 +123,11 @@ func (tv *TutView) SetPage(f PageFocusAt) {
 		tv.tut.App.SetFocus(tv.View)
 		tv.Shared.Bottom.StatusBar.SetMode(VoteMode)
 		tv.Shared.Top.SetText("vote on poll")
+	case HelpFocus:
+		tv.PageFocus = HelpFocus
+		tv.View.SwitchToPage("help")
+		tv.Shared.Bottom.StatusBar.SetMode(HelpMode)
+		tv.tut.App.SetFocus(tv.HelpView.content)
 	case ModalFocus:
 		tv.PageFocus = ModalFocus
 		tv.View.SwitchToPage("modal")
