@@ -82,8 +82,6 @@ func drawUser(tut *tut.Tut, data *api.User, main *tview.TextView, controls *tvie
 	}
 	u.Fields = fields
 
-	//app.UI.LinkOverlay.SetLinks(urls, nil)
-
 	var controlItems []string
 	if tut.Client.Me.ID != user.ID {
 		if relation.Following {

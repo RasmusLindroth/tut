@@ -105,7 +105,6 @@ func drawStatus(tut *tut.Tut, item api.Item, status *mastodon.Status, main *tvie
 	toot.Spoiler = status.Sensitive
 
 	if status.Poll != nil {
-		//app.UI.VoteOverlay.SetPoll(status.Poll)
 		p := *status.Poll
 		toot.Poll = Poll{
 			ID:         string(p.ID),

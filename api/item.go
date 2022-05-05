@@ -117,7 +117,15 @@ func (u *UserItem) Raw() interface{} {
 }
 
 func (u *UserItem) URLs() ([]util.URL, []mastodon.Mention, []mastodon.Tag, int) {
-	return []util.URL{}, []mastodon.Mention{}, []mastodon.Tag{}, 0
+	user := u.item.Data
+	var urls []util.URL
+	user.Note, urls = util.CleanHTML(user.Note)
+	for _, f := range user.Fields {
+		_, fu := util.CleanHTML(f.Value)
+		urls = append(urls, fu...)
+	}
+
+	return urls, []mastodon.Mention{}, []mastodon.Tag{}, len(urls)
 }
 
 func NewNotificationItem(item *mastodon.Notification, user *User) Item {

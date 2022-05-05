@@ -434,6 +434,9 @@ func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User) *tcell.Event
 	case 'u', 'U':
 		tv.Timeline.AddFeed(NewUserFeed(tv, api.NewUserItem(user, true)))
 		return nil
+	case 'v', 'V':
+		tv.SetPage(ViewFocus)
+		return nil
 	case 'y', 'Y':
 		copyToClipboard(user.Data.URL)
 		return nil
