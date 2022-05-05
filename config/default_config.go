@@ -3,6 +3,11 @@ package config
 var conftext = `# Configuration file for tut
 
 [general]
+# Shows a confirmation view before actions such as favorite, delete toot, boost
+# etc.
+# default=true
+confirmation=true
+
 # The date format to be used. See https://godoc.org/time#Time.Format
 # default=2006-01-02 15:04
 date-format=2006-01-02 15:04
@@ -166,24 +171,24 @@ link-terminal=false
 # as tut. Set cX-terminal to true. The name will show up in the UI, so keep it
 # short so all five fits.
 # 
-# c1-name=img
-# c1-use=imv
+# c1-name=name
+# c1-use=program
 # c1-terminal=false
-#    
-# c2-name=
-# c2-use=
+# 
+# c2-name=name
+# c2-use=program
 # c2-terminal=false
-#   
-# c3-name=
-# c3-use=
+# 
+# c3-name=name
+# c3-use=program
 # c3-terminal=false
-#   
-# c4-name=
-# c4-use=
+# 
+# c4-name=name
+# c4-use=program
 # c4-terminal=false
-#   
-# c5-name=
-# c5-use=
+# 
+# c5-name=name
+# c5-use=program
 # c5-terminal=false
 
 [open-pattern]
@@ -241,11 +246,22 @@ posts=false
 # prefixed with an * first then look for URxvt or XTerm if it can't find any
 # color prefixed with an asterik. If you don't want tut to guess the prefix you
 # can set the prefix yourself. If the xrdb color can't be found a preset color
-# will be used.
+# will be used. You'll have to set theme=none for this to work.
 
 # The xrdb prefix used for colors in .Xresources.
 # default=guess
 xrdb-prefix=guess
+
+# You can use some themes that comes bundled with tut check out the themes
+# available on the URL below. If a theme is named "nord.ini" you just write
+# theme=nord
+# 
+# https://github.com/RasmusLindroth/tut/tree/master/themes
+# 
+# If you want to use your own theme set theme to none then you can create your
+# own theme below
+# default=default
+theme=default
 
 # The background color used on most elements.
 # default=xrdb:background
@@ -302,5 +318,4 @@ list-selected-background=xrdb:color5
 # The text color of selected list items.
 # default=xrdb:background
 list-selected-text=xrdb:background
-
 `
