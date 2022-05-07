@@ -109,7 +109,9 @@ func (tv *TutView) InputMainViewFeed(event *tcell.EventKey) *tcell.EventKey {
 			tv.Timeline.PrevItemFeed(mainFocus)
 			return nil
 		case 'n', 'N':
-			tv.FocusNotification()
+			if tv.tut.Config.General.NotificationFeed {
+				tv.FocusNotification()
+			}
 			return nil
 		case 'q', 'Q':
 			if mainFocus {
