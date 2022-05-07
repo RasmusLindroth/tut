@@ -9,7 +9,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-const version = "1.0.0"
+const version = "1.0.1"
 
 func main() {
 	newUser, selectedUser := ui.CliView(version)
