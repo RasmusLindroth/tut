@@ -6,12 +6,14 @@ import (
 	"github.com/RasmusLindroth/tut/auth"
 	"github.com/RasmusLindroth/tut/config"
 	"github.com/RasmusLindroth/tut/ui"
+	"github.com/RasmusLindroth/tut/util"
 	"github.com/rivo/tview"
 )
 
-const version = "1.0.1"
+const version = "1.0.2"
 
 func main() {
+	util.MakeDirs()
 	newUser, selectedUser := ui.CliView(version)
 	accs := auth.StartAuth(newUser)
 

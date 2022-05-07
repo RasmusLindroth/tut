@@ -75,10 +75,25 @@ func CmdToString(cmd string) (string, error) {
 	return strings.TrimSpace(string(s)), err
 }
 
+func MakeDirs() {
+	cd, err := os.UserConfigDir()
+	if err != nil {
+		log.Printf("couldn't find $HOME. Error: %v\n", err)
+		os.Exit(1)
+	}
+	dir := cd + "/tut"
+	err = os.Mkdir(dir, 0755)
+	if err != nil && !os.IsExist(err) {
+		log.Printf("couldn't create dirs. Error: %v\n", err)
+		os.Exit(1)
+	}
+}
+
 func CheckConfig(filename string) (path string, exists bool, err error) {
 	cd, err := os.UserConfigDir()
 	if err != nil {
-		log.Fatalf("couldn't find $HOME. Err %v", err)
+		log.Printf("couldn't find $HOME. Error: %v\n", err)
+		os.Exit(1)
 	}
 	dir := cd + "/tut/"
 	path = dir + filename
