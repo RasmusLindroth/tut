@@ -104,6 +104,7 @@ func (tv *TutView) loggedIn(acc auth.Account) {
 	me, err := client.GetAccountCurrentUser(context.Background())
 	if err != nil {
 		fmt.Printf("Couldn't login. Error %s\n", err)
+		tv.tut.App.Stop()
 		os.Exit(1)
 	}
 	ac := &api.AccountClient{

@@ -83,6 +83,8 @@ func mainViewUI(mv *TutView) *tview.Flex {
 			list.AddItem(feedList(mv), 0, 1, false).
 				AddItem(notificationList(mv), 0, 1, false)
 		}
+	} else if !mv.tut.Config.General.NotificationFeed {
+		list.AddItem(feedList(mv), 0, 1, false)
 	}
 	fc := mv.Timeline.GetFeedContent(showMain)
 	content := fc.Main

@@ -54,6 +54,7 @@ func (tl *Timeline) RemoveCurrent(quit bool) {
 		return
 	}
 	if len(tl.Feeds) == 1 && quit {
+		tl.tutView.tut.App.Stop()
 		os.Exit(0)
 	}
 	tl.Feeds[tl.FeedIndex].Data.Close()
