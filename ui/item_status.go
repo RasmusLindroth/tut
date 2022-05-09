@@ -172,37 +172,37 @@ func drawStatus(tut *Tut, item api.Item, status *mastodon.Status, main *tview.Te
 
 	var info []string
 	if status.Favourited {
-		info = append(info, config.ColorKey(tut.Config, "Un", "F", "avorite"))
+		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusFavorite, false))
 	} else {
-		info = append(info, config.ColorKey(tut.Config, "", "F", "avorite"))
+		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusFavorite, true))
 	}
 	if status.Reblogged {
-		info = append(info, config.ColorKey(tut.Config, "Un", "B", "oost"))
+		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusBoost, false))
 	} else {
-		info = append(info, config.ColorKey(tut.Config, "", "B", "oost"))
+		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusBoost, true))
 	}
-	info = append(info, config.ColorKey(tut.Config, "", "T", "hread"))
-	info = append(info, config.ColorKey(tut.Config, "", "R", "eply"))
-	info = append(info, config.ColorKey(tut.Config, "", "V", "iew"))
-	info = append(info, config.ColorKey(tut.Config, "", "U", "ser"))
+	info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusThread, true))
+	info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusReply, true))
+	info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusViewFocus, true))
+	info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusUser, true))
 	if len(status.MediaAttachments) > 0 {
-		info = append(info, config.ColorKey(tut.Config, "", "M", "edia"))
+		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusMedia, true))
 	}
 	_, _, _, length := item.URLs()
 	if length > 0 {
-		info = append(info, config.ColorKey(tut.Config, "", "O", "pen"))
+		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusLinks, true))
 	}
-	info = append(info, config.ColorKey(tut.Config, "", "A", "vatar"))
+	info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusAvatar, true))
 	if status.Account.ID == tut.Client.Me.ID {
-		info = append(info, config.ColorKey(tut.Config, "", "D", "elete"))
+		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusDelete, true))
 	}
 
 	if !status.Bookmarked {
-		info = append(info, config.ColorKey(tut.Config, "", "S", "ave"))
+		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusBookmark, true))
 	} else {
-		info = append(info, config.ColorKey(tut.Config, "Un", "S", "ave"))
+		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusBookmark, false))
 	}
-	info = append(info, config.ColorKey(tut.Config, "", "Y", "ank"))
+	info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusYank, true))
 
 	controlsS := strings.Join(info, " ")
 

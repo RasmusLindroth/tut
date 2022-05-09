@@ -294,13 +294,14 @@ type Input struct {
 	StatusYank          Key
 	StatusToggleSpoiler Key
 
-	UserAvatar Key
-	UserBlock  Key
-	UserFollow Key
-	UserMute   Key
-	UserLinks  Key
-	UserUser   Key
-	UserYank   Key
+	UserAvatar    Key
+	UserBlock     Key
+	UserFollow    Key
+	UserMute      Key
+	UserLinks     Key
+	UserUser      Key
+	UserViewFocus Key
+	UserYank      Key
 
 	ListOpenFeed Key
 
@@ -750,8 +751,19 @@ func parseTemplates(cfg *ini.File) Templates {
 	}
 }
 
-func inputOrErr(cfg *ini.File, key string, double bool) Key {
+func inputOrErr(cfg *ini.File, key string, double bool, def Key) Key {
+	if !cfg.Section("input").HasKey(key) {
+		return def
+	}
 	vals := cfg.Section("input").Key(key).Strings(",")
+	k, err := NewKey(vals, double)
+	if err != nil {
+		fmt.Printf("error parsing config for key %s. Error: %v\n", key, err)
+		os.Exit(1)
+	}
+	return k
+}
+func inputStrOrErr(vals []string, double bool) Key {
 	k, err := NewKey(vals, double)
 	if err != nil {
 		fmt.Printf("error parsing config. Error: %v\n", err)
@@ -761,62 +773,120 @@ func inputOrErr(cfg *ini.File, key string, double bool) Key {
 }
 
 func parseInput(cfg *ini.File) Input {
-	ic := Input{}
-	ic.GlobalDown = inputOrErr(cfg, "global-down", false)
-	ic.GlobalUp = inputOrErr(cfg, "global-up", false)
-	ic.GlobalEnter = inputOrErr(cfg, "global-enter", false)
-	ic.GlobalBack = inputOrErr(cfg, "global-back", false)
-	ic.GlobalExit = inputOrErr(cfg, "global-exit", false)
+	ic := Input{
+		GlobalDown:  inputStrOrErr([]string{"\"\"", "'j'", "'J'", "\"Down\""}, false),
+		GlobalUp:    inputStrOrErr([]string{"\"\"", "'k'", "'k'", "\"Up\""}, false),
+		GlobalEnter: inputStrOrErr([]string{"\"\"", "\"Enter\""}, false),
+		GlobalBack:  inputStrOrErr([]string{"\"[Esc]\"", "\"Esc\""}, false),
+		GlobalExit:  inputStrOrErr([]string{"\"[Q]uit\"", "'q'", "'Q'"}, false),
 
-	ic.MainHome = inputOrErr(cfg, "main-home", false)
-	ic.MainEnd = inputOrErr(cfg, "main-end", false)
-	ic.MainPrevFeed = inputOrErr(cfg, "main-prev-feed", false)
-	ic.MainNextFeed = inputOrErr(cfg, "main-next-feed", false)
-	ic.MainNotificationFocus = inputOrErr(cfg, "main-notification-focus", false)
-	ic.MainCompose = inputOrErr(cfg, "main-compose", false)
+		MainHome:              inputStrOrErr([]string{"\"\"", "'g'", "\"Home\""}, false),
+		MainEnd:               inputStrOrErr([]string{"\"\"", "'G'", "\"End\""}, false),
+		MainPrevFeed:          inputStrOrErr([]string{"\"\"", "'h'", "'H'", "\"Left\""}, false),
+		MainNextFeed:          inputStrOrErr([]string{"\"\"", "'l'", "'L'", "\"Right\""}, false),
+		MainNotificationFocus: inputStrOrErr([]string{"\"[N]otifications\"", "'n'", "'N'"}, false),
+		MainCompose:           inputStrOrErr([]string{"\"\"", "'c'", "'C'"}, false),
 
-	ic.StatusAvatar = inputOrErr(cfg, "status-avatar", false)
-	ic.StatusBoost = inputOrErr(cfg, "status-boost", true)
-	ic.StatusDelete = inputOrErr(cfg, "status-delete", false)
-	ic.StatusFavorite = inputOrErr(cfg, "status-favorite", true)
-	ic.StatusMedia = inputOrErr(cfg, "status-media", false)
-	ic.StatusLinks = inputOrErr(cfg, "status-links", false)
-	ic.StatusPoll = inputOrErr(cfg, "status-poll", false)
-	ic.StatusReply = inputOrErr(cfg, "status-reply", false)
-	ic.StatusBookmark = inputOrErr(cfg, "status-bookmark", true)
-	ic.StatusThread = inputOrErr(cfg, "status-thread", false)
-	ic.StatusUser = inputOrErr(cfg, "status-user", false)
-	ic.StatusViewFocus = inputOrErr(cfg, "status-view-focus", false)
-	ic.StatusYank = inputOrErr(cfg, "status-yank", false)
-	ic.StatusToggleSpoiler = inputOrErr(cfg, "status-toggle-spoiler", false)
+		StatusAvatar:        inputStrOrErr([]string{"\"[A]vatar\"", "'a'", "'A'"}, false),
+		StatusBoost:         inputStrOrErr([]string{"\"[B]oost\"", "\"Un[B]oost\"", "'b'", "'B'"}, true),
+		StatusDelete:        inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
+		StatusFavorite:      inputStrOrErr([]string{"\"[F]avorite\"", "\"Un[F]avorite\"", "'f'", "'F'"}, true),
+		StatusMedia:         inputStrOrErr([]string{"\"[M]edia\"", "'m'", "'M'"}, false),
+		StatusLinks:         inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
+		StatusPoll:          inputStrOrErr([]string{"\"[P]oll\"", "'p'", "'P'"}, false),
+		StatusReply:         inputStrOrErr([]string{"\"[R]eply\"", "'r'", "'R'"}, false),
+		StatusBookmark:      inputStrOrErr([]string{"\"[S]ave\"", "\"Un[S]ave\"", "'s'", "'S'"}, true),
+		StatusThread:        inputStrOrErr([]string{"\"[T]hread\"", "'t'", "'T'"}, false),
+		StatusUser:          inputStrOrErr([]string{"\"[U]ser\"", "'u'", "'U'"}, false),
+		StatusViewFocus:     inputStrOrErr([]string{"\"[V]iew\"", "'v'", "'V'"}, false),
+		StatusYank:          inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
+		StatusToggleSpoiler: inputStrOrErr([]string{"\"Press [Z] to toggle spoiler\"", "'z'", "'Z'"}, false),
 
-	ic.UserAvatar = inputOrErr(cfg, "user-avatar", false)
-	ic.UserBlock = inputOrErr(cfg, "user-block", true)
-	ic.UserFollow = inputOrErr(cfg, "user-follow", true)
-	ic.UserMute = inputOrErr(cfg, "user-mute", true)
-	ic.UserLinks = inputOrErr(cfg, "user-links", false)
-	ic.UserUser = inputOrErr(cfg, "user-user", false)
-	ic.UserYank = inputOrErr(cfg, "user-yank", false)
+		UserAvatar:    inputStrOrErr([]string{"\"[A]vatar\"", "'a'", "'A'"}, false),
+		UserBlock:     inputStrOrErr([]string{"\"[B]lock\"", "\"Un[B]lock\"", "'b'", "'B'"}, true),
+		UserFollow:    inputStrOrErr([]string{"\"[F]ollow\"", "\"Un[F]ollow\"", "'f'", "'F'"}, true),
+		UserMute:      inputStrOrErr([]string{"\"[M]ute\"", "\"Un[M]ute\"", "'m'", "'M'"}, true),
+		UserLinks:     inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
+		UserUser:      inputStrOrErr([]string{"\"[U]ser\"", "'u'", "'U'"}, false),
+		UserViewFocus: inputStrOrErr([]string{"\"[V]iew\"", "'v'", "'V'"}, false),
+		UserYank:      inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
 
-	ic.ListOpenFeed = inputOrErr(cfg, "list-open-feed", false)
+		ListOpenFeed: inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
 
-	ic.LinkOpen = inputOrErr(cfg, "link-open", false)
-	ic.LinkYank = inputOrErr(cfg, "link-yank", false)
+		LinkOpen: inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
+		LinkYank: inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
 
-	ic.ComposeEditSpoiler = inputOrErr(cfg, "compose-edit-spoiler", false)
-	ic.ComposeEditText = inputOrErr(cfg, "compose-edit-text", false)
-	ic.ComposeIncludeQuote = inputOrErr(cfg, "compose-include-quote", false)
-	ic.ComposeMediaFocus = inputOrErr(cfg, "compose-media-focus", false)
-	ic.ComposePost = inputOrErr(cfg, "compose-post", false)
-	ic.ComposeToggleContentWarning = inputOrErr(cfg, "compose-toggle-content-warning", false)
-	ic.ComposeVisibility = inputOrErr(cfg, "compose-visibility", false)
+		ComposeEditSpoiler:          inputStrOrErr([]string{"\"[C]W Text\"", "'c'", "'C'"}, false),
+		ComposeEditText:             inputStrOrErr([]string{"\"[E]dit text\"", "'e'", "'E'"}, false),
+		ComposeIncludeQuote:         inputStrOrErr([]string{"\"[I]nclude quote\"", "'i'", "'I'"}, false),
+		ComposeMediaFocus:           inputStrOrErr([]string{"\"[M]edia\"", "'m'", "'M'"}, false),
+		ComposePost:                 inputStrOrErr([]string{"\"[P]ost\"", "'p'", "'P'"}, false),
+		ComposeToggleContentWarning: inputStrOrErr([]string{"\"[T]oggle CW\"", "'t'", "'T'"}, false),
+		ComposeVisibility:           inputStrOrErr([]string{"\"[V]isibility\"", "'v'", "'V'"}, false),
 
-	ic.MediaDelete = inputOrErr(cfg, "media-delete", false)
-	ic.MediaEditDesc = inputOrErr(cfg, "media-edit-desc", false)
-	ic.MediaAdd = inputOrErr(cfg, "media-add", false)
+		MediaDelete:   inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
+		MediaEditDesc: inputStrOrErr([]string{"\"[E]dit desc\"", "'e'", "'E'"}, false),
+		MediaAdd:      inputStrOrErr([]string{"\"[A]dd\"", "'a'", "'A'"}, false),
 
-	ic.VoteVote = inputOrErr(cfg, "vote-vote", false)
-	ic.VoteSelect = inputOrErr(cfg, "vote-select", false)
+		VoteVote:   inputStrOrErr([]string{"\"[V]ote\"", "'v'", "'V'"}, false),
+		VoteSelect: inputStrOrErr([]string{"\"[Enter] to select\"", "' '", "\"Enter\""}, false),
+	}
+	ic.GlobalDown = inputOrErr(cfg, "global-down", false, ic.GlobalDown)
+	ic.GlobalUp = inputOrErr(cfg, "global-up", false, ic.GlobalUp)
+	ic.GlobalEnter = inputOrErr(cfg, "global-enter", false, ic.GlobalEnter)
+	ic.GlobalBack = inputOrErr(cfg, "global-back", false, ic.GlobalBack)
+	ic.GlobalExit = inputOrErr(cfg, "global-exit", false, ic.GlobalExit)
+
+	ic.MainHome = inputOrErr(cfg, "main-home", false, ic.MainHome)
+	ic.MainEnd = inputOrErr(cfg, "main-end", false, ic.MainEnd)
+	ic.MainPrevFeed = inputOrErr(cfg, "main-prev-feed", false, ic.MainPrevFeed)
+	ic.MainNextFeed = inputOrErr(cfg, "main-next-feed", false, ic.MainNextFeed)
+	ic.MainNotificationFocus = inputOrErr(cfg, "main-notification-focus", false, ic.MainNotificationFocus)
+	ic.MainCompose = inputOrErr(cfg, "main-compose", false, ic.MainCompose)
+
+	ic.StatusAvatar = inputOrErr(cfg, "status-avatar", false, ic.StatusAvatar)
+	ic.StatusBoost = inputOrErr(cfg, "status-boost", true, ic.StatusBoost)
+	ic.StatusDelete = inputOrErr(cfg, "status-delete", false, ic.StatusDelete)
+	ic.StatusFavorite = inputOrErr(cfg, "status-favorite", true, ic.StatusFavorite)
+	ic.StatusMedia = inputOrErr(cfg, "status-media", false, ic.StatusMedia)
+	ic.StatusLinks = inputOrErr(cfg, "status-links", false, ic.StatusLinks)
+	ic.StatusPoll = inputOrErr(cfg, "status-poll", false, ic.StatusPoll)
+	ic.StatusReply = inputOrErr(cfg, "status-reply", false, ic.StatusReply)
+	ic.StatusBookmark = inputOrErr(cfg, "status-bookmark", true, ic.StatusBookmark)
+	ic.StatusThread = inputOrErr(cfg, "status-thread", false, ic.StatusThread)
+	ic.StatusUser = inputOrErr(cfg, "status-user", false, ic.StatusUser)
+	ic.StatusViewFocus = inputOrErr(cfg, "status-view-focus", false, ic.StatusViewFocus)
+	ic.StatusYank = inputOrErr(cfg, "status-yank", false, ic.StatusYank)
+	ic.StatusToggleSpoiler = inputOrErr(cfg, "status-toggle-spoiler", false, ic.StatusToggleSpoiler)
+
+	ic.UserAvatar = inputOrErr(cfg, "user-avatar", false, ic.UserAvatar)
+	ic.UserBlock = inputOrErr(cfg, "user-block", true, ic.UserBlock)
+	ic.UserFollow = inputOrErr(cfg, "user-follow", true, ic.UserFollow)
+	ic.UserMute = inputOrErr(cfg, "user-mute", true, ic.UserMute)
+	ic.UserLinks = inputOrErr(cfg, "user-links", false, ic.UserLinks)
+	ic.UserUser = inputOrErr(cfg, "user-user", false, ic.UserUser)
+	ic.UserViewFocus = inputOrErr(cfg, "user-view-focus", false, ic.UserViewFocus)
+	ic.UserYank = inputOrErr(cfg, "user-yank", false, ic.UserYank)
+
+	ic.ListOpenFeed = inputOrErr(cfg, "list-open-feed", false, ic.ListOpenFeed)
+
+	ic.LinkOpen = inputOrErr(cfg, "link-open", false, ic.LinkOpen)
+	ic.LinkYank = inputOrErr(cfg, "link-yank", false, ic.LinkYank)
+
+	ic.ComposeEditSpoiler = inputOrErr(cfg, "compose-edit-spoiler", false, ic.ComposeEditSpoiler)
+	ic.ComposeEditText = inputOrErr(cfg, "compose-edit-text", false, ic.ComposeEditText)
+	ic.ComposeIncludeQuote = inputOrErr(cfg, "compose-include-quote", false, ic.ComposeIncludeQuote)
+	ic.ComposeMediaFocus = inputOrErr(cfg, "compose-media-focus", false, ic.ComposeMediaFocus)
+	ic.ComposePost = inputOrErr(cfg, "compose-post", false, ic.ComposePost)
+	ic.ComposeToggleContentWarning = inputOrErr(cfg, "compose-toggle-content-warning", false, ic.ComposeToggleContentWarning)
+	ic.ComposeVisibility = inputOrErr(cfg, "compose-visibility", false, ic.ComposeVisibility)
+
+	ic.MediaDelete = inputOrErr(cfg, "media-delete", false, ic.MediaDelete)
+	ic.MediaEditDesc = inputOrErr(cfg, "media-edit-desc", false, ic.MediaEditDesc)
+	ic.MediaAdd = inputOrErr(cfg, "media-add", false, ic.MediaAdd)
+
+	ic.VoteVote = inputOrErr(cfg, "vote-vote", false, ic.VoteVote)
+	ic.VoteSelect = inputOrErr(cfg, "vote-select", false, ic.VoteSelect)
 	return ic
 }
 

@@ -98,20 +98,20 @@ func (cv *ComposeView) SetControls(ctrl ComposeControls) {
 	var items []string
 	switch ctrl {
 	case ComposeNormal:
-		items = append(items, config.ColorKey(cv.tutView.tut.Config, "", "P", "ost"))
-		items = append(items, config.ColorKey(cv.tutView.tut.Config, "", "E", "dit"))
-		items = append(items, config.ColorKey(cv.tutView.tut.Config, "", "V", "isibility"))
-		items = append(items, config.ColorKey(cv.tutView.tut.Config, "", "T", "oggle CW"))
-		items = append(items, config.ColorKey(cv.tutView.tut.Config, "", "C", "ontent warning text"))
-		items = append(items, config.ColorKey(cv.tutView.tut.Config, "", "M", "edia attachment"))
+		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposePost, true))
+		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeEditText, true))
+		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeVisibility, true))
+		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeToggleContentWarning, true))
+		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeEditSpoiler, true))
+		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeMediaFocus, true))
 		if cv.msg.Status != nil {
-			items = append(items, config.ColorKey(cv.tutView.tut.Config, "", "I", "nclude quote"))
+			items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeIncludeQuote, true))
 		}
 	case ComposeMedia:
-		items = append(items, config.ColorKey(cv.tutView.tut.Config, "", "A", "dd"))
-		items = append(items, config.ColorKey(cv.tutView.tut.Config, "", "D", "elete"))
-		items = append(items, config.ColorKey(cv.tutView.tut.Config, "", "E", "dit desc"))
-		items = append(items, config.ColorKey(cv.tutView.tut.Config, "", "Esc", " Done"))
+		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.MediaAdd, true))
+		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.MediaDelete, true))
+		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.MediaEditDesc, true))
+		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.GlobalBack, true))
 	}
 	res := strings.Join(items, " ")
 	cv.controls.SetText(res)

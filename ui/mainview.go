@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+
 	"github.com/RasmusLindroth/tut/config"
 	"github.com/rivo/tview"
 )
@@ -50,9 +52,15 @@ func mainViewUI(mv *TutView) *tview.Flex {
 	lp := mv.tut.Config.General.ListProportion
 	cp := mv.tut.Config.General.ContentProportion
 	nt.SetTextColor(mv.tut.Config.Style.Subtle)
-	nt.SetDynamicColors(false)
-	nt.SetText("[N]otifications")
+	parts := mv.tut.Config.Input.MainNotificationFocus.Hint
+	start, middle, end := "", "", ""
+	if len(parts) > 0 && len(parts[0]) == 3 {
+		start = parts[0][0]
+		middle = parts[0][1]
+		end = parts[0][2]
+	}
 
+	nt.SetText(tview.Escape(fmt.Sprintf("%s[%s]%s", start, middle, end)))
 	var list *tview.Flex
 	if mv.tut.Config.General.ListSplit == config.ListColumn {
 		list = tview.NewFlex().SetDirection(tview.FlexColumn)
