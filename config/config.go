@@ -2,11 +2,13 @@ package config
 
 import (
 	"embed"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"text/template"
 
@@ -36,6 +38,7 @@ type Config struct {
 	OpenCustom         OpenCustom
 	NotificationConfig Notification
 	Templates          Templates
+	Input              Input
 }
 
 type General struct {
@@ -171,17 +174,154 @@ type Templates struct {
 	Help *template.Template
 }
 
-func CreateDefaultConfig(filepath string) error {
-	f, err := os.Create(filepath)
-	if err != nil {
-		return err
+var keyMatch = regexp.MustCompile("^\"(.*?)\\[(.*?)\\](.*?)\"$")
+
+func newHint(s string) []string {
+	matches := keyMatch.FindAllStringSubmatch(s, -1)
+	if len(matches) == 0 {
+		return []string{"", "", ""}
 	}
-	defer f.Close()
-	_, err = f.WriteString(conftext)
-	if err != nil {
-		return err
+	if len(matches[0]) != 4 {
+		return []string{"", "", ""}
 	}
-	return nil
+	return []string{matches[0][1], matches[0][2], matches[0][3]}
+}
+
+func NewKey(s []string, double bool) (Key, error) {
+	var k Key
+	if len(s) < 2 {
+		return k, errors.New("key must have a minimum length of 2")
+	}
+	var start int
+	if double {
+		start = 1
+		k = Key{
+			Hint: [][]string{newHint(s[0]), newHint(s[1])},
+		}
+	} else {
+		start = 0
+		k = Key{
+			Hint: [][]string{newHint(s[0])},
+		}
+	}
+	var runes []rune
+	var keys []tcell.Key
+	for _, v := range s[start+1:] {
+		value := []rune(strings.TrimSpace(v))
+		if len(value) < 3 {
+			return k, errors.New("key value must have a minimum length of 3")
+		}
+		if value[0] == '\'' {
+			if len(value) != 3 {
+				return k, fmt.Errorf("rune %s must only contain one char", string(value))
+			}
+			runes = append(runes, value[1])
+		} else if value[0] == '"' {
+			if value[len(value)-1] != '"' {
+				return k, fmt.Errorf("key %s must end with \"", string(value))
+			}
+			keyName := string(value[1 : len(value)-1])
+			found := false
+			var fk tcell.Key
+			for tk, tv := range tcell.KeyNames {
+				if tv == keyName {
+					found = true
+					fk = tk
+					break
+				}
+			}
+			if found {
+				keys = append(keys, fk)
+			} else {
+				return k, fmt.Errorf("no key named %s", keyName)
+			}
+		} else {
+			return k, fmt.Errorf("input %s is in the wrong format", string(value))
+		}
+	}
+	k.Runes = runes
+	k.Keys = keys
+
+	return k, nil
+}
+
+type Key struct {
+	Hint  [][]string
+	Runes []rune
+	Keys  []tcell.Key
+}
+
+func (k Key) Match(kb tcell.Key, rb rune) bool {
+	for _, ka := range k.Keys {
+		if ka == kb {
+			return true
+		}
+	}
+	for _, ra := range k.Runes {
+		if ra == rb {
+			return true
+		}
+	}
+	return false
+}
+
+type Input struct {
+	GlobalDown  Key
+	GlobalUp    Key
+	GlobalEnter Key
+	GlobalBack  Key
+	GlobalExit  Key
+
+	MainHome              Key
+	MainEnd               Key
+	MainPrevFeed          Key
+	MainNextFeed          Key
+	MainNotificationFocus Key
+	MainCompose           Key
+
+	StatusAvatar        Key
+	StatusBoost         Key
+	StatusDelete        Key
+	StatusFavorite      Key
+	StatusMedia         Key
+	StatusLinks         Key
+	StatusPoll          Key
+	StatusReply         Key
+	StatusBookmark      Key
+	StatusThread        Key
+	StatusUser          Key
+	StatusViewFocus     Key
+	StatusYank          Key
+	StatusToggleSpoiler Key
+
+	UserAvatar    Key
+	UserBlock     Key
+	UserFollow    Key
+	UserMute      Key
+	UserLinks     Key
+	UserUser      Key
+	UserViewFocus Key
+	UserYank      Key
+
+	ListOpenFeed Key
+
+	LinkOpen Key
+	LinkYank Key
+
+	ComposeEditSpoiler          Key
+	ComposeEditText             Key
+	ComposeIncludeQuote         Key
+	ComposeMediaFocus           Key
+	ComposePost                 Key
+	ComposeToggleContentWarning Key
+	ComposeVisibility           Key
+
+	MediaDelete   Key
+	MediaEditDesc Key
+	MediaAdd      Key
+
+	VoteVote   Key
+	VoteSelect Key
 }
 
 func parseColor(input string, def string, xrdb map[string]string) tcell.Color {
@@ -611,6 +751,145 @@ func parseTemplates(cfg *ini.File) Templates {
 	}
 }
 
+func inputOrErr(cfg *ini.File, key string, double bool, def Key) Key {
+	if !cfg.Section("input").HasKey(key) {
+		return def
+	}
+	vals := cfg.Section("input").Key(key).Strings(",")
+	k, err := NewKey(vals, double)
+	if err != nil {
+		fmt.Printf("error parsing config for key %s. Error: %v\n", key, err)
+		os.Exit(1)
+	}
+	return k
+}
+func inputStrOrErr(vals []string, double bool) Key {
+	k, err := NewKey(vals, double)
+	if err != nil {
+		fmt.Printf("error parsing config. Error: %v\n", err)
+		os.Exit(1)
+	}
+	return k
+}
+
+func parseInput(cfg *ini.File) Input {
+	ic := Input{
+		GlobalDown:  inputStrOrErr([]string{"\"\"", "'j'", "'J'", "\"Down\""}, false),
+		GlobalUp:    inputStrOrErr([]string{"\"\"", "'k'", "'k'", "\"Up\""}, false),
+		GlobalEnter: inputStrOrErr([]string{"\"\"", "\"Enter\""}, false),
+		GlobalBack:  inputStrOrErr([]string{"\"[Esc]\"", "\"Esc\""}, false),
+		GlobalExit:  inputStrOrErr([]string{"\"[Q]uit\"", "'q'", "'Q'"}, false),
+
+		MainHome:              inputStrOrErr([]string{"\"\"", "'g'", "\"Home\""}, false),
+		MainEnd:               inputStrOrErr([]string{"\"\"", "'G'", "\"End\""}, false),
+		MainPrevFeed:          inputStrOrErr([]string{"\"\"", "'h'", "'H'", "\"Left\""}, false),
+		MainNextFeed:          inputStrOrErr([]string{"\"\"", "'l'", "'L'", "\"Right\""}, false),
+		MainNotificationFocus: inputStrOrErr([]string{"\"[N]otifications\"", "'n'", "'N'"}, false),
+		MainCompose:           inputStrOrErr([]string{"\"\"", "'c'", "'C'"}, false),
+
+		StatusAvatar:        inputStrOrErr([]string{"\"[A]vatar\"", "'a'", "'A'"}, false),
+		StatusBoost:         inputStrOrErr([]string{"\"[B]oost\"", "\"Un[B]oost\"", "'b'", "'B'"}, true),
+		StatusDelete:        inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
+		StatusFavorite:      inputStrOrErr([]string{"\"[F]avorite\"", "\"Un[F]avorite\"", "'f'", "'F'"}, true),
+		StatusMedia:         inputStrOrErr([]string{"\"[M]edia\"", "'m'", "'M'"}, false),
+		StatusLinks:         inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
+		StatusPoll:          inputStrOrErr([]string{"\"[P]oll\"", "'p'", "'P'"}, false),
+		StatusReply:         inputStrOrErr([]string{"\"[R]eply\"", "'r'", "'R'"}, false),
+		StatusBookmark:      inputStrOrErr([]string{"\"[S]ave\"", "\"Un[S]ave\"", "'s'", "'S'"}, true),
+		StatusThread:        inputStrOrErr([]string{"\"[T]hread\"", "'t'", "'T'"}, false),
+		StatusUser:          inputStrOrErr([]string{"\"[U]ser\"", "'u'", "'U'"}, false),
+		StatusViewFocus:     inputStrOrErr([]string{"\"[V]iew\"", "'v'", "'V'"}, false),
+		StatusYank:          inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
+		StatusToggleSpoiler: inputStrOrErr([]string{"\"Press [Z] to toggle spoiler\"", "'z'", "'Z'"}, false),
+
+		UserAvatar:    inputStrOrErr([]string{"\"[A]vatar\"", "'a'", "'A'"}, false),
+		UserBlock:     inputStrOrErr([]string{"\"[B]lock\"", "\"Un[B]lock\"", "'b'", "'B'"}, true),
+		UserFollow:    inputStrOrErr([]string{"\"[F]ollow\"", "\"Un[F]ollow\"", "'f'", "'F'"}, true),
+		UserMute:      inputStrOrErr([]string{"\"[M]ute\"", "\"Un[M]ute\"", "'m'", "'M'"}, true),
+		UserLinks:     inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
+		UserUser:      inputStrOrErr([]string{"\"[U]ser\"", "'u'", "'U'"}, false),
+		UserViewFocus: inputStrOrErr([]string{"\"[V]iew\"", "'v'", "'V'"}, false),
+		UserYank:      inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
+
+		ListOpenFeed: inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
+
+		LinkOpen: inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
+		LinkYank: inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
+
+		ComposeEditSpoiler:          inputStrOrErr([]string{"\"[C]W Text\"", "'c'", "'C'"}, false),
+		ComposeEditText:             inputStrOrErr([]string{"\"[E]dit text\"", "'e'", "'E'"}, false),
+		ComposeIncludeQuote:         inputStrOrErr([]string{"\"[I]nclude quote\"", "'i'", "'I'"}, false),
+		ComposeMediaFocus:           inputStrOrErr([]string{"\"[M]edia\"", "'m'", "'M'"}, false),
+		ComposePost:                 inputStrOrErr([]string{"\"[P]ost\"", "'p'", "'P'"}, false),
+		ComposeToggleContentWarning: inputStrOrErr([]string{"\"[T]oggle CW\"", "'t'", "'T'"}, false),
+		ComposeVisibility:           inputStrOrErr([]string{"\"[V]isibility\"", "'v'", "'V'"}, false),
+
+		MediaDelete:   inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
+		MediaEditDesc: inputStrOrErr([]string{"\"[E]dit desc\"", "'e'", "'E'"}, false),
+		MediaAdd:      inputStrOrErr([]string{"\"[A]dd\"", "'a'", "'A'"}, false),
+
+		VoteVote:   inputStrOrErr([]string{"\"[V]ote\"", "'v'", "'V'"}, false),
+		VoteSelect: inputStrOrErr([]string{"\"[Enter] to select\"", "' '", "\"Enter\""}, false),
+	}
+	ic.GlobalDown = inputOrErr(cfg, "global-down", false, ic.GlobalDown)
+	ic.GlobalUp = inputOrErr(cfg, "global-up", false, ic.GlobalUp)
+	ic.GlobalEnter = inputOrErr(cfg, "global-enter", false, ic.GlobalEnter)
+	ic.GlobalBack = inputOrErr(cfg, "global-back", false, ic.GlobalBack)
+	ic.GlobalExit = inputOrErr(cfg, "global-exit", false, ic.GlobalExit)
+
+	ic.MainHome = inputOrErr(cfg, "main-home", false, ic.MainHome)
+	ic.MainEnd = inputOrErr(cfg, "main-end", false, ic.MainEnd)
+	ic.MainPrevFeed = inputOrErr(cfg, "main-prev-feed", false, ic.MainPrevFeed)
+	ic.MainNextFeed = inputOrErr(cfg, "main-next-feed", false, ic.MainNextFeed)
+	ic.MainNotificationFocus = inputOrErr(cfg, "main-notification-focus", false, ic.MainNotificationFocus)
+	ic.MainCompose = inputOrErr(cfg, "main-compose", false, ic.MainCompose)
+
+	ic.StatusAvatar = inputOrErr(cfg, "status-avatar", false, ic.StatusAvatar)
+	ic.StatusBoost = inputOrErr(cfg, "status-boost", true, ic.StatusBoost)
+	ic.StatusDelete = inputOrErr(cfg, "status-delete", false, ic.StatusDelete)
+	ic.StatusFavorite = inputOrErr(cfg, "status-favorite", true, ic.StatusFavorite)
+	ic.StatusMedia = inputOrErr(cfg, "status-media", false, ic.StatusMedia)
+	ic.StatusLinks = inputOrErr(cfg, "status-links", false, ic.StatusLinks)
+	ic.StatusPoll = inputOrErr(cfg, "status-poll", false, ic.StatusPoll)
+	ic.StatusReply = inputOrErr(cfg, "status-reply", false, ic.StatusReply)
+	ic.StatusBookmark = inputOrErr(cfg, "status-bookmark", true, ic.StatusBookmark)
+	ic.StatusThread = inputOrErr(cfg, "status-thread", false, ic.StatusThread)
+	ic.StatusUser = inputOrErr(cfg, "status-user", false, ic.StatusUser)
+	ic.StatusViewFocus = inputOrErr(cfg, "status-view-focus", false, ic.StatusViewFocus)
+	ic.StatusYank = inputOrErr(cfg, "status-yank", false, ic.StatusYank)
+	ic.StatusToggleSpoiler = inputOrErr(cfg, "status-toggle-spoiler", false, ic.StatusToggleSpoiler)
+
+	ic.UserAvatar = inputOrErr(cfg, "user-avatar", false, ic.UserAvatar)
+	ic.UserBlock = inputOrErr(cfg, "user-block", true, ic.UserBlock)
+	ic.UserFollow = inputOrErr(cfg, "user-follow", true, ic.UserFollow)
+	ic.UserMute = inputOrErr(cfg, "user-mute", true, ic.UserMute)
+	ic.UserLinks = inputOrErr(cfg, "user-links", false, ic.UserLinks)
+	ic.UserUser = inputOrErr(cfg, "user-user", false, ic.UserUser)
+	ic.UserViewFocus = inputOrErr(cfg, "user-view-focus", false, ic.UserViewFocus)
+	ic.UserYank = inputOrErr(cfg, "user-yank", false, ic.UserYank)
+
+	ic.ListOpenFeed = inputOrErr(cfg, "list-open-feed", false, ic.ListOpenFeed)
+
+	ic.LinkOpen = inputOrErr(cfg, "link-open", false, ic.LinkOpen)
+	ic.LinkYank = inputOrErr(cfg, "link-yank", false, ic.LinkYank)
+
+	ic.ComposeEditSpoiler = inputOrErr(cfg, "compose-edit-spoiler", false, ic.ComposeEditSpoiler)
+	ic.ComposeEditText = inputOrErr(cfg, "compose-edit-text", false, ic.ComposeEditText)
+	ic.ComposeIncludeQuote = inputOrErr(cfg, "compose-include-quote", false, ic.ComposeIncludeQuote)
+	ic.ComposeMediaFocus = inputOrErr(cfg, "compose-media-focus", false, ic.ComposeMediaFocus)
+	ic.ComposePost = inputOrErr(cfg, "compose-post", false, ic.ComposePost)
+	ic.ComposeToggleContentWarning = inputOrErr(cfg, "compose-toggle-content-warning", false, ic.ComposeToggleContentWarning)
+	ic.ComposeVisibility = inputOrErr(cfg, "compose-visibility", false, ic.ComposeVisibility)
+
+	ic.MediaDelete = inputOrErr(cfg, "media-delete", false, ic.MediaDelete)
+	ic.MediaEditDesc = inputOrErr(cfg, "media-edit-desc", false, ic.MediaEditDesc)
+	ic.MediaAdd = inputOrErr(cfg, "media-add", false, ic.MediaAdd)
+
+	ic.VoteVote = inputOrErr(cfg, "vote-vote", false, ic.VoteVote)
+	ic.VoteSelect = inputOrErr(cfg, "vote-select", false, ic.VoteSelect)
+	return ic
+}
+
 func parseConfig(filepath string) (Config, error) {
 	cfg, err := ini.LoadSources(ini.LoadOptions{
 		SpaceBeforeInlineComment: true,
@@ -626,6 +905,7 @@ func parseConfig(filepath string) (Config, error) {
 	conf.OpenCustom = parseCustom(cfg)
 	conf.NotificationConfig = parseNotifications(cfg)
 	conf.Templates = parseTemplates(cfg)
+	conf.Input = parseInput(cfg)
 
 	return conf, nil
 }
@@ -655,7 +935,7 @@ func checkConfig(filename string) (path string, exists bool, err error) {
 	return path, true, err
 }
 
-func createDefaultConfig(filepath string) error {
+func CreateDefaultConfig(filepath string) error {
 	f, err := os.Create(filepath)
 	if err != nil {
 		return err

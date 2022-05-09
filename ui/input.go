@@ -46,27 +46,17 @@ func (tv *TutView) Input(event *tcell.EventKey) *tcell.EventKey {
 }
 
 func (tv *TutView) InputLoginView(event *tcell.EventKey) *tcell.EventKey {
-	if event.Key() == tcell.KeyRune {
-		switch event.Rune() {
-		case 'j', 'J':
-			tv.LoginView.Next()
-			return nil
-		case 'k', 'K':
-			tv.LoginView.Prev()
-			return nil
-		}
-	} else {
-		switch event.Key() {
-		case tcell.KeyEnter:
-			tv.LoginView.Selected()
-			return nil
-		case tcell.KeyUp:
-			tv.LoginView.Prev()
-			return nil
-		case tcell.KeyDown:
-			tv.LoginView.Next()
-			return nil
-		}
+	if tv.tut.Config.Input.GlobalDown.Match(event.Key(), event.Rune()) {
+		tv.LoginView.Next()
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalUp.Match(event.Key(), event.Rune()) {
+		tv.LoginView.Prev()
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalEnter.Match(event.Key(), event.Rune()) {
+		tv.LoginView.Selected()
+		return nil
 	}
 	return event
 }
@@ -84,105 +74,75 @@ func (tv *TutView) InputMainView(event *tcell.EventKey) *tcell.EventKey {
 
 func (tv *TutView) InputMainViewFeed(event *tcell.EventKey) *tcell.EventKey {
 	mainFocus := tv.TimelineFocus == FeedFocus
-	if event.Key() == tcell.KeyRune {
-		switch event.Rune() {
-		case 'g':
-			tv.Timeline.HomeItemFeed(mainFocus)
-			return nil
-		case 'G':
-			tv.Timeline.EndItemFeed(mainFocus)
-			return nil
-		case 'h', 'H':
-			if mainFocus {
-				tv.Timeline.PrevFeed()
-			}
-			return nil
-		case 'l', 'L':
-			if mainFocus {
-				tv.Timeline.NextFeed()
-			}
-			return nil
-		case 'j', 'J':
-			tv.Timeline.NextItemFeed(mainFocus)
-			return nil
-		case 'k', 'K':
-			tv.Timeline.PrevItemFeed(mainFocus)
-			return nil
-		case 'n', 'N':
-			if tv.tut.Config.General.NotificationFeed {
-				tv.FocusNotification()
-			}
-			return nil
-		case 'q', 'Q':
-			if mainFocus {
-				tv.Timeline.RemoveCurrent(true)
-			} else {
-				tv.FocusFeed()
-			}
-			return nil
+
+	if tv.tut.Config.Input.MainHome.Match(event.Key(), event.Rune()) {
+		tv.Timeline.HomeItemFeed(mainFocus)
+		return nil
+	}
+	if tv.tut.Config.Input.MainEnd.Match(event.Key(), event.Rune()) {
+		tv.Timeline.EndItemFeed(mainFocus)
+		return nil
+	}
+	if tv.tut.Config.Input.MainPrevFeed.Match(event.Key(), event.Rune()) {
+		if mainFocus {
+			tv.Timeline.PrevFeed()
 		}
-	} else {
-		switch event.Key() {
-		case tcell.KeyLeft:
-			if mainFocus {
-				tv.Timeline.PrevFeed()
-				return nil
-			}
-			return nil
-		case tcell.KeyRight:
-			if mainFocus {
-				tv.Timeline.NextFeed()
-				return nil
-			}
-			return nil
-		case tcell.KeyUp:
-			tv.Timeline.PrevItemFeed(mainFocus)
-			return nil
-		case tcell.KeyDown:
-			tv.Timeline.NextItemFeed(mainFocus)
-			return nil
-		case tcell.KeyHome:
-			tv.Timeline.HomeItemFeed(mainFocus)
-			return nil
-		case tcell.KeyEnd:
-			tv.Timeline.EndItemFeed(mainFocus)
-			return nil
-		case tcell.KeyEsc:
-			if mainFocus {
-				tv.Timeline.RemoveCurrent(false)
-			} else {
-				tv.FocusFeed()
-			}
-			return nil
+		return nil
+	}
+	if tv.tut.Config.Input.MainNextFeed.Match(event.Key(), event.Rune()) {
+		if mainFocus {
+			tv.Timeline.NextFeed()
 		}
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalDown.Match(event.Key(), event.Rune()) {
+		tv.Timeline.NextItemFeed(mainFocus)
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalUp.Match(event.Key(), event.Rune()) {
+		tv.Timeline.PrevItemFeed(mainFocus)
+		return nil
+	}
+	if tv.tut.Config.Input.MainNotificationFocus.Match(event.Key(), event.Rune()) {
+		if tv.tut.Config.General.NotificationFeed {
+			tv.FocusNotification()
+		}
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
+		if mainFocus {
+			tv.Timeline.RemoveCurrent(true)
+		} else {
+			tv.FocusFeed()
+		}
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) {
+		if mainFocus {
+			tv.Timeline.RemoveCurrent(false)
+		} else {
+			tv.FocusFeed()
+		}
+		return nil
 	}
 	return tv.InputItem(event)
 }
 
 func (tv *TutView) InputMainViewContent(event *tcell.EventKey) *tcell.EventKey {
-	if event.Key() == tcell.KeyRune {
-		switch event.Rune() {
-		case 'j', 'J':
-			tv.Timeline.ScrollDown()
-			return nil
-		case 'k', 'K':
-			tv.Timeline.ScrollUp()
-			return nil
-		default:
-			return event
-		}
+	if tv.tut.Config.Input.GlobalDown.Match(event.Key(), event.Rune()) {
+		tv.Timeline.ScrollDown()
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalUp.Match(event.Key(), event.Rune()) {
+		tv.Timeline.ScrollDown()
+		return nil
 	}
 	return tv.InputItem(event)
 }
 
 func (tv *TutView) InputHelp(event *tcell.EventKey) *tcell.EventKey {
-	switch event.Rune() {
-	case 'q':
-		tv.PrevFocus()
-		return nil
-	}
-	switch event.Key() {
-	case tcell.KeyEsc:
+	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) ||
+		tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
 		tv.PrevFocus()
 		return nil
 	}
@@ -190,13 +150,8 @@ func (tv *TutView) InputHelp(event *tcell.EventKey) *tcell.EventKey {
 }
 
 func (tv *TutView) InputViewItem(event *tcell.EventKey) *tcell.EventKey {
-	switch event.Rune() {
-	case 'q':
-		tv.FocusMainNoHistory()
-		return nil
-	}
-	switch event.Key() {
-	case tcell.KeyEsc:
+	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) ||
+		tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
 		tv.FocusMainNoHistory()
 		return nil
 	}
@@ -208,8 +163,7 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 	if err != nil {
 		return event
 	}
-	switch event.Rune() {
-	case 'c', 'C':
+	if tv.tut.Config.Input.MainCompose.Match(event.Key(), event.Rune()) {
 		tv.InitPost(nil)
 		return nil
 	}
@@ -255,11 +209,11 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 	favorited := sr.Favourited
 	bookmarked := sr.Bookmarked
 
-	switch event.Rune() {
-	case 'a', 'A':
+	if tv.tut.Config.Input.StatusAvatar.Match(event.Key(), event.Rune()) {
 		openAvatar(tv, sr.Account)
 		return nil
-	case 'b', 'B':
+	}
+	if tv.tut.Config.Input.StatusBoost.Match(event.Key(), event.Rune()) {
 		txt := "boost"
 		if boosted {
 			txt = "unboost"
@@ -277,7 +231,8 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 				tv.RedrawControls()
 			})
 		return nil
-	case 'd', 'D':
+	}
+	if tv.tut.Config.Input.StatusDelete.Match(event.Key(), event.Rune()) {
 		if !isMine {
 			return nil
 		}
@@ -299,7 +254,8 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 			tv.RedrawContent()
 		})
 		return nil
-	case 'f', 'F':
+	}
+	if tv.tut.Config.Input.StatusFavorite.Match(event.Key(), event.Rune()) {
 		txt := "favorite"
 		if favorited {
 			txt = "unfavorite"
@@ -317,25 +273,30 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 				tv.RedrawControls()
 			})
 		return nil
-	case 'm', 'M':
+	}
+	if tv.tut.Config.Input.StatusMedia.Match(event.Key(), event.Rune()) {
 		if hasMedia {
 			openMedia(tv, sr)
 		}
 		return nil
-	case 'o', 'O':
+	}
+	if tv.tut.Config.Input.StatusLinks.Match(event.Key(), event.Rune()) {
 		tv.SetPage(LinkFocus)
 		return nil
-	case 'p', 'P':
+	}
+	if tv.tut.Config.Input.StatusPoll.Match(event.Key(), event.Rune()) {
 		if !hasPoll {
 			return nil
 		}
 		tv.VoteView.SetPoll(sr.Poll)
 		tv.SetPage(VoteFocus)
 		return nil
-	case 'r', 'R':
+	}
+	if tv.tut.Config.Input.StatusReply.Match(event.Key(), event.Rune()) {
 		tv.InitPost(status)
 		return nil
-	case 's', 'S':
+	}
+	if tv.tut.Config.Input.StatusBookmark.Match(event.Key(), event.Rune()) {
 		txt := "save"
 		if bookmarked {
 			txt = "unsave"
@@ -353,23 +314,28 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 				tv.RedrawControls()
 			})
 		return nil
-	case 't', 'T':
+	}
+	if tv.tut.Config.Input.StatusThread.Match(event.Key(), event.Rune()) {
 		tv.Timeline.AddFeed(NewThreadFeed(tv, item))
 		return nil
-	case 'u', 'U':
+	}
+	if tv.tut.Config.Input.StatusUser.Match(event.Key(), event.Rune()) {
 		user, err := tv.tut.Client.GetUserByID(status.Account.ID)
 		if err != nil {
 			return nil
 		}
 		tv.Timeline.AddFeed(NewUserFeed(tv, user))
 		return nil
-	case 'v', 'V':
+	}
+	if tv.tut.Config.Input.StatusViewFocus.Match(event.Key(), event.Rune()) {
 		tv.SetPage(ViewFocus)
 		return nil
-	case 'y', 'Y':
+	}
+	if tv.tut.Config.Input.StatusYank.Match(event.Key(), event.Rune()) {
 		copyToClipboard(status.URL)
 		return nil
-	case 'z', 'Z':
+	}
+	if tv.tut.Config.Input.StatusToggleSpoiler.Match(event.Key(), event.Rune()) {
 		if !hasSpoiler {
 			return nil
 		}
@@ -387,11 +353,12 @@ func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User) *tcell.Event
 	blocking := user.Relation.Blocking
 	muting := user.Relation.Muting
 	following := user.Relation.Following
-	switch event.Rune() {
-	case 'a', 'A':
+
+	if tv.tut.Config.Input.UserAvatar.Match(event.Key(), event.Rune()) {
 		openAvatar(tv, *user.Data)
 		return nil
-	case 'b', 'B':
+	}
+	if tv.tut.Config.Input.UserBlock.Match(event.Key(), event.Rune()) {
 		txt := "block"
 		if blocking {
 			txt = "unblock"
@@ -409,7 +376,8 @@ func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User) *tcell.Event
 				tv.RedrawControls()
 			})
 		return nil
-	case 'f', 'F':
+	}
+	if tv.tut.Config.Input.UserFollow.Match(event.Key(), event.Rune()) {
 		txt := "follow"
 		if following {
 			txt = "unfollow"
@@ -427,7 +395,8 @@ func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User) *tcell.Event
 				tv.RedrawControls()
 			})
 		return nil
-	case 'm', 'M':
+	}
+	if tv.tut.Config.Input.UserMute.Match(event.Key(), event.Rune()) {
 		txt := "mute"
 		if muting {
 			txt = "unmute"
@@ -445,21 +414,24 @@ func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User) *tcell.Event
 				tv.RedrawControls()
 			})
 		return nil
-	case 'o', 'O':
+	}
+	if tv.tut.Config.Input.UserLinks.Match(event.Key(), event.Rune()) {
 		tv.SetPage(LinkFocus)
 		return nil
-	case 'u', 'U':
+	}
+	if tv.tut.Config.Input.UserUser.Match(event.Key(), event.Rune()) {
 		tv.Timeline.AddFeed(NewUserFeed(tv, api.NewUserItem(user, true)))
 		return nil
-	case 'v', 'V':
+	}
+	if tv.tut.Config.Input.UserViewFocus.Match(event.Key(), event.Rune()) {
 		tv.SetPage(ViewFocus)
 		return nil
-	case 'y', 'Y':
+	}
+	if tv.tut.Config.Input.UserYank.Match(event.Key(), event.Rune()) {
 		copyToClipboard(user.Data.URL)
 		return nil
 	}
-	switch event.Key() {
-	case tcell.KeyEnter:
+	if tv.tut.Config.Input.GlobalEnter.Match(event.Key(), event.Rune()) {
 		tv.Timeline.AddFeed(NewUserFeed(tv, api.NewUserItem(user, true)))
 		return nil
 	}
@@ -467,13 +439,8 @@ func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User) *tcell.Event
 }
 
 func (tv *TutView) InputList(event *tcell.EventKey, list *mastodon.List) *tcell.EventKey {
-	switch event.Rune() {
-	case 'o', 'O':
-		tv.Timeline.AddFeed(NewListFeed(tv, list))
-		return nil
-	}
-	switch event.Key() {
-	case tcell.KeyEnter:
+	if tv.tut.Config.Input.ListOpenFeed.Match(event.Key(), event.Rune()) ||
+		tv.tut.Config.Input.GlobalEnter.Match(event.Key(), event.Rune()) {
 		tv.Timeline.AddFeed(NewListFeed(tv, list))
 		return nil
 	}
@@ -481,42 +448,34 @@ func (tv *TutView) InputList(event *tcell.EventKey, list *mastodon.List) *tcell.
 }
 
 func (tv *TutView) InputLinkView(event *tcell.EventKey) *tcell.EventKey {
+	if tv.tut.Config.Input.GlobalDown.Match(event.Key(), event.Rune()) {
+		tv.LinkView.Next()
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalUp.Match(event.Key(), event.Rune()) {
+		tv.LinkView.Prev()
+		return nil
+	}
+	if tv.tut.Config.Input.LinkOpen.Match(event.Key(), event.Rune()) ||
+		tv.tut.Config.Input.GlobalEnter.Match(event.Key(), event.Rune()) {
+		tv.LinkView.Open()
+		return nil
+	}
+	if tv.tut.Config.Input.LinkYank.Match(event.Key(), event.Rune()) {
+		tv.LinkView.Yank()
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) ||
+		tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
+		tv.SetPage(MainFocus)
+		return nil
+	}
 	if event.Key() == tcell.KeyRune {
 		switch event.Rune() {
-		case 'j', 'J':
-			tv.LinkView.Next()
-			return nil
-		case 'k', 'K':
-			tv.LinkView.Prev()
-			return nil
-		case 'o', 'O':
-			tv.LinkView.Open()
-			return nil
-		case 'y', 'Y':
-			tv.LinkView.Yank()
-			return nil
 		case '1', '2', '3', '4', '5':
 			s := string(event.Rune())
 			i, _ := strconv.Atoi(s)
 			tv.LinkView.OpenCustom(i)
-			return nil
-		case 'q', 'Q':
-			tv.SetPage(MainFocus)
-			return nil
-		}
-	} else {
-		switch event.Key() {
-		case tcell.KeyEnter:
-			tv.LinkView.Open()
-			return nil
-		case tcell.KeyUp:
-			tv.LinkView.Prev()
-			return nil
-		case tcell.KeyDown:
-			tv.LinkView.Next()
-			return nil
-		case tcell.KeyEsc:
-			tv.SetPage(MainFocus)
 			return nil
 		}
 	}
@@ -524,79 +483,69 @@ func (tv *TutView) InputLinkView(event *tcell.EventKey) *tcell.EventKey {
 }
 
 func (tv *TutView) InputComposeView(event *tcell.EventKey) *tcell.EventKey {
-	if event.Key() == tcell.KeyRune {
-		switch event.Rune() {
-		case 'c', 'C':
-			tv.ComposeView.EditSpoiler()
-			return nil
-		case 'e', 'E':
-			tv.ComposeView.EditText()
-			return nil
-		case 'i', 'I':
-			tv.ComposeView.IncludeQuote()
-			return nil
-		case 'm', 'M':
-			tv.SetPage(MediaFocus)
-			return nil
-		case 'p', 'P':
-			tv.ComposeView.Post()
-			return nil
-		case 't', 'T':
-			tv.ComposeView.ToggleCW()
-			return nil
-		case 'v', 'V':
-			tv.ComposeView.FocusVisibility()
-			return nil
-		case 'q', 'Q':
-			tv.ModalView.Run(
-				"Do you want exit the compose view?", func() {
-					tv.FocusMainNoHistory()
-				})
-			return nil
-		}
-	} else {
-		switch event.Key() {
-		case tcell.KeyEsc:
-			tv.ModalView.Run(
-				"Do you want exit the compose view?", func() {
-					tv.FocusMainNoHistory()
-				})
-			return nil
-		}
+	if tv.tut.Config.Input.ComposeEditSpoiler.Match(event.Key(), event.Rune()) {
+		tv.ComposeView.EditSpoiler()
+		return nil
+	}
+	if tv.tut.Config.Input.ComposeEditText.Match(event.Key(), event.Rune()) {
+		tv.ComposeView.EditText()
+		return nil
+	}
+	if tv.tut.Config.Input.ComposeIncludeQuote.Match(event.Key(), event.Rune()) {
+		tv.ComposeView.IncludeQuote()
+		return nil
+	}
+	if tv.tut.Config.Input.ComposeMediaFocus.Match(event.Key(), event.Rune()) {
+		tv.SetPage(MediaFocus)
+		return nil
+	}
+	if tv.tut.Config.Input.ComposePost.Match(event.Key(), event.Rune()) {
+		tv.ComposeView.Post()
+		return nil
+	}
+	if tv.tut.Config.Input.ComposeToggleContentWarning.Match(event.Key(), event.Rune()) {
+		tv.ComposeView.ToggleCW()
+		return nil
+	}
+	if tv.tut.Config.Input.ComposeVisibility.Match(event.Key(), event.Rune()) {
+		tv.ComposeView.FocusVisibility()
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) ||
+		tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
+		tv.ModalView.Run(
+			"Do you want exit the compose view?", func() {
+				tv.FocusMainNoHistory()
+			})
+		return nil
 	}
 	return event
 }
 
 func (tv *TutView) InputMedia(event *tcell.EventKey) *tcell.EventKey {
-	switch event.Rune() {
-	case 'j', 'J':
+	if tv.tut.Config.Input.GlobalDown.Match(event.Key(), event.Rune()) {
 		tv.ComposeView.media.Next()
 		return nil
-	case 'k', 'K':
+	}
+	if tv.tut.Config.Input.GlobalUp.Match(event.Key(), event.Rune()) {
 		tv.ComposeView.media.Prev()
 		return nil
-	case 'd', 'D':
+	}
+	if tv.tut.Config.Input.MediaDelete.Match(event.Key(), event.Rune()) {
 		tv.ComposeView.media.Delete()
 		return nil
-	case 'e', 'E':
+	}
+	if tv.tut.Config.Input.MediaEditDesc.Match(event.Key(), event.Rune()) {
 		tv.ComposeView.media.EditDesc()
 		return nil
-	case 'a', 'A':
+	}
+	if tv.tut.Config.Input.MediaAdd.Match(event.Key(), event.Rune()) {
 		tv.SetPage(MediaAddFocus)
 		tv.ComposeView.media.SetFocus(false)
 		return nil
-	case 'q', 'Q':
-		tv.SetPage(MediaFocus)
-		return nil
 	}
-	switch event.Key() {
-	case tcell.KeyDown:
-		tv.ComposeView.media.Next()
-		return nil
-	case tcell.KeyUp:
-		tv.ComposeView.media.Prev()
-		return nil
-	case tcell.KeyEsc:
+	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) ||
+		tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
 		tv.SetPage(ComposeFocus)
 		return nil
 	}
@@ -630,34 +579,25 @@ func (tv *TutView) InputMediaAdd(event *tcell.EventKey) *tcell.EventKey {
 }
 
 func (tv *TutView) InputVote(event *tcell.EventKey) *tcell.EventKey {
-	switch event.Rune() {
-	case 'j', 'J':
+	if tv.tut.Config.Input.GlobalDown.Match(event.Key(), event.Rune()) {
 		tv.VoteView.Next()
-		return nil
-	case 'k', 'K':
-		tv.VoteView.Prev()
-		return nil
-	case 'v', 'V':
-		tv.VoteView.Vote()
-		return nil
-	case ' ':
-		tv.VoteView.ToggleSelect()
-		return nil
-	case 'q', 'Q':
-		tv.FocusMainNoHistory()
 		return nil
 	}
-	switch event.Key() {
-	case tcell.KeyDown, tcell.KeyTAB:
-		tv.VoteView.Next()
-		return nil
-	case tcell.KeyUp, tcell.KeyBacktab:
+	if tv.tut.Config.Input.GlobalUp.Match(event.Key(), event.Rune()) {
 		tv.VoteView.Prev()
 		return nil
-	case tcell.KeyEnter:
+	}
+	if tv.tut.Config.Input.VoteVote.Match(event.Key(), event.Rune()) {
+		tv.VoteView.Vote()
+		return nil
+	}
+	if tv.tut.Config.Input.VoteSelect.Match(event.Key(), event.Rune()) ||
+		tv.tut.Config.Input.GlobalEnter.Match(event.Key(), event.Rune()) {
 		tv.VoteView.ToggleSelect()
 		return nil
-	case tcell.KeyEsc:
+	}
+	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) ||
+		tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
 		tv.FocusMainNoHistory()
 		return nil
 	}

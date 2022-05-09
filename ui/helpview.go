@@ -2,6 +2,7 @@ package ui
 
 import (
 	"bytes"
+	"strings"
 
 	"github.com/RasmusLindroth/tut/config"
 	"github.com/rivo/tview"
@@ -35,7 +36,11 @@ func NewHelpView(tv *TutView) *HelpView {
 		panic(err)
 	}
 	hv.content.SetText(output.String())
-	hv.controls.SetText(config.ColorKey(tv.tut.Config, "", "Esc/Q", "uit"))
+	var items []string
+	items = append(items, config.ColorFromKey(tv.tut.Config, tv.tut.Config.Input.GlobalBack, true))
+	items = append(items, config.ColorFromKey(tv.tut.Config, tv.tut.Config.Input.GlobalExit, true))
+	res := strings.Join(items, " ")
+	hv.controls.SetText(res)
 	hv.View = newHelpViewUI(hv)
 	return hv
 }

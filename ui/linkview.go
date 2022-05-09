@@ -33,8 +33,8 @@ func NewLinkView(tv *TutView) *LinkView {
 func linkViewUI(lv *LinkView) *tview.Flex {
 	lv.controls.SetBorderPadding(0, 0, 1, 1)
 	items := []string{
-		config.ColorKey(lv.tutView.tut.Config, "", "O", "pen"),
-		config.ColorKey(lv.tutView.tut.Config, "", "Y", "ank"),
+		config.ColorFromKey(lv.tutView.tut.Config, lv.tutView.tut.Config.Input.LinkOpen, true),
+		config.ColorFromKey(lv.tutView.tut.Config, lv.tutView.tut.Config.Input.LinkYank, true),
 	}
 	for _, cust := range lv.tutView.tut.Config.OpenCustom.OpenCustoms {
 		items = append(items, config.ColorKey(lv.tutView.tut.Config, "", fmt.Sprintf("%d", cust.Index), cust.Name))

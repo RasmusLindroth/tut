@@ -84,29 +84,29 @@ func drawUser(tut *Tut, data *api.User, main *tview.TextView, controls *tview.Te
 	var controlItems []string
 	if tut.Client.Me.ID != user.ID {
 		if relation.Following {
-			controlItems = append(controlItems, config.ColorKey(tut.Config, "Un", "F", "ollow"))
+			controlItems = append(controlItems, config.ColorFromKey(tut.Config, tut.Config.Input.UserFollow, false))
 		} else {
-			controlItems = append(controlItems, config.ColorKey(tut.Config, "", "F", "ollow"))
+			controlItems = append(controlItems, config.ColorFromKey(tut.Config, tut.Config.Input.UserFollow, true))
 		}
 		if relation.Blocking {
-			controlItems = append(controlItems, config.ColorKey(tut.Config, "Un", "B", "lock"))
+			controlItems = append(controlItems, config.ColorFromKey(tut.Config, tut.Config.Input.UserBlock, false))
 		} else {
-			controlItems = append(controlItems, config.ColorKey(tut.Config, "", "B", "lock"))
+			controlItems = append(controlItems, config.ColorFromKey(tut.Config, tut.Config.Input.UserBlock, true))
 		}
 		if relation.Muting {
-			controlItems = append(controlItems, config.ColorKey(tut.Config, "Un", "M", "ute"))
+			controlItems = append(controlItems, config.ColorFromKey(tut.Config, tut.Config.Input.UserMute, false))
 		} else {
-			controlItems = append(controlItems, config.ColorKey(tut.Config, "", "M", "ute"))
+			controlItems = append(controlItems, config.ColorFromKey(tut.Config, tut.Config.Input.UserMute, true))
 		}
 		if len(urls) > 0 {
-			controlItems = append(controlItems, config.ColorKey(tut.Config, "", "O", "pen"))
+			controlItems = append(controlItems, config.ColorFromKey(tut.Config, tut.Config.Input.UserLinks, true))
 		}
 	}
 	if showUserControl {
-		controlItems = append(controlItems, config.ColorKey(tut.Config, "", "U", "ser"))
+		controlItems = append(controlItems, config.ColorFromKey(tut.Config, tut.Config.Input.UserUser, true))
 	}
-	controlItems = append(controlItems, config.ColorKey(tut.Config, "", "A", "vatar"))
-	controlItems = append(controlItems, config.ColorKey(tut.Config, "", "Y", "ank"))
+	controlItems = append(controlItems, config.ColorFromKey(tut.Config, tut.Config.Input.UserAvatar, true))
+	controlItems = append(controlItems, config.ColorFromKey(tut.Config, tut.Config.Input.UserYank, true))
 	controlsS = strings.Join(controlItems, " ")
 
 	ud := DisplayUserData{

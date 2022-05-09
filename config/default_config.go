@@ -318,4 +318,230 @@ list-selected-background=xrdb:color5
 # The text color of selected list items.
 # default=xrdb:background
 list-selected-text=xrdb:background
+
+[input]
+# You can edit the keys for tut below.
+# 
+# The syntax is a bit weird, but it works. And I'll try to explain it as well as
+# I can.
+# 
+# Example:
+# status-favorite="[F]avorite","Un[F]avorite",'f','F'
+# status-delete="[D]elete",'d','D'
+# 
+# status-favorite and status-delete differs because favorite can be in two
+# states, so you will have to add two key hints.
+# Most keys will only have on key hint. Look at the default value for reference.
+# 
+# Key hints must be in some of the following formats. Remember the quotation
+# marks.
+# "" = empty
+# "[D]elete" = Delete with a highlighted D
+# "Un[F]ollow" = UnFollow with a highlighted F
+# "[Enter]" = Enter where everything is highlighted
+# "Yan[K]" = YanK with a highlighted K
+# 
+# After the hint (or hints) you must set the keys. You can do this in two ways,
+# with single quotation marks or double ones.
+# 
+# The single ones are for single chars like 'a', 'b', 'c' and double marks are
+# for special keys like "Enter". Remember that they are case sensetive.
+# 
+# To find the names of special keys you have to go to the following site and
+# look for "var KeyNames = map[Key]string{"
+# 
+# https://github.com/gdamore/tcell/blob/master/key.go
+# 
+
+# Keys for moving down
+# default="",'j','J',"Down"
+global-down="",'j','J',"Down"
+
+# Keys for moving up
+# default="",'k','K',"Up"
+global-up="",'k','K',"Up"
+
+# To select items
+# default="","Enter"
+global-enter="","Enter"
+
+# To go back
+# default="[Esc]","Esc"
+global-back="[Esc]","Esc"
+
+# To go back and exit Tut
+# default="[Q]uit",'q','Q'
+global-exit="[Q]uit",'q','Q'
+
+# Move to the top
+# default="",'g',"Home"
+main-home="",'g',"Home"
+
+# Move to the bottom
+# default="",'G',"End"
+main-end="",'G',"End"
+
+# Go to previous feed
+# default="",'h','H',"Left"
+main-prev-feed="",'h','H',"Left"
+
+# Go to next feed
+# default="",'l','L',"Right"
+main-next-feed="",'l','L',"Right"
+
+# Focus on the notification list
+# default="[N]otifications",'n','N'
+main-notification-focus="[N]otifications",'n','N'
+
+# Compose a new toot
+# default="",'c','C'
+main-compose="",'c','C'
+
+# Open avatar
+# default="[A]vatar",'a','A'
+status-avatar="[A]vatar",'a','A'
+
+# Boost a toot
+# default="[B]oost","Un[B]oost",'b','B'
+status-boost="[B]oost","Un[B]oost",'b','B'
+
+# Delete a toot
+# default="[D]elete",'d','D'
+status-delete="[D]elete",'d','D'
+
+# Favorite a toot
+# default="[F]avorite","Un[F]avorite",'f','F'
+status-favorite="[F]avorite","Un[F]avorite",'f','F'
+
+# Open toots media files
+# default="[M]edia",'m','M'
+status-media="[M]edia",'m','M'
+
+# Open links
+# default="[O]pen",'o','O'
+status-links="[O]pen",'o','O'
+
+# Open poll
+# default="[P]oll",'p','P'
+status-poll="[P]oll",'p','P'
+
+# Reply to toot
+# default="[R]eply",'r','R'
+status-reply="[R]eply",'r','R'
+
+# Save/bookmark a toot
+# default="[S]ave","Un[S]ave",'s','S'
+status-bookmark="[S]ave","Un[S]ave",'s','S'
+
+# View thread
+# default="[T]hread",'t','T'
+status-thread="[T]hread",'t','T'
+
+# Open user profile
+# default="[U]ser",'u','U'
+status-user="[U]ser",'u','U'
+
+# Open the view mode
+# default="[V]iew",'v','V'
+status-view-focus="[V]iew",'v','V'
+
+# Yank the url of the toot
+# default="[Y]ank",'y','Y'
+status-yank="[Y]ank",'y','Y'
+
+# Remove the spoiler
+# default="Press [Z] to toggle spoiler",'z','Z'
+status-toggle-spoiler="Press [Z] to toggle spoiler",'z','Z'
+
+# View avatar
+# default="[A]vatar",'a','A'
+user-avatar="[A]vatar",'a','A'
+
+# Block the user
+# default="[B]lock","Un[B]lock",'b','B'
+user-block="[B]lock","Un[B]lock",'b','B'
+
+# Follow user
+# default="[F]ollow","Un[F]ollow",'f','F'
+user-follow="[F]ollow","Un[F]ollow",'f','F'
+
+# Mute user
+# default="[M]ute","Un[M]ute",'m','M'
+user-mute="[M]ute","Un[M]ute",'m','M'
+
+# Open links
+# default="[O]pen",'o','O'
+user-links="[O]pen",'o','O'
+
+# View user profile
+# default="[U]ser",'u','U'
+user-user="[U]ser",'u','U'
+
+# Open view mode
+# default="[V]iew",'v','V'
+user-view-focus="[V]iew",'v','V'
+
+# Yank the user URL
+# default="[Y]ank",'y','Y'
+user-yank="[Y]ank",'y','Y'
+
+# Open list
+# default="[O]pen",'o','O'
+list-open-feed="[O]pen",'o','O'
+
+# Open URL
+# default="[O]pen",'o','O'
+link-open="[O]pen",'o','O'
+
+# Yank the URL
+# default="[Y]ank",'y','Y'
+link-yank="[Y]ank",'y','Y'
+
+# Edit spoiler text on new toot
+# default="[C]W text",'c','C'
+compose-edit-spoiler="[C]W text",'c','C'
+
+# Edit the text on new toot
+# default="[E]dit text",'e','E'
+compose-edit-text="[E]dit text",'e','E'
+
+# Include a quote when replying
+# default="[I]nclude quote",'i','I'
+compose-include-quote="[I]nclude quote",'i','I'
+
+# Focus on adding media to toot
+# default="[M]edia",'m','M'
+compose-media-focus="[M]edia",'m','M'
+
+# Post the new toot
+# default="[P]ost",'p','P'
+compose-post="[P]ost",'p','P'
+
+# Toggle content warning on toot
+# default="[T]oggle CW",'t','T'
+compose-toggle-content-warning="[T]oggle CW",'t','T'
+
+# Edit the visibility on new toot
+# default="[V]isibility",'v','V'
+compose-visibility="[V]isibility",'v','V'
+
+# Delete media file
+# default="[D]elete",'d','D'
+media-delete="[D]elete",'d','D'
+
+# Edit the description on media file
+# default="[E]dit desc",'e','E'
+media-edit-desc="[E]dit desc",'e','E'
+
+# Add a new media file
+# default="[A]dd",'a','A'
+media-add="[A]dd",'a','A'
+
+# Vote on poll
+# default="[V]ote",'v','V'
+vote-vote="[V]ote",'v','V'
+
+# Select item to vote on
+# default="[Enter] to select",' ', "Enter"
+vote-select="[Enter] to select",' ', "Enter"
 `

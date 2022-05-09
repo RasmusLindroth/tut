@@ -6,6 +6,20 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+func ColorFromKey(c *Config, k Key, first bool) string {
+	if len(k.Hint) == 0 {
+		return ""
+	}
+	parts := k.Hint[0]
+	if !first && len(k.Hint) > 1 {
+		parts = k.Hint[1]
+	}
+	if len(parts) != 3 {
+		return ""
+	}
+	return ColorKey(c, parts[0], parts[1], parts[2])
+}
+
 func ColorKey(c *Config, pre, key, end string) string {
 	color := ColorMark(c.Style.TextSpecial2)
 	normal := ColorMark(c.Style.Text)

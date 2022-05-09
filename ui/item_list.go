@@ -13,8 +13,8 @@ type List struct {
 
 func drawList(tut *Tut, data *mastodon.List, main *tview.TextView, controls *tview.TextView) {
 
-	controlItem := config.ColorKey(tut.Config, "", "O", "pen")
+	controlItem := config.ColorFromKey(tut.Config, tut.Config.Input.ListOpenFeed, true)
 
-	main.SetText(fmt.Sprintf("Press O or <Enter> to open list %s", tview.Escape(data.Title)))
+	main.SetText(fmt.Sprintf("List %s", tview.Escape(data.Title)))
 	controls.SetText(controlItem)
 }
