@@ -2,11 +2,13 @@ package config
 
 import (
 	"embed"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"text/template"
 
@@ -36,6 +38,7 @@ type Config struct {
 	OpenCustom         OpenCustom
 	NotificationConfig Notification
 	Templates          Templates
+	Input              Input
 }
 
 type General struct {
@@ -171,17 +174,153 @@ type Templates struct {
 	Help *template.Template
 }
 
-func CreateDefaultConfig(filepath string) error {
-	f, err := os.Create(filepath)
-	if err != nil {
-		return err
+var keyMatch = regexp.MustCompile("^\"(.*?)\\[(.*?)\\](.*?)\"$")
+
+func newHint(s string) []string {
+	matches := keyMatch.FindAllStringSubmatch(s, -1)
+	if len(matches) == 0 {
+		return []string{"", "", ""}
 	}
-	defer f.Close()
-	_, err = f.WriteString(conftext)
-	if err != nil {
-		return err
+	if len(matches[0]) != 4 {
+		return []string{"", "", ""}
 	}
-	return nil
+	return []string{matches[0][1], matches[0][2], matches[0][3]}
+}
+
+func NewKey(s []string, double bool) (Key, error) {
+	var k Key
+	if len(s) < 2 {
+		return k, errors.New("key must have a minimum length of 2")
+	}
+	var start int
+	if double {
+		start = 1
+		k = Key{
+			Hint: [][]string{newHint(s[0]), newHint(s[1])},
+		}
+	} else {
+		start = 0
+		k = Key{
+			Hint: [][]string{newHint(s[0])},
+		}
+	}
+	var runes []rune
+	var keys []tcell.Key
+	for _, v := range s[start+1:] {
+		value := []rune(strings.TrimSpace(v))
+		if len(value) < 3 {
+			return k, errors.New("key value must have a minimum length of 3")
+		}
+		if value[0] == '\'' {
+			if len(value) != 3 {
+				return k, fmt.Errorf("rune %s must only contain one char", string(value))
+			}
+			runes = append(runes, value[1])
+		} else if value[0] == '"' {
+			if value[len(value)-1] != '"' {
+				return k, fmt.Errorf("key %s must end with \"", string(value))
+			}
+			keyName := string(value[1 : len(value)-1])
+			found := false
+			var fk tcell.Key
+			for tk, tv := range tcell.KeyNames {
+				if tv == keyName {
+					found = true
+					fk = tk
+					break
+				}
+			}
+			if found {
+				keys = append(keys, fk)
+			} else {
+				return k, fmt.Errorf("no key named %s", keyName)
+			}
+		} else {
+			return k, fmt.Errorf("input %s is in the wrong format", string(value))
+		}
+	}
+	k.Runes = runes
+	k.Keys = keys
+
+	return k, nil
+}
+
+type Key struct {
+	Hint  [][]string
+	Runes []rune
+	Keys  []tcell.Key
+}
+
+func (k Key) Match(kb tcell.Key, rb rune) bool {
+	for _, ka := range k.Keys {
+		if ka == kb {
+			return true
+		}
+	}
+	for _, ra := range k.Runes {
+		if ra == rb {
+			return true
+		}
+	}
+	return false
+}
+
+type Input struct {
+	GlobalDown  Key
+	GlobalUp    Key
+	GlobalEnter Key
+	GlobalBack  Key
+	GlobalExit  Key
+
+	MainHome              Key
+	MainEnd               Key
+	MainPrevFeed          Key
+	MainNextFeed          Key
+	MainNotificationFocus Key
+	MainCompose           Key
+
+	StatusAvatar        Key
+	StatusBoost         Key
+	StatusDelete        Key
+	StatusFavorite      Key
+	StatusMedia         Key
+	StatusLinks         Key
+	StatusPoll          Key
+	StatusReply         Key
+	StatusBookmark      Key
+	StatusThread        Key
+	StatusUser          Key
+	StatusViewFocus     Key
+	StatusYank          Key
+	StatusToggleSpoiler Key
+
+	UserAvatar Key
+	UserBlock  Key
+	UserFollow Key
+	UserMute   Key
+	UserLinks  Key
+	UserUser   Key
+	UserYank   Key
+
+	ListOpenFeed Key
+
+	LinkOpen Key
+	LinkYank Key
+
+	ComposeEditSpoiler          Key
+	ComposeEditText             Key
+	ComposeIncludeQuote         Key
+	ComposeMediaFocus           Key
+	ComposePost                 Key
+	ComposeToggleContentWarning Key
+	ComposeVisibility           Key
+
+	MediaDelete   Key
+	MediaEditDesc Key
+	MediaAdd      Key
+
+	VoteVote   Key
+	VoteSelect Key
 }
 
 func parseColor(input string, def string, xrdb map[string]string) tcell.Color {
@@ -611,6 +750,76 @@ func parseTemplates(cfg *ini.File) Templates {
 	}
 }
 
+func inputOrErr(cfg *ini.File, key string, double bool) Key {
+	vals := cfg.Section("input").Key(key).Strings(",")
+	k, err := NewKey(vals, double)
+	if err != nil {
+		fmt.Printf("error parsing config. Error: %v\n", err)
+		os.Exit(1)
+	}
+	return k
+}
+
+func parseInput(cfg *ini.File) Input {
+	ic := Input{}
+	ic.GlobalDown = inputOrErr(cfg, "global-down", false)
+	ic.GlobalUp = inputOrErr(cfg, "global-up", false)
+	ic.GlobalEnter = inputOrErr(cfg, "global-enter", false)
+	ic.GlobalBack = inputOrErr(cfg, "global-back", false)
+	ic.GlobalExit = inputOrErr(cfg, "global-exit", false)
+
+	ic.MainHome = inputOrErr(cfg, "main-home", false)
+	ic.MainEnd = inputOrErr(cfg, "main-end", false)
+	ic.MainPrevFeed = inputOrErr(cfg, "main-prev-feed", false)
+	ic.MainNextFeed = inputOrErr(cfg, "main-next-feed", false)
+	ic.MainNotificationFocus = inputOrErr(cfg, "main-notification-focus", false)
+	ic.MainCompose = inputOrErr(cfg, "main-compose", false)
+
+	ic.StatusAvatar = inputOrErr(cfg, "status-avatar", false)
+	ic.StatusBoost = inputOrErr(cfg, "status-boost", true)
+	ic.StatusDelete = inputOrErr(cfg, "status-delete", false)
+	ic.StatusFavorite = inputOrErr(cfg, "status-favorite", true)
+	ic.StatusMedia = inputOrErr(cfg, "status-media", false)
+	ic.StatusLinks = inputOrErr(cfg, "status-links", false)
+	ic.StatusPoll = inputOrErr(cfg, "status-poll", false)
+	ic.StatusReply = inputOrErr(cfg, "status-reply", false)
+	ic.StatusBookmark = inputOrErr(cfg, "status-bookmark", true)
+	ic.StatusThread = inputOrErr(cfg, "status-thread", false)
+	ic.StatusUser = inputOrErr(cfg, "status-user", false)
+	ic.StatusViewFocus = inputOrErr(cfg, "status-view-focus", false)
+	ic.StatusYank = inputOrErr(cfg, "status-yank", false)
+	ic.StatusToggleSpoiler = inputOrErr(cfg, "status-toggle-spoiler", false)
+
+	ic.UserAvatar = inputOrErr(cfg, "user-avatar", false)
+	ic.UserBlock = inputOrErr(cfg, "user-block", true)
+	ic.UserFollow = inputOrErr(cfg, "user-follow", true)
+	ic.UserMute = inputOrErr(cfg, "user-mute", true)
+	ic.UserLinks = inputOrErr(cfg, "user-links", false)
+	ic.UserUser = inputOrErr(cfg, "user-user", false)
+	ic.UserYank = inputOrErr(cfg, "user-yank", false)
+
+	ic.ListOpenFeed = inputOrErr(cfg, "list-open-feed", false)
+
+	ic.LinkOpen = inputOrErr(cfg, "link-open", false)
+	ic.LinkYank = inputOrErr(cfg, "link-yank", false)
+
+	ic.ComposeEditSpoiler = inputOrErr(cfg, "compose-edit-spoiler", false)
+	ic.ComposeEditText = inputOrErr(cfg, "compose-edit-text", false)
+	ic.ComposeIncludeQuote = inputOrErr(cfg, "compose-include-quote", false)
+	ic.ComposeMediaFocus = inputOrErr(cfg, "compose-media-focus", false)
+	ic.ComposePost = inputOrErr(cfg, "compose-post", false)
+	ic.ComposeToggleContentWarning = inputOrErr(cfg, "compose-toggle-content-warning", false)
+	ic.ComposeVisibility = inputOrErr(cfg, "compose-visibility", false)
+
+	ic.MediaDelete = inputOrErr(cfg, "media-delete", false)
+	ic.MediaEditDesc = inputOrErr(cfg, "media-edit-desc", false)
+	ic.MediaAdd = inputOrErr(cfg, "media-add", false)
+
+	ic.VoteVote = inputOrErr(cfg, "vote-vote", false)
+	ic.VoteSelect = inputOrErr(cfg, "vote-select", false)
+	return ic
+}
+
 func parseConfig(filepath string) (Config, error) {
 	cfg, err := ini.LoadSources(ini.LoadOptions{
 		SpaceBeforeInlineComment: true,
@@ -626,6 +835,7 @@ func parseConfig(filepath string) (Config, error) {
 	conf.OpenCustom = parseCustom(cfg)
 	conf.NotificationConfig = parseNotifications(cfg)
 	conf.Templates = parseTemplates(cfg)
+	conf.Input = parseInput(cfg)
 
 	return conf, nil
 }
@@ -655,7 +865,7 @@ func checkConfig(filename string) (path string, exists bool, err error) {
 	return path, true, err
 }
 
-func createDefaultConfig(filepath string) error {
+func CreateDefaultConfig(filepath string) error {
 	f, err := os.Create(filepath)
 	if err != nil {
 		return err

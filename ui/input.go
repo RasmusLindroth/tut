@@ -46,27 +46,17 @@ func (tv *TutView) Input(event *tcell.EventKey) *tcell.EventKey {
 }
 
 func (tv *TutView) InputLoginView(event *tcell.EventKey) *tcell.EventKey {
-	if event.Key() == tcell.KeyRune {
-		switch event.Rune() {
-		case 'j', 'J':
-			tv.LoginView.Next()
-			return nil
-		case 'k', 'K':
-			tv.LoginView.Prev()
-			return nil
-		}
-	} else {
-		switch event.Key() {
-		case tcell.KeyEnter:
-			tv.LoginView.Selected()
-			return nil
-		case tcell.KeyUp:
-			tv.LoginView.Prev()
-			return nil
-		case tcell.KeyDown:
-			tv.LoginView.Next()
-			return nil
-		}
+	if tv.tut.Config.Input.GlobalDown.Match(event.Key(), event.Rune()) {
+		tv.LoginView.Next()
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalUp.Match(event.Key(), event.Rune()) {
+		tv.LoginView.Prev()
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalEnter.Match(event.Key(), event.Rune()) {
+		tv.LoginView.Selected()
+		return nil
 	}
 	return event
 }
@@ -84,77 +74,56 @@ func (tv *TutView) InputMainView(event *tcell.EventKey) *tcell.EventKey {
 
 func (tv *TutView) InputMainViewFeed(event *tcell.EventKey) *tcell.EventKey {
 	mainFocus := tv.TimelineFocus == FeedFocus
-	if event.Key() == tcell.KeyRune {
-		switch event.Rune() {
-		case 'g':
-			tv.Timeline.HomeItemFeed(mainFocus)
-			return nil
-		case 'G':
-			tv.Timeline.EndItemFeed(mainFocus)
-			return nil
-		case 'h', 'H':
-			if mainFocus {
-				tv.Timeline.PrevFeed()
-			}
-			return nil
-		case 'l', 'L':
-			if mainFocus {
-				tv.Timeline.NextFeed()
-			}
-			return nil
-		case 'j', 'J':
-			tv.Timeline.NextItemFeed(mainFocus)
-			return nil
-		case 'k', 'K':
-			tv.Timeline.PrevItemFeed(mainFocus)
-			return nil
-		case 'n', 'N':
-			if tv.tut.Config.General.NotificationFeed {
-				tv.FocusNotification()
-			}
-			return nil
-		case 'q', 'Q':
-			if mainFocus {
-				tv.Timeline.RemoveCurrent(true)
-			} else {
-				tv.FocusFeed()
-			}
-			return nil
+
+	if tv.tut.Config.Input.MainHome.Match(event.Key(), event.Rune()) {
+		tv.Timeline.HomeItemFeed(mainFocus)
+		return nil
+	}
+	if tv.tut.Config.Input.MainEnd.Match(event.Key(), event.Rune()) {
+		tv.Timeline.EndItemFeed(mainFocus)
+		return nil
+	}
+	if tv.tut.Config.Input.MainPrevFeed.Match(event.Key(), event.Rune()) {
+		if mainFocus {
+			tv.Timeline.PrevFeed()
 		}
-	} else {
-		switch event.Key() {
-		case tcell.KeyLeft:
-			if mainFocus {
-				tv.Timeline.PrevFeed()
-				return nil
-			}
-			return nil
-		case tcell.KeyRight:
-			if mainFocus {
-				tv.Timeline.NextFeed()
-				return nil
-			}
-			return nil
-		case tcell.KeyUp:
-			tv.Timeline.PrevItemFeed(mainFocus)
-			return nil
-		case tcell.KeyDown:
-			tv.Timeline.NextItemFeed(mainFocus)
-			return nil
-		case tcell.KeyHome:
-			tv.Timeline.HomeItemFeed(mainFocus)
-			return nil
-		case tcell.KeyEnd:
-			tv.Timeline.EndItemFeed(mainFocus)
-			return nil
-		case tcell.KeyEsc:
-			if mainFocus {
-				tv.Timeline.RemoveCurrent(false)
-			} else {
-				tv.FocusFeed()
-			}
-			return nil
+		return nil
+	}
+	if tv.tut.Config.Input.MainNextFeed.Match(event.Key(), event.Rune()) {
+		if mainFocus {
+			tv.Timeline.NextFeed()
 		}
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalDown.Match(event.Key(), event.Rune()) {
+		tv.Timeline.NextItemFeed(mainFocus)
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalUp.Match(event.Key(), event.Rune()) {
+		tv.Timeline.PrevItemFeed(mainFocus)
+		return nil
+	}
+	if tv.tut.Config.Input.MainNotificationFocus.Match(event.Key(), event.Rune()) {
+		if tv.tut.Config.General.NotificationFeed {
+			tv.FocusNotification()
+		}
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
+		if mainFocus {
+			tv.Timeline.RemoveCurrent(true)
+		} else {
+			tv.FocusFeed()
+		}
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) {
+		if mainFocus {
+			tv.Timeline.RemoveCurrent(false)
+		} else {
+			tv.FocusFeed()
+		}
+		return nil
 	}
 	return tv.InputItem(event)
 }

@@ -17,7 +17,7 @@ func Load() *Config {
 		os.Exit(1)
 	}
 	if !exists {
-		err = createDefaultConfig(path)
+		err = CreateDefaultConfig(path)
 		if err != nil {
 			fmt.Printf("Couldn't create default config. Error: %v\n", err)
 			os.Exit(1)
