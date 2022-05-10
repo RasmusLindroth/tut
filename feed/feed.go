@@ -30,6 +30,7 @@ const (
 	Muting
 	InvalidFeed
 	Notification
+	Saved
 	Tag
 	Thread
 	TimelineFederated
@@ -663,7 +664,7 @@ func NewFavorites(ac *api.AccountClient) *Feed {
 func NewBookmarks(ac *api.AccountClient) *Feed {
 	feed := &Feed{
 		accountClient: ac,
-		feedType:      Favorites,
+		feedType:      Saved,
 		items:         make([]api.Item, 0),
 		apiData:       &api.RequestData{},
 		Update:        make(chan DesktopNotificationType, 1),

@@ -132,6 +132,8 @@ func (tl *Timeline) GetTitle() string {
 		ct = "timeline home"
 	case feed.TimelineLocal:
 		ct = "timeline local"
+	case feed.Saved:
+		ct = "saved/bookmarked toots"
 	case feed.User:
 		ct = "timeline user"
 	case feed.UserList:
