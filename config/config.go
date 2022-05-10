@@ -41,6 +41,34 @@ type Config struct {
 	Input              Input
 }
 
+type LeaderAction struct {
+	Command  LeaderCommand
+	Shortcut string
+}
+
+type LeaderCommand uint
+
+const (
+	LeaderNone LeaderCommand = iota
+	LeaderHome
+	LeaderDirect
+	LeaderLocal
+	LeaderFederated
+	LeaderCompose
+	LeaderBlocking
+	LeaderBookmarks
+	LeaderSaved
+	LeaderFavorited
+	LeaderBoosts
+	LeaderFavorites
+	LeaderFollowing
+	LeaderFollowers
+	LeaderMuting
+	LeaderProfile
+	LeaderNotifications
+	LeaderLists
+)
+
 type General struct {
 	Confirmation         bool
 	DateTodayFormat      string
@@ -60,6 +88,9 @@ type General struct {
 	ShowIcons            bool
 	ShowHelp             bool
 	RedrawUI             bool
+	LeaderKey            rune
+	LeaderTimeout        int64
+	LeaderActions        []LeaderAction
 }
 
 type Style struct {
@@ -545,6 +576,75 @@ func parseGeneral(cfg *ini.File) General {
 	general.ListProportion = listProp
 	general.ContentProportion = contentProp
 
+	leaderString := cfg.Section("general").Key("leader-key").MustString("")
+	leaderRunes := []rune(leaderString)
+	if len(leaderRunes) > 1 {
+		leaderRunes = []rune(strings.TrimSpace(leaderString))
+	}
+	if len(leaderRunes) > 1 {
+		fmt.Println("error parsing leader-key. Error: leader-key can only be one char long")
+		os.Exit(1)
+	}
+	if len(leaderRunes) == 1 {
+		general.LeaderKey = leaderRunes[0]
+	}
+	if general.LeaderKey != rune(0) {
+		general.LeaderTimeout = cfg.Section("general").Key("leader-timeout").MustInt64(1000)
+		lactions := cfg.Section("general").Key("leader-action").ValueWithShadows()
+		var las []LeaderAction
+		for _, l := range lactions {
+			parts := strings.Split(l, ",")
+			if len(parts) != 2 {
+				fmt.Printf("leader-action must consist of two parts seperated by a comma. Your value is: %s\n", strings.Join(parts, ","))
+			}
+			for i, p := range parts {
+				parts[i] = strings.TrimSpace(p)
+			}
+			la := LeaderAction{}
+			switch parts[0] {
+			case "home":
+				la.Command = LeaderHome
+			case "direct":
+				la.Command = LeaderDirect
+			case "local":
+				la.Command = LeaderLocal
+			case "federated":
+				la.Command = LeaderFederated
+			case "compose":
+				la.Command = LeaderCompose
+			case "blocking":
+				la.Command = LeaderBlocking
+			case "bookmarks":
+				la.Command = LeaderBookmarks
+			case "saved":
+				la.Command = LeaderSaved
+			case "favorited":
+				la.Command = LeaderFavorited
+			case "boosts":
+				la.Command = LeaderBoosts
+			case "favorites":
+				la.Command = LeaderFavorites
+			case "following":
+				la.Command = LeaderFollowing
+			case "followers":
+				la.Command = LeaderFollowers
+			case "muting":
+				la.Command = LeaderMuting
+			case "profile":
+				la.Command = LeaderProfile
+			case "notifications":
+				la.Command = LeaderNotifications
+			case "lists":
+				la.Command = LeaderLists
+			default:
+				fmt.Printf("leader-action %s is invalid\n", parts[0])
+				os.Exit(1)
+			}
+			la.Shortcut = parts[1]
+			las = append(las, la)
+		}
+		general.LeaderActions = las
+	}
 	return general
 }
 
@@ -893,6 +993,7 @@ func parseInput(cfg *ini.File) Input {
 func parseConfig(filepath string) (Config, error) {
 	cfg, err := ini.LoadSources(ini.LoadOptions{
 		SpaceBeforeInlineComment: true,
+		AllowShadows:             true,
 	}, filepath)
 	conf := Config{}
 	if err != nil {

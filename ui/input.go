@@ -6,6 +6,7 @@ import (
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
+	"github.com/RasmusLindroth/tut/config"
 	"github.com/RasmusLindroth/tut/util"
 	"github.com/gdamore/tcell/v2"
 )
@@ -17,6 +18,12 @@ func (tv *TutView) Input(event *tcell.EventKey) *tcell.EventKey {
 			tv.SetPage(CmdFocus)
 		case '?':
 			tv.SetPage(HelpFocus)
+		}
+	}
+	if tv.PageFocus != LoginFocus && tv.PageFocus != CmdFocus {
+		event = tv.InputLeaderKey(event)
+		if event == nil {
+			return nil
 		}
 	}
 	switch tv.PageFocus {
@@ -56,6 +63,68 @@ func (tv *TutView) InputLoginView(event *tcell.EventKey) *tcell.EventKey {
 	}
 	if tv.tut.Config.Input.GlobalEnter.Match(event.Key(), event.Rune()) {
 		tv.LoginView.Selected()
+		return nil
+	}
+	return event
+}
+
+func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
+	if tv.tut.Config.General.LeaderKey == rune(0) {
+		return event
+	}
+	if event.Rune() == tv.tut.Config.General.LeaderKey {
+		tv.Leader.Reset()
+		return nil
+	} else if tv.Leader.IsActive() {
+		if event.Rune() != rune(0) {
+			tv.Leader.AddRune(event.Rune())
+		}
+		action := config.LeaderNone
+		content := tv.Leader.Content()
+		for _, la := range tv.tut.Config.General.LeaderActions {
+			if la.Shortcut == content {
+				action = la.Command
+				break
+			}
+		}
+		if action == config.LeaderNone {
+			return nil
+		}
+		switch action {
+		case config.LeaderHome:
+			tv.HomeCommand()
+		case config.LeaderDirect:
+			tv.DirectCommand()
+		case config.LeaderLocal:
+			tv.LocalCommand()
+		case config.LeaderFederated:
+			tv.FederatedCommand()
+		case config.LeaderCompose:
+			tv.ComposeCommand()
+		case config.LeaderBlocking:
+			tv.BlockingCommand()
+		case config.LeaderBookmarks, config.LeaderSaved:
+			tv.BookmarksCommand()
+		case config.LeaderFavorited:
+			tv.FavoritedCommand()
+		case config.LeaderBoosts:
+			tv.BoostsCommand()
+		case config.LeaderFavorites:
+			tv.FavoritesCommand()
+		case config.LeaderFollowing:
+			tv.FollowingCommand()
+		case config.LeaderFollowers:
+			tv.FollowersCommand()
+		case config.LeaderMuting:
+			tv.MutingCommand()
+		case config.LeaderProfile:
+			tv.ProfileCommand()
+		case config.LeaderNotifications:
+			tv.NotificationsCommand()
+		case config.LeaderLists:
+			tv.ListsCommand()
+		}
+		tv.Leader.ResetInactive()
 		return nil
 	}
 	return event
