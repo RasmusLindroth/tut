@@ -1,12 +1,8 @@
 package ui
 
 import (
-	"fmt"
 	"strings"
 
-	"github.com/RasmusLindroth/go-mastodon"
-	"github.com/RasmusLindroth/tut/api"
-	"github.com/RasmusLindroth/tut/util"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -62,7 +58,6 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 	}
 	input := c.GetInput()
 	parts := strings.Split(input, " ")
-	item, itemErr := c.tutView.GetCurrentItem()
 	if len(parts) == 0 {
 		return
 	}
@@ -72,96 +67,35 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 	case ":quit":
 		c.tutView.tut.App.Stop()
 	case ":compose":
-		c.tutView.InitPost(nil)
+		c.tutView.ComposeCommand()
 		c.ClearInput()
 		c.View.Autocomplete()
 	case ":blocking":
-		c.tutView.Timeline.AddFeed(
-			NewBlocking(c.tutView),
-		)
+		c.tutView.BlockingCommand()
 		c.Back()
 	case ":bookmarks", ":saved":
-		c.tutView.Timeline.AddFeed(
-			NewBookmarksFeed(c.tutView),
-		)
+		c.tutView.BookmarksCommand()
 		c.Back()
 	case ":favorited":
-		c.tutView.Timeline.AddFeed(
-			NewFavoritedFeed(c.tutView),
-		)
+		c.tutView.FavoritedCommand()
 		c.Back()
 	case ":boosts":
-		if itemErr != nil {
-			c.Back()
-			return
-		}
-		if item.Type() != api.StatusType {
-			c.Back()
-			return
-		}
-		s := item.Raw().(*mastodon.Status)
-		s = util.StatusOrReblog(s)
-		c.tutView.Timeline.AddFeed(
-			NewBoosts(c.tutView, s.ID),
-		)
+		c.tutView.BoostsCommand()
 		c.Back()
 	case ":favorites":
-		if itemErr != nil {
-			c.Back()
-			return
-		}
-		if item.Type() != api.StatusType {
-			c.Back()
-			return
-		}
-		s := item.Raw().(*mastodon.Status)
-		s = util.StatusOrReblog(s)
-		c.tutView.Timeline.AddFeed(
-			NewFavoritesStatus(c.tutView, s.ID),
-		)
+		c.tutView.FavoritesCommand()
 		c.Back()
 	case ":following":
-		if itemErr != nil {
-			c.Back()
-			return
-		}
-		if item.Type() != api.UserType && item.Type() != api.ProfileType {
-			c.Back()
-			return
-		}
-		s := item.Raw().(*api.User)
-		c.tutView.Timeline.AddFeed(
-			NewFollowing(c.tutView, s.Data.ID),
-		)
+		c.tutView.FollowingCommand()
 		c.Back()
 	case ":followers":
-		if itemErr != nil {
-			c.Back()
-			return
-		}
-		if item.Type() != api.UserType && item.Type() != api.ProfileType {
-			c.Back()
-			return
-		}
-		s := item.Raw().(*api.User)
-		c.tutView.Timeline.AddFeed(
-			NewFollowers(c.tutView, s.Data.ID),
-		)
+		c.tutView.FollowersCommand()
 		c.Back()
 	case ":muting":
-		c.tutView.Timeline.AddFeed(
-			NewMuting(c.tutView),
-		)
+		c.tutView.MutingCommand()
 		c.Back()
 	case ":profile":
-		item, err := c.tutView.tut.Client.GetUserByID(c.tutView.tut.Client.Me.ID)
-		if err != nil {
-			c.ShowError(fmt.Sprintf("Couldn't load user. Error: %v\n", err))
-			c.Back()
-		}
-		c.tutView.Timeline.AddFeed(
-			NewUserFeed(c.tutView, item),
-		)
+		c.tutView.ProfileCommand()
 		c.Back()
 	case ":timeline", ":tl":
 		if len(parts) < 2 {
@@ -169,34 +103,22 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 		}
 		switch parts[1] {
 		case "local", "l":
-			c.tutView.Timeline.AddFeed(
-				NewLocalFeed(c.tutView),
-			)
+			c.tutView.LocalCommand()
 			c.Back()
 		case "federated", "f":
-			c.tutView.Timeline.AddFeed(
-				NewFederatedFeed(c.tutView),
-			)
+			c.tutView.FederatedCommand()
 			c.Back()
 		case "direct", "d":
-			c.tutView.Timeline.AddFeed(
-				NewConversationsFeed(c.tutView),
-			)
+			c.tutView.DirectCommand()
 			c.Back()
 		case "home", "h":
-			c.tutView.Timeline.AddFeed(
-				NewHomeFeed(c.tutView),
-			)
+			c.tutView.HomeCommand()
 			c.Back()
 		case "notifications", "n":
-			c.tutView.Timeline.AddFeed(
-				NewNotificationFeed(c.tutView),
-			)
+			c.tutView.NotificationsCommand()
 			c.Back()
 		case "favorited", "fav":
-			c.tutView.Timeline.AddFeed(
-				NewFavoritedFeed(c.tutView),
-			)
+			c.tutView.FavoritedCommand()
 			c.Back()
 		}
 		c.ClearInput()
@@ -225,9 +147,7 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 		)
 		c.Back()
 	case ":lists":
-		c.tutView.Timeline.AddFeed(
-			NewListsFeed(c.tutView),
-		)
+		c.tutView.ListsCommand()
 		c.Back()
 	case ":help", ":h":
 		c.tutView.PageFocus = c.tutView.PrevPageFocus

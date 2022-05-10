@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
@@ -41,6 +42,7 @@ type TutView struct {
 	PrevPageFocus PageFocusAt
 	TimelineFocus TimelineFocusAt
 	SubFocus      SubFocusAt
+	Leader        *Leader
 	Shared        *Shared
 	View          *tview.Pages
 
@@ -55,12 +57,48 @@ type TutView struct {
 	FileList []string
 }
 
+func NewLeader(tv *TutView) *Leader {
+	return &Leader{
+		tv: tv,
+	}
+}
+
+type Leader struct {
+	tv        *TutView
+	timeStart time.Time
+	content   string
+}
+
+func (l *Leader) IsActive() bool {
+	td := time.Duration(l.tv.tut.Config.General.LeaderTimeout)
+	return time.Since(l.timeStart) < td*time.Millisecond
+}
+
+func (l *Leader) Reset() {
+	l.timeStart = time.Now()
+	l.content = ""
+}
+
+func (l *Leader) ResetInactive() {
+	l.timeStart = time.Now().Add(-1 * time.Hour)
+	l.content = ""
+}
+
+func (l *Leader) AddRune(r rune) {
+	l.content += string(r)
+}
+
+func (l *Leader) Content() string {
+	return l.content
+}
+
 func NewTutView(t *Tut, accs *auth.AccountData, selectedUser string) *TutView {
 	tv := &TutView{
 		tut:      t,
 		View:     tview.NewPages(),
 		FileList: []string{},
 	}
+	tv.Leader = NewLeader(tv)
 	tv.Shared = NewShared(tv)
 	if selectedUser != "" {
 		useHost := false
