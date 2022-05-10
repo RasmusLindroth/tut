@@ -589,7 +589,7 @@ func parseGeneral(cfg *ini.File) General {
 		general.LeaderKey = leaderRunes[0]
 	}
 	if general.LeaderKey != rune(0) {
-		general.LeaderTimeout = cfg.Section("general").Key("leader-timeout").MustInt64(500)
+		general.LeaderTimeout = cfg.Section("general").Key("leader-timeout").MustInt64(1000)
 		lactions := cfg.Section("general").Key("leader-action").ValueWithShadows()
 		var las []LeaderAction
 		for _, l := range lactions {
