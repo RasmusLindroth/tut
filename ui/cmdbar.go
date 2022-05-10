@@ -73,7 +73,8 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 		c.tutView.tut.App.Stop()
 	case ":compose":
 		c.tutView.InitPost(nil)
-		c.Back()
+		c.ClearInput()
+		c.View.Autocomplete()
 	case ":blocking":
 		c.tutView.Timeline.AddFeed(
 			NewBlocking(c.tutView),

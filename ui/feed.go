@@ -156,7 +156,7 @@ func NewFederatedFeed(tv *TutView) *Feed {
 }
 
 func NewLocalFeed(tv *TutView) *Feed {
-	f := feed.NewTimelineFederated(tv.tut.Client)
+	f := feed.NewTimelineLocal(tv.tut.Client)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView:   tv,
