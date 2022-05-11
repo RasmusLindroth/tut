@@ -180,113 +180,134 @@ func (f *Feed) singleThread(fn apiThreadFunc, status *mastodon.Status) {
 }
 
 func (f *Feed) normalNewer(fn apiFunc) {
-	f.itemsMux.RLock()
 	pg := mastodon.Pagination{}
-	if len(f.items) > 0 {
-		switch item := f.items[0].Raw().(type) {
-		case *mastodon.Status:
-			pg.MinID = item.ID
-		case *api.NotificationData:
-			pg.MinID = item.Item.ID
-		}
+	f.apiDataMux.Lock()
+	if f.apiData.MinID != mastodon.ID("") {
+		pg.MinID = f.apiData.MinID
 	}
-	f.itemsMux.RUnlock()
 	items, err := fn(&pg)
 	if err != nil {
+		f.apiDataMux.Unlock()
 		return
 	}
 	f.itemsMux.Lock()
 	if len(items) > 0 {
+		switch item := items[0].Raw().(type) {
+		case *mastodon.Status:
+			f.apiData.MinID = item.ID
+		case *api.NotificationData:
+			f.apiData.MinID = item.Item.ID
+		}
+		if f.apiData.MaxID == mastodon.ID("") {
+			switch item := items[len(items)-1].Raw().(type) {
+			case *mastodon.Status:
+				f.apiData.MaxID = item.ID
+			case *api.NotificationData:
+				f.apiData.MaxID = item.Item.ID
+			}
+		}
 		f.items = append(items, f.items...)
 		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
+	f.apiDataMux.Unlock()
 }
 
 func (f *Feed) normalOlder(fn apiFunc) {
-	f.itemsMux.RLock()
 	pg := mastodon.Pagination{}
-	if len(f.items) > 0 {
-		switch item := f.items[len(f.items)-1].Raw().(type) {
-		case *mastodon.Status:
-			pg.MaxID = item.ID
-		case *api.NotificationData:
-			pg.MaxID = item.Item.ID
-		}
+	f.apiDataMux.Lock()
+	if f.apiData.MaxID == mastodon.ID("") {
+		f.apiDataMux.Unlock()
+		f.loadNewer()
+		return
 	}
-	f.itemsMux.RUnlock()
+	pg.MaxID = f.apiData.MaxID
 	items, err := fn(&pg)
 	if err != nil {
+		f.apiDataMux.Unlock()
 		return
 	}
 	f.itemsMux.Lock()
 	if len(items) > 0 {
+		switch item := items[len(items)-1].Raw().(type) {
+		case *mastodon.Status:
+			f.apiData.MaxID = item.ID
+		case *api.NotificationData:
+			f.apiData.MaxID = item.Item.ID
+		}
 		f.items = append(f.items, items...)
 		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
+	f.apiDataMux.Unlock()
 }
 
 func (f *Feed) newerSearchPG(fn apiSearchPGFunc, search string) {
-	f.itemsMux.RLock()
 	pg := mastodon.Pagination{}
-	if len(f.items) > 0 {
-		switch item := f.items[0].Raw().(type) {
-		case *mastodon.Status:
-			pg.MinID = item.ID
-		}
+	f.apiDataMux.Lock()
+	if f.apiData.MinID != mastodon.ID("") {
+		pg.MinID = f.apiData.MinID
 	}
-	f.itemsMux.RUnlock()
 	items, err := fn(&pg, search)
 	if err != nil {
+		f.apiDataMux.Unlock()
 		return
 	}
 	f.itemsMux.Lock()
 	if len(items) > 0 {
+		item := items[0].Raw().(*mastodon.Status)
+		f.apiData.MinID = item.ID
 		f.items = append(items, f.items...)
 		f.Updated(DekstopNotificationNone)
+		if f.apiData.MaxID == mastodon.ID("") {
+			item = items[len(items)-1].Raw().(*mastodon.Status)
+			f.apiData.MaxID = item.ID
+		}
 	}
 	f.itemsMux.Unlock()
+	f.apiDataMux.Unlock()
 }
 
 func (f *Feed) olderSearchPG(fn apiSearchPGFunc, search string) {
-	f.itemsMux.RLock()
 	pg := mastodon.Pagination{}
-	if len(f.items) > 0 {
-		switch item := f.items[len(f.items)-1].Raw().(type) {
-		case *mastodon.Status:
-			pg.MaxID = item.ID
-		}
+	f.apiDataMux.Lock()
+	if f.apiData.MaxID == mastodon.ID("") {
+		f.apiDataMux.Unlock()
+		f.loadNewer()
+		return
 	}
-	f.itemsMux.RUnlock()
+	pg.MaxID = f.apiData.MaxID
 	items, err := fn(&pg, search)
 	if err != nil {
+		f.apiDataMux.Unlock()
 		return
 	}
 	f.itemsMux.Lock()
 	if len(items) > 0 {
+		item := items[len(items)-1].Raw().(*mastodon.Status)
+		f.apiData.MaxID = item.ID
 		f.items = append(f.items, items...)
 		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
+	f.apiDataMux.Unlock()
 }
 
 func (f *Feed) normalNewerUser(fn apiIDFunc, id mastodon.ID) {
-	f.itemsMux.RLock()
 	pg := mastodon.Pagination{}
-	if len(f.items) > 1 {
-		switch item := f.items[1].Raw().(type) {
-		case *mastodon.Status:
-			pg.MinID = item.ID
-		}
+	f.apiDataMux.Lock()
+	if f.apiData.MinID != mastodon.ID("") {
+		pg.MinID = f.apiData.MinID
 	}
-	f.itemsMux.RUnlock()
 	items, err := fn(&pg, id)
 	if err != nil {
+		f.apiDataMux.Unlock()
 		return
 	}
 	f.itemsMux.Lock()
 	if len(items) > 0 {
+		item := items[0].Raw().(*mastodon.Status)
+		f.apiData.MinID = item.ID
 		newItems := []api.Item{f.items[0]}
 		newItems = append(newItems, items...)
 		if len(f.items) > 1 {
@@ -294,74 +315,89 @@ func (f *Feed) normalNewerUser(fn apiIDFunc, id mastodon.ID) {
 		}
 		f.items = newItems
 		f.Updated(DekstopNotificationNone)
+		if f.apiData.MaxID == mastodon.ID("") {
+			item = items[len(items)-1].Raw().(*mastodon.Status)
+			f.apiData.MaxID = item.ID
+		}
 	}
 	f.itemsMux.Unlock()
+	f.apiDataMux.Unlock()
 }
 
 func (f *Feed) normalOlderUser(fn apiIDFunc, id mastodon.ID) {
-	f.itemsMux.RLock()
 	pg := mastodon.Pagination{}
-	if len(f.items) > 1 {
-		switch item := f.items[len(f.items)-1].Raw().(type) {
-		case *mastodon.Status:
-			pg.MaxID = item.ID
-		}
+	f.apiDataMux.Lock()
+	if f.apiData.MaxID == mastodon.ID("") {
+		f.apiDataMux.Unlock()
+		f.loadNewer()
+		return
 	}
-	f.itemsMux.RUnlock()
+	pg.MaxID = f.apiData.MaxID
 	items, err := fn(&pg, id)
 	if err != nil {
+		f.apiDataMux.Unlock()
 		return
 	}
 	f.itemsMux.Lock()
 	if len(items) > 0 {
+		item := items[len(items)-1].Raw().(*mastodon.Status)
+		f.apiData.MaxID = item.ID
 		f.items = append(f.items, items...)
 		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
+	f.apiDataMux.Unlock()
 }
 
 func (f *Feed) normalNewerID(fn apiIDFunc, id mastodon.ID) {
-	f.itemsMux.RLock()
 	pg := mastodon.Pagination{}
-	if len(f.items) > 0 {
-		switch item := f.items[0].Raw().(type) {
-		case *mastodon.Status:
-			pg.MinID = item.ID
-		}
+	f.apiDataMux.Lock()
+	if f.apiData.MinID != mastodon.ID("") {
+		pg.MinID = f.apiData.MinID
 	}
-	f.itemsMux.RUnlock()
 	items, err := fn(&pg, id)
 	if err != nil {
+		f.apiDataMux.Unlock()
 		return
 	}
 	f.itemsMux.Lock()
 	if len(items) > 0 {
+		item := items[0].Raw().(*mastodon.Status)
+		f.apiData.MinID = item.ID
 		f.items = append(items, f.items...)
 		f.Updated(DekstopNotificationNone)
+		if f.apiData.MaxID == mastodon.ID("") {
+			item = items[len(items)-1].Raw().(*mastodon.Status)
+			f.apiData.MaxID = item.ID
+		}
 	}
 	f.itemsMux.Unlock()
+	f.apiDataMux.Unlock()
 }
 
 func (f *Feed) normalOlderID(fn apiIDFunc, id mastodon.ID) {
-	f.itemsMux.RLock()
 	pg := mastodon.Pagination{}
-	if len(f.items) > 0 {
-		switch item := f.items[len(f.items)-1].Raw().(type) {
-		case *mastodon.Status:
-			pg.MaxID = item.ID
-		}
+	f.apiDataMux.Lock()
+	if f.apiData.MaxID == mastodon.ID("") {
+		f.apiDataMux.Unlock()
+		f.loadNewer()
+		return
 	}
-	f.itemsMux.RUnlock()
+	pg.MaxID = f.apiData.MaxID
 	items, err := fn(&pg, id)
 	if err != nil {
+		f.apiDataMux.Unlock()
 		return
 	}
 	f.itemsMux.Lock()
 	if len(items) > 0 {
+		item := items[len(items)-1].Raw().(*mastodon.Status)
+		f.apiData.MaxID = item.ID
 		f.items = append(f.items, items...)
 		f.Updated(DekstopNotificationNone)
 	}
 	f.itemsMux.Unlock()
+	f.apiDataMux.Unlock()
 }
 
 func (f *Feed) normalEmpty(fn apiEmptyFunc) {
@@ -763,8 +799,13 @@ func NewListList(ac *api.AccountClient) *Feed {
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
 	}
-
-	feed.loadNewer = func() { feed.normalEmpty(feed.accountClient.GetLists) }
+	once := true
+	feed.loadNewer = func() {
+		if once {
+			feed.normalEmpty(feed.accountClient.GetLists)
+		}
+		once = false
+	}
 
 	return feed
 }
