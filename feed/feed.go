@@ -599,7 +599,7 @@ func NewTimelineLocal(ac *api.AccountClient) *Feed {
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetTimelineLocal) }
 	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetTimelineLocal) }
 	feed.startStream(feed.accountClient.NewLocalStream())
-	feed.close = func() { feed.accountClient.RemoveFederatedReceiver(feed.stream) }
+	feed.close = func() { feed.accountClient.RemoveLocalReceiver(feed.stream) }
 
 	return feed
 }
@@ -619,7 +619,7 @@ func NewConversations(ac *api.AccountClient) *Feed {
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetConversations) }
 	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetConversations) }
 	feed.startStream(feed.accountClient.NewDirectStream())
-	feed.close = func() { feed.accountClient.RemoveFederatedReceiver(feed.stream) }
+	feed.close = func() { feed.accountClient.RemoveConversationReceiver(feed.stream) }
 
 	return feed
 }

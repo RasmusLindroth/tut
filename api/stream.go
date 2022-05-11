@@ -214,6 +214,10 @@ func (ac *AccountClient) RemoveLocalReceiver(rec *Receiver) {
 	ac.RemoveGenericReceiver(rec, LocalStream, "")
 }
 
+func (ac *AccountClient) RemoveConversationReceiver(rec *Receiver) {
+	ac.RemoveGenericReceiver(rec, DirectStream, "")
+}
+
 func (ac *AccountClient) RemoveFederatedReceiver(rec *Receiver) {
 	ac.RemoveGenericReceiver(rec, FederatedStream, "")
 }
