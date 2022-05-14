@@ -11,6 +11,7 @@ type AccountClient struct {
 	Client  *mastodon.Client
 	Streams map[string]*Stream
 	Me      *mastodon.Account
+	Filters []*mastodon.Filter
 }
 
 type User struct {

@@ -15,7 +15,10 @@ func (ac *AccountClient) GetTimeline(pg *mastodon.Pagination) ([]Item, error) {
 		return items, err
 	}
 	for _, s := range statuses {
-		items = append(items, NewStatusItem(s))
+		item, filtered := NewStatusItem(s, ac.Filters, "home")
+		if !filtered {
+			items = append(items, item)
+		}
 	}
 	return items, nil
 }
@@ -27,7 +30,10 @@ func (ac *AccountClient) GetTimelineFederated(pg *mastodon.Pagination) ([]Item, 
 		return items, err
 	}
 	for _, s := range statuses {
-		items = append(items, NewStatusItem(s))
+		item, filtered := NewStatusItem(s, ac.Filters, "public")
+		if !filtered {
+			items = append(items, item)
+		}
 	}
 	return items, nil
 }
@@ -39,7 +45,10 @@ func (ac *AccountClient) GetTimelineLocal(pg *mastodon.Pagination) ([]Item, erro
 		return items, err
 	}
 	for _, s := range statuses {
-		items = append(items, NewStatusItem(s))
+		item, filtered := NewStatusItem(s, ac.Filters, "public")
+		if !filtered {
+			items = append(items, item)
+		}
 	}
 	return items, nil
 }
@@ -61,10 +70,12 @@ func (ac *AccountClient) GetNotifications(pg *mastodon.Pagination) ([]Item, erro
 	for _, n := range notifications {
 		for _, r := range rel {
 			if n.Account.ID == r.ID {
-				items = append(items, NewNotificationItem(n, &User{
-					Data:     &n.Account,
-					Relation: r,
-				}))
+				item, filtered := NewNotificationItem(n, &User{
+					Data: &n.Account, Relation: r,
+				}, ac.Filters)
+				if !filtered {
+					items = append(items, item)
+				}
 				break
 			}
 		}
@@ -79,11 +90,20 @@ func (ac *AccountClient) GetThread(status *mastodon.Status) ([]Item, int, error)
 		return items, 0, err
 	}
 	for _, s := range statuses.Ancestors {
-		items = append(items, NewStatusItem(s))
+		item, filtered := NewStatusItem(s, ac.Filters, "thread")
+		if !filtered {
+			items = append(items, item)
+		}
 	}
-	items = append(items, NewStatusItem(status))
+	item, filtered := NewStatusItem(status, ac.Filters, "thread")
+	if !filtered {
+		items = append(items, item)
+	}
 	for _, s := range statuses.Descendants {
-		items = append(items, NewStatusItem(s))
+		item, filtered := NewStatusItem(s, ac.Filters, "thread")
+		if !filtered {
+			items = append(items, item)
+		}
 	}
 	return items, len(statuses.Ancestors), nil
 }
@@ -95,7 +115,10 @@ func (ac *AccountClient) GetFavorites(pg *mastodon.Pagination) ([]Item, error) {
 		return items, err
 	}
 	for _, s := range statuses {
-		items = append(items, NewStatusItem(s))
+		item, filtered := NewStatusItem(s, ac.Filters, "home")
+		if !filtered {
+			items = append(items, item)
+		}
 	}
 	return items, nil
 }
@@ -107,7 +130,10 @@ func (ac *AccountClient) GetBookmarks(pg *mastodon.Pagination) ([]Item, error) {
 		return items, err
 	}
 	for _, s := range statuses {
-		items = append(items, NewStatusItem(s))
+		item, filtered := NewStatusItem(s, ac.Filters, "home")
+		if !filtered {
+			items = append(items, item)
+		}
 	}
 	return items, nil
 }
@@ -119,7 +145,10 @@ func (ac *AccountClient) GetConversations(pg *mastodon.Pagination) ([]Item, erro
 		return items, err
 	}
 	for _, c := range conversations {
-		items = append(items, NewStatusItem(c.LastStatus))
+		item, filtered := NewStatusItem(c.LastStatus, ac.Filters, "thread")
+		if !filtered {
+			items = append(items, item)
+		}
 	}
 	return items, nil
 }
@@ -229,7 +258,10 @@ func (ac *AccountClient) GetUser(pg *mastodon.Pagination, id mastodon.ID) ([]Ite
 		return items, err
 	}
 	for _, s := range statuses {
-		items = append(items, NewStatusItem(s))
+		item, filtered := NewStatusItem(s, ac.Filters, "account")
+		if !filtered {
+			items = append(items, item)
+		}
 	}
 	return items, nil
 }
@@ -253,7 +285,10 @@ func (ac *AccountClient) GetListStatuses(pg *mastodon.Pagination, id mastodon.ID
 		return items, err
 	}
 	for _, s := range statuses {
-		items = append(items, NewStatusItem(s))
+		item, filtered := NewStatusItem(s, ac.Filters, "home")
+		if !filtered {
+			items = append(items, item)
+		}
 	}
 	return items, nil
 }
@@ -265,7 +300,10 @@ func (ac *AccountClient) GetTag(pg *mastodon.Pagination, search string) ([]Item,
 		return items, err
 	}
 	for _, s := range statuses {
-		items = append(items, NewStatusItem(s))
+		item, filtered := NewStatusItem(s, ac.Filters, "public")
+		if !filtered {
+			items = append(items, item)
+		}
 	}
 	return items, nil
 }

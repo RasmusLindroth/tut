@@ -153,28 +153,34 @@ func (ac *AccountClient) NewGenericStream(st StreamType, data string) (rec *Rece
 	return rec, nil
 }
 
-func (ac *AccountClient) NewHomeStream() (*Receiver, error) {
-	return ac.NewGenericStream(HomeStream, "")
+func (ac *AccountClient) NewHomeStream() (*Receiver, string, error) {
+	rec, err := ac.NewGenericStream(HomeStream, "")
+	return rec, "home", err
 }
 
-func (ac *AccountClient) NewLocalStream() (*Receiver, error) {
-	return ac.NewGenericStream(LocalStream, "")
+func (ac *AccountClient) NewLocalStream() (*Receiver, string, error) {
+	rec, err := ac.NewGenericStream(LocalStream, "")
+	return rec, "public", err
 }
 
-func (ac *AccountClient) NewFederatedStream() (*Receiver, error) {
-	return ac.NewGenericStream(FederatedStream, "")
+func (ac *AccountClient) NewFederatedStream() (*Receiver, string, error) {
+	rec, err := ac.NewGenericStream(FederatedStream, "")
+	return rec, "public", err
 }
 
-func (ac *AccountClient) NewDirectStream() (*Receiver, error) {
-	return ac.NewGenericStream(DirectStream, "")
+func (ac *AccountClient) NewDirectStream() (*Receiver, string, error) {
+	rec, err := ac.NewGenericStream(DirectStream, "")
+	return rec, "public", err
 }
 
-func (ac *AccountClient) NewListStream(id mastodon.ID) (*Receiver, error) {
-	return ac.NewGenericStream(ListStream, string(id))
+func (ac *AccountClient) NewListStream(id mastodon.ID) (*Receiver, string, error) {
+	rec, err := ac.NewGenericStream(ListStream, string(id))
+	return rec, "home", err
 }
 
-func (ac *AccountClient) NewTagStream(tag string) (*Receiver, error) {
-	return ac.NewGenericStream(TagStream, tag)
+func (ac *AccountClient) NewTagStream(tag string) (*Receiver, string, error) {
+	rec, err := ac.NewGenericStream(TagStream, tag)
+	return rec, "public", err
 }
 
 func (ac *AccountClient) RemoveGenericReceiver(rec *Receiver, st StreamType, data string) {
@@ -212,6 +218,10 @@ func (ac *AccountClient) RemoveHomeReceiver(rec *Receiver) {
 
 func (ac *AccountClient) RemoveLocalReceiver(rec *Receiver) {
 	ac.RemoveGenericReceiver(rec, LocalStream, "")
+}
+
+func (ac *AccountClient) RemoveConversationReceiver(rec *Receiver) {
+	ac.RemoveGenericReceiver(rec, DirectStream, "")
 }
 
 func (ac *AccountClient) RemoveFederatedReceiver(rec *Receiver) {

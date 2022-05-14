@@ -80,10 +80,12 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.Leader.AddRune(event.Rune())
 		}
 		action := config.LeaderNone
+		var subaction string
 		content := tv.Leader.Content()
 		for _, la := range tv.tut.Config.General.LeaderActions {
 			if la.Shortcut == content {
 				action = la.Command
+				subaction = la.Subaction
 				break
 			}
 		}
@@ -123,6 +125,9 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.NotificationsCommand()
 		case config.LeaderLists:
 			tv.ListsCommand()
+		case config.LeaderTag:
+			tv.TagCommand(subaction)
+
 		}
 		tv.Leader.ResetInactive()
 		return nil

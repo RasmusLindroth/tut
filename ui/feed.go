@@ -510,6 +510,7 @@ type FeedContent struct {
 
 func NewFeedContent(t *Tut) *FeedContent {
 	m := NewTextView(t.Config)
+	m.SetWordWrap(true)
 
 	if t.Config.General.MaxWidth > 0 {
 		mw := t.Config.General.MaxWidth
