@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/RasmusLindroth/tut/api"
 	"github.com/RasmusLindroth/tut/config"
 	"github.com/rivo/tview"
 )
@@ -49,7 +48,12 @@ func linkViewUI(lv *LinkView) *tview.Flex {
 		AddItem(lv.shared.Bottom.View, 2, 0, false)
 }
 
-func (lv *LinkView) SetLinks(item api.Item) {
+func (lv *LinkView) SetLinks() {
+	item, err := lv.tutView.GetCurrentItem()
+	if err != nil {
+		lv.list.Clear()
+		return
+	}
 	lv.list.Clear()
 	urls, mentions, tags, _ := item.URLs()
 

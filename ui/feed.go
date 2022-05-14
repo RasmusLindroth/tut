@@ -76,7 +76,6 @@ func (f *Feed) DrawContent() {
 			continue
 		}
 		DrawItem(f.tutView.tut, item, f.Content.Main, f.Content.Controls)
-		f.tutView.LinkView.SetLinks(item)
 		f.tutView.ShouldSync()
 	}
 }

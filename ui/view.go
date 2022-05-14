@@ -96,6 +96,7 @@ func (tv *TutView) SetPage(f PageFocusAt) {
 		tv.Shared.Bottom.StatusBar.SetMode(ScrollMode)
 		tv.tut.App.SetFocus(f.Content.Main)
 	case LinkFocus:
+		tv.LinkView.SetLinks()
 		tv.PageFocus = LinkFocus
 		tv.View.SwitchToPage("link")
 		tv.Shared.Bottom.StatusBar.SetMode(ListMode)
