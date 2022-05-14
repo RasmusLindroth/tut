@@ -1,7 +1,9 @@
 package api
 
 import (
+	"strings"
 	"sync"
+	"unicode"
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/util"
@@ -26,8 +28,63 @@ type Item interface {
 	URLs() ([]util.URL, []mastodon.Mention, []mastodon.Tag, int)
 }
 
-func NewStatusItem(item *mastodon.Status) Item {
-	return &StatusItem{id: newID(), item: item, showSpoiler: false}
+func NewStatusItem(item *mastodon.Status, filters []*mastodon.Filter, timeline string) (sitem Item, filtered bool) {
+	filtered = false
+	if item == nil {
+		return &StatusItem{id: newID(), item: item, showSpoiler: false}, false
+	}
+	s := util.StatusOrReblog(item)
+	content := s.Content
+	if s.Sensitive {
+		content += "\n" + s.SpoilerText
+	}
+	content = strings.ToLower(content)
+	for _, f := range filters {
+		apply := false
+		for _, c := range f.Context {
+			if timeline == c {
+				apply = true
+				break
+			}
+		}
+		if !apply {
+			continue
+		}
+		if f.WholeWord {
+			lines := strings.Split(content, "\n")
+			var stripped []string
+			for _, l := range lines {
+				var words []string
+				words = append(words, strings.Split(l, " ")...)
+				for _, w := range words {
+					ns := strings.TrimSpace(w)
+					ns = strings.TrimFunc(ns, func(r rune) bool {
+						return !unicode.IsLetter(r) && !unicode.IsNumber(r)
+					})
+					stripped = append(stripped, ns)
+				}
+			}
+			filter := strings.Split(strings.ToLower(f.Phrase), " ")
+			for i := 0; i+len(filter)-1 < len(stripped); i++ {
+				if strings.ToLower(f.Phrase) == strings.Join(stripped[i:i+len(filter)], " ") {
+					filtered = true
+					break
+				}
+			}
+		} else {
+			if strings.Contains(s.Content, strings.ToLower(f.Phrase)) {
+				filtered = true
+			}
+			if strings.Contains(s.SpoilerText, strings.ToLower(f.Phrase)) {
+				filtered = true
+			}
+		}
+		if filtered {
+			break
+		}
+	}
+	sitem = &StatusItem{id: newID(), item: item, showSpoiler: false}
+	return sitem, filtered
 }
 
 type StatusItem struct {
@@ -128,16 +185,17 @@ func (u *UserItem) URLs() ([]util.URL, []mastodon.Mention, []mastodon.Tag, int) 
 	return urls, []mastodon.Mention{}, []mastodon.Tag{}, len(urls)
 }
 
-func NewNotificationItem(item *mastodon.Notification, user *User) Item {
-	n := &NotificationItem{
+func NewNotificationItem(item *mastodon.Notification, user *User, filters []*mastodon.Filter) (nitem Item, filtred bool) {
+	status, filtred := NewStatusItem(item.Status, filters, "notifications")
+	nitem = &NotificationItem{
 		id:          newID(),
 		item:        item,
 		showSpoiler: false,
 		user:        NewUserItem(user, false),
-		status:      NewStatusItem(item.Status),
+		status:      status,
 	}
 
-	return n
+	return nitem, filtred
 }
 
 type NotificationItem struct {

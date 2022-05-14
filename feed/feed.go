@@ -515,7 +515,7 @@ func (f *Feed) linkOlderID(fn apiIDFunc, id mastodon.ID) {
 	f.itemsMux.Unlock()
 }
 
-func (f *Feed) startStream(rec *api.Receiver, err error) {
+func (f *Feed) startStream(rec *api.Receiver, timeline string, err error) {
 	if err != nil {
 		log.Fatalln("Couldn't open stream")
 	}
@@ -524,17 +524,19 @@ func (f *Feed) startStream(rec *api.Receiver, err error) {
 		for e := range f.stream.Ch {
 			switch t := e.(type) {
 			case *mastodon.UpdateEvent:
-				s := api.NewStatusItem(t.Status)
-				f.itemsMux.Lock()
-				f.items = append([]api.Item{s}, f.items...)
-				f.Updated(DesktopNotificationPost)
-				f.itemsMux.Unlock()
+				s, filtered := api.NewStatusItem(t.Status, f.accountClient.Filters, timeline)
+				if !filtered {
+					f.itemsMux.Lock()
+					f.items = append([]api.Item{s}, f.items...)
+					f.Updated(DesktopNotificationPost)
+					f.itemsMux.Unlock()
+				}
 			}
 		}
 	}()
 }
 
-func (f *Feed) startStreamNotification(rec *api.Receiver, err error) {
+func (f *Feed) startStreamNotification(rec *api.Receiver, timeline string, err error) {
 	if err != nil {
 		log.Fatalln("Couldn't open stream")
 	}
@@ -551,30 +553,32 @@ func (f *Feed) startStreamNotification(rec *api.Receiver, err error) {
 					log.Fatalln(t.Notification.Account.Acct)
 					continue
 				}
-				s := api.NewNotificationItem(t.Notification,
+				s, filtered := api.NewNotificationItem(t.Notification,
 					&api.User{
 						Data:     &t.Notification.Account,
 						Relation: rel[0],
-					})
-				f.itemsMux.Lock()
-				f.items = append([]api.Item{s}, f.items...)
-				nft := DekstopNotificationNone
-				switch t.Notification.Type {
-				case "follow", "follow_request":
-					nft = DesktopNotificationFollower
-				case "favourite":
-					nft = DesktopNotificationFollower
-				case "reblog":
-					nft = DesktopNotificationBoost
-				case "mention":
-					nft = DesktopNotificationMention
-				case "status":
-					nft = DesktopNotificationPost
-				case "poll":
-					nft = DesktopNotificationPoll
+					}, f.accountClient.Filters)
+				if !filtered {
+					f.itemsMux.Lock()
+					f.items = append([]api.Item{s}, f.items...)
+					nft := DekstopNotificationNone
+					switch t.Notification.Type {
+					case "follow", "follow_request":
+						nft = DesktopNotificationFollower
+					case "favourite":
+						nft = DesktopNotificationFollower
+					case "reblog":
+						nft = DesktopNotificationBoost
+					case "mention":
+						nft = DesktopNotificationMention
+					case "status":
+						nft = DesktopNotificationPost
+					case "poll":
+						nft = DesktopNotificationPoll
+					}
+					f.Updated(nft)
+					f.itemsMux.Unlock()
 				}
-				f.Updated(nft)
-				f.itemsMux.Unlock()
 			}
 		}
 	}()

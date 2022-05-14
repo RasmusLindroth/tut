@@ -117,17 +117,19 @@ leader-timeout=1000
 # 
 # Available commands: home, direct, local, federated, compose, blocking,
 # bookmarks, saved, favorited, boosts, favorites, following, followers, muting,
-# profile, notifications, lists
+# profile, notifications, lists, tag
 # 
 # The shortcuts are up to you, but keep them quite short and make sure they
 # don't collide. If you have one shortcut that is "f" and an other one that is
-# "fav", the one with "f" will always run and "fav" will never run.
+# "fav", the one with "f" will always run and "fav" will never run. Tag is
+# special as you need to add the tag after, see the example below.
 # 
 # Some examples:
 # leader-action=local,lo
 # leader-action=lists,li
 # leader-action=federated,fed
 # leader-action=direct,d
+# leader-action=tag linux,tl
 # 
 
 
