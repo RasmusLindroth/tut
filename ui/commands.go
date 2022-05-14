@@ -71,6 +71,12 @@ func (tv *TutView) ListsCommand() {
 	)
 }
 
+func (tv *TutView) TagCommand(tag string) {
+	tv.Timeline.AddFeed(
+		NewTagFeed(tv, tag),
+	)
+}
+
 func (tv *TutView) BoostsCommand() {
 	item, itemErr := tv.GetCurrentItem()
 	if itemErr != nil {

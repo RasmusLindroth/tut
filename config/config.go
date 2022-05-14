@@ -42,8 +42,9 @@ type Config struct {
 }
 
 type LeaderAction struct {
-	Command  LeaderCommand
-	Shortcut string
+	Command   LeaderCommand
+	Subaction string
+	Shortcut  string
 }
 
 type LeaderCommand uint
@@ -67,6 +68,8 @@ const (
 	LeaderProfile
 	LeaderNotifications
 	LeaderLists
+	LeaderTag
+	LeaderUser
 )
 
 type General struct {
@@ -600,8 +603,15 @@ func parseGeneral(cfg *ini.File) General {
 			for i, p := range parts {
 				parts[i] = strings.TrimSpace(p)
 			}
+			cmd := parts[0]
+			var subaction string
+			if strings.Contains(parts[0], " ") {
+				p := strings.Split(cmd, " ")
+				cmd = p[0]
+				subaction = strings.Join(p[1:], " ")
+			}
 			la := LeaderAction{}
-			switch parts[0] {
+			switch cmd {
 			case "home":
 				la.Command = LeaderHome
 			case "direct":
@@ -636,6 +646,9 @@ func parseGeneral(cfg *ini.File) General {
 				la.Command = LeaderNotifications
 			case "lists":
 				la.Command = LeaderLists
+			case "tag":
+				la.Command = LeaderTag
+				la.Subaction = subaction
 			default:
 				fmt.Printf("leader-action %s is invalid\n", parts[0])
 				os.Exit(1)
