@@ -145,10 +145,12 @@ func (tv *TutView) loggedIn(acc auth.Account) {
 		tv.tut.App.Stop()
 		os.Exit(1)
 	}
+	filters, _ := client.GetFilters(context.Background())
 	ac := &api.AccountClient{
 		Me:      me,
 		Client:  client,
 		Streams: make(map[string]*api.Stream),
+		Filters: filters,
 	}
 	tv.tut.Client = ac
 
