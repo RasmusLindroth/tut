@@ -758,6 +758,7 @@ func NewUserProfile(ac *api.AccountClient, user *api.User) *Feed {
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
 		Update:        make(chan DesktopNotificationType, 1),
+		name:          user.Data.Acct,
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
 	}

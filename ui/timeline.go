@@ -128,19 +128,19 @@ func (tl *Timeline) GetTitle() string {
 	case feed.Thread:
 		ct = "thread feed"
 	case feed.TimelineFederated:
-		ct = "timeline federated"
+		ct = "federated"
 	case feed.TimelineHome:
-		ct = "timeline home"
+		ct = "home"
 	case feed.TimelineLocal:
-		ct = "timeline local"
+		ct = "local"
 	case feed.Saved:
 		ct = "saved/bookmarked toots"
 	case feed.User:
-		ct = "timeline user"
+		ct = fmt.Sprintf("user %s", name)
 	case feed.UserList:
 		ct = fmt.Sprintf("user search %s", name)
 	case feed.Conversations:
-		ct = "timeline direct"
+		ct = "direct"
 	case feed.Lists:
 		ct = "lists"
 	case feed.List:
@@ -154,7 +154,7 @@ func (tl *Timeline) GetTitle() string {
 	case feed.Following:
 		ct = "following"
 	case feed.FollowRequests:
-		ct = "Follow requests"
+		ct = "follow requests"
 	case feed.Blocking:
 		ct = "blocking"
 	case feed.Muting:
