@@ -82,7 +82,7 @@ func AddAccount(ad *AccountData) *mastodon.Client {
 	}
 	me, err := client.GetAccountCurrentUser(context.Background())
 	if err != nil {
-		fmt.Printf("\nCouldnät get user. Error: %v\nExiting...\n", err)
+		fmt.Printf("\nCouldn't get user. Error: %v\nExiting...\n", err)
 		os.Exit(1)
 	}
 	acc := Account{

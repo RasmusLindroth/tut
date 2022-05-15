@@ -16,7 +16,11 @@ func StartAuth(newUser bool) *AccountData {
 		accs, err = GetAccounts(path)
 	}
 	if err != nil || accs == nil || len(accs.Accounts) == 0 || newUser {
-		AddAccount(nil)
+		if err == nil && accs != nil {
+			AddAccount(accs)
+		} else {
+			AddAccount(nil)
+		}
 		return StartAuth(false)
 	}
 	return accs

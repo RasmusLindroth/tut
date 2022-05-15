@@ -8,6 +8,7 @@ import (
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
 	"github.com/RasmusLindroth/tut/config"
+	"github.com/RasmusLindroth/tut/feed"
 	"github.com/icza/gox/timex"
 	"github.com/rivo/tview"
 )
@@ -58,12 +59,16 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 	}
 }
 
-func DrawItem(tut *Tut, item api.Item, main *tview.TextView, controls *tview.TextView) {
+func DrawItem(tut *Tut, item api.Item, main *tview.TextView, controls *tview.TextView, ft feed.FeedType) {
 	switch item.Type() {
 	case api.StatusType:
 		drawStatus(tut, item, item.Raw().(*mastodon.Status), main, controls, "")
 	case api.UserType, api.ProfileType:
-		drawUser(tut, item.Raw().(*api.User), main, controls, "")
+		if ft == feed.FollowRequests {
+			drawUser(tut, item.Raw().(*api.User), main, controls, "", true)
+		} else {
+			drawUser(tut, item.Raw().(*api.User), main, controls, "", false)
+		}
 	case api.NotificationType:
 		drawNotification(tut, item, item.Raw().(*api.NotificationData), main, controls)
 	case api.ListsType:
@@ -71,12 +76,16 @@ func DrawItem(tut *Tut, item api.Item, main *tview.TextView, controls *tview.Tex
 	}
 }
 
-func DrawItemControls(tut *Tut, item api.Item, controls *tview.TextView) {
+func DrawItemControls(tut *Tut, item api.Item, controls *tview.TextView, ft feed.FeedType) {
 	switch item.Type() {
 	case api.StatusType:
 		drawStatus(tut, item, item.Raw().(*mastodon.Status), nil, controls, "")
 	case api.UserType, api.ProfileType:
-		drawUser(tut, item.Raw().(*api.User), nil, controls, "")
+		if ft == feed.FollowRequests {
+			drawUser(tut, item.Raw().(*api.User), nil, controls, "", true)
+		} else {
+			drawUser(tut, item.Raw().(*api.User), nil, controls, "", false)
+		}
 	case api.NotificationType:
 		drawNotification(tut, item, item.Raw().(*api.NotificationData), nil, controls)
 	}

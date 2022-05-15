@@ -72,6 +72,13 @@ const (
 	LeaderUser
 )
 
+type Timeline struct {
+	FeedType  feed.FeedType
+	Subaction string
+	Name      string
+	Key       Key
+}
+
 type General struct {
 	Confirmation         bool
 	DateTodayFormat      string
@@ -94,6 +101,8 @@ type General struct {
 	LeaderKey            rune
 	LeaderTimeout        int64
 	LeaderActions        []LeaderAction
+	TimelineName         bool
+	Timelines            []Timeline
 }
 
 type Style struct {
@@ -306,12 +315,13 @@ type Input struct {
 	GlobalBack  Key
 	GlobalExit  Key
 
-	MainHome              Key
-	MainEnd               Key
-	MainPrevFeed          Key
-	MainNextFeed          Key
-	MainNotificationFocus Key
-	MainCompose           Key
+	MainHome       Key
+	MainEnd        Key
+	MainPrevFeed   Key
+	MainNextFeed   Key
+	MainPrevWindow Key
+	MainNextWindow Key
+	MainCompose    Key
 
 	StatusAvatar        Key
 	StatusBoost         Key
@@ -328,14 +338,15 @@ type Input struct {
 	StatusYank          Key
 	StatusToggleSpoiler Key
 
-	UserAvatar    Key
-	UserBlock     Key
-	UserFollow    Key
-	UserMute      Key
-	UserLinks     Key
-	UserUser      Key
-	UserViewFocus Key
-	UserYank      Key
+	UserAvatar              Key
+	UserBlock               Key
+	UserFollow              Key
+	UserFollowRequestDecide Key
+	UserMute                Key
+	UserLinks               Key
+	UserUser                Key
+	UserViewFocus           Key
+	UserYank                Key
 
 	ListOpenFeed Key
 
@@ -599,6 +610,7 @@ func parseGeneral(cfg *ini.File) General {
 			parts := strings.Split(l, ",")
 			if len(parts) != 2 {
 				fmt.Printf("leader-action must consist of two parts seperated by a comma. Your value is: %s\n", strings.Join(parts, ","))
+				os.Exit(1)
 			}
 			for i, p := range parts {
 				parts[i] = strings.TrimSpace(p)
@@ -658,6 +670,81 @@ func parseGeneral(cfg *ini.File) General {
 		}
 		general.LeaderActions = las
 	}
+
+	general.TimelineName = cfg.Section("general").Key("timeline-show-name").MustBool(true)
+	var tls []Timeline
+	timelines := cfg.Section("general").Key("timelines").ValueWithShadows()
+	for _, l := range timelines {
+		parts := strings.Split(l, ",")
+		for i, p := range parts {
+			parts[i] = strings.TrimSpace(p)
+		}
+		if len(parts) == 0 {
+			fmt.Printf("timelines must consist of atleast one part seperated by a comma. Your value is: %s\n", strings.Join(parts, ","))
+			os.Exit(1)
+		}
+		if len(parts) == 1 {
+			parts = append(parts, "")
+		}
+		cmd := parts[0]
+		var subaction string
+		if strings.Contains(parts[0], " ") {
+			p := strings.Split(cmd, " ")
+			cmd = p[0]
+			subaction = strings.Join(p[1:], " ")
+		}
+		tl := Timeline{}
+		switch cmd {
+		case "home":
+			tl.FeedType = feed.TimelineHome
+		case "direct":
+			tl.FeedType = feed.Conversations
+		case "local":
+			tl.FeedType = feed.TimelineLocal
+		case "federated":
+			tl.FeedType = feed.TimelineFederated
+		case "bookmarks":
+			tl.FeedType = feed.Saved
+		case "saved":
+			tl.FeedType = feed.Saved
+		case "favorited":
+			tl.FeedType = feed.Favorited
+		case "notifications":
+			tl.FeedType = feed.Notification
+		case "lists":
+			tl.FeedType = feed.Lists
+		case "tag":
+			tl.FeedType = feed.Tag
+			tl.Subaction = subaction
+		default:
+			fmt.Printf("timeline %s is invalid\n", parts[0])
+			os.Exit(1)
+		}
+		tl.Name = parts[1]
+		if len(parts) > 2 {
+			vals := []string{""}
+			vals = append(vals, parts[2:]...)
+			tl.Key = inputStrOrErr(vals, false)
+		}
+		tls = append(tls, tl)
+	}
+	if len(tls) == 0 {
+		tls = append(tls,
+			Timeline{
+				FeedType: feed.TimelineHome,
+				Name:     "",
+			},
+		)
+		tls = append(tls,
+			Timeline{
+				FeedType: feed.Notification,
+				Name:     "[N]otifications",
+				Key:      inputStrOrErr([]string{"", "'n'", "'N'"}, false),
+			},
+		)
+	}
+	general.Timelines = tls
+
 	return general
 }
 
@@ -893,12 +980,13 @@ func parseInput(cfg *ini.File) Input {
 		GlobalBack:  inputStrOrErr([]string{"\"[Esc]\"", "\"Esc\""}, false),
 		GlobalExit:  inputStrOrErr([]string{"\"[Q]uit\"", "'q'", "'Q'"}, false),
 
-		MainHome:              inputStrOrErr([]string{"\"\"", "'g'", "\"Home\""}, false),
-		MainEnd:               inputStrOrErr([]string{"\"\"", "'G'", "\"End\""}, false),
-		MainPrevFeed:          inputStrOrErr([]string{"\"\"", "'h'", "'H'", "\"Left\""}, false),
-		MainNextFeed:          inputStrOrErr([]string{"\"\"", "'l'", "'L'", "\"Right\""}, false),
-		MainNotificationFocus: inputStrOrErr([]string{"\"[N]otifications\"", "'n'", "'N'"}, false),
-		MainCompose:           inputStrOrErr([]string{"\"\"", "'c'", "'C'"}, false),
+		MainHome:       inputStrOrErr([]string{"\"\"", "'g'", "\"Home\""}, false),
+		MainEnd:        inputStrOrErr([]string{"\"\"", "'G'", "\"End\""}, false),
+		MainPrevFeed:   inputStrOrErr([]string{"\"\"", "'h'", "'H'", "\"Left\""}, false),
+		MainNextFeed:   inputStrOrErr([]string{"\"\"", "'l'", "'L'", "\"Right\""}, false),
+		MainPrevWindow: inputStrOrErr([]string{"\"\"", "\"Backtab\""}, false),
+		MainNextWindow: inputStrOrErr([]string{"\"\"", "\"Tab\""}, false),
+		MainCompose:    inputStrOrErr([]string{"\"\"", "'c'", "'C'"}, false),
 
 		StatusAvatar:        inputStrOrErr([]string{"\"[A]vatar\"", "'a'", "'A'"}, false),
 		StatusBoost:         inputStrOrErr([]string{"\"[B]oost\"", "\"Un[B]oost\"", "'b'", "'B'"}, true),
@@ -915,14 +1003,15 @@ func parseInput(cfg *ini.File) Input {
 		StatusYank:          inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
 		StatusToggleSpoiler: inputStrOrErr([]string{"\"Press [Z] to toggle spoiler\"", "'z'", "'Z'"}, false),
 
-		UserAvatar:    inputStrOrErr([]string{"\"[A]vatar\"", "'a'", "'A'"}, false),
-		UserBlock:     inputStrOrErr([]string{"\"[B]lock\"", "\"Un[B]lock\"", "'b'", "'B'"}, true),
-		UserFollow:    inputStrOrErr([]string{"\"[F]ollow\"", "\"Un[F]ollow\"", "'f'", "'F'"}, true),
-		UserMute:      inputStrOrErr([]string{"\"[M]ute\"", "\"Un[M]ute\"", "'m'", "'M'"}, true),
-		UserLinks:     inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
-		UserUser:      inputStrOrErr([]string{"\"[U]ser\"", "'u'", "'U'"}, false),
-		UserViewFocus: inputStrOrErr([]string{"\"[V]iew\"", "'v'", "'V'"}, false),
-		UserYank:      inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
+		UserAvatar:              inputStrOrErr([]string{"\"[A]vatar\"", "'a'", "'A'"}, false),
+		UserBlock:               inputStrOrErr([]string{"\"[B]lock\"", "\"Un[B]lock\"", "'b'", "'B'"}, true),
+		UserFollow:              inputStrOrErr([]string{"\"[F]ollow\"", "\"Un[F]ollow\"", "'f'", "'F'"}, true),
+		UserFollowRequestDecide: inputStrOrErr([]string{"\"Follow [R]equest\"", "\"Follow [R]equest\"", "'r'", "'R'"}, true),
+		UserMute:                inputStrOrErr([]string{"\"[M]ute\"", "\"Un[M]ute\"", "'m'", "'M'"}, true),
+		UserLinks:               inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
+		UserUser:                inputStrOrErr([]string{"\"[U]ser\"", "'u'", "'U'"}, false),
+		UserViewFocus:           inputStrOrErr([]string{"\"[V]iew\"", "'v'", "'V'"}, false),
+		UserYank:                inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
 
 		ListOpenFeed: inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
 
@@ -954,7 +1043,6 @@ func parseInput(cfg *ini.File) Input {
 	ic.MainEnd = inputOrErr(cfg, "main-end", false, ic.MainEnd)
 	ic.MainPrevFeed = inputOrErr(cfg, "main-prev-feed", false, ic.MainPrevFeed)
 	ic.MainNextFeed = inputOrErr(cfg, "main-next-feed", false, ic.MainNextFeed)
-	ic.MainNotificationFocus = inputOrErr(cfg, "main-notification-focus", false, ic.MainNotificationFocus)
 	ic.MainCompose = inputOrErr(cfg, "main-compose", false, ic.MainCompose)
 
 	ic.StatusAvatar = inputOrErr(cfg, "status-avatar", false, ic.StatusAvatar)
@@ -975,6 +1063,7 @@ func parseInput(cfg *ini.File) Input {
 	ic.UserAvatar = inputOrErr(cfg, "user-avatar", false, ic.UserAvatar)
 	ic.UserBlock = inputOrErr(cfg, "user-block", true, ic.UserBlock)
 	ic.UserFollow = inputOrErr(cfg, "user-follow", true, ic.UserFollow)
+	ic.UserFollowRequestDecide = inputOrErr(cfg, "user-follow-request-decide", true, ic.UserFollowRequestDecide)
 	ic.UserMute = inputOrErr(cfg, "user-mute", true, ic.UserMute)
 	ic.UserLinks = inputOrErr(cfg, "user-links", false, ic.UserLinks)
 	ic.UserUser = inputOrErr(cfg, "user-user", false, ic.UserUser)

@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"fmt"
-
 	"github.com/RasmusLindroth/tut/config"
 	"github.com/rivo/tview"
 )
@@ -19,48 +17,28 @@ func NewMainView(tv *TutView, update chan bool) *MainView {
 		for range update {
 			tv.tut.App.QueueUpdateDraw(func() {
 				*tv.MainView.View = *mainViewUI(tv)
+				tv.ShouldSync()
 			})
 		}
 	}()
 	return mv
 }
 
-func feedList(mv *TutView) *tview.Flex {
+func feedList(mv *TutView, fh *FeedHolder) *tview.Flex {
 	iw := 3
 	if !mv.tut.Config.General.ShowIcons {
 		iw = 0
 	}
 	return tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(mv.Timeline.GetFeedList().Text, 0, 1, false).
-		AddItem(mv.Timeline.GetFeedList().Symbol, iw, 0, false) //fix so you can hide
-}
-func notificationList(mv *TutView) *tview.Flex {
-	iw := 3
-	if !mv.tut.Config.General.ShowIcons {
-		iw = 0
-	}
-	return tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(mv.Timeline.Notifications.List.Text, 0, 1, false).
-		AddItem(mv.Timeline.Notifications.List.Symbol, iw, 0, false) //fix so you can hide
+		AddItem(fh.GetFeedList().Text, 0, 1, false).
+		AddItem(fh.GetFeedList().Symbol, iw, 0, false)
 }
 
 func mainViewUI(mv *TutView) *tview.Flex {
-	showMain := mv.TimelineFocus == FeedFocus
 	vl := NewVerticalLine(mv.tut.Config)
 	hl := NewHorizontalLine(mv.tut.Config)
-	nt := NewTextView(mv.tut.Config)
 	lp := mv.tut.Config.General.ListProportion
 	cp := mv.tut.Config.General.ContentProportion
-	nt.SetTextColor(mv.tut.Config.Style.Subtle)
-	parts := mv.tut.Config.Input.MainNotificationFocus.Hint
-	start, middle, end := "", "", ""
-	if len(parts) > 0 && len(parts[0]) == 3 {
-		start = parts[0][0]
-		middle = parts[0][1]
-		end = parts[0][2]
-	}
-
-	nt.SetText(tview.Escape(fmt.Sprintf("%s[%s]%s", start, middle, end)))
 	var list *tview.Flex
 	if mv.tut.Config.General.ListSplit == config.ListColumn {
 		list = tview.NewFlex().SetDirection(tview.FlexColumn)
@@ -68,33 +46,37 @@ func mainViewUI(mv *TutView) *tview.Flex {
 		list = tview.NewFlex().SetDirection(tview.FlexRow)
 	}
 
-	if mv.tut.Config.General.NotificationFeed && !mv.tut.Config.General.HideNotificationText {
-		if mv.tut.Config.General.ListSplit == config.ListColumn {
-			list.AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-				AddItem(tview.NewBox(), 1, 0, false).
-				AddItem(feedList(mv), 0, 1, false), 0, 1, false).
-				AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-					AddItem(nt, 1, 0, false).
-					AddItem(notificationList(mv), 0, 1, false), 0, 1, false)
-		} else {
-			list.AddItem(feedList(mv), 0, 1, false).
-				AddItem(nt, 1, 0, false).
-				AddItem(notificationList(mv), 0, 1, false)
+	if mv.tut.Config.General.ListSplit == config.ListColumn {
+		feeds := tview.NewFlex()
+		for _, fh := range mv.Timeline.Feeds {
+			if mv.tut.Config.General.TimelineName && len(fh.Name) > 0 {
+				txt := NewTextView(mv.tut.Config)
+				txt.SetText(tview.Escape(fh.Name))
+				txt.SetTextColor(mv.tut.Config.Style.Subtle)
+				feeds.AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+					AddItem(txt, 1, 0, false).
+					AddItem(feedList(mv, fh), 0, 1, false), 0, 1, false)
+			} else {
+				feeds.AddItem(feedList(mv, fh), 0, 1, false)
+			}
 		}
-
-	} else if mv.tut.Config.General.NotificationFeed && mv.tut.Config.General.HideNotificationText {
-		if mv.tut.Config.General.ListSplit == config.ListColumn {
-			list.AddItem(feedList(mv), 0, 1, false).
-				AddItem(notificationList(mv), 0, 1, false)
-
-		} else {
-			list.AddItem(feedList(mv), 0, 1, false).
-				AddItem(notificationList(mv), 0, 1, false)
+		list.AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(feeds, 0, 1, false), 0, 1, false)
+	} else {
+		feeds := tview.NewFlex().SetDirection(tview.FlexRow)
+		for _, fh := range mv.Timeline.Feeds {
+			if mv.tut.Config.General.TimelineName && len(fh.Name) > 0 {
+				txt := NewTextView(mv.tut.Config)
+				txt.SetText(tview.Escape(fh.Name))
+				txt.SetTextColor(mv.tut.Config.Style.Subtle)
+				feeds.AddItem(txt, 1, 0, false)
+			}
+			feeds.AddItem(feedList(mv, fh), 0, 1, false)
 		}
-	} else if !mv.tut.Config.General.NotificationFeed {
-		list.AddItem(feedList(mv), 0, 1, false)
+		list.AddItem(feeds, 0, 1, false)
 	}
-	fc := mv.Timeline.GetFeedContent(showMain)
+
+	fc := mv.Timeline.GetFeedContent()
 	content := fc.Main
 	controls := fc.Controls
 	r := tview.NewFlex().SetDirection(tview.FlexRow).

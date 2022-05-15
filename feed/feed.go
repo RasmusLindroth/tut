@@ -26,6 +26,7 @@ const (
 	Boosts
 	Followers
 	Following
+	FollowRequests
 	Blocking
 	Muting
 	InvalidFeed
@@ -85,6 +86,19 @@ func (f *Feed) List() []api.Item {
 	f.itemsMux.RLock()
 	defer f.itemsMux.RUnlock()
 	return f.items
+}
+
+func (f *Feed) Delete(id uint) {
+	f.itemsMux.Lock()
+	defer f.itemsMux.Unlock()
+	var items []api.Item
+	for _, item := range f.items {
+		if item.ID() != id {
+			items = append(items, item)
+		}
+	}
+	f.items = items
+	f.Updated(DekstopNotificationNone)
 }
 
 func (f *Feed) Item(index int) (api.Item, error) {
@@ -744,6 +758,7 @@ func NewUserProfile(ac *api.AccountClient, user *api.User) *Feed {
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
 		Update:        make(chan DesktopNotificationType, 1),
+		name:          user.Data.Acct,
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
 	}
@@ -971,6 +986,29 @@ func NewMuting(ac *api.AccountClient) *Feed {
 		once = false
 	}
 	feed.loadOlder = func() { feed.linkOlder(feed.accountClient.GetMuting) }
+
+	return feed
+}
+
+func NewFollowRequests(ac *api.AccountClient) *Feed {
+	feed := &Feed{
+		accountClient: ac,
+		feedType:      FollowRequests,
+		items:         make([]api.Item, 0),
+		apiData:       &api.RequestData{},
+		Update:        make(chan DesktopNotificationType, 1),
+		loadingNewer:  &LoadingLock{},
+		loadingOlder:  &LoadingLock{},
+	}
+
+	once := true
+	feed.loadNewer = func() {
+		if once {
+			feed.linkNewer(feed.accountClient.GetFollowRequests)
+		}
+		once = false
+	}
+	feed.loadOlder = func() { feed.linkOlder(feed.accountClient.GetFollowRequests) }
 
 	return feed
 }

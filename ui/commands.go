@@ -35,6 +35,12 @@ func (tv *TutView) MutingCommand() {
 	)
 }
 
+func (tv *TutView) FollowRequestsCommand() {
+	tv.Timeline.AddFeed(
+		NewFollowRequests(tv),
+	)
+}
+
 func (tv *TutView) LocalCommand() {
 	tv.Timeline.AddFeed(
 		NewLocalFeed(tv),

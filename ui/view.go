@@ -22,11 +22,8 @@ const (
 )
 
 func (tv *TutView) GetCurrentFeed() *Feed {
-	foc := tv.TimelineFocus
-	if foc == FeedFocus {
-		return tv.Timeline.Feeds[tv.Timeline.FeedIndex]
-	}
-	return tv.Timeline.Notifications
+	fh := tv.Timeline.Feeds[tv.Timeline.FeedFocusIndex]
+	return fh.Feeds[fh.FeedIndex]
 }
 
 func (tv *TutView) GetCurrentItem() (api.Item, error) {
@@ -38,9 +35,11 @@ func (tv *TutView) RedrawContent() {
 	f := tv.GetCurrentFeed()
 	item, err := f.Data.Item(f.List.Text.GetCurrentItem())
 	if err != nil {
+		f.Content.Main.SetText("")
+		f.Content.Controls.SetText("")
 		return
 	}
-	DrawItem(tv.tut, item, f.Content.Main, f.Content.Controls)
+	DrawItem(tv.tut, item, f.Content.Main, f.Content.Controls, f.Data.Type())
 }
 func (tv *TutView) RedrawPoll(poll *mastodon.Poll) {
 	f := tv.GetCurrentFeed()
@@ -58,7 +57,7 @@ func (tv *TutView) RedrawPoll(poll *mastodon.Poll) {
 	} else {
 		so.Poll = poll
 	}
-	DrawItem(tv.tut, item, f.Content.Main, f.Content.Controls)
+	DrawItem(tv.tut, item, f.Content.Main, f.Content.Controls, f.Data.Type())
 }
 func (tv *TutView) RedrawControls() {
 	f := tv.GetCurrentFeed()
@@ -66,7 +65,7 @@ func (tv *TutView) RedrawControls() {
 	if err != nil {
 		return
 	}
-	DrawItemControls(tv.tut, item, f.Content.Controls)
+	DrawItemControls(tv.tut, item, f.Content.Controls, f.Data.Type())
 }
 
 func (tv *TutView) SetPage(f PageFocusAt) {
@@ -96,6 +95,7 @@ func (tv *TutView) SetPage(f PageFocusAt) {
 		tv.Shared.Bottom.StatusBar.SetMode(ScrollMode)
 		tv.tut.App.SetFocus(f.Content.Main)
 	case LinkFocus:
+		tv.LinkView.SetLinks()
 		tv.PageFocus = LinkFocus
 		tv.View.SwitchToPage("link")
 		tv.Shared.Bottom.StatusBar.SetMode(ListMode)

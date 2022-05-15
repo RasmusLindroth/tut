@@ -40,7 +40,6 @@ type TutView struct {
 	Timeline      *Timeline
 	PageFocus     PageFocusAt
 	PrevPageFocus PageFocusAt
-	TimelineFocus TimelineFocusAt
 	SubFocus      SubFocusAt
 	Leader        *Leader
 	Shared        *Shared
@@ -116,6 +115,7 @@ func NewTutView(t *Tut, accs *auth.AccountData, selectedUser string) *TutView {
 			if accName == selectedUser {
 				tv.loggedIn(acc)
 				found = true
+				break
 			}
 		}
 		if !found {
@@ -155,7 +155,6 @@ func (tv *TutView) loggedIn(acc auth.Account) {
 	tv.tut.Client = ac
 
 	update := make(chan bool, 1)
-	tv.TimelineFocus = FeedFocus
 	tv.SubFocus = ListFocus
 	tv.LinkView = NewLinkView(tv)
 	tv.Timeline = NewTimeline(tv, update)
@@ -174,20 +173,38 @@ func (tv *TutView) loggedIn(acc auth.Account) {
 	tv.SetPage(MainFocus)
 }
 
-func (tv *TutView) FocusNotification() {
-	tv.TimelineFocus = NotificationFocus
-	for _, f := range tv.Timeline.Feeds {
-		f.ListOutFocus()
+func (tv *TutView) FocusFeed(index int) {
+	if index < 0 || index >= len(tv.Timeline.Feeds) {
+		return
 	}
-	tv.Timeline.Notifications.ListInFocus()
+	tv.Timeline.FeedFocusIndex = index
+	for i := 0; i < len(tv.Timeline.Feeds); i++ {
+		if i == index {
+			for _, f := range tv.Timeline.Feeds[i].Feeds {
+				f.ListInFocus()
+			}
+		} else {
+			for _, f := range tv.Timeline.Feeds[i].Feeds {
+				f.ListOutFocus()
+			}
+		}
+	}
+	tv.Shared.Top.SetText(tv.Timeline.GetTitle())
 	tv.Timeline.update <- true
 }
 
-func (tv *TutView) FocusFeed() {
-	tv.TimelineFocus = FeedFocus
-	for _, f := range tv.Timeline.Feeds {
-		f.ListInFocus()
+func (tv *TutView) NextFeed() {
+	index := tv.Timeline.FeedFocusIndex + 1
+	if index >= len(tv.Timeline.Feeds) {
+		index = 0
 	}
-	tv.Timeline.Notifications.ListOutFocus()
-	tv.Timeline.update <- true
+	tv.FocusFeed(index)
+}
+
+func (tv *TutView) PrevFeed() {
+	index := tv.Timeline.FeedFocusIndex - 1
+	if index < 0 {
+		index = len(tv.Timeline.Feeds) - 1
+	}
+	tv.FocusFeed(index)
 }

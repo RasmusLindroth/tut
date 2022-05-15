@@ -12,7 +12,7 @@ func drawNotification(tut *Tut, item api.Item, notification *api.NotificationDat
 	switch notification.Item.Type {
 	case "follow":
 		drawUser(tut, notification.User.Raw().(*api.User), main, controls,
-			fmt.Sprintf("%s started following you", util.FormatUsername(notification.Item.Account)),
+			fmt.Sprintf("%s started following you", util.FormatUsername(notification.Item.Account)), false,
 		)
 	case "favourite":
 		drawStatus(tut, notification.Status, notification.Item.Status, main, controls,
@@ -36,7 +36,8 @@ func drawNotification(tut *Tut, item api.Item, notification *api.NotificationDat
 		)
 	case "follow_request":
 		drawUser(tut, notification.User.Raw().(*api.User), main, controls,
-			fmt.Sprintf("%s  wants to follow you. This is currently not implemented, so use another app to accept or reject the request.", util.FormatUsername(notification.Item.Account)),
+			fmt.Sprintf("%s  wants to follow you.", util.FormatUsername(notification.Item.Account)),
+			true,
 		)
 	}
 }

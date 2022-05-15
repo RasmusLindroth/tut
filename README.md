@@ -39,6 +39,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:lists` show a list of your lists
 * `:muting`  lists users that you have muted
 * `:profile` go to your profile
+* `:requests` see following requests
 * `:saved` alias for bookmarks
 * `:tag` followed by the hashtag e.g. `:tag linux`
 * `:user` followed by a username e.g. `:user rasmus` to narrow a search include 

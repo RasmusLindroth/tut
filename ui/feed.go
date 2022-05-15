@@ -69,14 +69,18 @@ func (f *Feed) LoadNewer() {
 	f.Data.LoadNewer()
 }
 
+func (f *Feed) Delete() {
+	id := f.List.GetCurrentID()
+	f.Data.Delete(id)
+}
+
 func (f *Feed) DrawContent() {
 	id := f.List.GetCurrentID()
 	for _, item := range f.Data.List() {
 		if id != item.ID() {
 			continue
 		}
-		DrawItem(f.tutView.tut, item, f.Content.Main, f.Content.Controls)
-		f.tutView.LinkView.SetLinks(item)
+		DrawItem(f.tutView.tut, item, f.Content.Main, f.Content.Controls, f.Data.Type())
 		f.tutView.ShouldSync()
 	}
 }
@@ -411,6 +415,21 @@ func NewBlocking(tv *TutView) *Feed {
 
 func NewMuting(tv *TutView) *Feed {
 	f := feed.NewMuting(tv.tut.Client)
+	f.LoadNewer()
+	fd := &Feed{
+		tutView:   tv,
+		Data:      f,
+		ListIndex: 0,
+		List:      NewFeedList(tv.tut),
+		Content:   NewFeedContent(tv.tut),
+	}
+	go fd.update()
+
+	return fd
+}
+
+func NewFollowRequests(tv *TutView) *Feed {
+	f := feed.NewFollowRequests(tv.tut.Client)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView:   tv,

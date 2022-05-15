@@ -223,6 +223,13 @@ func (ac *AccountClient) GetMuting(pg *mastodon.Pagination) ([]Item, error) {
 	return ac.getUserSimilar(fn)
 }
 
+func (ac *AccountClient) GetFollowRequests(pg *mastodon.Pagination) ([]Item, error) {
+	fn := func() ([]*mastodon.Account, error) {
+		return ac.Client.GetFollowRequests(context.Background(), pg)
+	}
+	return ac.getUserSimilar(fn)
+}
+
 func (ac *AccountClient) getUserSimilar(fn func() ([]*mastodon.Account, error)) ([]Item, error) {
 	var items []Item
 	users, err := fn()
