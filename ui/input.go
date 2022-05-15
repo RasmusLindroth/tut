@@ -172,9 +172,15 @@ func (tv *TutView) InputMainViewFeed(event *tcell.EventKey) *tcell.EventKey {
 		tv.Timeline.PrevItemFeed()
 		return nil
 	}
-	if tv.tut.Config.Input.MainNotificationFocus.Match(event.Key(), event.Rune()) {
+	if tv.tut.Config.Input.MainPrevWindow.Match(event.Key(), event.Rune()) {
 		if tv.tut.Config.General.NotificationFeed {
-			tv.FocusFeed(1)
+			tv.PrevFeed()
+		}
+		return nil
+	}
+	if tv.tut.Config.Input.MainNextWindow.Match(event.Key(), event.Rune()) {
+		if tv.tut.Config.General.NotificationFeed {
+			tv.NextFeed()
 		}
 		return nil
 	}
@@ -190,6 +196,11 @@ func (tv *TutView) InputMainViewFeed(event *tcell.EventKey) *tcell.EventKey {
 			tv.FocusFeed(0)
 		}
 		return nil
+	}
+	for i, tl := range tv.tut.Config.General.Timelines {
+		if tl.Key.Match(event.Key(), event.Rune()) {
+			tv.FocusFeed(i)
+		}
 	}
 	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) {
 		exiting := tv.Timeline.RemoveCurrent(false)

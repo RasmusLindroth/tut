@@ -8,6 +8,42 @@ var conftext = `# Configuration file for tut
 # default=true
 confirmation=true
 
+# Timelines adds windows of feeds. You can customize the number of feeds, what
+# they should show and the key to activate them.
+# 
+# Available timelines: home, direct, local, federated, bookmarks, saved,
+# favorited, notifications, lists, tag
+# 
+# Tag is special as you need to add the tag after, see the example below.
+# 
+# The syntax is:
+# timelines=feed,[name],[keys...]
+# 
+# Tha values in brackets are optional. You can see the syntax for keys under the
+# [input] section.
+# 
+# Some examples:
+# 
+# home timeline with the name Home
+# timelines=home,Home
+# 
+# local timeline with the name Local and it gets focus when you press 2
+# timelines=local,Local,'2'
+# 
+# notification timeline with the name [N]otifications and it gets focus when you
+# press n or N
+# timelines=notifications,[N]otifications,'n','N'
+# 
+# tag timeline for #linux with the name Linux and it gets focus when you press
+# timelines=tag linux,Linux,"F2"
+# 
+# 
+# If you don't set any timelines it will default to this:
+# timelines=home
+# timelines=notifications,[N]otifications,'n','N'
+# 
+
+
 # The date format to be used. See https://godoc.org/time#Time.Format
 # default=2006-01-02 15:04
 date-format=2006-01-02 15:04
@@ -29,19 +65,10 @@ date-today-format=15:04
 # default=-1
 date-relative=-1
 
-# The timeline that opens up when you start tut.
-# Valid values: home, direct, local, federated
-# default=home
-timeline=home
-
 # The max width of text before it wraps when displaying toots.
 # 0 = no restriction.
 # default=0
 max-width=0
-
-# If you want to display a list of notifications under your timeline feed.
-# default=true
-notification-feed=true
 
 # Where do you want the list of toots to be placed?
 # Valid values: left, right, top, bottom.
@@ -53,11 +80,6 @@ list-placement=left
 # (column).
 # default=row
 list-split=row
-
-# Hide notification text above list in column split. It's displayed as
-# [N]otifications.
-# default=false
-hide-notification-text=false
 
 # You can change the proportions of the list view in relation to the content
 # view list-proportion=1 and content-proportoin=3 will result in the content
@@ -422,6 +444,14 @@ main-prev-feed="",'h','H',"Left"
 # Go to next feed
 # default="",'l','L',"Right"
 main-next-feed="",'l','L',"Right"
+
+# Focus on the previous feed window
+# default="","Backtab"
+main-prev-window="","Backtab"
+
+# Focus on the next feed window
+# default="","Tab"
+main-next-window="","Tab"
 
 # Focus on the notification list
 # default="[N]otifications",'n','N'

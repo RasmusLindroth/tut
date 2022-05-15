@@ -76,6 +76,7 @@ type Timeline struct {
 	FeedType  feed.FeedType
 	Subaction string
 	Name      string
+	Key       Key
 }
 
 type General struct {
@@ -314,12 +315,13 @@ type Input struct {
 	GlobalBack  Key
 	GlobalExit  Key
 
-	MainHome              Key
-	MainEnd               Key
-	MainPrevFeed          Key
-	MainNextFeed          Key
-	MainNotificationFocus Key
-	MainCompose           Key
+	MainHome       Key
+	MainEnd        Key
+	MainPrevFeed   Key
+	MainNextFeed   Key
+	MainPrevWindow Key
+	MainNextWindow Key
+	MainCompose    Key
 
 	StatusAvatar        Key
 	StatusBoost         Key
@@ -608,6 +610,7 @@ func parseGeneral(cfg *ini.File) General {
 			parts := strings.Split(l, ",")
 			if len(parts) != 2 {
 				fmt.Printf("leader-action must consist of two parts seperated by a comma. Your value is: %s\n", strings.Join(parts, ","))
+				os.Exit(1)
 			}
 			for i, p := range parts {
 				parts[i] = strings.TrimSpace(p)
@@ -676,8 +679,9 @@ func parseGeneral(cfg *ini.File) General {
 		for i, p := range parts {
 			parts[i] = strings.TrimSpace(p)
 		}
-		if len(parts) == 0 || len(parts) > 2 {
-			fmt.Printf("timelines must consist of max two parts seperated by a comma. Your value is: %s\n", strings.Join(parts, ","))
+		if len(parts) == 0 {
+			fmt.Printf("timelines must consist of atleast one part seperated by a comma. Your value is: %s\n", strings.Join(parts, ","))
+			os.Exit(1)
 		}
 		if len(parts) == 1 {
 			parts = append(parts, "")
@@ -717,6 +721,11 @@ func parseGeneral(cfg *ini.File) General {
 			os.Exit(1)
 		}
 		tl.Name = parts[1]
+		if len(parts) > 2 {
+			vals := []string{""}
+			vals = append(vals, parts[2:]...)
+			tl.Key = inputStrOrErr(vals, false)
+		}
 		tls = append(tls, tl)
 	}
 	if len(tls) == 0 {
@@ -729,7 +738,8 @@ func parseGeneral(cfg *ini.File) General {
 		tls = append(tls,
 			Timeline{
 				FeedType: feed.Notification,
-				Name:     "",
+				Name:     "[N]otifications",
+				Key:      inputStrOrErr([]string{"", "'n'", "'N'"}, false),
 			},
 		)
 	}
@@ -970,12 +980,13 @@ func parseInput(cfg *ini.File) Input {
 		GlobalBack:  inputStrOrErr([]string{"\"[Esc]\"", "\"Esc\""}, false),
 		GlobalExit:  inputStrOrErr([]string{"\"[Q]uit\"", "'q'", "'Q'"}, false),
 
-		MainHome:              inputStrOrErr([]string{"\"\"", "'g'", "\"Home\""}, false),
-		MainEnd:               inputStrOrErr([]string{"\"\"", "'G'", "\"End\""}, false),
-		MainPrevFeed:          inputStrOrErr([]string{"\"\"", "'h'", "'H'", "\"Left\""}, false),
-		MainNextFeed:          inputStrOrErr([]string{"\"\"", "'l'", "'L'", "\"Right\""}, false),
-		MainNotificationFocus: inputStrOrErr([]string{"\"[N]otifications\"", "'n'", "'N'"}, false),
-		MainCompose:           inputStrOrErr([]string{"\"\"", "'c'", "'C'"}, false),
+		MainHome:       inputStrOrErr([]string{"\"\"", "'g'", "\"Home\""}, false),
+		MainEnd:        inputStrOrErr([]string{"\"\"", "'G'", "\"End\""}, false),
+		MainPrevFeed:   inputStrOrErr([]string{"\"\"", "'h'", "'H'", "\"Left\""}, false),
+		MainNextFeed:   inputStrOrErr([]string{"\"\"", "'l'", "'L'", "\"Right\""}, false),
+		MainPrevWindow: inputStrOrErr([]string{"\"\"", "\"Backtab\""}, false),
+		MainNextWindow: inputStrOrErr([]string{"\"\"", "\"Tab\""}, false),
+		MainCompose:    inputStrOrErr([]string{"\"\"", "'c'", "'C'"}, false),
 
 		StatusAvatar:        inputStrOrErr([]string{"\"[A]vatar\"", "'a'", "'A'"}, false),
 		StatusBoost:         inputStrOrErr([]string{"\"[B]oost\"", "\"Un[B]oost\"", "'b'", "'B'"}, true),
@@ -1032,7 +1043,6 @@ func parseInput(cfg *ini.File) Input {
 	ic.MainEnd = inputOrErr(cfg, "main-end", false, ic.MainEnd)
 	ic.MainPrevFeed = inputOrErr(cfg, "main-prev-feed", false, ic.MainPrevFeed)
 	ic.MainNextFeed = inputOrErr(cfg, "main-next-feed", false, ic.MainNextFeed)
-	ic.MainNotificationFocus = inputOrErr(cfg, "main-notification-focus", false, ic.MainNotificationFocus)
 	ic.MainCompose = inputOrErr(cfg, "main-compose", false, ic.MainCompose)
 
 	ic.StatusAvatar = inputOrErr(cfg, "status-avatar", false, ic.StatusAvatar)
