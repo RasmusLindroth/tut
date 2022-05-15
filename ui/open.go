@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -63,7 +62,7 @@ func OpenEditor(tv *TutView, content string) (string, error) {
 		args = append(args, parts[1:]...)
 		editor = parts[0]
 	}
-	f, err := ioutil.TempFile("", "tut")
+	f, err := os.CreateTemp("", "tut")
 	if err != nil {
 		return "", err
 	}
@@ -73,7 +72,9 @@ func OpenEditor(tv *TutView, content string) (string, error) {
 			return "", err
 		}
 	}
-	args = append(args, f.Name())
+	fname := f.Name()
+	args = append(args, fname)
+	f.Close()
 	cmd := exec.Command(editor, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -84,10 +85,9 @@ func OpenEditor(tv *TutView, content string) (string, error) {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		f.Seek(0, 0)
-		text, err = ioutil.ReadAll(f)
+		text, err = os.ReadFile(fname)
 	})
-	f.Close()
+	os.Remove(fname)
 	if err != nil {
 		return "", err
 	}
