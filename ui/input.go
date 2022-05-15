@@ -186,7 +186,14 @@ func (tv *TutView) InputMainViewFeed(event *tcell.EventKey) *tcell.EventKey {
 	}
 	if tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
 		if mainFocus {
-			tv.Timeline.RemoveCurrent(true)
+			exiting := tv.Timeline.RemoveCurrent(false)
+			if exiting {
+				tv.ModalView.Run("Do you want to exit tut?",
+					func() {
+						tv.Timeline.RemoveCurrent(true)
+					})
+				return nil
+			}
 		} else {
 			tv.FocusFeed()
 		}

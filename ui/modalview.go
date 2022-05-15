@@ -29,6 +29,7 @@ func NewModalView(tv *TutView) *ModalView {
 }
 
 func (mv *ModalView) run(text string) (chan bool, func()) {
+	mv.View.SetFocus(0)
 	mv.View.SetText(text)
 	mv.tutView.SetPage(ModalFocus)
 	return mv.res, func() {

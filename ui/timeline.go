@@ -49,9 +49,9 @@ func (tl *Timeline) AddFeed(f *Feed) {
 	tl.update <- true
 }
 
-func (tl *Timeline) RemoveCurrent(quit bool) {
+func (tl *Timeline) RemoveCurrent(quit bool) bool {
 	if len(tl.Feeds) == 1 && !quit {
-		return
+		return true
 	}
 	if len(tl.Feeds) == 1 && quit {
 		tl.tutView.tut.App.Stop()
@@ -66,6 +66,7 @@ func (tl *Timeline) RemoveCurrent(quit bool) {
 	tl.FeedIndex = ni
 	tl.tutView.Shared.Top.SetText(tl.GetTitle())
 	tl.update <- true
+	return false
 }
 
 func (tl *Timeline) NextFeed() {
