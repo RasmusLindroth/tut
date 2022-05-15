@@ -148,62 +148,53 @@ func (tv *TutView) InputMainView(event *tcell.EventKey) *tcell.EventKey {
 }
 
 func (tv *TutView) InputMainViewFeed(event *tcell.EventKey) *tcell.EventKey {
-	mainFocus := tv.TimelineFocus == FeedFocus
-
 	if tv.tut.Config.Input.MainHome.Match(event.Key(), event.Rune()) {
-		tv.Timeline.HomeItemFeed(mainFocus)
+		tv.Timeline.HomeItemFeed()
 		return nil
 	}
 	if tv.tut.Config.Input.MainEnd.Match(event.Key(), event.Rune()) {
-		tv.Timeline.EndItemFeed(mainFocus)
+		tv.Timeline.EndItemFeed()
 		return nil
 	}
 	if tv.tut.Config.Input.MainPrevFeed.Match(event.Key(), event.Rune()) {
-		if mainFocus {
-			tv.Timeline.PrevFeed()
-		}
+		tv.Timeline.PrevFeed()
 		return nil
 	}
 	if tv.tut.Config.Input.MainNextFeed.Match(event.Key(), event.Rune()) {
-		if mainFocus {
-			tv.Timeline.NextFeed()
-		}
+		tv.Timeline.NextFeed()
 		return nil
 	}
 	if tv.tut.Config.Input.GlobalDown.Match(event.Key(), event.Rune()) {
-		tv.Timeline.NextItemFeed(mainFocus)
+		tv.Timeline.NextItemFeed()
 		return nil
 	}
 	if tv.tut.Config.Input.GlobalUp.Match(event.Key(), event.Rune()) {
-		tv.Timeline.PrevItemFeed(mainFocus)
+		tv.Timeline.PrevItemFeed()
 		return nil
 	}
 	if tv.tut.Config.Input.MainNotificationFocus.Match(event.Key(), event.Rune()) {
 		if tv.tut.Config.General.NotificationFeed {
-			tv.FocusNotification()
+			tv.FocusFeed(1)
 		}
 		return nil
 	}
 	if tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
-		if mainFocus {
-			exiting := tv.Timeline.RemoveCurrent(false)
-			if exiting {
-				tv.ModalView.Run("Do you want to exit tut?",
-					func() {
-						tv.Timeline.RemoveCurrent(true)
-					})
-				return nil
-			}
-		} else {
-			tv.FocusFeed()
+		exiting := tv.Timeline.RemoveCurrent(false)
+		if exiting && tv.Timeline.FeedFocusIndex == 0 {
+			tv.ModalView.Run("Do you want to exit tut?",
+				func() {
+					tv.Timeline.RemoveCurrent(true)
+				})
+			return nil
+		} else if exiting && tv.Timeline.FeedFocusIndex != 0 {
+			tv.FocusFeed(0)
 		}
 		return nil
 	}
 	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) {
-		if mainFocus {
-			tv.Timeline.RemoveCurrent(false)
-		} else {
-			tv.FocusFeed()
+		exiting := tv.Timeline.RemoveCurrent(false)
+		if exiting && tv.Timeline.FeedFocusIndex != 0 {
+			tv.FocusFeed(0)
 		}
 		return nil
 	}

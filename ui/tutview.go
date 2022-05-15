@@ -40,7 +40,6 @@ type TutView struct {
 	Timeline      *Timeline
 	PageFocus     PageFocusAt
 	PrevPageFocus PageFocusAt
-	TimelineFocus TimelineFocusAt
 	SubFocus      SubFocusAt
 	Leader        *Leader
 	Shared        *Shared
@@ -156,7 +155,6 @@ func (tv *TutView) loggedIn(acc auth.Account) {
 	tv.tut.Client = ac
 
 	update := make(chan bool, 1)
-	tv.TimelineFocus = FeedFocus
 	tv.SubFocus = ListFocus
 	tv.LinkView = NewLinkView(tv)
 	tv.Timeline = NewTimeline(tv, update)
@@ -175,20 +173,19 @@ func (tv *TutView) loggedIn(acc auth.Account) {
 	tv.SetPage(MainFocus)
 }
 
-func (tv *TutView) FocusNotification() {
-	tv.TimelineFocus = NotificationFocus
-	for _, f := range tv.Timeline.Feeds {
-		f.ListOutFocus()
+func (tv *TutView) FocusFeed(index int) {
+	tv.Timeline.FeedFocusIndex = index
+	for i := 0; i < len(tv.Timeline.Feeds); i++ {
+		if i == index {
+			for _, f := range tv.Timeline.Feeds[i].Feeds {
+				f.ListInFocus()
+			}
+		} else {
+			for _, f := range tv.Timeline.Feeds[i].Feeds {
+				f.ListOutFocus()
+			}
+		}
 	}
-	tv.Timeline.Notifications.ListInFocus()
-	tv.Timeline.update <- true
-}
-
-func (tv *TutView) FocusFeed() {
-	tv.TimelineFocus = FeedFocus
-	for _, f := range tv.Timeline.Feeds {
-		f.ListInFocus()
-	}
-	tv.Timeline.Notifications.ListOutFocus()
+	tv.Shared.Top.SetText(tv.Timeline.GetTitle())
 	tv.Timeline.update <- true
 }

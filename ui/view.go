@@ -22,11 +22,8 @@ const (
 )
 
 func (tv *TutView) GetCurrentFeed() *Feed {
-	foc := tv.TimelineFocus
-	if foc == FeedFocus {
-		return tv.Timeline.Feeds[tv.Timeline.FeedIndex]
-	}
-	return tv.Timeline.Notifications
+	fh := tv.Timeline.Feeds[tv.Timeline.FeedFocusIndex]
+	return fh.Feeds[fh.FeedIndex]
 }
 
 func (tv *TutView) GetCurrentItem() (api.Item, error) {

@@ -72,6 +72,12 @@ const (
 	LeaderUser
 )
 
+type Timeline struct {
+	FeedType  feed.FeedType
+	Subaction string
+	Name      string
+}
+
 type General struct {
 	Confirmation         bool
 	DateTodayFormat      string
@@ -94,6 +100,8 @@ type General struct {
 	LeaderKey            rune
 	LeaderTimeout        int64
 	LeaderActions        []LeaderAction
+	TimelineName         bool
+	Timelines            []Timeline
 }
 
 type Style struct {
@@ -659,6 +667,74 @@ func parseGeneral(cfg *ini.File) General {
 		}
 		general.LeaderActions = las
 	}
+
+	general.TimelineName = cfg.Section("general").Key("timeline-show-name").MustBool(true)
+	var tls []Timeline
+	timelines := cfg.Section("general").Key("timelines").ValueWithShadows()
+	for _, l := range timelines {
+		parts := strings.Split(l, ",")
+		for i, p := range parts {
+			parts[i] = strings.TrimSpace(p)
+		}
+		if len(parts) == 0 || len(parts) > 2 {
+			fmt.Printf("timelines must consist of max two parts seperated by a comma. Your value is: %s\n", strings.Join(parts, ","))
+		}
+		if len(parts) == 1 {
+			parts = append(parts, "")
+		}
+		cmd := parts[0]
+		var subaction string
+		if strings.Contains(parts[0], " ") {
+			p := strings.Split(cmd, " ")
+			cmd = p[0]
+			subaction = strings.Join(p[1:], " ")
+		}
+		tl := Timeline{}
+		switch cmd {
+		case "home":
+			tl.FeedType = feed.TimelineHome
+		case "direct":
+			tl.FeedType = feed.Conversations
+		case "local":
+			tl.FeedType = feed.TimelineLocal
+		case "federated":
+			tl.FeedType = feed.TimelineFederated
+		case "bookmarks":
+			tl.FeedType = feed.Saved
+		case "saved":
+			tl.FeedType = feed.Saved
+		case "favorited":
+			tl.FeedType = feed.Favorited
+		case "notifications":
+			tl.FeedType = feed.Notification
+		case "lists":
+			tl.FeedType = feed.Lists
+		case "tag":
+			tl.FeedType = feed.Tag
+			tl.Subaction = subaction
+		default:
+			fmt.Printf("timeline %s is invalid\n", parts[0])
+			os.Exit(1)
+		}
+		tl.Name = parts[1]
+		tls = append(tls, tl)
+	}
+	if len(tls) == 0 {
+		tls = append(tls,
+			Timeline{
+				FeedType: feed.TimelineHome,
+				Name:     "",
+			},
+		)
+		tls = append(tls,
+			Timeline{
+				FeedType: feed.Notification,
+				Name:     "",
+			},
+		)
+	}
+	general.Timelines = tls
+
 	return general
 }
 
