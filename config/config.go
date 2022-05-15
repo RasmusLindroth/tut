@@ -70,6 +70,7 @@ const (
 	LeaderLists
 	LeaderTag
 	LeaderUser
+	LeaderWindow
 )
 
 type Timeline struct {
@@ -660,6 +661,9 @@ func parseGeneral(cfg *ini.File) General {
 				la.Command = LeaderLists
 			case "tag":
 				la.Command = LeaderTag
+				la.Subaction = subaction
+			case "window":
+				la.Command = LeaderWindow
 				la.Subaction = subaction
 			default:
 				fmt.Printf("leader-action %s is invalid\n", parts[0])

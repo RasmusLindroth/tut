@@ -128,7 +128,8 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.ListsCommand()
 		case config.LeaderTag:
 			tv.TagCommand(subaction)
-
+		case config.LeaderWindow:
+			tv.WindowCommand(subaction)
 		}
 		tv.Leader.ResetInactive()
 		return nil
