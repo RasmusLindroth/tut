@@ -116,6 +116,7 @@ func NewTutView(t *Tut, accs *auth.AccountData, selectedUser string) *TutView {
 			if accName == selectedUser {
 				tv.loggedIn(acc)
 				found = true
+				break
 			}
 		}
 		if !found {
