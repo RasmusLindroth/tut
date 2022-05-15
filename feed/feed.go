@@ -598,18 +598,22 @@ func (f *Feed) startStreamNotification(rec *api.Receiver, timeline string, err e
 	}()
 }
 
-func NewTimelineHome(ac *api.AccountClient) *Feed {
-	feed := &Feed{
+func newFeed(ac *api.AccountClient, ft FeedType) *Feed {
+	return &Feed{
 		accountClient: ac,
-		feedType:      TimelineHome,
 		items:         make([]api.Item, 0),
+		feedType:      ft,
+		loadNewer:     func() {},
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
 		Update:        make(chan DesktopNotificationType, 1),
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
 	}
+}
 
+func NewTimelineHome(ac *api.AccountClient) *Feed {
+	feed := newFeed(ac, TimelineHome)
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetTimeline) }
 	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetTimeline) }
 	feed.startStream(feed.accountClient.NewHomeStream())
@@ -619,17 +623,7 @@ func NewTimelineHome(ac *api.AccountClient) *Feed {
 }
 
 func NewTimelineFederated(ac *api.AccountClient) *Feed {
-	feed := &Feed{
-		accountClient: ac,
-		feedType:      TimelineFederated,
-		items:         make([]api.Item, 0),
-		loadOlder:     func() {},
-		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
-		loadingNewer:  &LoadingLock{},
-		loadingOlder:  &LoadingLock{},
-	}
-
+	feed := newFeed(ac, TimelineFederated)
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetTimelineFederated) }
 	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetTimelineFederated) }
 	feed.startStream(feed.accountClient.NewFederatedStream())
@@ -639,17 +633,7 @@ func NewTimelineFederated(ac *api.AccountClient) *Feed {
 }
 
 func NewTimelineLocal(ac *api.AccountClient) *Feed {
-	feed := &Feed{
-		accountClient: ac,
-		feedType:      TimelineLocal,
-		items:         make([]api.Item, 0),
-		loadOlder:     func() {},
-		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
-		loadingNewer:  &LoadingLock{},
-		loadingOlder:  &LoadingLock{},
-	}
-
+	feed := newFeed(ac, TimelineLocal)
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetTimelineLocal) }
 	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetTimelineLocal) }
 	feed.startStream(feed.accountClient.NewLocalStream())
@@ -659,17 +643,7 @@ func NewTimelineLocal(ac *api.AccountClient) *Feed {
 }
 
 func NewConversations(ac *api.AccountClient) *Feed {
-	feed := &Feed{
-		accountClient: ac,
-		feedType:      Conversations,
-		items:         make([]api.Item, 0),
-		loadOlder:     func() {},
-		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
-		loadingNewer:  &LoadingLock{},
-		loadingOlder:  &LoadingLock{},
-	}
-
+	feed := newFeed(ac, Conversations)
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetConversations) }
 	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetConversations) }
 	feed.startStream(feed.accountClient.NewDirectStream())
@@ -679,17 +653,7 @@ func NewConversations(ac *api.AccountClient) *Feed {
 }
 
 func NewNotifications(ac *api.AccountClient) *Feed {
-	feed := &Feed{
-		accountClient: ac,
-		feedType:      Notification,
-		items:         make([]api.Item, 0),
-		loadOlder:     func() {},
-		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
-		loadingNewer:  &LoadingLock{},
-		loadingOlder:  &LoadingLock{},
-	}
-
+	feed := newFeed(ac, Notification)
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetNotifications) }
 	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetNotifications) }
 	feed.startStreamNotification(feed.accountClient.NewHomeStream())
@@ -699,16 +663,7 @@ func NewNotifications(ac *api.AccountClient) *Feed {
 }
 
 func NewFavorites(ac *api.AccountClient) *Feed {
-	feed := &Feed{
-		accountClient: ac,
-		feedType:      Favorited,
-		items:         make([]api.Item, 0),
-		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
-		loadingNewer:  &LoadingLock{},
-		loadingOlder:  &LoadingLock{},
-	}
-
+	feed := newFeed(ac, Favorited)
 	feed.loadNewer = func() { feed.linkNewer(feed.accountClient.GetFavorites) }
 	feed.loadOlder = func() { feed.linkOlder(feed.accountClient.GetFavorites) }
 
@@ -716,16 +671,7 @@ func NewFavorites(ac *api.AccountClient) *Feed {
 }
 
 func NewBookmarks(ac *api.AccountClient) *Feed {
-	feed := &Feed{
-		accountClient: ac,
-		feedType:      Saved,
-		items:         make([]api.Item, 0),
-		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
-		loadingNewer:  &LoadingLock{},
-		loadingOlder:  &LoadingLock{},
-	}
-
+	feed := newFeed(ac, Saved)
 	feed.loadNewer = func() { feed.linkNewer(feed.accountClient.GetBookmarks) }
 	feed.loadOlder = func() { feed.linkOlder(feed.accountClient.GetBookmarks) }
 
@@ -733,35 +679,16 @@ func NewBookmarks(ac *api.AccountClient) *Feed {
 }
 
 func NewUserSearch(ac *api.AccountClient, search string) *Feed {
-	feed := &Feed{
-		accountClient: ac,
-		feedType:      UserList,
-		items:         make([]api.Item, 0),
-		loadOlder:     func() {},
-		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
-		name:          search,
-		loadingNewer:  &LoadingLock{},
-		loadingOlder:  &LoadingLock{},
-	}
-
+	feed := newFeed(ac, UserList)
+	feed.name = search
 	feed.loadNewer = func() { feed.singleNewerSearch(feed.accountClient.GetUsers, search) }
 
 	return feed
 }
 
 func NewUserProfile(ac *api.AccountClient, user *api.User) *Feed {
-	feed := &Feed{
-		accountClient: ac,
-		feedType:      User,
-		items:         make([]api.Item, 0),
-		loadOlder:     func() {},
-		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
-		name:          user.Data.Acct,
-		loadingNewer:  &LoadingLock{},
-		loadingOlder:  &LoadingLock{},
-	}
+	feed := newFeed(ac, User)
+	feed.name = user.Data.Acct
 	feed.items = append(feed.items, api.NewUserItem(user, true))
 	feed.loadNewer = func() { feed.normalNewerUser(feed.accountClient.GetUser, user.Data.ID) }
 	feed.loadOlder = func() { feed.normalOlderUser(feed.accountClient.GetUser, user.Data.ID) }
@@ -770,35 +697,15 @@ func NewUserProfile(ac *api.AccountClient, user *api.User) *Feed {
 }
 
 func NewThread(ac *api.AccountClient, status *mastodon.Status) *Feed {
-	feed := &Feed{
-		accountClient: ac,
-		feedType:      Thread,
-		items:         make([]api.Item, 0),
-		loadOlder:     func() {},
-		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
-		loadingNewer:  &LoadingLock{},
-		loadingOlder:  &LoadingLock{},
-	}
-
+	feed := newFeed(ac, Thread)
 	feed.loadNewer = func() { feed.singleThread(feed.accountClient.GetThread, status) }
 
 	return feed
 }
 
 func NewTag(ac *api.AccountClient, search string) *Feed {
-	feed := &Feed{
-		accountClient: ac,
-		feedType:      Tag,
-		items:         make([]api.Item, 0),
-		loadOlder:     func() {},
-		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
-		name:          search,
-		loadingNewer:  &LoadingLock{},
-		loadingOlder:  &LoadingLock{},
-	}
-
+	feed := newFeed(ac, Tag)
+	feed.name = search
 	feed.loadNewer = func() { feed.newerSearchPG(feed.accountClient.GetTag, search) }
 	feed.loadOlder = func() { feed.olderSearchPG(feed.accountClient.GetTag, search) }
 	feed.startStream(feed.accountClient.NewTagStream(search))
@@ -808,16 +715,7 @@ func NewTag(ac *api.AccountClient, search string) *Feed {
 }
 
 func NewListList(ac *api.AccountClient) *Feed {
-	feed := &Feed{
-		accountClient: ac,
-		feedType:      Lists,
-		items:         make([]api.Item, 0),
-		loadOlder:     func() {},
-		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
-		loadingNewer:  &LoadingLock{},
-		loadingOlder:  &LoadingLock{},
-	}
+	feed := newFeed(ac, Lists)
 	once := true
 	feed.loadNewer = func() {
 		if once {
@@ -830,17 +728,8 @@ func NewListList(ac *api.AccountClient) *Feed {
 }
 
 func NewList(ac *api.AccountClient, list *mastodon.List) *Feed {
-	feed := &Feed{
-		accountClient: ac,
-		feedType:      List,
-		items:         make([]api.Item, 0),
-		loadOlder:     func() {},
-		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
-		name:          list.Title,
-		loadingNewer:  &LoadingLock{},
-		loadingOlder:  &LoadingLock{},
-	}
+	feed := newFeed(ac, List)
+	feed.name = list.Title
 	feed.loadNewer = func() { feed.normalNewerID(feed.accountClient.GetListStatuses, list.ID) }
 	feed.loadOlder = func() { feed.normalOlderID(feed.accountClient.GetListStatuses, list.ID) }
 	feed.startStream(feed.accountClient.NewListStream(list.ID))
@@ -850,17 +739,7 @@ func NewList(ac *api.AccountClient, list *mastodon.List) *Feed {
 }
 
 func NewFavoritesStatus(ac *api.AccountClient, id mastodon.ID) *Feed {
-	feed := &Feed{
-		accountClient: ac,
-		feedType:      Favorites,
-		items:         make([]api.Item, 0),
-		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
-		loadOlder:     func() {},
-		loadingNewer:  &LoadingLock{},
-		loadingOlder:  &LoadingLock{},
-	}
-
+	feed := newFeed(ac, Favorites)
 	once := true
 	feed.loadNewer = func() {
 		if once {
@@ -873,17 +752,7 @@ func NewFavoritesStatus(ac *api.AccountClient, id mastodon.ID) *Feed {
 }
 
 func NewBoosts(ac *api.AccountClient, id mastodon.ID) *Feed {
-	feed := &Feed{
-		accountClient: ac,
-		feedType:      Boosts,
-		items:         make([]api.Item, 0),
-		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
-		loadOlder:     func() {},
-		loadingNewer:  &LoadingLock{},
-		loadingOlder:  &LoadingLock{},
-	}
-
+	feed := newFeed(ac, Boosts)
 	once := true
 	feed.loadNewer = func() {
 		if once {
@@ -896,16 +765,7 @@ func NewBoosts(ac *api.AccountClient, id mastodon.ID) *Feed {
 }
 
 func NewFollowers(ac *api.AccountClient, id mastodon.ID) *Feed {
-	feed := &Feed{
-		accountClient: ac,
-		feedType:      Followers,
-		items:         make([]api.Item, 0),
-		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
-		loadingNewer:  &LoadingLock{},
-		loadingOlder:  &LoadingLock{},
-	}
-
+	feed := newFeed(ac, Followers)
 	once := true
 	feed.loadNewer = func() {
 		if once {
@@ -919,16 +779,7 @@ func NewFollowers(ac *api.AccountClient, id mastodon.ID) *Feed {
 }
 
 func NewFollowing(ac *api.AccountClient, id mastodon.ID) *Feed {
-	feed := &Feed{
-		accountClient: ac,
-		feedType:      Following,
-		items:         make([]api.Item, 0),
-		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
-		loadingNewer:  &LoadingLock{},
-		loadingOlder:  &LoadingLock{},
-	}
-
+	feed := newFeed(ac, Following)
 	once := true
 	feed.loadNewer = func() {
 		if once {
@@ -942,19 +793,7 @@ func NewFollowing(ac *api.AccountClient, id mastodon.ID) *Feed {
 }
 
 func NewBlocking(ac *api.AccountClient) *Feed {
-	feed := &Feed{
-		accountClient: ac,
-		feedType:      Blocking,
-		items:         make([]api.Item, 0),
-		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
-		loadingNewer:  &LoadingLock{},
-		loadingOlder:  &LoadingLock{},
-	}
-
-	feed.loadNewer = func() { feed.linkNewer(feed.accountClient.GetBlocking) }
-	feed.loadOlder = func() { feed.linkOlder(feed.accountClient.GetBlocking) }
-
+	feed := newFeed(ac, Blocking)
 	once := true
 	feed.loadNewer = func() {
 		if once {
@@ -968,16 +807,7 @@ func NewBlocking(ac *api.AccountClient) *Feed {
 }
 
 func NewMuting(ac *api.AccountClient) *Feed {
-	feed := &Feed{
-		accountClient: ac,
-		feedType:      Muting,
-		items:         make([]api.Item, 0),
-		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
-		loadingNewer:  &LoadingLock{},
-		loadingOlder:  &LoadingLock{},
-	}
-
+	feed := newFeed(ac, Muting)
 	once := true
 	feed.loadNewer = func() {
 		if once {
@@ -991,16 +821,7 @@ func NewMuting(ac *api.AccountClient) *Feed {
 }
 
 func NewFollowRequests(ac *api.AccountClient) *Feed {
-	feed := &Feed{
-		accountClient: ac,
-		feedType:      FollowRequests,
-		items:         make([]api.Item, 0),
-		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
-		loadingNewer:  &LoadingLock{},
-		loadingOlder:  &LoadingLock{},
-	}
-
+	feed := newFeed(ac, FollowRequests)
 	once := true
 	feed.loadNewer = func() {
 		if once {
