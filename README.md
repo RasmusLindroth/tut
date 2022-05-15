@@ -40,6 +40,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:muting`  lists users that you have muted
 * `:profile` go to your profile
 * `:saved` alias for bookmarks
+* `:requests` see following requests
 * `:tag` followed by the hashtag e.g. `:tag linux`
 * `:user` followed by a username e.g. `:user rasmus` to narrow a search include 
 the instance like this `:user rasmus@mastodon.acc.sunet.se`.
