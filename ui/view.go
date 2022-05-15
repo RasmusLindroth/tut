@@ -38,9 +38,11 @@ func (tv *TutView) RedrawContent() {
 	f := tv.GetCurrentFeed()
 	item, err := f.Data.Item(f.List.Text.GetCurrentItem())
 	if err != nil {
+		f.Content.Main.SetText("")
+		f.Content.Controls.SetText("")
 		return
 	}
-	DrawItem(tv.tut, item, f.Content.Main, f.Content.Controls)
+	DrawItem(tv.tut, item, f.Content.Main, f.Content.Controls, f.Data.Type())
 }
 func (tv *TutView) RedrawPoll(poll *mastodon.Poll) {
 	f := tv.GetCurrentFeed()
@@ -58,7 +60,7 @@ func (tv *TutView) RedrawPoll(poll *mastodon.Poll) {
 	} else {
 		so.Poll = poll
 	}
-	DrawItem(tv.tut, item, f.Content.Main, f.Content.Controls)
+	DrawItem(tv.tut, item, f.Content.Main, f.Content.Controls, f.Data.Type())
 }
 func (tv *TutView) RedrawControls() {
 	f := tv.GetCurrentFeed()
@@ -66,7 +68,7 @@ func (tv *TutView) RedrawControls() {
 	if err != nil {
 		return
 	}
-	DrawItemControls(tv.tut, item, f.Content.Controls)
+	DrawItemControls(tv.tut, item, f.Content.Controls, f.Data.Type())
 }
 
 func (tv *TutView) SetPage(f PageFocusAt) {

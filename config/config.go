@@ -328,14 +328,15 @@ type Input struct {
 	StatusYank          Key
 	StatusToggleSpoiler Key
 
-	UserAvatar    Key
-	UserBlock     Key
-	UserFollow    Key
-	UserMute      Key
-	UserLinks     Key
-	UserUser      Key
-	UserViewFocus Key
-	UserYank      Key
+	UserAvatar              Key
+	UserBlock               Key
+	UserFollow              Key
+	UserFollowRequestDecide Key
+	UserMute                Key
+	UserLinks               Key
+	UserUser                Key
+	UserViewFocus           Key
+	UserYank                Key
 
 	ListOpenFeed Key
 
@@ -915,14 +916,15 @@ func parseInput(cfg *ini.File) Input {
 		StatusYank:          inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
 		StatusToggleSpoiler: inputStrOrErr([]string{"\"Press [Z] to toggle spoiler\"", "'z'", "'Z'"}, false),
 
-		UserAvatar:    inputStrOrErr([]string{"\"[A]vatar\"", "'a'", "'A'"}, false),
-		UserBlock:     inputStrOrErr([]string{"\"[B]lock\"", "\"Un[B]lock\"", "'b'", "'B'"}, true),
-		UserFollow:    inputStrOrErr([]string{"\"[F]ollow\"", "\"Un[F]ollow\"", "'f'", "'F'"}, true),
-		UserMute:      inputStrOrErr([]string{"\"[M]ute\"", "\"Un[M]ute\"", "'m'", "'M'"}, true),
-		UserLinks:     inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
-		UserUser:      inputStrOrErr([]string{"\"[U]ser\"", "'u'", "'U'"}, false),
-		UserViewFocus: inputStrOrErr([]string{"\"[V]iew\"", "'v'", "'V'"}, false),
-		UserYank:      inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
+		UserAvatar:              inputStrOrErr([]string{"\"[A]vatar\"", "'a'", "'A'"}, false),
+		UserBlock:               inputStrOrErr([]string{"\"[B]lock\"", "\"Un[B]lock\"", "'b'", "'B'"}, true),
+		UserFollow:              inputStrOrErr([]string{"\"[F]ollow\"", "\"Un[F]ollow\"", "'f'", "'F'"}, true),
+		UserFollowRequestDecide: inputStrOrErr([]string{"\"Follow [R]equest\"", "\"Follow [R]equest\"", "'r'", "'R'"}, true),
+		UserMute:                inputStrOrErr([]string{"\"[M]ute\"", "\"Un[M]ute\"", "'m'", "'M'"}, true),
+		UserLinks:               inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
+		UserUser:                inputStrOrErr([]string{"\"[U]ser\"", "'u'", "'U'"}, false),
+		UserViewFocus:           inputStrOrErr([]string{"\"[V]iew\"", "'v'", "'V'"}, false),
+		UserYank:                inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
 
 		ListOpenFeed: inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
 
@@ -975,6 +977,7 @@ func parseInput(cfg *ini.File) Input {
 	ic.UserAvatar = inputOrErr(cfg, "user-avatar", false, ic.UserAvatar)
 	ic.UserBlock = inputOrErr(cfg, "user-block", true, ic.UserBlock)
 	ic.UserFollow = inputOrErr(cfg, "user-follow", true, ic.UserFollow)
+	ic.UserFollowRequestDecide = inputOrErr(cfg, "user-follow-request-decide", true, ic.UserFollowRequestDecide)
 	ic.UserMute = inputOrErr(cfg, "user-mute", true, ic.UserMute)
 	ic.UserLinks = inputOrErr(cfg, "user-links", false, ic.UserLinks)
 	ic.UserUser = inputOrErr(cfg, "user-user", false, ic.UserUser)

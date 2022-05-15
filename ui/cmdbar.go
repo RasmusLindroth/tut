@@ -94,6 +94,9 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 	case ":muting":
 		c.tutView.MutingCommand()
 		c.Back()
+	case ":requests":
+		c.tutView.FollowRequestsCommand()
+		c.Back()
 	case ":profile":
 		c.tutView.ProfileCommand()
 		c.Back()
@@ -159,7 +162,7 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 
 func (c *CmdBar) Autocomplete(curr string) []string {
 	var entries []string
-	words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:favorited,:followers,:following,:help,:h,:lists,:muting,:profile,:saved,:tag,:timeline,:tl,:user,:quit,:q", ",")
+	words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:favorited,:followers,:following,:help,:h,:lists,:muting,:profile,:requests,:saved,:tag,:timeline,:tl,:user,:quit,:q", ",")
 	if curr == "" {
 		return entries
 	}

@@ -54,3 +54,15 @@ func (mv *ModalView) Run(text string, fn func()) {
 func (mv *ModalView) Stop(fn func()) {
 	fn()
 }
+
+func (mv *ModalView) RunDecide(text string, fnYes func(), fnNo func()) {
+	r, f := mv.run(text)
+	go func() {
+		if <-r {
+			fnYes()
+		} else {
+			fnNo()
+		}
+		f()
+	}()
+}

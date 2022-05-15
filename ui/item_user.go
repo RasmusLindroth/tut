@@ -44,7 +44,7 @@ type DisplayUserData struct {
 	Style config.Style
 }
 
-func drawUser(tut *Tut, data *api.User, main *tview.TextView, controls *tview.TextView, additional string) {
+func drawUser(tut *Tut, data *api.User, main *tview.TextView, controls *tview.TextView, additional string, fr bool) {
 	user := data.Data
 	relation := data.Relation
 	showUserControl := true
@@ -82,6 +82,9 @@ func drawUser(tut *Tut, data *api.User, main *tview.TextView, controls *tview.Te
 	u.Fields = fields
 
 	var controlItems []string
+	if fr {
+		controlItems = append(controlItems, config.ColorFromKey(tut.Config, tut.Config.Input.UserFollowRequestDecide, false))
+	}
 	if tut.Client.Me.ID != user.ID {
 		if relation.Following {
 			controlItems = append(controlItems, config.ColorFromKey(tut.Config, tut.Config.Input.UserFollow, false))

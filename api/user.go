@@ -71,3 +71,11 @@ func (ac *AccountClient) MuteUser(u *mastodon.Account) (*mastodon.Relationship, 
 func (ac *AccountClient) UnmuteUser(u *mastodon.Account) (*mastodon.Relationship, error) {
 	return ac.Client.AccountUnmute(context.Background(), u.ID)
 }
+
+func (ac *AccountClient) FollowRequestAccept(u *mastodon.Account) error {
+	return ac.Client.FollowRequestAuthorize(context.Background(), u.ID)
+}
+
+func (ac *AccountClient) FollowRequestDeny(u *mastodon.Account) error {
+	return ac.Client.FollowRequestReject(context.Background(), u.ID)
+}

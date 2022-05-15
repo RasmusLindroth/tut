@@ -152,6 +152,8 @@ func (tl *Timeline) GetTitle() string {
 		ct = "followers"
 	case feed.Following:
 		ct = "following"
+	case feed.FollowRequests:
+		ct = "Follow requests"
 	case feed.Blocking:
 		ct = "blocking"
 	case feed.Muting:
@@ -211,6 +213,18 @@ func (tl *Timeline) HomeItemFeed(mainFocus bool) {
 	}
 	f.List.SetCurrentItem(0)
 	f.LoadNewer()
+	tl.DrawContent(mainFocus)
+}
+
+func (tl *Timeline) DeleteItemFeed(mainFocus bool) {
+	var f *Feed
+	if mainFocus {
+		f = tl.Feeds[tl.FeedIndex]
+	} else {
+		f = tl.Notifications
+	}
+	f.List.GetCurrentID()
+
 	tl.DrawContent(mainFocus)
 }
 

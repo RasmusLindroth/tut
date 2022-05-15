@@ -7,6 +7,7 @@ import (
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
 	"github.com/RasmusLindroth/tut/config"
+	"github.com/RasmusLindroth/tut/feed"
 	"github.com/RasmusLindroth/tut/util"
 	"github.com/gdamore/tcell/v2"
 )
@@ -233,6 +234,8 @@ func (tv *TutView) InputViewItem(event *tcell.EventKey) *tcell.EventKey {
 }
 
 func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
+	fd := tv.GetCurrentFeed()
+	ft := fd.Data.Type()
 	item, err := tv.GetCurrentItem()
 	if err != nil {
 		return event
@@ -245,12 +248,16 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 	case api.StatusType:
 		return tv.InputStatus(event, item, item.Raw().(*mastodon.Status))
 	case api.UserType, api.ProfileType:
-		return tv.InputUser(event, item.Raw().(*api.User))
+		if ft == feed.FollowRequests {
+			return tv.InputUser(event, item.Raw().(*api.User), true)
+		} else {
+			return tv.InputUser(event, item.Raw().(*api.User), false)
+		}
 	case api.NotificationType:
 		nd := item.Raw().(*api.NotificationData)
 		switch nd.Item.Type {
 		case "follow":
-			return tv.InputUser(event, nd.User.Raw().(*api.User))
+			return tv.InputUser(event, nd.User.Raw().(*api.User), false)
 		case "favourite":
 			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status))
 		case "reblog":
@@ -262,7 +269,7 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 		case "poll":
 			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status))
 		case "follow_request":
-			return tv.InputUser(event, nd.User.Raw().(*api.User))
+			return tv.InputUser(event, nd.User.Raw().(*api.User), true)
 		}
 	case api.ListsType:
 		ld := item.Raw().(*mastodon.List)
@@ -423,11 +430,39 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 	return event
 }
 
-func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User) *tcell.EventKey {
+func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User, fr bool) *tcell.EventKey {
 	blocking := user.Relation.Blocking
 	muting := user.Relation.Muting
 	following := user.Relation.Following
 
+	if tv.tut.Config.Input.UserFollowRequestDecide.Match(event.Key(), event.Rune()) {
+		tv.ModalView.RunDecide("Do you want accept the follow request?",
+			func() {
+				err := tv.tut.Client.FollowRequestAccept(user.Data)
+				if err != nil {
+					tv.ShowError(
+						fmt.Sprintf("Couldn't accept follow request. Error: %v\n", err),
+					)
+					return
+				}
+				f := tv.GetCurrentFeed()
+				f.Delete()
+				tv.RedrawContent()
+			},
+			func() {
+				err := tv.tut.Client.FollowRequestDeny(user.Data)
+				if err != nil {
+					tv.ShowError(
+						fmt.Sprintf("Couldn't deny follow request. Error: %v\n", err),
+					)
+					return
+				}
+				f := tv.GetCurrentFeed()
+				f.Delete()
+				tv.RedrawContent()
+			})
+		return nil
+	}
 	if tv.tut.Config.Input.UserAvatar.Match(event.Key(), event.Rune()) {
 		openAvatar(tv, *user.Data)
 		return nil
