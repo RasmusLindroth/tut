@@ -36,7 +36,6 @@ func NewVoteView(tv *TutView) *VoteView {
 func voteViewUI(v *VoteView) *tview.Flex {
 	var items []string
 	items = append(items, config.ColorFromKey(v.tutView.tut.Config, v.tutView.tut.Config.Input.VoteSelect, true))
-	items = append(items, config.ColorFromKey(v.tutView.tut.Config, v.tutView.tut.Config.Input.VoteSelect, true))
 	v.controls.SetText(strings.Join(items, " "))
 
 	return tview.NewFlex().SetDirection(tview.FlexRow).

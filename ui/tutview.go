@@ -50,6 +50,7 @@ type TutView struct {
 	LinkView    *LinkView
 	ComposeView *ComposeView
 	VoteView    *VoteView
+	PollView    *PollView
 	HelpView    *HelpView
 	ModalView   *ModalView
 
@@ -161,6 +162,7 @@ func (tv *TutView) loggedIn(acc auth.Account) {
 	tv.MainView = NewMainView(tv, update)
 	tv.ComposeView = NewComposeView(tv)
 	tv.VoteView = NewVoteView(tv)
+	tv.PollView = NewPollView(tv)
 	tv.HelpView = NewHelpView(tv)
 	tv.ModalView = NewModalView(tv)
 
@@ -169,6 +171,7 @@ func (tv *TutView) loggedIn(acc auth.Account) {
 	tv.View.AddPage("compose", tv.ComposeView.View, true, false)
 	tv.View.AddPage("vote", tv.VoteView.View, true, false)
 	tv.View.AddPage("help", tv.HelpView.View, true, false)
+	tv.View.AddPage("poll", tv.PollView.View, true, false)
 	tv.View.AddPage("modal", tv.ModalView.View, true, false)
 	tv.SetPage(MainFocus)
 }
