@@ -70,6 +70,7 @@ const (
 	LeaderLists
 	LeaderTag
 	LeaderUser
+	LeaderWindow
 )
 
 type Timeline struct {
@@ -360,6 +361,7 @@ type Input struct {
 	ComposePost                 Key
 	ComposeToggleContentWarning Key
 	ComposeVisibility           Key
+	ComposePoll                 Key
 
 	MediaDelete   Key
 	MediaEditDesc Key
@@ -367,6 +369,12 @@ type Input struct {
 
 	VoteVote   Key
 	VoteSelect Key
+
+	PollAdd         Key
+	PollEdit        Key
+	PollDelete      Key
+	PollMultiToggle Key
+	PollExpiration  Key
 }
 
 func parseColor(input string, def string, xrdb map[string]string) tcell.Color {
@@ -660,6 +668,9 @@ func parseGeneral(cfg *ini.File) General {
 				la.Command = LeaderLists
 			case "tag":
 				la.Command = LeaderTag
+				la.Subaction = subaction
+			case "window":
+				la.Command = LeaderWindow
 				la.Subaction = subaction
 			default:
 				fmt.Printf("leader-action %s is invalid\n", parts[0])
@@ -1025,6 +1036,7 @@ func parseInput(cfg *ini.File) Input {
 		ComposePost:                 inputStrOrErr([]string{"\"[P]ost\"", "'p'", "'P'"}, false),
 		ComposeToggleContentWarning: inputStrOrErr([]string{"\"[T]oggle CW\"", "'t'", "'T'"}, false),
 		ComposeVisibility:           inputStrOrErr([]string{"\"[V]isibility\"", "'v'", "'V'"}, false),
+		ComposePoll:                 inputStrOrErr([]string{"\"P[O]ll\"", "'o'", "'O'"}, false),
 
 		MediaDelete:   inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
 		MediaEditDesc: inputStrOrErr([]string{"\"[E]dit desc\"", "'e'", "'E'"}, false),
@@ -1032,6 +1044,12 @@ func parseInput(cfg *ini.File) Input {
 
 		VoteVote:   inputStrOrErr([]string{"\"[V]ote\"", "'v'", "'V'"}, false),
 		VoteSelect: inputStrOrErr([]string{"\"[Enter] to select\"", "' '", "\"Enter\""}, false),
+
+		PollAdd:         inputStrOrErr([]string{"\"[A]dd\"", "'a'", "'A'"}, false),
+		PollEdit:        inputStrOrErr([]string{"\"[E]dit\"", "'e'", "'E'"}, false),
+		PollDelete:      inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
+		PollMultiToggle: inputStrOrErr([]string{"\"Toggle [M]ultiple\"", "'m'", "'M'"}, false),
+		PollExpiration:  inputStrOrErr([]string{"\"E[X]pires\"", "'x'", "'X'"}, false),
 	}
 	ic.GlobalDown = inputOrErr(cfg, "global-down", false, ic.GlobalDown)
 	ic.GlobalUp = inputOrErr(cfg, "global-up", false, ic.GlobalUp)
@@ -1082,6 +1100,7 @@ func parseInput(cfg *ini.File) Input {
 	ic.ComposePost = inputOrErr(cfg, "compose-post", false, ic.ComposePost)
 	ic.ComposeToggleContentWarning = inputOrErr(cfg, "compose-toggle-content-warning", false, ic.ComposeToggleContentWarning)
 	ic.ComposeVisibility = inputOrErr(cfg, "compose-visibility", false, ic.ComposeVisibility)
+	ic.ComposePoll = inputOrErr(cfg, "compose-poll", false, ic.ComposePoll)
 
 	ic.MediaDelete = inputOrErr(cfg, "media-delete", false, ic.MediaDelete)
 	ic.MediaEditDesc = inputOrErr(cfg, "media-edit-desc", false, ic.MediaEditDesc)
@@ -1089,6 +1108,12 @@ func parseInput(cfg *ini.File) Input {
 
 	ic.VoteVote = inputOrErr(cfg, "vote-vote", false, ic.VoteVote)
 	ic.VoteSelect = inputOrErr(cfg, "vote-select", false, ic.VoteSelect)
+
+	ic.PollAdd = inputOrErr(cfg, "poll-add", false, ic.PollAdd)
+	ic.PollEdit = inputOrErr(cfg, "poll-edit", false, ic.PollEdit)
+	ic.PollDelete = inputOrErr(cfg, "poll-delete", false, ic.PollDelete)
+	ic.PollMultiToggle = inputOrErr(cfg, "poll-multi-toggle", false, ic.PollMultiToggle)
+	ic.PollExpiration = inputOrErr(cfg, "poll-expiration", false, ic.PollExpiration)
 	return ic
 }
 

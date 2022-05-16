@@ -139,12 +139,16 @@ leader-timeout=1000
 # 
 # Available commands: home, direct, local, federated, compose, blocking,
 # bookmarks, saved, favorited, boosts, favorites, following, followers, muting,
-# profile, notifications, lists, tag
+# profile, notifications, lists, tag, window
 # 
 # The shortcuts are up to you, but keep them quite short and make sure they
 # don't collide. If you have one shortcut that is "f" and an other one that is
 # "fav", the one with "f" will always run and "fav" will never run. Tag is
 # special as you need to add the tag after, see the example below.
+# 
+# Window is also special as it's a shortcut for switching between the timelines
+# you've set under general and they are zero indexed. window 0 = your first
+# timeline, window 1 = your second and so on.
 # 
 # Some examples:
 # leader-action=local,lo
@@ -152,6 +156,7 @@ leader-timeout=1000
 # leader-action=federated,fed
 # leader-action=direct,d
 # leader-action=tag linux,tl
+# leader-action=window 0,h
 # 
 
 
@@ -593,6 +598,10 @@ compose-toggle-content-warning="[T]oggle CW",'t','T'
 # default="[V]isibility",'v','V'
 compose-visibility="[V]isibility",'v','V'
 
+# Switch to creating a poll
+# default="P[O]ll",'o','O'
+compose-poll="P[O]ll",'o','O'
+
 # Delete media file
 # default="[D]elete",'d','D'
 media-delete="[D]elete",'d','D'
@@ -612,4 +621,24 @@ vote-vote="[V]ote",'v','V'
 # Select item to vote on
 # default="[Enter] to select",' ', "Enter"
 vote-select="[Enter] to select",' ', "Enter"
+
+# Add a new poll option
+# default="[A]dd",'a','A'
+poll-add="[A]dd",'a','A'
+
+# Edit a poll option
+# default="[E]dit",'e','E'
+poll-edit="[E]dit",'e','E'
+
+# Delete a poll option
+# default="[D]elete",'d','D'
+poll-delete="[D]elete",'d','D'
+
+# Toggle voting on multiple options
+# default="Toggle [M]ultiple",'m','M'
+poll-multi-toggle="Toggle [M]ultiple",'m','M'
+
+# Change the expiration of poll
+# default="E[X]pires",'x','X'
+poll-expiration="E[X]pires",'x','X'
 `

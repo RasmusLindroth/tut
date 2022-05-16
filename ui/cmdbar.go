@@ -133,9 +133,13 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 		if len(tag) == 0 {
 			break
 		}
-		c.tutView.Timeline.AddFeed(
-			NewTagFeed(c.tutView, tag),
-		)
+		c.tutView.TagCommand(tag)
+		c.Back()
+	case ":window":
+		if len(parts) < 2 {
+			break
+		}
+		c.tutView.WindowCommand(parts[1])
 		c.Back()
 	case ":user":
 		if len(parts) < 2 {
@@ -162,7 +166,7 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 
 func (c *CmdBar) Autocomplete(curr string) []string {
 	var entries []string
-	words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:favorited,:followers,:following,:help,:h,:lists,:muting,:profile,:requests,:saved,:tag,:timeline,:tl,:user,:quit,:q", ",")
+	words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:favorited,:followers,:following,:help,:h,:lists,:muting,:profile,:requests,:saved,:tag,:timeline,:tl,:user,:window,:quit,:q", ",")
 	if curr == "" {
 		return entries
 	}

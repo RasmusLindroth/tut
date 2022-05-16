@@ -68,7 +68,7 @@ func newComposeUI(cv *ComposeView) *tview.Flex {
 			AddItem(tview.NewBox(), 2, 0, false).
 			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 				AddItem(cv.visibility, 1, 0, false).
-				AddItem(cv.info, 4, 0, false).
+				AddItem(cv.info, 5, 0, false).
 				AddItem(cv.media.View, 0, 1, false), 0, 1, false), 0, 1, false).
 		AddItem(cv.input.View, 1, 0, false).
 		AddItem(cv.controls, 1, 0, false).
@@ -104,6 +104,7 @@ func (cv *ComposeView) SetControls(ctrl ComposeControls) {
 		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeToggleContentWarning, true))
 		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeEditSpoiler, true))
 		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeMediaFocus, true))
+		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposePoll, true))
 		if cv.msg.Status != nil {
 			items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeIncludeQuote, true))
 		}
@@ -118,6 +119,8 @@ func (cv *ComposeView) SetControls(ctrl ComposeControls) {
 }
 
 func (cv *ComposeView) SetStatus(status *mastodon.Status) {
+	cv.tutView.PollView.Reset()
+	cv.media.Reset()
 	msg := &msgToot{}
 	if status != nil {
 		if status.Reblog != nil {
@@ -146,7 +149,7 @@ func (cv *ComposeView) SetStatus(status *mastodon.Status) {
 	cv.visibility.SetOptions(visibilities, cv.visibilitySelected)
 	cv.visibility.SetCurrentOption(index)
 	cv.visibility.SetInputCapture(cv.visibilityInput)
-	cv.updateContent()
+	cv.UpdateContent()
 	cv.SetControls(ComposeNormal)
 }
 
@@ -178,7 +181,7 @@ func (cv *ComposeView) EditText() {
 		return
 	}
 	cv.msg.Text = text
-	cv.updateContent()
+	cv.UpdateContent()
 }
 
 func (cv *ComposeView) EditSpoiler() {
@@ -190,16 +193,16 @@ func (cv *ComposeView) EditSpoiler() {
 		return
 	}
 	cv.msg.SpoilerText = text
-	cv.updateContent()
+	cv.UpdateContent()
 }
 
 func (cv *ComposeView) ToggleCW() {
 	cv.msg.Sensitive = !cv.msg.Sensitive
-	cv.updateContent()
+	cv.UpdateContent()
 }
 
-func (cv *ComposeView) updateContent() {
-	cv.info.SetText(fmt.Sprintf("Chars left: %d\nSpoiler: %t\n", cv.msgLength(), cv.msg.Sensitive))
+func (cv *ComposeView) UpdateContent() {
+	cv.info.SetText(fmt.Sprintf("Chars left: %d\nSpoiler: %t\nHas poll: %t\n", cv.msgLength(), cv.msg.Sensitive, cv.tutView.PollView.HasPoll()))
 	normal := config.ColorMark(cv.tutView.tut.Config.Style.Text)
 	subtleColor := config.ColorMark(cv.tutView.tut.Config.Style.Subtle)
 	warningColor := config.ColorMark(cv.tutView.tut.Config.Style.WarningText)
@@ -252,26 +255,24 @@ func (cv *ComposeView) IncludeQuote() {
 	t += "\n"
 	cv.msg.Text = t
 	cv.msg.QuoteIncluded = true
-	cv.updateContent()
+	cv.UpdateContent()
+}
+
+func (cv *ComposeView) HasMedia() bool {
+	return len(cv.media.Files) > 0
 }
 
 func (cv *ComposeView) visibilityInput(event *tcell.EventKey) *tcell.EventKey {
-	if event.Key() == tcell.KeyRune {
-		switch event.Rune() {
-		case 'j', 'J':
-			return tcell.NewEventKey(tcell.KeyDown, 0, tcell.ModNone)
-		case 'k', 'K':
-			return tcell.NewEventKey(tcell.KeyUp, 0, tcell.ModNone)
-		case 'q', 'Q':
-			cv.exitVisibility()
-			return nil
-		}
-	} else {
-		switch event.Key() {
-		case tcell.KeyEsc:
-			cv.exitVisibility()
-			return nil
-		}
+	if cv.tutView.tut.Config.Input.GlobalDown.Match(event.Key(), event.Rune()) {
+		return tcell.NewEventKey(tcell.KeyDown, 0, tcell.ModNone)
+	}
+	if cv.tutView.tut.Config.Input.GlobalUp.Match(event.Key(), event.Rune()) {
+		return tcell.NewEventKey(tcell.KeyUp, 0, tcell.ModNone)
+	}
+	if cv.tutView.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) ||
+		cv.tutView.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) {
+		cv.exitVisibility()
+		return nil
 	}
 	return event
 }
@@ -306,32 +307,37 @@ func (cv *ComposeView) Post() {
 		send.SpoilerText = toot.SpoilerText
 	}
 
-	attachments := cv.media.Files
-	for _, ap := range attachments {
-		f, err := os.Open(ap.Path)
-		if err != nil {
-			cv.tutView.ShowError(
-				fmt.Sprintf("Couldn't upload media. Error: %v\n", err),
-			)
+	if cv.HasMedia() {
+		attachments := cv.media.Files
+		for _, ap := range attachments {
+			f, err := os.Open(ap.Path)
+			if err != nil {
+				cv.tutView.ShowError(
+					fmt.Sprintf("Couldn't upload media. Error: %v\n", err),
+				)
+				f.Close()
+				return
+			}
+			media := &mastodon.Media{
+				File: f,
+			}
+			if ap.Description != "" {
+				media.Description = ap.Description
+			}
+			a, err := cv.tutView.tut.Client.Client.UploadMediaFromMedia(context.Background(), media)
+			if err != nil {
+				cv.tutView.ShowError(
+					fmt.Sprintf("Couldn't upload media. Error: %v\n", err),
+				)
+				f.Close()
+				return
+			}
 			f.Close()
-			return
+			send.MediaIDs = append(send.MediaIDs, a.ID)
 		}
-		media := &mastodon.Media{
-			File: f,
-		}
-		if ap.Description != "" {
-			media.Description = ap.Description
-		}
-		a, err := cv.tutView.tut.Client.Client.UploadMediaFromMedia(context.Background(), media)
-		if err != nil {
-			cv.tutView.ShowError(
-				fmt.Sprintf("Couldn't upload media. Error: %v\n", err),
-			)
-			f.Close()
-			return
-		}
-		f.Close()
-		send.MediaIDs = append(send.MediaIDs, a.ID)
+	}
+	if cv.tutView.PollView.HasPoll() && !cv.HasMedia() {
+		send.Poll = cv.tutView.PollView.GetPoll()
 	}
 	send.Visibility = cv.msg.Visibility
 

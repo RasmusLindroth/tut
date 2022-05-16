@@ -36,6 +36,8 @@ func (tv *TutView) Input(event *tcell.EventKey) *tcell.EventKey {
 		return tv.InputViewItem(event)
 	case ComposeFocus:
 		return tv.InputComposeView(event)
+	case PollFocus:
+		return tv.InputPollView(event)
 	case LinkFocus:
 		return tv.InputLinkView(event)
 	case CmdFocus:
@@ -128,7 +130,8 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.ListsCommand()
 		case config.LeaderTag:
 			tv.TagCommand(subaction)
-
+		case config.LeaderWindow:
+			tv.WindowCommand(subaction)
 		}
 		tv.Leader.ResetInactive()
 		return nil
@@ -614,7 +617,19 @@ func (tv *TutView) InputComposeView(event *tcell.EventKey) *tcell.EventKey {
 		return nil
 	}
 	if tv.tut.Config.Input.ComposeMediaFocus.Match(event.Key(), event.Rune()) {
+		if tv.PollView.HasPoll() {
+			tv.ShowError("Can't add media when you have a poll")
+			return nil
+		}
 		tv.SetPage(MediaFocus)
+		return nil
+	}
+	if tv.tut.Config.Input.ComposePoll.Match(event.Key(), event.Rune()) {
+		if tv.ComposeView.HasMedia() {
+			tv.ShowError("Can't add poll when you have added media")
+			return nil
+		}
+		tv.SetPage(PollFocus)
 		return nil
 	}
 	if tv.tut.Config.Input.ComposePost.Match(event.Key(), event.Rune()) {
@@ -691,6 +706,43 @@ func (tv *TutView) InputMediaAdd(event *tcell.EventKey) *tcell.EventKey {
 	case tcell.KeyEsc:
 		tv.SetPage(MediaFocus)
 		tv.ComposeView.media.SetFocus(true)
+		return nil
+	}
+	return event
+}
+
+func (tv *TutView) InputPollView(event *tcell.EventKey) *tcell.EventKey {
+	if tv.tut.Config.Input.PollAdd.Match(event.Key(), event.Rune()) {
+		tv.PollView.Add()
+		return nil
+	}
+	if tv.tut.Config.Input.PollEdit.Match(event.Key(), event.Rune()) {
+		tv.PollView.Edit()
+		return nil
+	}
+	if tv.tut.Config.Input.PollDelete.Match(event.Key(), event.Rune()) {
+		tv.PollView.Delete()
+		return nil
+	}
+	if tv.tut.Config.Input.PollMultiToggle.Match(event.Key(), event.Rune()) {
+		tv.PollView.ToggleMultiple()
+		return nil
+	}
+	if tv.tut.Config.Input.PollExpiration.Match(event.Key(), event.Rune()) {
+		tv.PollView.FocusExpiration()
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalDown.Match(event.Key(), event.Rune()) {
+		tv.PollView.Next()
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalUp.Match(event.Key(), event.Rune()) {
+		tv.PollView.Prev()
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) ||
+		tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
+		tv.SetPage(ComposeFocus)
 		return nil
 	}
 	return event

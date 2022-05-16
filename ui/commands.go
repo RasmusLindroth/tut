@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
@@ -81,6 +82,17 @@ func (tv *TutView) TagCommand(tag string) {
 	tv.Timeline.AddFeed(
 		NewTagFeed(tv, tag),
 	)
+}
+
+func (tv *TutView) WindowCommand(index string) {
+	i, err := strconv.Atoi(index)
+	if err != nil {
+		tv.ShowError(
+			fmt.Sprintf("couldn't convert str to int. Error %v", err),
+		)
+		return
+	}
+	tv.FocusFeed(i)
 }
 
 func (tv *TutView) BoostsCommand() {

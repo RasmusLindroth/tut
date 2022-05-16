@@ -19,6 +19,7 @@ const (
 	CmdFocus
 	VoteFocus
 	HelpFocus
+	PollFocus
 )
 
 func (tv *TutView) GetCurrentFeed() *Feed {
@@ -106,6 +107,7 @@ func (tv *TutView) SetPage(f PageFocusAt) {
 		tv.View.SwitchToPage("compose")
 		tv.Shared.Bottom.StatusBar.SetMode(ComposeMode)
 		tv.Shared.Top.SetText("write a toot")
+		tv.ComposeView.UpdateContent()
 		tv.ComposeView.SetControls(ComposeNormal)
 		tv.tut.App.SetFocus(tv.ComposeView.content)
 	case MediaFocus:
@@ -135,6 +137,12 @@ func (tv *TutView) SetPage(f PageFocusAt) {
 		tv.PageFocus = ModalFocus
 		tv.View.SwitchToPage("modal")
 		tv.tut.App.SetFocus(tv.ModalView.View)
+	case PollFocus:
+		tv.PageFocus = PollFocus
+		tv.View.SwitchToPage("poll")
+		tv.tut.App.SetFocus(tv.View)
+		tv.Shared.Bottom.StatusBar.SetMode(PollMode)
+		tv.Shared.Top.SetText("create a poll")
 
 	}
 	tv.ShouldSync()
