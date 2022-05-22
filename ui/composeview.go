@@ -40,7 +40,18 @@ type ComposeView struct {
 	msg        *msgToot
 }
 
-var visibilities = []string{mastodon.VisibilityPublic, mastodon.VisibilityUnlisted, mastodon.VisibilityFollowersOnly, mastodon.VisibilityDirectMessage}
+var visibilities = map[string]int{
+	mastodon.VisibilityPublic:        0,
+	mastodon.VisibilityUnlisted:      1,
+	mastodon.VisibilityFollowersOnly: 2,
+	mastodon.VisibilityDirectMessage: 3,
+}
+var visibilitiesStr = []string{
+	mastodon.VisibilityPublic,
+	mastodon.VisibilityUnlisted,
+	mastodon.VisibilityFollowersOnly,
+	mastodon.VisibilityDirectMessage,
+}
 
 func NewComposeView(tv *TutView) *ComposeView {
 	cv := &ComposeView{
@@ -122,6 +133,11 @@ func (cv *ComposeView) SetStatus(status *mastodon.Status) {
 	cv.tutView.PollView.Reset()
 	cv.media.Reset()
 	msg := &msgToot{}
+	me := cv.tutView.tut.Client.Me
+	visibility := mastodon.VisibilityPublic
+	if me.Source != nil && me.Source.Privacy != nil {
+		visibility = *me.Source.Privacy
+	}
 	if status != nil {
 		if status.Reblog != nil {
 			status = status.Reblog
@@ -131,8 +147,11 @@ func (cv *ComposeView) SetStatus(status *mastodon.Status) {
 			msg.Sensitive = true
 			msg.SpoilerText = status.SpoilerText
 		}
-		msg.Visibility = status.Visibility
+		if visibilities[status.Visibility] > visibilities[visibility] {
+			visibility = status.Visibility
+		}
 	}
+	msg.Visibility = visibility
 	cv.msg = msg
 	cv.msg.Text = cv.getAccs()
 	if cv.tutView.tut.Config.General.QuoteReply {
@@ -140,13 +159,13 @@ func (cv *ComposeView) SetStatus(status *mastodon.Status) {
 	}
 	cv.visibility.SetLabel("Visibility: ")
 	index := 0
-	for i, v := range visibilities {
+	for i, v := range visibilitiesStr {
 		if msg.Visibility == v {
 			index = i
 			break
 		}
 	}
-	cv.visibility.SetOptions(visibilities, cv.visibilitySelected)
+	cv.visibility.SetOptions(visibilitiesStr, cv.visibilitySelected)
 	cv.visibility.SetCurrentOption(index)
 	cv.visibility.SetInputCapture(cv.visibilityInput)
 	cv.UpdateContent()

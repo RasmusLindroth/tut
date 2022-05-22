@@ -3,7 +3,7 @@ module github.com/RasmusLindroth/tut
 go 1.17
 
 require (
-	github.com/RasmusLindroth/go-mastodon v0.0.6
+	github.com/RasmusLindroth/go-mastodon v0.0.7
 	github.com/atotto/clipboard v0.1.4
 	github.com/gdamore/tcell/v2 v2.5.1
 	github.com/gen2brain/beeep v0.0.0-20220402123239-6a3042f4b71a
