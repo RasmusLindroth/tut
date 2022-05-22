@@ -42,6 +42,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:muting`  lists users that you have muted
 * `:preferences` update your profile and some other settings
 * `:profile` go to your profile
+* `:proportions` [int] [int], where the first integer is the list and the other content, e.g. `:proportions 1 3`
 * `:requests` see following requests
 * `:saved` alias for bookmarks
 * `:tag` followed by the hashtag e.g. `:tag linux`

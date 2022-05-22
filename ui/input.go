@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
@@ -144,20 +145,25 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 		case config.LeaderListPlacement:
 			switch subaction {
 			case "top":
-				tv.ListPlacement(config.ListPlacementTop)
+				tv.ListPlacementCommand(config.ListPlacementTop)
 			case "right":
-				tv.ListPlacement(config.ListPlacementRight)
+				tv.ListPlacementCommand(config.ListPlacementRight)
 			case "bottom":
-				tv.ListPlacement(config.ListPlacementBottom)
+				tv.ListPlacementCommand(config.ListPlacementBottom)
 			case "left":
-				tv.ListPlacement(config.ListPlacementLeft)
+				tv.ListPlacementCommand(config.ListPlacementLeft)
 			}
 		case config.LeaderListSplit:
 			switch subaction {
 			case "row":
-				tv.ListSplit(config.ListRow)
+				tv.ListSplitCommand(config.ListRow)
 			case "column":
-				tv.ListSplit(config.ListColumn)
+				tv.ListSplitCommand(config.ListColumn)
+			}
+		case config.LeaderProportions:
+			parts := strings.Split(subaction, " ")
+			if len(parts) == 2 {
+				tv.ProportionsCommand(parts[0], parts[1])
 			}
 		}
 		tv.Leader.ResetInactive()

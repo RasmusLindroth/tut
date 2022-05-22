@@ -94,16 +94,16 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 		}
 		switch parts[1] {
 		case "top":
-			c.tutView.ListPlacement(config.ListPlacementTop)
+			c.tutView.ListPlacementCommand(config.ListPlacementTop)
 			c.Back()
 		case "right":
-			c.tutView.ListPlacement(config.ListPlacementRight)
+			c.tutView.ListPlacementCommand(config.ListPlacementRight)
 			c.Back()
 		case "bottom":
-			c.tutView.ListPlacement(config.ListPlacementBottom)
+			c.tutView.ListPlacementCommand(config.ListPlacementBottom)
 			c.Back()
 		case "left":
-			c.tutView.ListPlacement(config.ListPlacementLeft)
+			c.tutView.ListPlacementCommand(config.ListPlacementLeft)
 			c.Back()
 		}
 	case ":list-split":
@@ -112,10 +112,10 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 		}
 		switch parts[1] {
 		case "column":
-			c.tutView.ListSplit(config.ListColumn)
+			c.tutView.ListSplitCommand(config.ListColumn)
 			c.Back()
 		case "row":
-			c.tutView.ListSplit(config.ListRow)
+			c.tutView.ListSplitCommand(config.ListRow)
 			c.Back()
 		}
 	case ":muting":
@@ -123,6 +123,12 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 		c.Back()
 	case ":requests":
 		c.tutView.FollowRequestsCommand()
+		c.Back()
+	case ":proportions":
+		if len(parts) < 3 {
+			break
+		}
+		c.tutView.ProportionsCommand(parts[1], parts[2])
 		c.Back()
 	case ":profile":
 		c.tutView.ProfileCommand()
@@ -196,7 +202,7 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 
 func (c *CmdBar) Autocomplete(curr string) []string {
 	var entries []string
-	words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:favorited,:followers,:following,:help,:h,:lists,:list-placement,:list-split,:muting,:preferences,:profile,:requests,:saved,:tag,:timeline,:tl,:user,:window,:quit,:q", ",")
+	words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:favorited,:followers,:following,:help,:h,:lists,:list-placement,:list-split,:muting,:preferences,:profile,:proportions,:requests,:saved,:tag,:timeline,:tl,:user,:window,:quit,:q", ",")
 	if curr == "" {
 		return entries
 	}

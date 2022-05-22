@@ -69,6 +69,7 @@ const (
 	LeaderMuting
 	LeaderPreferences
 	LeaderProfile
+	LeaderProportions
 	LeaderNotifications
 	LeaderLists
 	LeaderTag
@@ -688,6 +689,9 @@ func parseGeneral(cfg *ini.File) General {
 				la.Subaction = subaction
 			case "list-split":
 				la.Command = LeaderListSplit
+				la.Subaction = subaction
+			case "proportions":
+				la.Command = LeaderProportions
 				la.Subaction = subaction
 			case "window":
 				la.Command = LeaderWindow
