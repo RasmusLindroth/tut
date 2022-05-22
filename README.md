@@ -155,30 +155,30 @@ Go [text/template](https://pkg.go.dev/text/template).
 You'll have to place a file named `toot.tmpl` and/or `user.tmpl`
 in `XDG_CONFIG_HOME/tut/` which usually equals to `~/.config/tut/`.
 
-You can copy [toot.tmpl](./toot.tmpl) and [user.tmpl](./user.tmpl)
+You can copy [./config/toot.tmpl](./config/toot.tmpl) and [./config/user.tmpl](./config/user.tmpl)
 from this repo manually or with `curl` or `wget`.
 
 ```bash
 cd ~/.config/tut
 
 # using curl
-curl -o toot.tmpl https://raw.githubusercontent.com/RasmusLindroth/tut/master/toot.tmpl
+curl -o toot.tmpl https://raw.githubusercontent.com/RasmusLindroth/tut/master/config/toot.tmpl
 
-curl -o user.tmpl https://raw.githubusercontent.com/RasmusLindroth/tut/master/user.tmpl
+curl -o user.tmpl https://raw.githubusercontent.com/RasmusLindroth/tut/master/config/user.tmpl
 
 # using wget
-wget https://raw.githubusercontent.com/RasmusLindroth/tut/master/toot.tmpl
+wget https://raw.githubusercontent.com/RasmusLindroth/tut/master/config/toot.tmpl
 
-wget https://raw.githubusercontent.com/RasmusLindroth/tut/master/user.tmpl
+wget https://raw.githubusercontent.com/RasmusLindroth/tut/master/config/user.tmpl
 ```
 
-The data available for you in `toot.tmpl` is two structs. The first one is the `Toot`-struct, you can see all fields in [./feed.go](./feed.go). The second one is the `StyleConfig`-struct. You can find the fields in [./config.go](./config.go).
+The data available for you in `toot.tmpl` is two structs. The first one is the `Toot`-struct, you can see all fields in [./ui/item_status.go](./ui/item_status.go). The second one is the `Style`-struct. You can find the fields for style in [./config/config.go](./config/config.go).
 
 You acces them with `.Toot` and `.Style` in your template file.
 
 The data available in `user.tmpl` is almost the same. You still have the
-`StyleConfig` but instead of `Toot` you have a struct named `User`. You can see
-all fields in [./feed.go](./feed.go).
+`Style` but instead of `Toot` you have a struct named `User`. You can see
+all fields in [./ui/item_user.go](./ui/item_user.go).
 
 ## Password manager for secrets
 If you run `pass`, `gopass` or  something similar you can protect your secrets.
