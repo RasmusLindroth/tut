@@ -65,6 +65,7 @@ const (
 	LeaderFollowing
 	LeaderFollowers
 	LeaderMuting
+	LeaderPreferences
 	LeaderProfile
 	LeaderNotifications
 	LeaderLists
@@ -375,6 +376,15 @@ type Input struct {
 	PollDelete      Key
 	PollMultiToggle Key
 	PollExpiration  Key
+
+	PreferenceName         Key
+	PreferenceVisibility   Key
+	PreferenceBio          Key
+	PreferenceSave         Key
+	PreferenceFields       Key
+	PreferenceFieldsAdd    Key
+	PreferenceFieldsEdit   Key
+	PreferenceFieldsDelete Key
 }
 
 func parseColor(input string, def string, xrdb map[string]string) tcell.Color {
@@ -660,6 +670,8 @@ func parseGeneral(cfg *ini.File) General {
 				la.Command = LeaderFollowers
 			case "muting":
 				la.Command = LeaderMuting
+			case "preferences":
+				la.Command = LeaderPreferences
 			case "profile":
 				la.Command = LeaderProfile
 			case "notifications":
@@ -1050,6 +1062,15 @@ func parseInput(cfg *ini.File) Input {
 		PollDelete:      inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
 		PollMultiToggle: inputStrOrErr([]string{"\"Toggle [M]ultiple\"", "'m'", "'M'"}, false),
 		PollExpiration:  inputStrOrErr([]string{"\"E[X]pires\"", "'x'", "'X'"}, false),
+
+		PreferenceName:         inputStrOrErr([]string{"\"[N]ame\"", "'n'", "'N'"}, false),
+		PreferenceBio:          inputStrOrErr([]string{"\"[B]io\"", "'b'", "'B'"}, false),
+		PreferenceVisibility:   inputStrOrErr([]string{"\"[V]isibility\"", "'v'", "'V'"}, false),
+		PreferenceSave:         inputStrOrErr([]string{"\"[S]ave\"", "'s'", "'S'"}, false),
+		PreferenceFields:       inputStrOrErr([]string{"\"[F]ields\"", "'f'", "'F'"}, false),
+		PreferenceFieldsAdd:    inputStrOrErr([]string{"\"[A]dd\"", "'a'", "'A'"}, false),
+		PreferenceFieldsEdit:   inputStrOrErr([]string{"\"[E]dit\"", "'e'", "'E'"}, false),
+		PreferenceFieldsDelete: inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
 	}
 	ic.GlobalDown = inputOrErr(cfg, "global-down", false, ic.GlobalDown)
 	ic.GlobalUp = inputOrErr(cfg, "global-up", false, ic.GlobalUp)
@@ -1114,6 +1135,15 @@ func parseInput(cfg *ini.File) Input {
 	ic.PollDelete = inputOrErr(cfg, "poll-delete", false, ic.PollDelete)
 	ic.PollMultiToggle = inputOrErr(cfg, "poll-multi-toggle", false, ic.PollMultiToggle)
 	ic.PollExpiration = inputOrErr(cfg, "poll-expiration", false, ic.PollExpiration)
+
+	ic.PreferenceName = inputOrErr(cfg, "preference-name", false, ic.PreferenceName)
+	ic.PreferenceVisibility = inputOrErr(cfg, "preference-visibility", false, ic.PreferenceVisibility)
+	ic.PreferenceBio = inputOrErr(cfg, "preference-bio", false, ic.PreferenceBio)
+	ic.PreferenceSave = inputOrErr(cfg, "preference-save", false, ic.PreferenceSave)
+	ic.PreferenceFields = inputOrErr(cfg, "preference-fields", false, ic.PreferenceFields)
+	ic.PreferenceFieldsAdd = inputOrErr(cfg, "preference-fields-add", false, ic.PreferenceFieldsAdd)
+	ic.PreferenceFieldsEdit = inputOrErr(cfg, "preference-fields-edit", false, ic.PreferenceFieldsEdit)
+	ic.PreferenceFieldsDelete = inputOrErr(cfg, "preference-fields-delete", false, ic.PreferenceFieldsDelete)
 	return ic
 }
 

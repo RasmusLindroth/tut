@@ -3,7 +3,6 @@ package ui
 import (
 	"fmt"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/config"
@@ -130,39 +129,18 @@ func (p *PollView) Next() {
 	}
 }
 
-func checkOption(s string) (string, bool) {
-	s = strings.TrimSpace(s)
-	if len(s) == 0 {
-		return "", false
-	}
-	if utf8.RuneCountInString(s) > 25 {
-		ns := ""
-		i := 0
-		for _, r := range s {
-			if i >= 25 {
-				break
-			}
-			ns += string(r)
-			i++
-		}
-		s = ns
-	}
-	return s, true
-}
-
 func (p *PollView) Add() {
 	if p.list.GetItemCount() > 3 {
 		p.tutView.ShowError("You can only have a maximum of 4 options.")
 		return
 	}
-	text, err := OpenEditor(p.tutView, "")
+	text, valid, err := OpenEditorLengthLimit(p.tutView, "", 25)
 	if err != nil {
 		p.tutView.ShowError(
 			fmt.Sprintf("Couldn't open editor. Error: %v", err),
 		)
 		return
 	}
-	text, valid := checkOption(text)
 	if !valid {
 		return
 	}
@@ -177,14 +155,13 @@ func (p *PollView) Edit() {
 		return
 	}
 	text, _ := p.list.GetItemText(p.list.GetCurrentItem())
-	text, err := OpenEditor(p.tutView, text)
+	text, valid, err := OpenEditorLengthLimit(p.tutView, text, 25)
 	if err != nil {
 		p.tutView.ShowError(
 			fmt.Sprintf("Couldn't open editor. Error: %v", err),
 		)
 		return
 	}
-	text, valid := checkOption(text)
 	if !valid {
 		return
 	}

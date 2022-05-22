@@ -50,6 +50,8 @@ func (tv *TutView) Input(event *tcell.EventKey) *tcell.EventKey {
 		return tv.InputVote(event)
 	case HelpFocus:
 		return tv.InputHelp(event)
+	case PreferenceFocus:
+		return tv.InputPreference(event)
 	default:
 		return event
 	}
@@ -122,6 +124,8 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.FollowersCommand()
 		case config.LeaderMuting:
 			tv.MutingCommand()
+		case config.LeaderPreferences:
+			tv.PreferencesCommand()
 		case config.LeaderProfile:
 			tv.ProfileCommand()
 		case config.LeaderNotifications:
@@ -769,6 +773,69 @@ func (tv *TutView) InputVote(event *tcell.EventKey) *tcell.EventKey {
 	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) ||
 		tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
 		tv.FocusMainNoHistory()
+		return nil
+	}
+	return event
+}
+
+func (tv *TutView) InputPreference(event *tcell.EventKey) *tcell.EventKey {
+	if tv.PreferenceView.HasFieldFocus() {
+		return tv.InputPreferenceFields(event)
+	}
+	if tv.tut.Config.Input.PreferenceFields.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.FieldFocus()
+		return nil
+	}
+	if tv.tut.Config.Input.PreferenceName.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.EditDisplayname()
+		return nil
+	}
+	if tv.tut.Config.Input.PreferenceVisibility.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.FocusVisibility()
+		return nil
+	}
+	if tv.tut.Config.Input.PreferenceBio.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.EditBio()
+		return nil
+	}
+	if tv.tut.Config.Input.PreferenceSave.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.Save()
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) ||
+		tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
+		tv.ModalView.Run(
+			"Do you want exit the preference view?", func() {
+				tv.FocusMainNoHistory()
+			})
+		return nil
+	}
+	return event
+}
+func (tv *TutView) InputPreferenceFields(event *tcell.EventKey) *tcell.EventKey {
+	if tv.tut.Config.Input.GlobalUp.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.PrevField()
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalDown.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.NextField()
+		return nil
+	}
+	if tv.tut.Config.Input.PreferenceFieldsAdd.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.AddField()
+		return nil
+	}
+	if tv.tut.Config.Input.PreferenceFieldsEdit.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.EditField()
+		return nil
+	}
+	if tv.tut.Config.Input.PreferenceFieldsDelete.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.DeleteField()
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) ||
+		tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.MainFocus()
 		return nil
 	}
 	return event
