@@ -6,15 +6,17 @@ import (
 )
 
 type MainView struct {
-	View *tview.Flex
+	View   *tview.Flex
+	update chan bool
 }
 
 func NewMainView(tv *TutView, update chan bool) *MainView {
 	mv := &MainView{
-		View: mainViewUI(tv),
+		View:   mainViewUI(tv),
+		update: update,
 	}
 	go func() {
-		for range update {
+		for range mv.update {
 			tv.tut.App.QueueUpdateDraw(func() {
 				*tv.MainView.View = *mainViewUI(tv)
 				tv.ShouldSync()
@@ -22,6 +24,10 @@ func NewMainView(tv *TutView, update chan bool) *MainView {
 		}
 	}()
 	return mv
+}
+
+func (mv *MainView) ForceUpdate() {
+	mv.update <- true
 }
 
 func feedList(mv *TutView, fh *FeedHolder) *tview.Flex {

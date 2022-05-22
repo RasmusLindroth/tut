@@ -37,6 +37,8 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:favorites` lists users that favorited the toot
 * `:h` `:help` view help 
 * `:lists` show a list of your lists
+* `:list-placement` top, right, bottom, left
+* `:list-split` row, column
 * `:muting`  lists users that you have muted
 * `:preferences` update your profile and some other settings
 * `:profile` go to your profile

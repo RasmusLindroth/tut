@@ -6,6 +6,7 @@ import (
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
+	"github.com/RasmusLindroth/tut/config"
 	"github.com/RasmusLindroth/tut/util"
 )
 
@@ -166,4 +167,14 @@ func (tv *TutView) ProfileCommand() {
 
 func (tv *TutView) PreferencesCommand() {
 	tv.SetPage(PreferenceFocus)
+}
+
+func (tv *TutView) ListPlacement(lp config.ListPlacement) {
+	tv.tut.Config.General.ListPlacement = lp
+	tv.MainView.ForceUpdate()
+}
+
+func (tv *TutView) ListSplit(ls config.ListSplit) {
+	tv.tut.Config.General.ListSplit = ls
+	tv.MainView.ForceUpdate()
 }

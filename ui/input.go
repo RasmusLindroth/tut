@@ -141,6 +141,24 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.TagCommand(subaction)
 		case config.LeaderWindow:
 			tv.WindowCommand(subaction)
+		case config.LeaderListPlacement:
+			switch subaction {
+			case "top":
+				tv.ListPlacement(config.ListPlacementTop)
+			case "right":
+				tv.ListPlacement(config.ListPlacementRight)
+			case "bottom":
+				tv.ListPlacement(config.ListPlacementBottom)
+			case "left":
+				tv.ListPlacement(config.ListPlacementLeft)
+			}
+		case config.LeaderListSplit:
+			switch subaction {
+			case "row":
+				tv.ListSplit(config.ListRow)
+			case "column":
+				tv.ListSplit(config.ListColumn)
+			}
 		}
 		tv.Leader.ResetInactive()
 		return nil
