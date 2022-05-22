@@ -40,6 +40,7 @@ func openAvatar(tv *TutView, user mastodon.Account) {
 		)
 		return
 	}
+	tv.FileList = append(tv.FileList, f)
 	openMediaType(tv, []string{f}, "image")
 }
 

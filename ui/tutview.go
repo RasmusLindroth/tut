@@ -58,6 +58,13 @@ type TutView struct {
 	FileList []string
 }
 
+func (tv *TutView) CleanExit(code int) {
+	for _, f := range tv.FileList {
+		os.Remove(f)
+	}
+	os.Exit(code)
+}
+
 func NewLeader(tv *TutView) *Leader {
 	return &Leader{
 		tv: tv,
@@ -145,7 +152,7 @@ func (tv *TutView) loggedIn(acc auth.Account) {
 	if err != nil {
 		fmt.Printf("Couldn't login. Error %s\n", err)
 		tv.tut.App.Stop()
-		os.Exit(1)
+		tv.CleanExit(1)
 	}
 	filters, _ := client.GetFilters(context.Background())
 	ac := &api.AccountClient{

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os"
-
 	"github.com/RasmusLindroth/tut/auth"
 	"github.com/RasmusLindroth/tut/config"
 	"github.com/RasmusLindroth/tut/ui"
@@ -39,8 +37,5 @@ func main() {
 	app.SetInputCapture(main.Input)
 	if err := app.SetRoot(main.View, true).Run(); err != nil {
 		panic(err)
-	}
-	for _, f := range main.FileList {
-		os.Remove(f)
 	}
 }
