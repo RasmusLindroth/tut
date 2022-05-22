@@ -20,10 +20,6 @@ func NewCmdBar(tv *TutView) *CmdBar {
 	c.View.SetAutocompleteFunc(c.Autocomplete)
 	c.View.SetDoneFunc(c.DoneFunc)
 
-	if tv.tut.Config.General.ShowHelp {
-		c.ShowMsg("Press ? or :help to learn how tut functions")
-	}
-
 	return c
 }
 

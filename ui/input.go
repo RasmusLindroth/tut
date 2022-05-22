@@ -70,6 +70,11 @@ func (tv *TutView) InputLoginView(event *tcell.EventKey) *tcell.EventKey {
 		tv.LoginView.Selected()
 		return nil
 	}
+	if tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
+		tv.tut.App.Stop()
+		tv.CleanExit(0)
+		return nil
+	}
 	return event
 }
 

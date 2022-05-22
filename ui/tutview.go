@@ -147,6 +147,9 @@ func (tv *TutView) loggedIn(acc auth.Account) {
 		ClientSecret: acc.ClientSecret,
 		AccessToken:  acc.AccessToken,
 	}
+	if tv.tut.Config.General.ShowHelp {
+		tv.Shared.Bottom.Cmd.ShowMsg("Press ? or :help to learn how tut functions")
+	}
 	client := mastodon.NewClient(conf)
 	me, err := client.GetAccountCurrentUser(context.Background())
 	if err != nil {
