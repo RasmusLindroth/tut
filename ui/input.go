@@ -262,7 +262,7 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 	}
 	switch item.Type() {
 	case api.StatusType:
-		return tv.InputStatus(event, item, item.Raw().(*mastodon.Status))
+		return tv.InputStatus(event, item, item.Raw().(*mastodon.Status), nil)
 	case api.UserType, api.ProfileType:
 		if ft == feed.FollowRequests {
 			return tv.InputUser(event, item.Raw().(*api.User), true)
@@ -275,15 +275,17 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 		case "follow":
 			return tv.InputUser(event, nd.User.Raw().(*api.User), false)
 		case "favourite":
-			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status))
+			user := nd.User.Raw().(*api.User)
+			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), user.Data)
 		case "reblog":
-			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status))
+			user := nd.User.Raw().(*api.User)
+			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), user.Data)
 		case "mention":
-			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status))
+			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), nil)
 		case "status":
-			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status))
+			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), nil)
 		case "poll":
-			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status))
+			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), nil)
 		case "follow_request":
 			return tv.InputUser(event, nd.User.Raw().(*api.User), true)
 		}
@@ -294,7 +296,7 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 	return event
 }
 
-func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mastodon.Status) *tcell.EventKey {
+func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mastodon.Status, nAcc *mastodon.Account) *tcell.EventKey {
 	sr := util.StatusOrReblog(status)
 
 	hasMedia := len(sr.MediaAttachments) > 0
@@ -307,7 +309,11 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 	bookmarked := sr.Bookmarked
 
 	if tv.tut.Config.Input.StatusAvatar.Match(event.Key(), event.Rune()) {
-		openAvatar(tv, sr.Account)
+		if nAcc != nil {
+			openAvatar(tv, *nAcc)
+		} else {
+			openAvatar(tv, sr.Account)
+		}
 		return nil
 	}
 	if tv.tut.Config.Input.StatusBoost.Match(event.Key(), event.Rune()) {
@@ -417,7 +423,11 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 		return nil
 	}
 	if tv.tut.Config.Input.StatusUser.Match(event.Key(), event.Rune()) {
-		user, err := tv.tut.Client.GetUserByID(status.Account.ID)
+		id := status.Account.ID
+		if nAcc != nil {
+			id = nAcc.ID
+		}
+		user, err := tv.tut.Client.GetUserByID(id)
 		if err != nil {
 			return nil
 		}
