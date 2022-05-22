@@ -1,5 +1,5 @@
-github.com/RasmusLindroth/go-mastodon v0.0.6 h1:dhVXungiJeRKIE2ZRUJrPibBJ7YkeM4eVyeg3+q6Juk=
-github.com/RasmusLindroth/go-mastodon v0.0.6/go.mod h1:4L0oyiNwq1tUoiByczzhSikxR9RiANzELtZgexxKpPM=
+github.com/RasmusLindroth/go-mastodon v0.0.7 h1:iGgkkvDrPHTiAyACUehLH5zragSHCUSbhcYdQEBIn48=
+github.com/RasmusLindroth/go-mastodon v0.0.7/go.mod h1:4L0oyiNwq1tUoiByczzhSikxR9RiANzELtZgexxKpPM=
 github.com/atotto/clipboard v0.1.4 h1:EH0zSVneZPSuFR11BlR9YppQTVDbh5+16AmcJi4g1z4=
 github.com/atotto/clipboard v0.1.4/go.mod h1:ZY9tmq7sm5xIbd9bOK4onWV4S6X0u6GY7Vn0Yu86PYI=
 github.com/aymerick/douceur v0.2.0 h1:Mv+mAeH1Q+n9Fr+oyamOlAkUNPWPlA8PPGR0QAaYuPk=

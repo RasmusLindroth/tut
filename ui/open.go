@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"unicode/utf8"
 )
 
 func openURL(tv *TutView, url string) {
@@ -49,6 +50,30 @@ func openCustom(tv *TutView, program string, args []string, terminal bool, url s
 	} else {
 		exec.Command(program, args...).Start()
 	}
+}
+
+func OpenEditorLengthLimit(tv *TutView, s string, limit int) (string, bool, error) {
+	text, err := OpenEditor(tv, s)
+	if err != nil {
+		return text, false, err
+	}
+	s = strings.TrimSpace(text)
+	if len(s) == 0 {
+		return "", false, nil
+	}
+	if utf8.RuneCountInString(s) > limit {
+		ns := ""
+		i := 0
+		for _, r := range s {
+			if i >= limit {
+				break
+			}
+			ns += string(r)
+			i++
+		}
+		s = ns
+	}
+	return s, true, nil
 }
 
 func OpenEditor(tv *TutView, content string) (string, error) {

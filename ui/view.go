@@ -20,6 +20,7 @@ const (
 	VoteFocus
 	HelpFocus
 	PollFocus
+	PreferenceFocus
 )
 
 func (tv *TutView) GetCurrentFeed() *Feed {
@@ -143,7 +144,13 @@ func (tv *TutView) SetPage(f PageFocusAt) {
 		tv.tut.App.SetFocus(tv.View)
 		tv.Shared.Bottom.StatusBar.SetMode(PollMode)
 		tv.Shared.Top.SetText("create a poll")
-
+	case PreferenceFocus:
+		tv.PageFocus = PreferenceFocus
+		tv.PreferenceView.Update()
+		tv.View.SwitchToPage("preference")
+		tv.tut.App.SetFocus(tv.View)
+		tv.Shared.Bottom.StatusBar.SetMode(PreferenceMode)
+		tv.Shared.Top.SetText("preferences")
 	}
 	tv.ShouldSync()
 }

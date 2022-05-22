@@ -79,3 +79,11 @@ func (ac *AccountClient) FollowRequestAccept(u *mastodon.Account) error {
 func (ac *AccountClient) FollowRequestDeny(u *mastodon.Account) error {
 	return ac.Client.FollowRequestReject(context.Background(), u.ID)
 }
+
+func (ac *AccountClient) SavePreferences(p *mastodon.Profile) error {
+	acc, err := ac.Client.AccountUpdate(context.Background(), p)
+	if err == nil {
+		ac.Me = acc
+	}
+	return err
+}

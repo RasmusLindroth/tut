@@ -50,6 +50,8 @@ func (tv *TutView) Input(event *tcell.EventKey) *tcell.EventKey {
 		return tv.InputVote(event)
 	case HelpFocus:
 		return tv.InputHelp(event)
+	case PreferenceFocus:
+		return tv.InputPreference(event)
 	default:
 		return event
 	}
@@ -122,6 +124,8 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.FollowersCommand()
 		case config.LeaderMuting:
 			tv.MutingCommand()
+		case config.LeaderPreferences:
+			tv.PreferencesCommand()
 		case config.LeaderProfile:
 			tv.ProfileCommand()
 		case config.LeaderNotifications:
@@ -258,7 +262,7 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 	}
 	switch item.Type() {
 	case api.StatusType:
-		return tv.InputStatus(event, item, item.Raw().(*mastodon.Status))
+		return tv.InputStatus(event, item, item.Raw().(*mastodon.Status), nil)
 	case api.UserType, api.ProfileType:
 		if ft == feed.FollowRequests {
 			return tv.InputUser(event, item.Raw().(*api.User), true)
@@ -271,15 +275,17 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 		case "follow":
 			return tv.InputUser(event, nd.User.Raw().(*api.User), false)
 		case "favourite":
-			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status))
+			user := nd.User.Raw().(*api.User)
+			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), user.Data)
 		case "reblog":
-			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status))
+			user := nd.User.Raw().(*api.User)
+			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), user.Data)
 		case "mention":
-			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status))
+			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), nil)
 		case "status":
-			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status))
+			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), nil)
 		case "poll":
-			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status))
+			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), nil)
 		case "follow_request":
 			return tv.InputUser(event, nd.User.Raw().(*api.User), true)
 		}
@@ -290,7 +296,7 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 	return event
 }
 
-func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mastodon.Status) *tcell.EventKey {
+func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mastodon.Status, nAcc *mastodon.Account) *tcell.EventKey {
 	sr := util.StatusOrReblog(status)
 
 	hasMedia := len(sr.MediaAttachments) > 0
@@ -303,7 +309,11 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 	bookmarked := sr.Bookmarked
 
 	if tv.tut.Config.Input.StatusAvatar.Match(event.Key(), event.Rune()) {
-		openAvatar(tv, sr.Account)
+		if nAcc != nil {
+			openAvatar(tv, *nAcc)
+		} else {
+			openAvatar(tv, sr.Account)
+		}
 		return nil
 	}
 	if tv.tut.Config.Input.StatusBoost.Match(event.Key(), event.Rune()) {
@@ -413,7 +423,11 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 		return nil
 	}
 	if tv.tut.Config.Input.StatusUser.Match(event.Key(), event.Rune()) {
-		user, err := tv.tut.Client.GetUserByID(status.Account.ID)
+		id := status.Account.ID
+		if nAcc != nil {
+			id = nAcc.ID
+		}
+		user, err := tv.tut.Client.GetUserByID(id)
 		if err != nil {
 			return nil
 		}
@@ -769,6 +783,69 @@ func (tv *TutView) InputVote(event *tcell.EventKey) *tcell.EventKey {
 	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) ||
 		tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
 		tv.FocusMainNoHistory()
+		return nil
+	}
+	return event
+}
+
+func (tv *TutView) InputPreference(event *tcell.EventKey) *tcell.EventKey {
+	if tv.PreferenceView.HasFieldFocus() {
+		return tv.InputPreferenceFields(event)
+	}
+	if tv.tut.Config.Input.PreferenceFields.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.FieldFocus()
+		return nil
+	}
+	if tv.tut.Config.Input.PreferenceName.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.EditDisplayname()
+		return nil
+	}
+	if tv.tut.Config.Input.PreferenceVisibility.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.FocusVisibility()
+		return nil
+	}
+	if tv.tut.Config.Input.PreferenceBio.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.EditBio()
+		return nil
+	}
+	if tv.tut.Config.Input.PreferenceSave.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.Save()
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) ||
+		tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
+		tv.ModalView.Run(
+			"Do you want exit the preference view?", func() {
+				tv.FocusMainNoHistory()
+			})
+		return nil
+	}
+	return event
+}
+func (tv *TutView) InputPreferenceFields(event *tcell.EventKey) *tcell.EventKey {
+	if tv.tut.Config.Input.GlobalUp.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.PrevField()
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalDown.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.NextField()
+		return nil
+	}
+	if tv.tut.Config.Input.PreferenceFieldsAdd.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.AddField()
+		return nil
+	}
+	if tv.tut.Config.Input.PreferenceFieldsEdit.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.EditField()
+		return nil
+	}
+	if tv.tut.Config.Input.PreferenceFieldsDelete.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.DeleteField()
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) ||
+		tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
+		tv.PreferenceView.MainFocus()
 		return nil
 	}
 	return event

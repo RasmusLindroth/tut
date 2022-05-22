@@ -100,6 +100,10 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 	case ":profile":
 		c.tutView.ProfileCommand()
 		c.Back()
+	case ":preferences":
+		c.tutView.PreferencesCommand()
+		c.ClearInput()
+		c.View.Autocomplete()
 	case ":timeline", ":tl":
 		if len(parts) < 2 {
 			break
@@ -166,7 +170,7 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 
 func (c *CmdBar) Autocomplete(curr string) []string {
 	var entries []string
-	words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:favorited,:followers,:following,:help,:h,:lists,:muting,:profile,:requests,:saved,:tag,:timeline,:tl,:user,:window,:quit,:q", ",")
+	words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:favorited,:followers,:following,:help,:h,:lists,:muting,:preferences,:profile,:requests,:saved,:tag,:timeline,:tl,:user,:window,:quit,:q", ",")
 	if curr == "" {
 		return entries
 	}

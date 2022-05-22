@@ -163,3 +163,7 @@ func (tv *TutView) ProfileCommand() {
 		NewUserFeed(tv, item),
 	)
 }
+
+func (tv *TutView) PreferencesCommand() {
+	tv.SetPage(PreferenceFocus)
+}
