@@ -6,6 +6,7 @@ import (
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
+	"github.com/RasmusLindroth/tut/config"
 	"github.com/RasmusLindroth/tut/util"
 )
 
@@ -166,4 +167,30 @@ func (tv *TutView) ProfileCommand() {
 
 func (tv *TutView) PreferencesCommand() {
 	tv.SetPage(PreferenceFocus)
+}
+
+func (tv *TutView) ListPlacementCommand(lp config.ListPlacement) {
+	tv.tut.Config.General.ListPlacement = lp
+	tv.MainView.ForceUpdate()
+}
+
+func (tv *TutView) ListSplitCommand(ls config.ListSplit) {
+	tv.tut.Config.General.ListSplit = ls
+	tv.MainView.ForceUpdate()
+}
+
+func (tv *TutView) ProportionsCommand(lp string, cp string) {
+	lpi, err := strconv.Atoi(lp)
+	if err != nil {
+		tv.ShowError(fmt.Sprintf("Couldn't parse list proportion. Error: %v\n", err))
+		return
+	}
+	cpi, err := strconv.Atoi(cp)
+	if err != nil {
+		tv.ShowError(fmt.Sprintf("Couldn't parse content proportion. Error: %v\n", err))
+		return
+	}
+	tv.tut.Config.General.ListProportion = lpi
+	tv.tut.Config.General.ContentProportion = cpi
+	tv.MainView.ForceUpdate()
 }

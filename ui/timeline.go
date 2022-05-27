@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/RasmusLindroth/tut/feed"
 )
@@ -49,7 +48,7 @@ func NewTimeline(tv *TutView, update chan bool) *Timeline {
 			nf = NewTagFeed(tv, f.Subaction)
 		default:
 			fmt.Println("Invalid feed")
-			os.Exit(1)
+			tl.tutView.CleanExit(1)
 		}
 		tl.Feeds = append(tl.Feeds, &FeedHolder{
 			Feeds: []*Feed{nf},
@@ -79,7 +78,7 @@ func (tl *Timeline) RemoveCurrent(quit bool) bool {
 	}
 	if len(tl.Feeds[tl.FeedFocusIndex].Feeds) == 1 && quit {
 		tl.tutView.tut.App.Stop()
-		os.Exit(0)
+		tl.tutView.CleanExit(0)
 	}
 
 	f := tl.Feeds[tl.FeedFocusIndex]

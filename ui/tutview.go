@@ -58,6 +58,13 @@ type TutView struct {
 	FileList []string
 }
 
+func (tv *TutView) CleanExit(code int) {
+	for _, f := range tv.FileList {
+		os.Remove(f)
+	}
+	os.Exit(code)
+}
+
 func NewLeader(tv *TutView) *Leader {
 	return &Leader{
 		tv: tv,
@@ -140,12 +147,15 @@ func (tv *TutView) loggedIn(acc auth.Account) {
 		ClientSecret: acc.ClientSecret,
 		AccessToken:  acc.AccessToken,
 	}
+	if tv.tut.Config.General.ShowHelp {
+		tv.Shared.Bottom.Cmd.ShowMsg("Press ? or :help to learn how tut functions")
+	}
 	client := mastodon.NewClient(conf)
 	me, err := client.GetAccountCurrentUser(context.Background())
 	if err != nil {
 		fmt.Printf("Couldn't login. Error %s\n", err)
 		tv.tut.App.Stop()
-		os.Exit(1)
+		tv.CleanExit(1)
 	}
 	filters, _ := client.GetFilters(context.Background())
 	ac := &api.AccountClient{

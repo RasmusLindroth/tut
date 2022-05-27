@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
@@ -68,6 +69,11 @@ func (tv *TutView) InputLoginView(event *tcell.EventKey) *tcell.EventKey {
 	}
 	if tv.tut.Config.Input.GlobalEnter.Match(event.Key(), event.Rune()) {
 		tv.LoginView.Selected()
+		return nil
+	}
+	if tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
+		tv.tut.App.Stop()
+		tv.CleanExit(0)
 		return nil
 	}
 	return event
@@ -136,6 +142,29 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.TagCommand(subaction)
 		case config.LeaderWindow:
 			tv.WindowCommand(subaction)
+		case config.LeaderListPlacement:
+			switch subaction {
+			case "top":
+				tv.ListPlacementCommand(config.ListPlacementTop)
+			case "right":
+				tv.ListPlacementCommand(config.ListPlacementRight)
+			case "bottom":
+				tv.ListPlacementCommand(config.ListPlacementBottom)
+			case "left":
+				tv.ListPlacementCommand(config.ListPlacementLeft)
+			}
+		case config.LeaderListSplit:
+			switch subaction {
+			case "row":
+				tv.ListSplitCommand(config.ListRow)
+			case "column":
+				tv.ListSplitCommand(config.ListColumn)
+			}
+		case config.LeaderProportions:
+			parts := strings.Split(subaction, " ")
+			if len(parts) == 2 {
+				tv.ProportionsCommand(parts[0], parts[1])
+			}
 		}
 		tv.Leader.ResetInactive()
 		return nil

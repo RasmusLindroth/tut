@@ -3,6 +3,7 @@ package ui
 import (
 	"strings"
 
+	"github.com/RasmusLindroth/tut/config"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -19,10 +20,6 @@ func NewCmdBar(tv *TutView) *CmdBar {
 	}
 	c.View.SetAutocompleteFunc(c.Autocomplete)
 	c.View.SetDoneFunc(c.DoneFunc)
-
-	if tv.tut.Config.General.ShowHelp {
-		c.ShowMsg("Press ? or :help to learn how tut functions")
-	}
 
 	return c
 }
@@ -91,11 +88,47 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 	case ":followers":
 		c.tutView.FollowersCommand()
 		c.Back()
+	case ":list-placement":
+		if len(parts) < 2 {
+			break
+		}
+		switch parts[1] {
+		case "top":
+			c.tutView.ListPlacementCommand(config.ListPlacementTop)
+			c.Back()
+		case "right":
+			c.tutView.ListPlacementCommand(config.ListPlacementRight)
+			c.Back()
+		case "bottom":
+			c.tutView.ListPlacementCommand(config.ListPlacementBottom)
+			c.Back()
+		case "left":
+			c.tutView.ListPlacementCommand(config.ListPlacementLeft)
+			c.Back()
+		}
+	case ":list-split":
+		if len(parts) < 2 {
+			break
+		}
+		switch parts[1] {
+		case "column":
+			c.tutView.ListSplitCommand(config.ListColumn)
+			c.Back()
+		case "row":
+			c.tutView.ListSplitCommand(config.ListRow)
+			c.Back()
+		}
 	case ":muting":
 		c.tutView.MutingCommand()
 		c.Back()
 	case ":requests":
 		c.tutView.FollowRequestsCommand()
+		c.Back()
+	case ":proportions":
+		if len(parts) < 3 {
+			break
+		}
+		c.tutView.ProportionsCommand(parts[1], parts[2])
 		c.Back()
 	case ":profile":
 		c.tutView.ProfileCommand()
@@ -128,7 +161,6 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 			c.tutView.FavoritedCommand()
 			c.Back()
 		}
-		c.ClearInput()
 	case ":tag":
 		if len(parts) < 2 {
 			break
@@ -170,7 +202,7 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 
 func (c *CmdBar) Autocomplete(curr string) []string {
 	var entries []string
-	words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:favorited,:followers,:following,:help,:h,:lists,:muting,:preferences,:profile,:requests,:saved,:tag,:timeline,:tl,:user,:window,:quit,:q", ",")
+	words := strings.Split(":blocking,:boosts,:bookmarks,:compose,:favorites,:favorited,:followers,:following,:help,:h,:lists,:list-placement,:list-split,:muting,:preferences,:profile,:proportions,:requests,:saved,:tag,:timeline,:tl,:user,:window,:quit,:q", ",")
 	if curr == "" {
 		return entries
 	}
@@ -180,6 +212,12 @@ func (c *CmdBar) Autocomplete(curr string) []string {
 	}
 	if len(curr) > 8 && curr[:9] == ":timeline" {
 		words = strings.Split(":timeline home,:timeline notifications,:timeline local,:timeline federated,:timeline direct,:timeline favorited", ",")
+	}
+	if len(curr) > 14 && curr[:15] == ":list-placement" {
+		words = strings.Split(":list-placement top,:list-placement right,:list-placement bottom,:list-placement left", ",")
+	}
+	if len(curr) > 10 && curr[:11] == ":list-split" {
+		words = strings.Split(":list-split row,:list-split column", ",")
 	}
 
 	for _, word := range words {
