@@ -16,7 +16,7 @@ type apiEmptyFunc func() ([]api.Item, error)
 type apiIDFunc func(pg *mastodon.Pagination, id mastodon.ID) ([]api.Item, error)
 type apiSearchFunc func(search string) ([]api.Item, error)
 type apiSearchPGFunc func(pg *mastodon.Pagination, search string) ([]api.Item, error)
-type apiThreadFunc func(status *mastodon.Status) ([]api.Item, int, error)
+type apiThreadFunc func(status *mastodon.Status) ([]api.Item, error)
 
 type FeedType uint
 
@@ -64,6 +64,7 @@ const (
 type Feed struct {
 	accountClient *api.AccountClient
 	feedType      FeedType
+	sticky        []api.Item
 	items         []api.Item
 	itemsMux      sync.RWMutex
 	loadingNewer  *LoadingLock
@@ -85,7 +86,8 @@ func (f *Feed) Type() FeedType {
 func (f *Feed) List() []api.Item {
 	f.itemsMux.RLock()
 	defer f.itemsMux.RUnlock()
-	return f.items
+	r := f.sticky
+	return append(r, f.items...)
 }
 
 func (f *Feed) Delete(id uint) {
@@ -167,6 +169,10 @@ func (f *Feed) Name() string {
 	return f.name
 }
 
+func (f *Feed) StickyCount() int {
+	return len(f.sticky)
+}
+
 func (f *Feed) singleNewerSearch(fn apiSearchFunc, search string) {
 	items, err := fn(search)
 	if err != nil {
@@ -181,7 +187,7 @@ func (f *Feed) singleNewerSearch(fn apiSearchFunc, search string) {
 }
 
 func (f *Feed) singleThread(fn apiThreadFunc, status *mastodon.Status) {
-	items, _, err := fn(status)
+	items, err := fn(status)
 	if err != nil {
 		return
 	}
@@ -322,12 +328,7 @@ func (f *Feed) normalNewerUser(fn apiIDFunc, id mastodon.ID) {
 	if len(items) > 0 {
 		item := items[0].Raw().(*mastodon.Status)
 		f.apiData.MinID = item.ID
-		newItems := []api.Item{f.items[0]}
-		newItems = append(newItems, items...)
-		if len(f.items) > 1 {
-			newItems = append(newItems, f.items[1:]...)
-		}
-		f.items = newItems
+		f.items = append(items, f.items...)
 		f.Updated(DekstopNotificationNone)
 		if f.apiData.MaxID == mastodon.ID("") {
 			item = items[len(items)-1].Raw().(*mastodon.Status)
@@ -538,13 +539,11 @@ func (f *Feed) startStream(rec *api.Receiver, timeline string, err error) {
 		for e := range f.stream.Ch {
 			switch t := e.(type) {
 			case *mastodon.UpdateEvent:
-				s, filtered := api.NewStatusItem(t.Status, f.accountClient.Filters, timeline)
-				if !filtered {
-					f.itemsMux.Lock()
-					f.items = append([]api.Item{s}, f.items...)
-					f.Updated(DesktopNotificationPost)
-					f.itemsMux.Unlock()
-				}
+				s := api.NewStatusItem(t.Status, f.accountClient.Filters, timeline, false)
+				f.itemsMux.Lock()
+				f.items = append([]api.Item{s}, f.items...)
+				f.Updated(DesktopNotificationPost)
+				f.itemsMux.Unlock()
 			}
 		}
 	}()
@@ -567,32 +566,30 @@ func (f *Feed) startStreamNotification(rec *api.Receiver, timeline string, err e
 					log.Fatalln(t.Notification.Account.Acct)
 					continue
 				}
-				s, filtered := api.NewNotificationItem(t.Notification,
+				s := api.NewNotificationItem(t.Notification,
 					&api.User{
 						Data:     &t.Notification.Account,
 						Relation: rel[0],
 					}, f.accountClient.Filters)
-				if !filtered {
-					f.itemsMux.Lock()
-					f.items = append([]api.Item{s}, f.items...)
-					nft := DekstopNotificationNone
-					switch t.Notification.Type {
-					case "follow", "follow_request":
-						nft = DesktopNotificationFollower
-					case "favourite":
-						nft = DesktopNotificationFollower
-					case "reblog":
-						nft = DesktopNotificationBoost
-					case "mention":
-						nft = DesktopNotificationMention
-					case "status":
-						nft = DesktopNotificationPost
-					case "poll":
-						nft = DesktopNotificationPoll
-					}
-					f.Updated(nft)
-					f.itemsMux.Unlock()
+				f.itemsMux.Lock()
+				f.items = append([]api.Item{s}, f.items...)
+				nft := DekstopNotificationNone
+				switch t.Notification.Type {
+				case "follow", "follow_request":
+					nft = DesktopNotificationFollower
+				case "favourite":
+					nft = DesktopNotificationFollower
+				case "reblog":
+					nft = DesktopNotificationBoost
+				case "mention":
+					nft = DesktopNotificationMention
+				case "status":
+					nft = DesktopNotificationPost
+				case "poll":
+					nft = DesktopNotificationPoll
 				}
+				f.Updated(nft)
+				f.itemsMux.Unlock()
 			}
 		}
 	}()
@@ -601,6 +598,7 @@ func (f *Feed) startStreamNotification(rec *api.Receiver, timeline string, err e
 func newFeed(ac *api.AccountClient, ft FeedType) *Feed {
 	return &Feed{
 		accountClient: ac,
+		sticky:        make([]api.Item, 0),
 		items:         make([]api.Item, 0),
 		feedType:      ft,
 		loadNewer:     func() {},
@@ -689,7 +687,11 @@ func NewUserSearch(ac *api.AccountClient, search string) *Feed {
 func NewUserProfile(ac *api.AccountClient, user *api.User) *Feed {
 	feed := newFeed(ac, User)
 	feed.name = user.Data.Acct
-	feed.items = append(feed.items, api.NewUserItem(user, true))
+	feed.sticky = append(feed.sticky, api.NewUserItem(user, true))
+	pinned, err := ac.GetUserPinned(user.Data.ID)
+	if err == nil {
+		feed.sticky = append(feed.sticky, pinned...)
+	}
 	feed.loadNewer = func() { feed.normalNewerUser(feed.accountClient.GetUser, user.Data.ID) }
 	feed.loadOlder = func() { feed.normalOlderUser(feed.accountClient.GetUser, user.Data.ID) }
 

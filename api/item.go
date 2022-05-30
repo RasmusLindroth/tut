@@ -26,12 +26,19 @@ type Item interface {
 	ShowSpoiler() bool
 	Raw() interface{}
 	URLs() ([]util.URL, []mastodon.Mention, []mastodon.Tag, int)
+	Filtered() (bool, string)
+	Pinned() bool
 }
 
-func NewStatusItem(item *mastodon.Status, filters []*mastodon.Filter, timeline string) (sitem Item, filtered bool) {
-	filtered = false
+type filtered struct {
+	inUse bool
+	name  string
+}
+
+func NewStatusItem(item *mastodon.Status, filters []*mastodon.Filter, timeline string, pinned bool) (sitem Item) {
+	filtered := filtered{inUse: false}
 	if item == nil {
-		return &StatusItem{id: newID(), item: item, showSpoiler: false}, false
+		return &StatusItem{id: newID(), item: item, showSpoiler: false, filtered: filtered, pinned: pinned}
 	}
 	s := util.StatusOrReblog(item)
 	content := s.Content
@@ -67,30 +74,35 @@ func NewStatusItem(item *mastodon.Status, filters []*mastodon.Filter, timeline s
 			filter := strings.Split(strings.ToLower(f.Phrase), " ")
 			for i := 0; i+len(filter)-1 < len(stripped); i++ {
 				if strings.ToLower(f.Phrase) == strings.Join(stripped[i:i+len(filter)], " ") {
-					filtered = true
+					filtered.inUse = true
+					filtered.name = f.Phrase
 					break
 				}
 			}
 		} else {
 			if strings.Contains(s.Content, strings.ToLower(f.Phrase)) {
-				filtered = true
+				filtered.inUse = true
+				filtered.name = f.Phrase
 			}
 			if strings.Contains(s.SpoilerText, strings.ToLower(f.Phrase)) {
-				filtered = true
+				filtered.inUse = true
+				filtered.name = f.Phrase
 			}
 		}
-		if filtered {
+		if filtered.inUse {
 			break
 		}
 	}
-	sitem = &StatusItem{id: newID(), item: item, showSpoiler: false}
-	return sitem, filtered
+	sitem = &StatusItem{id: newID(), item: item, showSpoiler: false, filtered: filtered, pinned: pinned}
+	return sitem
 }
 
 type StatusItem struct {
 	id          uint
 	item        *mastodon.Status
 	showSpoiler bool
+	filtered    filtered
+	pinned      bool
 }
 
 func (s *StatusItem) ID() uint {
@@ -141,6 +153,14 @@ func (s *StatusItem) URLs() ([]util.URL, []mastodon.Mention, []mastodon.Tag, int
 	return realUrls, status.Mentions, status.Tags, length
 }
 
+func (s *StatusItem) Filtered() (bool, string) {
+	return s.filtered.inUse, s.filtered.name
+}
+
+func (s *StatusItem) Pinned() bool {
+	return s.pinned
+}
+
 func NewUserItem(item *User, profile bool) Item {
 	return &UserItem{id: newID(), item: item, profile: profile}
 }
@@ -185,8 +205,16 @@ func (u *UserItem) URLs() ([]util.URL, []mastodon.Mention, []mastodon.Tag, int) 
 	return urls, []mastodon.Mention{}, []mastodon.Tag{}, len(urls)
 }
 
-func NewNotificationItem(item *mastodon.Notification, user *User, filters []*mastodon.Filter) (nitem Item, filtred bool) {
-	status, filtred := NewStatusItem(item.Status, filters, "notifications")
+func (s *UserItem) Filtered() (bool, string) {
+	return false, ""
+}
+
+func (u *UserItem) Pinned() bool {
+	return false
+}
+
+func NewNotificationItem(item *mastodon.Notification, user *User, filters []*mastodon.Filter) (nitem Item) {
+	status := NewStatusItem(item.Status, filters, "notifications", false)
 	nitem = &NotificationItem{
 		id:          newID(),
 		item:        item,
@@ -195,7 +223,7 @@ func NewNotificationItem(item *mastodon.Notification, user *User, filters []*mas
 		status:      status,
 	}
 
-	return nitem, filtred
+	return nitem
 }
 
 type NotificationItem struct {
@@ -240,6 +268,14 @@ func (n *NotificationItem) URLs() ([]util.URL, []mastodon.Mention, []mastodon.Ta
 	return nil, nil, nil, 0
 }
 
+func (n *NotificationItem) Filtered() (bool, string) {
+	return false, ""
+}
+
+func (n *NotificationItem) Pinned() bool {
+	return false
+}
+
 func NewListsItem(item *mastodon.List) Item {
 	return &ListItem{id: newID(), item: item, showSpoiler: true}
 }
@@ -271,4 +307,12 @@ func (s *ListItem) Raw() interface{} {
 
 func (s *ListItem) URLs() ([]util.URL, []mastodon.Mention, []mastodon.Tag, int) {
 	return nil, nil, nil, 0
+}
+
+func (s *ListItem) Filtered() (bool, string) {
+	return false, ""
+}
+
+func (n *ListItem) Pinned() bool {
+	return false
 }

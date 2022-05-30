@@ -85,29 +85,29 @@ type Timeline struct {
 }
 
 type General struct {
-	Confirmation         bool
-	DateTodayFormat      string
-	DateFormat           string
-	DateRelative         int
-	MaxWidth             int
-	StartTimeline        feed.FeedType
-	NotificationFeed     bool
-	QuoteReply           bool
-	CharLimit            int
-	ShortHints           bool
-	ListPlacement        ListPlacement
-	ListSplit            ListSplit
-	HideNotificationText bool
-	ListProportion       int
-	ContentProportion    int
-	ShowIcons            bool
-	ShowHelp             bool
-	RedrawUI             bool
-	LeaderKey            rune
-	LeaderTimeout        int64
-	LeaderActions        []LeaderAction
-	TimelineName         bool
-	Timelines            []Timeline
+	Confirmation      bool
+	DateTodayFormat   string
+	DateFormat        string
+	DateRelative      int
+	MaxWidth          int
+	StartTimeline     feed.FeedType
+	NotificationFeed  bool
+	QuoteReply        bool
+	CharLimit         int
+	ShortHints        bool
+	ShowFilterPhrase  bool
+	ListPlacement     ListPlacement
+	ListSplit         ListSplit
+	ListProportion    int
+	ContentProportion int
+	ShowIcons         bool
+	ShowHelp          bool
+	RedrawUI          bool
+	LeaderKey         rune
+	LeaderTimeout     int64
+	LeaderActions     []LeaderAction
+	TimelineName      bool
+	Timelines         []Timeline
 }
 
 type Style struct {
@@ -576,7 +576,7 @@ func parseGeneral(cfg *ini.File) General {
 	general.CharLimit = cfg.Section("general").Key("char-limit").MustInt(500)
 	general.MaxWidth = cfg.Section("general").Key("max-width").MustInt(0)
 	general.ShortHints = cfg.Section("general").Key("short-hints").MustBool(false)
-	general.HideNotificationText = cfg.Section("general").Key("hide-notification-text").MustBool(false)
+	general.ShowFilterPhrase = cfg.Section("general").Key("show-filter-phrase").MustBool(true)
 	general.ShowIcons = cfg.Section("general").Key("show-icons").MustBool(true)
 	general.ShowHelp = cfg.Section("general").Key("show-help").MustBool(true)
 	general.RedrawUI = cfg.Section("general").Key("redraw-ui").MustBool(true)

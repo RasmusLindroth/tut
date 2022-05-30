@@ -14,7 +14,7 @@ require (
 	github.com/rivo/tview v0.0.0-20220307222120-9994674d60a8
 	github.com/rivo/uniseg v0.2.0
 	golang.org/x/net v0.0.0-20220526153639-5463443f8c37
-	gopkg.in/ini.v1 v1.66.4
+	gopkg.in/ini.v1 v1.66.5
 )
 
 require (

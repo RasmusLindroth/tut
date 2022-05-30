@@ -468,7 +468,7 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 		return nil
 	}
 	if tv.tut.Config.Input.StatusYank.Match(event.Key(), event.Rune()) {
-		copyToClipboard(status.URL)
+		copyToClipboard(sr.URL)
 		return nil
 	}
 	if tv.tut.Config.Input.StatusToggleSpoiler.Match(event.Key(), event.Rune()) {
