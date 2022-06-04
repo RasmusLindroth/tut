@@ -41,7 +41,7 @@ func CliView(version string) (newUser bool, selectedUser string) {
 			fmt.Print("\t\tIf two users are named the same. Use full name like tut@fosstodon.org\n\n")
 
 			fmt.Print("Configuration:\n")
-			fmt.Printf("\tThe config is located in XDG_CONFIG_HOME/tut/config.ini which usally equals to ~/.config/tut/config.ini.\n")
+			fmt.Printf("\tThe config is located in XDG_CONFIG_HOME/tut/config.ini which usually equals to ~/.config/tut/config.ini.\n")
 			fmt.Printf("\tThe program will generate the file the first time you run tut. The file has comments which exmplains what each configuration option does.\n\n")
 
 			fmt.Print("Contact info for issues or questions:\n")

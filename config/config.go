@@ -630,7 +630,7 @@ func parseGeneral(cfg *ini.File) General {
 		for _, l := range lactions {
 			parts := strings.Split(l, ",")
 			if len(parts) != 2 {
-				fmt.Printf("leader-action must consist of two parts seperated by a comma. Your value is: %s\n", strings.Join(parts, ","))
+				fmt.Printf("leader-action must consist of two parts separated by a comma. Your value is: %s\n", strings.Join(parts, ","))
 				os.Exit(1)
 			}
 			for i, p := range parts {

@@ -138,7 +138,7 @@ leader-key=
 leader-timeout=1000
 
 # You set actions for the leader-key with one or more leader-action. It consists
-# of two parts first the action then the shortcut. And they're seperated by a
+# of two parts first the action then the shortcut. And they're separated by a
 # comma.
 # 
 # Available commands: home, direct, local, federated, compose, blocking,
@@ -320,7 +320,7 @@ posts=false
 # 
 # You can also use xrdb colors like this xrdb:color1 The program will use colors
 # prefixed with an * first then look for URxvt or XTerm if it can't find any
-# color prefixed with an asterik. If you don't want tut to guess the prefix you
+# color prefixed with an asterisk. If you don't want tut to guess the prefix you
 # can set the prefix yourself. If the xrdb color can't be found a preset color
 # will be used. You'll have to set theme=none for this to work.
 
