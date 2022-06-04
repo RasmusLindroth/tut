@@ -20,13 +20,20 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 		symbol := ""
 		status := s
 		if s.Reblog != nil {
-			status = s
+			status = s.Reblog
 		}
 		if status.RepliesCount > 0 {
 			symbol = " ⤶ "
 		}
+		if item.Pinned() {
+			symbol = " ! "
+		}
+		acc := strings.TrimSpace(s.Account.Acct)
+		if s.Reblog != nil && cfg.General.ShowIcons {
+			acc = fmt.Sprintf("♺ %s", acc)
+		}
 		d := OutputDate(cfg, s.CreatedAt.Local())
-		return fmt.Sprintf("%s %s", d, strings.TrimSpace(s.Account.Acct)), symbol
+		return fmt.Sprintf("%s %s", d, acc), symbol
 	case api.UserType:
 		a := item.Raw().(*api.User)
 		return strings.TrimSpace(a.Data.Acct), ""

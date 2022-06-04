@@ -1,4 +1,9 @@
 # Tut - a Mastodon TUI
+[![Release](https://badgen.net/github/release/RasmusLindroth/tut)](https://github.com/RasmusLindroth/tut/releases)
+[![web](https://badgen.net/badge/web/tut.anv.nu/f92672)](https://tut.anv.nu)
+[![tut](https://badgen.net/badge/AUR/tut/08c)](https://aur.archlinux.org/packages/tut)
+[![tut-bin](https://badgen.net/badge/AUR/tut-bin/08c)](https://aur.archlinux.org/packages/tut-bin)
+[![@tut](https://badgen.net/mastodon/follow/tut@fosstodon.org)](https://fosstodon.org/@tut)
 
 A TUI for Mastodon with vim inspired keys. The program has most of the 
 features you can find in the web client. 
@@ -8,6 +13,7 @@ Press `C` to create a new toot and `N` to focus on your notifications.
 You can find Linux binaries under [releases](https://github.com/RasmusLindroth/tut/releases).
 
 ![Preview](./images/preview.png "Preview")
+![Preview 2](./images/preview2.png "Preview 2")
 
 
 ## Table of contents
@@ -85,6 +91,7 @@ Head over to https://github.com/RasmusLindroth/tut/releases
 You can find it in the Arch User Repository (AUR). I'm the maintainer there.
 
 https://aur.archlinux.org/packages/tut/
+https://aur.archlinux.org/packages/tut-bin/
 
 You can also use `tut-mastodon`. Currently `aur/tut` collides with a package 
 named `tut` if you're running Manjaro ARM. So if you face the same problem you 
@@ -127,7 +134,7 @@ cd tut
 
 # Build or install
 
-# Install (usally /home/user/go/bin)
+# Install (usually /home/user/go/bin)
 go install
 
 # Build (same directory i.e. ./ )

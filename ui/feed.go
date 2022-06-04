@@ -14,8 +14,9 @@ import (
 )
 
 type FeedList struct {
-	Text   *tview.List
-	Symbol *tview.List
+	Text        *tview.List
+	Symbol      *tview.List
+	stickyCount int
 }
 
 func (fl *FeedList) InFocus(style config.Style) {
@@ -136,7 +137,7 @@ func NewHomeFeed(tv *TutView) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 	go fd.update()
@@ -151,7 +152,7 @@ func NewFederatedFeed(tv *TutView) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 	go fd.update()
@@ -166,7 +167,7 @@ func NewLocalFeed(tv *TutView) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 	go fd.update()
@@ -181,7 +182,7 @@ func NewNotificationFeed(tv *TutView) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 	go fd.update()
@@ -196,7 +197,7 @@ func NewThreadFeed(tv *TutView, item api.Item) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 	for i, s := range f.List() {
@@ -218,7 +219,7 @@ func NewConversationsFeed(tv *TutView) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 	go fd.update()
@@ -237,7 +238,7 @@ func NewUserFeed(tv *TutView, item api.Item) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 	go fd.update()
@@ -252,7 +253,7 @@ func NewUserSearchFeed(tv *TutView, search string) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 	for _, s := range f.List() {
@@ -271,7 +272,7 @@ func NewTagFeed(tv *TutView, search string) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 	go fd.update()
@@ -285,7 +286,7 @@ func NewListsFeed(tv *TutView) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 	go fd.update()
@@ -300,7 +301,7 @@ func NewListFeed(tv *TutView, l *mastodon.List) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 	go fd.update()
@@ -315,7 +316,7 @@ func NewFavoritedFeed(tv *TutView) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 
@@ -330,7 +331,7 @@ func NewBookmarksFeed(tv *TutView) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 	go fd.update()
@@ -345,7 +346,7 @@ func NewFavoritesStatus(tv *TutView, id mastodon.ID) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 	go fd.update()
@@ -360,7 +361,7 @@ func NewBoosts(tv *TutView, id mastodon.ID) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 	go fd.update()
@@ -375,7 +376,7 @@ func NewFollowers(tv *TutView, id mastodon.ID) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 	go fd.update()
@@ -390,7 +391,7 @@ func NewFollowing(tv *TutView, id mastodon.ID) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 	go fd.update()
@@ -405,7 +406,7 @@ func NewBlocking(tv *TutView) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 	go fd.update()
@@ -420,7 +421,7 @@ func NewMuting(tv *TutView) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 	go fd.update()
@@ -435,7 +436,7 @@ func NewFollowRequests(tv *TutView) *Feed {
 		tutView:   tv,
 		Data:      f,
 		ListIndex: 0,
-		List:      NewFeedList(tv.tut),
+		List:      NewFeedList(tv.tut, f.StickyCount()),
 		Content:   NewFeedContent(tv.tut),
 	}
 	go fd.update()
@@ -443,10 +444,11 @@ func NewFollowRequests(tv *TutView) *Feed {
 	return fd
 }
 
-func NewFeedList(t *Tut) *FeedList {
+func NewFeedList(t *Tut, stickyCount int) *FeedList {
 	fl := &FeedList{
-		Text:   NewList(t.Config),
-		Symbol: NewList(t.Config),
+		Text:        NewList(t.Config),
+		Symbol:      NewList(t.Config),
+		stickyCount: stickyCount,
 	}
 	return fl
 }
@@ -476,7 +478,7 @@ func (fl *FeedList) Prev() (loadNewer bool) {
 	}
 	fl.Text.SetCurrentItem(ni)
 	fl.Symbol.SetCurrentItem(ni)
-	return ni < 4
+	return ni-fl.stickyCount < 4
 }
 
 func (fl *FeedList) Clear() {

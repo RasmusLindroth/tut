@@ -71,6 +71,24 @@ type DisplayTootData struct {
 }
 
 func drawStatus(tut *Tut, item api.Item, status *mastodon.Status, main *tview.TextView, controls *tview.TextView, additional string) {
+	filtered, phrase := item.Filtered()
+	if filtered {
+		var output string
+		if tut.Config.General.ShowFilterPhrase {
+			output = fmt.Sprintf("Filtered by phrase: %s", tview.Escape(phrase))
+		} else {
+			output = "Filtered."
+		}
+		if main != nil {
+			if additional != "" {
+				additional = fmt.Sprintf("%s\n\n", config.SublteText(tut.Config, additional))
+			}
+			main.SetText(additional + output)
+		}
+		controls.SetText("")
+		return
+	}
+
 	showSensitive := item.ShowSpoiler()
 
 	var strippedContent string
