@@ -1,4 +1,5 @@
 # Tut - a Mastodon TUI
+[![Release](https://badgen.net/github/release/RasmusLindroth/tut)](https://github.com/RasmusLindroth/tut/releases)
 [![web](https://badgen.net/badge/web/tut.anv.nu/f92672)](https://tut.anv.nu)
 [![tut](https://badgen.net/badge/AUR/tut/08c)](https://aur.archlinux.org/packages/tut)
 [![tut-bin](https://badgen.net/badge/AUR/tut-bin/08c)](https://aur.archlinux.org/packages/tut-bin)
