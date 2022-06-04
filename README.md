@@ -85,6 +85,7 @@ Head over to https://github.com/RasmusLindroth/tut/releases
 You can find it in the Arch User Repository (AUR). I'm the maintainer there.
 
 https://aur.archlinux.org/packages/tut/
+https://aur.archlinux.org/packages/tut-bin/
 
 You can also use `tut-mastodon`. Currently `aur/tut` collides with a package 
 named `tut` if you're running Manjaro ARM. So if you face the same problem you 
