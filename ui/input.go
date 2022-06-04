@@ -452,7 +452,7 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 		return nil
 	}
 	if tv.tut.Config.Input.StatusUser.Match(event.Key(), event.Rune()) {
-		id := status.Account.ID
+		id := sr.Account.ID
 		if nAcc != nil {
 			id = nAcc.ID
 		}
