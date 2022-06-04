@@ -109,6 +109,10 @@ show-icons=true
 # default=false
 short-hints=false
 
+# If you want to display the filter that filtered a toot.
+# default=true
+show-filter-phrase=true
+
 # If you want to show a message in the cmdbar on how to access the help text.
 # default=true
 show-help=true
@@ -328,7 +332,7 @@ xrdb-prefix=guess
 # available on the URL below. If a theme is named "nord.ini" you just write
 # theme=nord
 # 
-# https://github.com/RasmusLindroth/tut/tree/master/themes
+# https://github.com/RasmusLindroth/tut/tree/master/config/themes
 # 
 # If you want to use your own theme set theme to none then you can create your
 # own theme below
