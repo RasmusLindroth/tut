@@ -8,7 +8,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-const version = "1.0.11"
+const version = "1.0.12"
 
 func main() {
 	util.MakeDirs()
