@@ -63,8 +63,8 @@ func (f *Feed) LoadOlder() {
 	f.Data.LoadOlder()
 }
 
-func (f *Feed) LoadNewer() {
-	if f.Data.HasStream() {
+func (f *Feed) LoadNewer(force bool) {
+	if f.Data.HasStream() && !force {
 		return
 	}
 	f.Data.LoadNewer()

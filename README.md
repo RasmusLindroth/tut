@@ -45,7 +45,8 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:lists` show a list of your lists
 * `:list-placement` top, right, bottom, left
 * `:list-split` row, column
-* `:muting`  lists users that you have muted
+* `:muting` lists users that you have muted
+* `:newer` force load newer toots in current timeline
 * `:preferences` update your profile and some other settings
 * `:profile` go to your profile
 * `:proportions` [int] [int], where the first integer is the list and the other content, e.g. `:proportions 1 3`

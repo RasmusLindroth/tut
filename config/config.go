@@ -4,6 +4,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -75,6 +76,7 @@ const (
 	LeaderTag
 	LeaderUser
 	LeaderWindow
+	LeaderLoadNewer
 )
 
 type Timeline struct {
@@ -431,21 +433,31 @@ func parseStyle(cfg *ini.File) Style {
 	style := Style{}
 	theme := cfg.Section("style").Key("theme").String()
 	if theme != "none" && theme != "" {
-		themes, err := getThemes()
+		bundled, local, err := getThemes()
 		if err != nil {
 			log.Fatalf("Couldn't load themes. Error: %s\n", err)
 		}
 		found := false
-		for _, t := range themes {
+		isLocal := false
+		for _, t := range local {
 			if filepath.Base(t) == fmt.Sprintf("%s.ini", theme) {
 				found = true
+				isLocal = true
 				break
+			}
+		}
+		if !found {
+			for _, t := range bundled {
+				if filepath.Base(t) == fmt.Sprintf("%s.ini", theme) {
+					found = true
+					break
+				}
 			}
 		}
 		if !found {
 			log.Fatalf("Couldn't find theme %s\n", theme)
 		}
-		tcfg, err := getTheme(theme)
+		tcfg, err := getTheme(theme, isLocal)
 		if err != nil {
 			log.Fatalf("Couldn't load theme. Error: %s\n", err)
 		}
@@ -696,6 +708,8 @@ func parseGeneral(cfg *ini.File) General {
 			case "window":
 				la.Command = LeaderWindow
 				la.Subaction = subaction
+			case "newer":
+				la.Command = LeaderLoadNewer
 			default:
 				fmt.Printf("leader-action %s is invalid\n", parts[0])
 				os.Exit(1)
@@ -1183,7 +1197,7 @@ func parseConfig(filepath string) (Config, error) {
 func createConfigDir() error {
 	cd, err := os.UserConfigDir()
 	if err != nil {
-		log.Fatalf("couldn't find $HOME. Err %v", err)
+		log.Fatalf("couldn't find config dir. Err %v", err)
 	}
 	path := cd + "/tut"
 	return os.MkdirAll(path, os.ModePerm)
@@ -1192,7 +1206,7 @@ func createConfigDir() error {
 func checkConfig(filename string) (path string, exists bool, err error) {
 	cd, err := os.UserConfigDir()
 	if err != nil {
-		log.Fatalf("couldn't find $HOME. Err %v", err)
+		log.Fatalf("couldn't find config dir. Err %v", err)
 	}
 	dir := cd + "/tut/"
 	path = dir + filename
@@ -1218,24 +1232,58 @@ func CreateDefaultConfig(filepath string) error {
 	return nil
 }
 
-func getThemes() ([]string, error) {
+func getThemes() (bundled []string, local []string, err error) {
 	entries, err := themesFS.ReadDir("themes")
-	files := []string{}
 	if err != nil {
-		return []string{}, err
+		return bundled, local, err
 	}
 	for _, entry := range entries {
 		if entry.IsDir() {
 			continue
 		}
 		fp := filepath.Join("themes/", entry.Name())
-		files = append(files, fp)
+		bundled = append(bundled, fp)
 	}
-	return files, nil
+	_, exists, err := checkConfig("themes")
+	if err != nil {
+		return bundled, local, err
+	}
+	if !exists {
+		return bundled, local, err
+	}
+	cd, err := os.UserConfigDir()
+	if err != nil {
+		log.Fatalf("couldn't find config dir. Err %v", err)
+	}
+	dir := cd + "/tut/themes"
+	entries, err = os.ReadDir(dir)
+	if err != nil {
+		return bundled, local, err
+	}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		fp := filepath.Join(dir, entry.Name())
+		local = append(local, fp)
+	}
+	return bundled, local, nil
 }
 
-func getTheme(fname string) (*ini.File, error) {
-	f, err := themesFS.Open(fmt.Sprintf("themes/%s.ini", strings.TrimSpace(fname)))
+func getTheme(fname string, isLocal bool) (*ini.File, error) {
+	var f io.Reader
+	var err error
+	if isLocal {
+		var cd string
+		cd, err = os.UserConfigDir()
+		if err != nil {
+			log.Fatalf("couldn't find config dir. Err %v", err)
+		}
+		dir := cd + "/tut/themes"
+		f, err = os.Open(fmt.Sprintf("%s/%s.ini", dir, strings.TrimSpace(fname)))
+	} else {
+		f, err = themesFS.Open(fmt.Sprintf("themes/%s.ini", strings.TrimSpace(fname)))
+	}
 	if err != nil {
 		return nil, err
 	}

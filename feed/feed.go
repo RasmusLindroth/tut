@@ -543,6 +543,7 @@ func (f *Feed) startStream(rec *api.Receiver, timeline string, err error) {
 				f.itemsMux.Lock()
 				f.items = append([]api.Item{s}, f.items...)
 				f.Updated(DesktopNotificationPost)
+				f.apiData.MinID = t.Status.ID
 				f.itemsMux.Unlock()
 			}
 		}

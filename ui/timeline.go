@@ -216,7 +216,7 @@ func (tl *Timeline) PrevItemFeed() {
 	f := fh.Feeds[fh.FeedIndex]
 	loadMore := f.List.Prev()
 	if loadMore {
-		f.LoadNewer()
+		f.LoadNewer(false)
 	}
 	tl.DrawContent()
 }
@@ -225,7 +225,7 @@ func (tl *Timeline) HomeItemFeed() {
 	fh := tl.Feeds[tl.FeedFocusIndex]
 	f := fh.Feeds[fh.FeedIndex]
 	f.List.SetCurrentItem(0)
-	f.LoadNewer()
+	f.LoadNewer(false)
 	tl.DrawContent()
 }
 

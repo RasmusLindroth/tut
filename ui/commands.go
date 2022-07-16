@@ -194,3 +194,8 @@ func (tv *TutView) ProportionsCommand(lp string, cp string) {
 	tv.tut.Config.General.ContentProportion = cpi
 	tv.MainView.ForceUpdate()
 }
+
+func (tv *TutView) LoadNewerCommand() {
+	f := tv.GetCurrentFeed()
+	f.LoadNewer(true)
+}
