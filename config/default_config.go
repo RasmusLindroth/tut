@@ -143,8 +143,8 @@ leader-timeout=1000
 # 
 # Available commands: home, direct, local, federated, compose, blocking,
 # bookmarks, saved, favorited, boosts, favorites, following, followers, muting,
-# preferences, profile, notifications, lists, tag, window, list-placement,
-# list-split, proportions
+# newer, preferences, profile, notifications, lists, tag, window,
+# list-placement, list-split, proportions
 # 
 # The shortcuts are up to you, but keep them quite short and make sure they
 # don't collide. If you have one shortcut that is "f" and an other one that is
@@ -328,14 +328,17 @@ posts=false
 # default=guess
 xrdb-prefix=guess
 
-# You can use some themes that comes bundled with tut check out the themes
+# You can use some themes that comes bundled with tut. Check out the themes
 # available on the URL below. If a theme is named "nord.ini" you just write
 # theme=nord
 # 
 # https://github.com/RasmusLindroth/tut/tree/master/config/themes
 # 
-# If you want to use your own theme set theme to none then you can create your
-# own theme below
+# You can also create a theme file in your config directory e.g.
+# ~/.config/tut/themes/foo.ini and then set theme=foo.
+# 
+# If you want to use your own theme but don't want to create a new file, set
+# theme=none and then you can create your own theme below.
 # default=default
 theme=default
 

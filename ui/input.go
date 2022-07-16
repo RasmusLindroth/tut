@@ -136,6 +136,8 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.ProfileCommand()
 		case config.LeaderNotifications:
 			tv.NotificationsCommand()
+		case config.LeaderLoadNewer:
+			tv.LoadNewerCommand()
 		case config.LeaderLists:
 			tv.ListsCommand()
 		case config.LeaderTag:
