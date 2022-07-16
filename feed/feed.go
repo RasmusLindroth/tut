@@ -106,10 +106,13 @@ func (f *Feed) Delete(id uint) {
 func (f *Feed) Item(index int) (api.Item, error) {
 	f.itemsMux.RLock()
 	defer f.itemsMux.RUnlock()
-	if index < 0 || index >= len(f.items) {
+	if f.StickyCount() > 0 && index < f.StickyCount() {
+		return f.sticky[index], nil
+	}
+	if index < 0 || index >= len(f.items)+f.StickyCount() {
 		return nil, errors.New("item out of range")
 	}
-	return f.items[index], nil
+	return f.items[index-f.StickyCount()], nil
 }
 
 func (f *Feed) Updated(nt DesktopNotificationType) {
