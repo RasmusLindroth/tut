@@ -35,6 +35,43 @@ type filtered struct {
 	name  string
 }
 
+func getUrlsStatus(status *mastodon.Status) ([]util.URL, []mastodon.Mention, []mastodon.Tag, int) {
+	if status.Reblog != nil {
+		status = status.Reblog
+	}
+	_, urls := util.CleanHTML(status.Content)
+	if status.Sensitive {
+		_, u := util.CleanHTML(status.SpoilerText)
+		urls = append(urls, u...)
+	}
+
+	realUrls := []util.URL{}
+	for _, url := range urls {
+		isNotMention := true
+		for _, mention := range status.Mentions {
+			if mention.URL == url.URL {
+				isNotMention = false
+			}
+		}
+		if isNotMention {
+			realUrls = append(realUrls, url)
+		}
+	}
+
+	length := len(realUrls) + len(status.Mentions) + len(status.Tags)
+	return realUrls, status.Mentions, status.Tags, length
+}
+func getUrlsUser(user *mastodon.Account) ([]util.URL, []mastodon.Mention, []mastodon.Tag, int) {
+	var urls []util.URL
+	user.Note, urls = util.CleanHTML(user.Note)
+	for _, f := range user.Fields {
+		_, fu := util.CleanHTML(f.Value)
+		urls = append(urls, fu...)
+	}
+
+	return urls, []mastodon.Mention{}, []mastodon.Tag{}, len(urls)
+}
+
 func NewStatusItem(item *mastodon.Status, filters []*mastodon.Filter, timeline string, pinned bool) (sitem Item) {
 	filtered := filtered{inUse: false}
 	if item == nil {
@@ -126,31 +163,7 @@ func (s *StatusItem) Raw() interface{} {
 }
 
 func (s *StatusItem) URLs() ([]util.URL, []mastodon.Mention, []mastodon.Tag, int) {
-	status := s.item
-	if status.Reblog != nil {
-		status = status.Reblog
-	}
-	_, urls := util.CleanHTML(status.Content)
-	if status.Sensitive {
-		_, u := util.CleanHTML(status.SpoilerText)
-		urls = append(urls, u...)
-	}
-
-	realUrls := []util.URL{}
-	for _, url := range urls {
-		isNotMention := true
-		for _, mention := range status.Mentions {
-			if mention.URL == url.URL {
-				isNotMention = false
-			}
-		}
-		if isNotMention {
-			realUrls = append(realUrls, url)
-		}
-	}
-
-	length := len(realUrls) + len(status.Mentions) + len(status.Tags)
-	return realUrls, status.Mentions, status.Tags, length
+	return getUrlsStatus(s.item)
 }
 
 func (s *StatusItem) Filtered() (bool, string) {
@@ -194,15 +207,7 @@ func (u *UserItem) Raw() interface{} {
 }
 
 func (u *UserItem) URLs() ([]util.URL, []mastodon.Mention, []mastodon.Tag, int) {
-	user := u.item.Data
-	var urls []util.URL
-	user.Note, urls = util.CleanHTML(user.Note)
-	for _, f := range user.Fields {
-		_, fu := util.CleanHTML(f.Value)
-		urls = append(urls, fu...)
-	}
-
-	return urls, []mastodon.Mention{}, []mastodon.Tag{}, len(urls)
+	return getUrlsUser(u.item.Data)
 }
 
 func (s *UserItem) Filtered() (bool, string) {
@@ -265,6 +270,23 @@ func (n *NotificationItem) Raw() interface{} {
 }
 
 func (n *NotificationItem) URLs() ([]util.URL, []mastodon.Mention, []mastodon.Tag, int) {
+	nd := n.Raw().(*NotificationData)
+	switch n.item.Type {
+	case "favourite":
+		return getUrlsStatus(nd.Status.Raw().(*mastodon.Status))
+	case "reblog":
+		return getUrlsStatus(nd.Status.Raw().(*mastodon.Status))
+	case "mention":
+		return getUrlsStatus(nd.Status.Raw().(*mastodon.Status))
+	case "status":
+		return getUrlsStatus(nd.Status.Raw().(*mastodon.Status))
+	case "poll":
+		return getUrlsStatus(nd.Status.Raw().(*mastodon.Status))
+	case "follow":
+		return getUrlsUser(nd.User.Raw().(*User).Data)
+	case "follow_request":
+		return getUrlsUser(nd.User.Raw().(*User).Data)
+	}
 	return nil, nil, nil, 0
 }
 
