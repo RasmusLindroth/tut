@@ -85,8 +85,10 @@ func mainViewUI(mv *TutView) *tview.Flex {
 	fc := mv.Timeline.GetFeedContent()
 	content := fc.Main
 	controls := fc.Controls
-	r := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(mv.Shared.Top.View, 1, 0, false)
+	r := tview.NewFlex().SetDirection(tview.FlexRow)
+	if mv.tut.Config.General.TerminalTitle < 2 {
+		r.AddItem(mv.Shared.Top.View, 1, 0, false)
+	}
 	if mv.tut.Config.General.ListPlacement == config.ListPlacementTop {
 		r.AddItem(list, 0, lp, false).
 			AddItem(hl, 1, 0, false).

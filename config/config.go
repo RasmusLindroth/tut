@@ -102,6 +102,7 @@ type General struct {
 	ListSplit         ListSplit
 	ListProportion    int
 	ContentProportion int
+	TerminalTitle     int
 	ShowIcons         bool
 	ShowHelp          bool
 	RedrawUI          bool
@@ -793,6 +794,16 @@ func parseGeneral(cfg *ini.File) General {
 		)
 	}
 	general.Timelines = tls
+
+	general.TerminalTitle = cfg.Section("general").Key("terminal-title").MustInt(0)
+	/*
+		0 = No terminal title
+		1 = Show title in terminal and top bar
+		2 = Only show terminal title, and no top bar
+	*/
+	if general.TerminalTitle < 0 || general.TerminalTitle > 2 {
+		general.TerminalTitle = 0
+	}
 
 	return general
 }

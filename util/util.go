@@ -172,3 +172,7 @@ func StatusOrReblog(s *mastodon.Status) *mastodon.Status {
 	}
 	return s
 }
+
+func SetTerminalTitle(s string) {
+	fmt.Printf("\033]0;%s\a", s)
+}

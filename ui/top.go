@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/RasmusLindroth/tut/util"
 	"github.com/rivo/tview"
 )
 
@@ -32,15 +33,22 @@ func (t *Top) SetText(s string) {
 			us = fmt.Sprintf("%s@%s", us, u.Host)
 		}
 		if s == "" {
-			t.View.SetText(fmt.Sprintf("tut - %s", us))
+			t.setText(fmt.Sprintf("tut - %s", us))
 		} else {
-			t.View.SetText(fmt.Sprintf("tut - %s - %s", s, us))
+			t.setText(fmt.Sprintf("tut - %s - %s", s, us))
 		}
 	} else {
 		if s == "" {
-			t.View.SetText("tut")
+			t.setText("tut")
 		} else {
-			t.View.SetText(fmt.Sprintf("tut - %s", s))
+			t.setText(fmt.Sprintf("tut - %s", s))
 		}
+	}
+}
+
+func (t *Top) setText(s string) {
+	t.View.SetText(s)
+	if t.TutView.tut.Config.General.TerminalTitle > 0 {
+		util.SetTerminalTitle(s)
 	}
 }
