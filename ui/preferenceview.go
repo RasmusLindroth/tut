@@ -58,17 +58,20 @@ func preferenceViewUI(p *PreferenceView) *tview.Flex {
 	p.visibility.SetLabel("Default toot visibility: ")
 	p.visibility.SetOptions(visibilitiesPrefStr, p.visibilitySelected)
 
-	return tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(p.shared.Top.View, 1, 0, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-				AddItem(p.displayName, 1, 0, false).
-				AddItem(p.visibility, 2, 0, false).
-				AddItem(p.fields, 0, 1, false), 0, 1, false).
-			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-				AddItem(p.bio, 0, 1, false), 0, 1, false), 0, 1, false).
+	r := tview.NewFlex().SetDirection(tview.FlexRow)
+	if p.tutView.tut.Config.General.TerminalTitle < 2 {
+		r.AddItem(p.shared.Top.View, 1, 0, false)
+	}
+	r.AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(p.displayName, 1, 0, false).
+			AddItem(p.visibility, 2, 0, false).
+			AddItem(p.fields, 0, 1, false), 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(p.bio, 0, 1, false), 0, 1, false), 0, 1, false).
 		AddItem(p.controls, 1, 0, false).
 		AddItem(p.shared.Bottom.View, 2, 0, false)
+	return r
 }
 
 func (p *PreferenceView) Update() {

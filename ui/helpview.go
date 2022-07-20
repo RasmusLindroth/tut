@@ -46,9 +46,12 @@ func NewHelpView(tv *TutView) *HelpView {
 }
 
 func newHelpViewUI(hv *HelpView) *tview.Flex {
-	return tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(hv.shared.Top.View, 1, 0, false).
-		AddItem(hv.content, 0, 1, false).
+	r := tview.NewFlex().SetDirection(tview.FlexRow)
+	if hv.tutView.tut.Config.General.TerminalTitle < 2 {
+		r.AddItem(hv.shared.Top.View, 1, 0, false)
+	}
+	r.AddItem(hv.content, 0, 1, false).
 		AddItem(hv.controls, 1, 0, false).
 		AddItem(hv.shared.Bottom.View, 2, 0, false)
+	return r
 }

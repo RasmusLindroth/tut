@@ -71,19 +71,22 @@ func NewComposeView(tv *TutView) *ComposeView {
 }
 
 func newComposeUI(cv *ComposeView) *tview.Flex {
-	return tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(cv.tutView.Shared.Top.View, 1, 0, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-				AddItem(cv.content, 0, 2, false), 0, 2, false).
-			AddItem(tview.NewBox(), 2, 0, false).
-			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-				AddItem(cv.visibility, 1, 0, false).
-				AddItem(cv.info, 5, 0, false).
-				AddItem(cv.media.View, 0, 1, false), 0, 1, false), 0, 1, false).
+	r := tview.NewFlex().SetDirection(tview.FlexRow)
+	if cv.tutView.tut.Config.General.TerminalTitle < 2 {
+		r.AddItem(cv.tutView.Shared.Top.View, 1, 0, false)
+	}
+	r.AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(cv.content, 0, 2, false), 0, 2, false).
+		AddItem(tview.NewBox(), 2, 0, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(cv.visibility, 1, 0, false).
+			AddItem(cv.info, 5, 0, false).
+			AddItem(cv.media.View, 0, 1, false), 0, 1, false), 0, 1, false).
 		AddItem(cv.input.View, 1, 0, false).
 		AddItem(cv.controls, 1, 0, false).
 		AddItem(cv.tutView.Shared.Bottom.View, 2, 0, false)
+	return r
 }
 
 type ComposeControls uint

@@ -38,12 +38,15 @@ func voteViewUI(v *VoteView) *tview.Flex {
 	items = append(items, config.ColorFromKey(v.tutView.tut.Config, v.tutView.tut.Config.Input.VoteSelect, true))
 	v.controls.SetText(strings.Join(items, " "))
 
-	return tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(v.shared.Top.View, 1, 0, false).
-		AddItem(v.textTop, 3, 0, false).
+	r := tview.NewFlex().SetDirection(tview.FlexRow)
+	if v.tutView.tut.Config.General.TerminalTitle < 2 {
+		r.AddItem(v.shared.Top.View, 1, 0, false)
+	}
+	r.AddItem(v.textTop, 3, 0, false).
 		AddItem(v.list, 0, 10, false).
 		AddItem(v.controls, 1, 0, false).
 		AddItem(v.shared.Bottom.View, 2, 0, false)
+	return r
 }
 
 func (v *VoteView) SetPoll(poll *mastodon.Poll) {

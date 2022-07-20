@@ -41,11 +41,14 @@ func linkViewUI(lv *LinkView) *tview.Flex {
 	res := strings.Join(items, " ")
 	lv.controls.SetText(res)
 
-	return tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(lv.shared.Top.View, 1, 0, false).
-		AddItem(lv.list, 0, 1, false).
+	r := tview.NewFlex().SetDirection(tview.FlexRow)
+	if lv.tutView.tut.Config.General.TerminalTitle < 2 {
+		r.AddItem(lv.shared.Top.View, 1, 0, false)
+	}
+	r.AddItem(lv.list, 0, 1, false).
 		AddItem(lv.controls, 1, 0, false).
 		AddItem(lv.shared.Bottom.View, 2, 0, false)
+	return r
 }
 
 func (lv *LinkView) SetLinks() {
