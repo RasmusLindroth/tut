@@ -136,6 +136,26 @@ type Style struct {
 
 	ListSelectedBackground tcell.Color
 	ListSelectedText       tcell.Color
+
+	ListSelectedInactiveBackground tcell.Color
+	ListSelectedInactiveText       tcell.Color
+
+	ControlsText      tcell.Color
+	ControlsHighlight tcell.Color
+
+	AutocompleteBackground tcell.Color
+	AutocompleteText       tcell.Color
+
+	AutocompleteSelectedBackground tcell.Color
+	AutocompleteSelectedText       tcell.Color
+
+	ButtonColorOne tcell.Color
+	ButtonColorTwo tcell.Color
+
+	TimelineNameBackground tcell.Color
+	TimelineNameText       tcell.Color
+
+	IconColor tcell.Color
 }
 
 type Media struct {
@@ -462,89 +482,250 @@ func parseStyle(cfg *ini.File) Style {
 		if err != nil {
 			log.Fatalf("Couldn't load theme. Error: %s\n", err)
 		}
-		bg := tcfg.Section("").Key("background").String()
-		style.Background = parseColor(bg, "default", xrdbColors)
+		s := tcfg.Section("").Key("background").String()
+		style.Background = parseColor(s, "default", xrdbColors)
 
-		text := tcfg.Section("").Key("text").String()
-		style.Text = tcell.GetColor(text)
+		s = tcfg.Section("").Key("text").String()
+		style.Text = tcell.GetColor(s)
 
-		subtle := tcfg.Section("").Key("subtle").String()
-		style.Subtle = tcell.GetColor(subtle)
+		s = tcfg.Section("").Key("subtle").String()
+		style.Subtle = tcell.GetColor(s)
 
-		warningText := tcfg.Section("").Key("warning-text").String()
-		style.WarningText = tcell.GetColor(warningText)
+		s = tcfg.Section("").Key("warning-text").String()
+		style.WarningText = tcell.GetColor(s)
 
-		textSpecial1 := tcfg.Section("").Key("text-special-one").String()
-		style.TextSpecial1 = tcell.GetColor(textSpecial1)
+		s = tcfg.Section("").Key("text-special-one").String()
+		style.TextSpecial1 = tcell.GetColor(s)
 
-		textSpecial2 := tcfg.Section("").Key("text-special-two").String()
-		style.TextSpecial2 = tcell.GetColor(textSpecial2)
+		s = tcfg.Section("").Key("text-special-two").String()
+		style.TextSpecial2 = tcell.GetColor(s)
 
-		topBarBackround := tcfg.Section("").Key("top-bar-background").String()
-		style.TopBarBackground = tcell.GetColor(topBarBackround)
+		s = tcfg.Section("").Key("top-bar-background").String()
+		style.TopBarBackground = tcell.GetColor(s)
 
-		topBarText := tcfg.Section("").Key("top-bar-text").String()
-		style.TopBarText = tcell.GetColor(topBarText)
+		s = tcfg.Section("").Key("top-bar-text").String()
+		style.TopBarText = tcell.GetColor(s)
 
-		statusBarBackround := tcfg.Section("").Key("status-bar-background").String()
-		style.StatusBarBackground = tcell.GetColor(statusBarBackround)
+		s = tcfg.Section("").Key("status-bar-background").String()
+		style.StatusBarBackground = tcell.GetColor(s)
 
-		statusBarText := tcfg.Section("").Key("status-bar-text").String()
-		style.StatusBarText = tcell.GetColor(statusBarText)
+		s = tcfg.Section("").Key("status-bar-text").String()
+		style.StatusBarText = tcell.GetColor(s)
 
-		statusBarViewBackround := tcfg.Section("").Key("status-bar-view-background").String()
-		style.StatusBarViewBackground = tcell.GetColor(statusBarViewBackround)
+		s = tcfg.Section("").Key("status-bar-view-background").String()
+		style.StatusBarViewBackground = tcell.GetColor(s)
 
-		statusBarViewText := tcfg.Section("").Key("status-bar-view-text").String()
-		style.StatusBarViewText = tcell.GetColor(statusBarViewText)
+		s = tcfg.Section("").Key("status-bar-view-text").String()
+		style.StatusBarViewText = tcell.GetColor(s)
 
-		listSelectedBackground := tcfg.Section("").Key("list-selected-background").String()
-		style.ListSelectedBackground = tcell.GetColor(listSelectedBackground)
+		s = tcfg.Section("").Key("list-selected-background").String()
+		style.ListSelectedBackground = tcell.GetColor(s)
 
-		listSelectedText := tcfg.Section("").Key("list-selected-text").String()
-		style.ListSelectedText = tcell.GetColor(listSelectedText)
+		s = tcfg.Section("").Key("list-selected-text").String()
+		style.ListSelectedText = tcell.GetColor(s)
+
+		s = tcfg.Section("").Key("list-selected-inactive-background").String()
+		if len(s) > 0 {
+			style.ListSelectedInactiveBackground = tcell.GetColor(s)
+		} else {
+			style.ListSelectedInactiveBackground = style.StatusBarViewBackground
+		}
+		s = tcfg.Section("").Key("list-selected-inactive-text").String()
+		if len(s) > 0 {
+			style.ListSelectedInactiveText = tcell.GetColor(s)
+		} else {
+			style.ListSelectedInactiveText = style.StatusBarViewText
+		}
+
+		s = tcfg.Section("").Key("controls-highlight").String()
+		if len(s) > 0 {
+			style.ControlsHighlight = tcell.GetColor(s)
+		} else {
+			style.ControlsHighlight = style.TextSpecial2
+		}
+
+		s = tcfg.Section("").Key("controls-text").String()
+		if len(s) > 0 {
+			style.ControlsText = tcell.GetColor(s)
+		} else {
+			style.ControlsText = style.Text
+		}
+		s = tcfg.Section("").Key("controls-highlight").String()
+		if len(s) > 0 {
+			style.ControlsHighlight = tcell.GetColor(s)
+		} else {
+			style.ControlsHighlight = style.TextSpecial2
+		}
+
+		s = tcfg.Section("").Key("autocomplete-background").String()
+		if len(s) > 0 {
+			style.AutocompleteBackground = tcell.GetColor(s)
+		} else {
+			style.AutocompleteBackground = style.Background
+		}
+		s = tcfg.Section("").Key("autocomplete-text").String()
+		if len(s) > 0 {
+			style.AutocompleteText = tcell.GetColor(s)
+		} else {
+			style.AutocompleteText = style.Text
+		}
+		s = tcfg.Section("").Key("autocomplete-selected-background").String()
+		if len(s) > 0 {
+			style.AutocompleteSelectedBackground = tcell.GetColor(s)
+		} else {
+			style.AutocompleteSelectedBackground = style.StatusBarViewBackground
+		}
+		s = tcfg.Section("").Key("autocomplete-selected-text").String()
+		if len(s) > 0 {
+			style.AutocompleteSelectedText = tcell.GetColor(s)
+		} else {
+			style.AutocompleteSelectedText = style.StatusBarViewText
+		}
+
+		s = tcfg.Section("").Key("button-color-one").String()
+		if len(s) > 0 {
+			style.ButtonColorOne = tcell.GetColor(s)
+		} else {
+			style.ButtonColorOne = style.StatusBarViewBackground
+		}
+		s = tcfg.Section("").Key("button-color-two").String()
+		if len(s) > 0 {
+			style.ButtonColorTwo = tcell.GetColor(s)
+		} else {
+			style.ButtonColorTwo = style.Background
+		}
+
+		s = tcfg.Section("").Key("timeline-name-background").String()
+		if len(s) > 0 {
+			style.TimelineNameBackground = tcell.GetColor(s)
+		} else {
+			style.TimelineNameBackground = style.Background
+		}
+		s = tcfg.Section("").Key("timeline-name-text").String()
+		if len(s) > 0 {
+			style.TimelineNameText = tcell.GetColor(s)
+		} else {
+			style.TimelineNameText = style.Subtle
+		}
 	} else {
-		bg := cfg.Section("style").Key("background").String()
-		style.Background = parseColor(bg, "default", xrdbColors)
+		s := cfg.Section("style").Key("background").String()
+		style.Background = parseColor(s, "#27822", xrdbColors)
 
-		text := cfg.Section("style").Key("text").String()
-		style.Text = parseColor(text, "white", xrdbColors)
+		s = cfg.Section("style").Key("text").String()
+		style.Text = parseColor(s, "#f8f8f8", xrdbColors)
 
-		subtle := cfg.Section("style").Key("subtle").String()
-		style.Subtle = parseColor(subtle, "gray", xrdbColors)
+		s = cfg.Section("style").Key("subtle").String()
+		style.Subtle = parseColor(s, "#808080", xrdbColors)
 
-		warningText := cfg.Section("style").Key("warning-text").String()
-		style.WarningText = parseColor(warningText, "#f92672", xrdbColors)
+		s = cfg.Section("style").Key("warning-text").String()
+		style.WarningText = parseColor(s, "#f92672", xrdbColors)
 
-		textSpecial1 := cfg.Section("style").Key("text-special-one").String()
-		style.TextSpecial1 = parseColor(textSpecial1, "#ae81ff", xrdbColors)
+		s = cfg.Section("style").Key("text-special-one").String()
+		style.TextSpecial1 = parseColor(s, "#ae81ff", xrdbColors)
 
-		textSpecial2 := cfg.Section("style").Key("text-special-two").String()
-		style.TextSpecial2 = parseColor(textSpecial2, "#a6e22e", xrdbColors)
+		s = cfg.Section("style").Key("text-special-two").String()
+		style.TextSpecial2 = parseColor(s, "#a6e22e", xrdbColors)
 
-		topBarBackround := cfg.Section("style").Key("top-bar-background").String()
-		style.TopBarBackground = parseColor(topBarBackround, "#f92672", xrdbColors)
+		s = cfg.Section("style").Key("top-bar-background").String()
+		style.TopBarBackground = parseColor(s, "#f92672", xrdbColors)
 
-		topBarText := cfg.Section("style").Key("top-bar-text").String()
-		style.TopBarText = parseColor(topBarText, "white", xrdbColors)
+		s = cfg.Section("style").Key("top-bar-text").String()
+		style.TopBarText = parseColor(s, "white", xrdbColors)
 
-		statusBarBackround := cfg.Section("style").Key("status-bar-background").String()
-		style.StatusBarBackground = parseColor(statusBarBackround, "#f92672", xrdbColors)
+		s = cfg.Section("style").Key("status-bar-background").String()
+		style.StatusBarBackground = parseColor(s, "#f92672", xrdbColors)
 
-		statusBarText := cfg.Section("style").Key("status-bar-text").String()
-		style.StatusBarText = parseColor(statusBarText, "white", xrdbColors)
+		s = cfg.Section("style").Key("status-bar-text").String()
+		style.StatusBarText = parseColor(s, "white", xrdbColors)
 
-		statusBarViewBackround := cfg.Section("style").Key("status-bar-view-background").String()
-		style.StatusBarViewBackground = parseColor(statusBarViewBackround, "#ae81ff", xrdbColors)
+		s = cfg.Section("style").Key("status-bar-view-background").String()
+		style.StatusBarViewBackground = parseColor(s, "#ae81ff", xrdbColors)
 
-		statusBarViewText := cfg.Section("style").Key("status-bar-view-text").String()
-		style.StatusBarViewText = parseColor(statusBarViewText, "white", xrdbColors)
+		s = cfg.Section("style").Key("status-bar-view-text").String()
+		style.StatusBarViewText = parseColor(s, "white", xrdbColors)
 
-		listSelectedBackground := cfg.Section("style").Key("list-selected-background").String()
-		style.ListSelectedBackground = parseColor(listSelectedBackground, "#f92672", xrdbColors)
+		s = cfg.Section("style").Key("list-selected-background").String()
+		style.ListSelectedBackground = parseColor(s, "#f92672", xrdbColors)
 
-		listSelectedText := cfg.Section("style").Key("list-selected-text").String()
-		style.ListSelectedText = parseColor(listSelectedText, "white", xrdbColors)
+		s = cfg.Section("style").Key("list-selected-text").String()
+		style.ListSelectedText = parseColor(s, "white", xrdbColors)
+
+		s = cfg.Section("style").Key("list-selected-inactive-background").String()
+		if len(s) > 0 {
+			style.ListSelectedInactiveBackground = parseColor(s, "#ae81ff", xrdbColors)
+		} else {
+			style.ListSelectedInactiveBackground = style.StatusBarViewBackground
+		}
+		s = cfg.Section("style").Key("list-selected-inactive-text").String()
+		if len(s) > 0 {
+			style.ListSelectedInactiveText = parseColor(s, "#f8f8f8", xrdbColors)
+		} else {
+			style.ListSelectedInactiveText = style.StatusBarViewText
+		}
+
+		s = cfg.Section("style").Key("controls-text").String()
+		if len(s) > 0 {
+			style.ControlsText = parseColor(s, "#f8f8f8", xrdbColors)
+		} else {
+			style.ControlsText = style.Text
+		}
+		s = cfg.Section("style").Key("controls-highlight").String()
+		if len(s) > 0 {
+			style.ControlsHighlight = parseColor(s, "#a6e22e", xrdbColors)
+		} else {
+			style.ControlsHighlight = style.TextSpecial2
+		}
+
+		s = cfg.Section("style").Key("autocomplete-background").String()
+		if len(s) > 0 {
+			style.AutocompleteBackground = parseColor(s, "#272822", xrdbColors)
+		} else {
+			style.AutocompleteBackground = style.Background
+		}
+		s = cfg.Section("style").Key("autocomplete-text").String()
+		if len(s) > 0 {
+			style.AutocompleteText = parseColor(s, "#f8f8f8", xrdbColors)
+		} else {
+			style.AutocompleteText = style.Text
+		}
+		s = cfg.Section("style").Key("autocomplete-selected-background").String()
+		if len(s) > 0 {
+			style.AutocompleteSelectedBackground = parseColor(s, "#ae81ff", xrdbColors)
+		} else {
+			style.AutocompleteSelectedBackground = style.StatusBarViewBackground
+		}
+		s = cfg.Section("style").Key("autocomplete-selected-text").String()
+		if len(s) > 0 {
+			style.AutocompleteSelectedText = parseColor(s, "#f8f8f8", xrdbColors)
+		} else {
+			style.AutocompleteSelectedText = style.StatusBarViewText
+		}
+
+		s = cfg.Section("style").Key("button-color-one").String()
+		if len(s) > 0 {
+			style.ButtonColorOne = parseColor(s, "#ae81ff", xrdbColors)
+		} else {
+			style.ButtonColorOne = style.StatusBarViewBackground
+		}
+		s = cfg.Section("style").Key("button-color-two").String()
+		if len(s) > 0 {
+			style.ButtonColorTwo = parseColor(s, "#272822", xrdbColors)
+		} else {
+			style.ButtonColorTwo = style.Background
+		}
+
+		s = cfg.Section("style").Key("timeline-name-background").String()
+		if len(s) > 0 {
+			style.TimelineNameBackground = parseColor(s, "#272822", xrdbColors)
+		} else {
+			style.TimelineNameBackground = style.Background
+		}
+		s = cfg.Section("style").Key("timeline-name-text").String()
+		if len(s) > 0 {
+			style.TimelineNameText = parseColor(s, "gray", xrdbColors)
+		} else {
+			style.TimelineNameText = style.Subtle
+		}
 	}
 
 	return style

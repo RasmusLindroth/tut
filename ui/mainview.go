@@ -58,7 +58,8 @@ func mainViewUI(mv *TutView) *tview.Flex {
 			if mv.tut.Config.General.TimelineName && len(fh.Name) > 0 {
 				txt := NewTextView(mv.tut.Config)
 				txt.SetText(tview.Escape(fh.Name))
-				txt.SetTextColor(mv.tut.Config.Style.Subtle)
+				txt.SetBackgroundColor(mv.tut.Config.Style.TimelineNameBackground)
+				txt.SetTextColor(mv.tut.Config.Style.TimelineNameText)
 				feeds.AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 					AddItem(txt, 1, 0, false).
 					AddItem(feedList(mv, fh), 0, 1, false), 0, 1, false)
@@ -74,7 +75,8 @@ func mainViewUI(mv *TutView) *tview.Flex {
 			if mv.tut.Config.General.TimelineName && len(fh.Name) > 0 {
 				txt := NewTextView(mv.tut.Config)
 				txt.SetText(tview.Escape(fh.Name))
-				txt.SetTextColor(mv.tut.Config.Style.Subtle)
+				txt.SetBackgroundColor(mv.tut.Config.Style.TimelineNameBackground)
+				txt.SetTextColor(mv.tut.Config.Style.TimelineNameText)
 				feeds.AddItem(txt, 1, 0, false)
 			}
 			feeds.AddItem(feedList(mv, fh), 0, 1, false)

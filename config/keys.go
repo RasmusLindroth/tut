@@ -21,8 +21,8 @@ func ColorFromKey(c *Config, k Key, first bool) string {
 }
 
 func ColorKey(c *Config, pre, key, end string) string {
-	color := ColorMark(c.Style.TextSpecial2)
-	normal := ColorMark(c.Style.Text)
+	color := ColorMark(c.Style.ControlsHighlight)
+	normal := ColorMark(c.Style.ControlsText)
 	key = TextFlags("b") + key + TextFlags("-")
 	if c.General.ShortHints {
 		pre = ""
