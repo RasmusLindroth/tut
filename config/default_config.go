@@ -117,6 +117,12 @@ show-filter-phrase=true
 # default=true
 show-help=true
 
+# 0 = No terminal title
+# 1 = Show title in terminal and top bar
+# 2 = Only show terminal title, and no top bar in tut.
+# default=0
+terminal-title=0
+
 # If you don't want the whole UI to update, and only the text content you can
 # set this option to true. This will lead to some artifacts being left on the
 # screen when emojis are present. But it will keep the UI from flashing on every
@@ -343,60 +349,110 @@ xrdb-prefix=guess
 theme=default
 
 # The background color used on most elements.
-# default=xrdb:background
-background=xrdb:background
+# default=
+background=
 
 # The text color used on most of the text.
-# default=xrdb:foreground
-text=xrdb:foreground
+# default=
+text=
 
 # The color to display sublte elements or subtle text. Like lines and help text.
-# default=xrdb:color14
-subtle=xrdb:color14
+# default=
+subtle=
 
 # The color for errors or warnings
-# default=xrdb:color1
-warning-text=xrdb:color1
+# default=
+warning-text=
 
 # This color is used to display username.
-# default=xrdb:color5
-text-special-one=xrdb:color5
+# default=
+text-special-one=
 
 # This color is used to display username and key hints.
-# default=xrdb:color2
-text-special-two=xrdb:color2
+# default=
+text-special-two=
 
 # The color of the bar at the top
-# default=xrdb:color5
-top-bar-background=xrdb:color5
+# default=
+top-bar-background=
 
 # The color of the text in the bar at the top.
-# default=xrdb:background
-top-bar-text=xrdb:background
+# default=
+top-bar-text=
 
 # The color of the bar at the bottom
-# default=xrdb:color5
-status-bar-background=xrdb:color5
+# default=
+status-bar-background=
 
 # The color of the text in the bar at the bottom.
-# default=xrdb:foreground
-status-bar-text=xrdb:foreground
+# default=
+status-bar-text=
 
 # The color of the bar at the bottom in view mode.
-# default=xrdb:color4
-status-bar-view-background=xrdb:color4
+# default=
+status-bar-view-background=
 
 # The color of the text in the bar at the bottom in view mode.
-# default=xrdb:foreground
-status-bar-view-text=xrdb:foreground
+# default=
+status-bar-view-text=
 
 # Background of selected list items.
-# default=xrdb:color5
-list-selected-background=xrdb:color5
+# default=
+list-selected-background=
 
 # The text color of selected list items.
-# default=xrdb:background
-list-selected-text=xrdb:background
+# default=
+list-selected-text=
+
+# The background color of selected list items that are out of focus.
+# default=
+list-selected-inactive-background=
+
+# The text color of selected list items that are out of focus.
+# default=
+list-selected-inactive-text=
+
+# The main color of the text for key hints
+# default=
+controls-text=
+
+# The highlight color of for key hints
+# default=
+controls-highlight=
+
+# The background color in dropdowns and autocompletions
+# default=
+autocomplete-background=
+
+# The text color in dropdowns at autocompletions
+# default=
+autocomplete-text=
+
+# The background color for selected value in dropdowns and autocompletions
+# default=
+autocomplete-selected-background=
+
+# The text color for selected value in dropdowns and autocompletions
+# default=
+autocomplete-selected-text=
+
+# The background color on selected button and the text color of unselected
+# buttons
+# default=
+button-color-one=
+
+# The text color on selected button and the background color of unselected
+# buttons
+# default=
+button-color-two=
+
+# The background on named timelines.
+# default=
+timeline-name-background=
+
+# The text color on named timelines
+# default=
+timeline-name-text=
 
 [input]
 # You can edit the keys for tut below.
