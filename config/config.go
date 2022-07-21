@@ -612,7 +612,7 @@ func parseStyle(cfg *ini.File) Style {
 		style.Background = parseColor(s, "#27822", xrdbColors)
 
 		s = cfg.Section("style").Key("text").String()
-		style.Text = parseColor(s, "#f8f8f8", xrdbColors)
+		style.Text = parseColor(s, "#f8f8f2", xrdbColors)
 
 		s = cfg.Section("style").Key("subtle").String()
 		style.Subtle = parseColor(s, "#808080", xrdbColors)
@@ -658,14 +658,14 @@ func parseStyle(cfg *ini.File) Style {
 		}
 		s = cfg.Section("style").Key("list-selected-inactive-text").String()
 		if len(s) > 0 {
-			style.ListSelectedInactiveText = parseColor(s, "#f8f8f8", xrdbColors)
+			style.ListSelectedInactiveText = parseColor(s, "#f8f8f2", xrdbColors)
 		} else {
 			style.ListSelectedInactiveText = style.StatusBarViewText
 		}
 
 		s = cfg.Section("style").Key("controls-text").String()
 		if len(s) > 0 {
-			style.ControlsText = parseColor(s, "#f8f8f8", xrdbColors)
+			style.ControlsText = parseColor(s, "#f8f8f2", xrdbColors)
 		} else {
 			style.ControlsText = style.Text
 		}
@@ -684,7 +684,7 @@ func parseStyle(cfg *ini.File) Style {
 		}
 		s = cfg.Section("style").Key("autocomplete-text").String()
 		if len(s) > 0 {
-			style.AutocompleteText = parseColor(s, "#f8f8f8", xrdbColors)
+			style.AutocompleteText = parseColor(s, "#f8f8f2", xrdbColors)
 		} else {
 			style.AutocompleteText = style.Text
 		}
@@ -696,7 +696,7 @@ func parseStyle(cfg *ini.File) Style {
 		}
 		s = cfg.Section("style").Key("autocomplete-selected-text").String()
 		if len(s) > 0 {
-			style.AutocompleteSelectedText = parseColor(s, "#f8f8f8", xrdbColors)
+			style.AutocompleteSelectedText = parseColor(s, "#f8f8f2", xrdbColors)
 		} else {
 			style.AutocompleteSelectedText = style.StatusBarViewText
 		}
