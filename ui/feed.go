@@ -39,8 +39,8 @@ func (fl *FeedList) OutFocus(style config.Style) {
 func outFocus(l *tview.List, style config.Style) {
 	l.SetBackgroundColor(style.Background)
 	l.SetMainTextColor(style.Text)
-	l.SetSelectedBackgroundColor(style.StatusBarViewBackground)
-	l.SetSelectedTextColor(style.StatusBarViewText)
+	l.SetSelectedBackgroundColor(style.ListSelectedInactiveBackground)
+	l.SetSelectedTextColor(style.ListSelectedInactiveText)
 }
 
 type Feed struct {

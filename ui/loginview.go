@@ -21,9 +21,11 @@ func NewLoginView(tv *TutView, accs *auth.AccountData) *LoginView {
 		list.AddItem(fmt.Sprintf("%s - %s", a.Name, a.Server), "", 0, nil)
 	}
 
-	v := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(tv.Shared.Top.View, 1, 0, false).
-		AddItem(list, 0, 1, false).
+	v := tview.NewFlex().SetDirection(tview.FlexRow)
+	if tv.tut.Config.General.TerminalTitle < 2 {
+		v.AddItem(tv.Shared.Top.View, 1, 0, false)
+	}
+	v.AddItem(list, 0, 1, false).
 		AddItem(tv.Shared.Bottom.View, 2, 0, false)
 
 	return &LoginView{

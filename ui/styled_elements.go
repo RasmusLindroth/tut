@@ -12,6 +12,8 @@ func NewModal(cnf *config.Config) *tview.Modal {
 	m.SetBackgroundColor(cnf.Style.Background)
 	m.SetBorderColor(cnf.Style.Background)
 	m.SetBorder(false)
+	m.SetButtonBackgroundColor(cnf.Style.ButtonColorTwo)
+	m.SetButtonTextColor(cnf.Style.ButtonColorOne)
 	tview.Styles.BorderColor = cnf.Style.Background
 	return m
 }
@@ -42,12 +44,12 @@ func NewDropDown(cnf *config.Config) *tview.DropDown {
 	dd.SetFieldTextColor(cnf.Style.Text)
 
 	selected := tcell.Style{}.
-		Background(cnf.Style.ListSelectedBackground).
-		Foreground(cnf.Style.ListSelectedText)
+		Background(cnf.Style.AutocompleteSelectedBackground).
+		Foreground(cnf.Style.AutocompleteSelectedText)
 	unselected := tcell.Style{}.
-		Background(cnf.Style.StatusBarViewBackground).
-		Foreground(cnf.Style.StatusBarViewText)
-	dd.SetListStyles(selected, unselected)
+		Background(cnf.Style.AutocompleteBackground).
+		Foreground(cnf.Style.AutocompleteText)
+	dd.SetListStyles(unselected, selected)
 	return dd
 }
 
@@ -57,15 +59,15 @@ func NewInputField(cnf *config.Config) *tview.InputField {
 	i.SetFieldBackgroundColor(cnf.Style.Background)
 
 	selected := tcell.Style{}.
-		Background(cnf.Style.ListSelectedBackground).
-		Foreground(cnf.Style.ListSelectedText)
+		Background(cnf.Style.AutocompleteSelectedBackground).
+		Foreground(cnf.Style.AutocompleteSelectedText)
 	unselected := tcell.Style{}.
-		Background(cnf.Style.StatusBarViewBackground).
-		Foreground(cnf.Style.StatusBarViewText)
+		Background(cnf.Style.AutocompleteBackground).
+		Foreground(cnf.Style.AutocompleteText)
 
 	i.SetAutocompleteStyles(
-		cnf.Style.Background,
-		selected, unselected)
+		cnf.Style.AutocompleteBackground,
+		unselected, selected)
 	return i
 }
 

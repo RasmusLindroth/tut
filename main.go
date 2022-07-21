@@ -8,9 +8,10 @@ import (
 	"github.com/rivo/tview"
 )
 
-const version = "1.0.13"
+const version = "1.0.14"
 
 func main() {
+	util.SetTerminalTitle("tut")
 	util.MakeDirs()
 	newUser, selectedUser := ui.CliView(version)
 	accs := auth.StartAuth(newUser)

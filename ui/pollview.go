@@ -68,17 +68,20 @@ func pollViewUI(p *PollView) *tview.Flex {
 	p.expiration.SetOptions(durations, p.expirationSelected)
 	p.expiration.SetCurrentOption(4)
 
-	return tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(p.shared.Top.View, 1, 0, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-				AddItem(p.list, 0, 10, false), 0, 2, false).
-			AddItem(tview.NewBox(), 2, 0, false).
-			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-				AddItem(p.expiration, 1, 0, false).
-				AddItem(p.info, 3, 0, false), 0, 1, false), 0, 1, false).
+	r := tview.NewFlex().SetDirection(tview.FlexRow)
+	if p.tutView.tut.Config.General.TerminalTitle < 2 {
+		r.AddItem(p.shared.Top.View, 1, 0, false)
+	}
+	r.AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(p.list, 0, 10, false), 0, 2, false).
+		AddItem(tview.NewBox(), 2, 0, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(p.expiration, 1, 0, false).
+			AddItem(p.info, 3, 0, false), 0, 1, false), 0, 1, false).
 		AddItem(p.controls, 1, 0, false).
 		AddItem(p.shared.Bottom.View, 2, 0, false)
+	return r
 }
 
 func (p *PollView) Reset() {
