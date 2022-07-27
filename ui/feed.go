@@ -8,6 +8,7 @@ import (
 	"github.com/RasmusLindroth/tut/api"
 	"github.com/RasmusLindroth/tut/config"
 	"github.com/RasmusLindroth/tut/feed"
+	"github.com/RasmusLindroth/tut/util"
 	"github.com/gdamore/tcell/v2"
 	"github.com/gen2brain/beeep"
 	"github.com/rivo/tview"
@@ -191,7 +192,8 @@ func NewNotificationFeed(tv *TutView) *Feed {
 }
 
 func NewThreadFeed(tv *TutView, item api.Item) *Feed {
-	f := feed.NewThread(tv.tut.Client, item.Raw().(*mastodon.Status))
+	status := util.StatusOrReblog(item.Raw().(*mastodon.Status))
+	f := feed.NewThread(tv.tut.Client, status)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView:   tv,

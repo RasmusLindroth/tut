@@ -582,7 +582,7 @@ func (f *Feed) startStreamNotification(rec *api.Receiver, timeline string, err e
 				case "follow", "follow_request":
 					nft = DesktopNotificationFollower
 				case "favourite":
-					nft = DesktopNotificationFollower
+					nft = DesktopNotificationFavorite
 				case "reblog":
 					nft = DesktopNotificationBoost
 				case "mention":
