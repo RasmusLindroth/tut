@@ -8,7 +8,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-const version = "1.0.15"
+const version = "1.0.16"
 
 func main() {
 	util.SetTerminalTitle("tut")
@@ -20,6 +20,9 @@ func main() {
 	t := &ui.Tut{
 		App:    app,
 		Config: config.Load(),
+	}
+	if t.Config.General.MouseSupport {
+		app.EnableMouse(true)
 	}
 	tview.Styles = tview.Theme{
 		PrimitiveBackgroundColor:    t.Config.Style.Background,              // background
@@ -36,6 +39,9 @@ func main() {
 	}
 	main := ui.NewTutView(t, accs, selectedUser)
 	app.SetInputCapture(main.Input)
+	if t.Config.General.MouseSupport {
+		app.SetMouseCapture(main.MouseInput)
+	}
 	if err := app.SetRoot(main.View, true).Run(); err != nil {
 		panic(err)
 	}

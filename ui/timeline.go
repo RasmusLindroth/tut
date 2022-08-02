@@ -221,6 +221,19 @@ func (tl *Timeline) PrevItemFeed() {
 	tl.DrawContent()
 }
 
+func (tl *Timeline) SetItemFeedIndex(index int) {
+	fh := tl.Feeds[tl.FeedFocusIndex]
+	f := fh.Feeds[fh.FeedIndex]
+	loadOlder, loadNewer := f.List.Set(index)
+	if loadOlder {
+		f.LoadOlder()
+	}
+	if loadNewer {
+		f.LoadNewer(false)
+	}
+	tl.DrawContent()
+}
+
 func (tl *Timeline) HomeItemFeed() {
 	fh := tl.Feeds[tl.FeedFocusIndex]
 	f := fh.Feeds[fh.FeedIndex]
