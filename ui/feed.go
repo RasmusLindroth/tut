@@ -460,6 +460,19 @@ func (fl *FeedList) AddItem(text string, symbols string, id uint) {
 	fl.Symbol.AddItem(symbols, fmt.Sprintf("%d", id), 0, nil)
 }
 
+func (fl *FeedList) Set(index int) (loadOlder bool, loadNewer bool) {
+	ni := index
+	if ni >= fl.Text.GetItemCount() {
+		ni = fl.Text.GetItemCount() - 1
+	}
+	if ni < 0 {
+		ni = 0
+	}
+	fl.Text.SetCurrentItem(ni)
+	fl.Symbol.SetCurrentItem(ni)
+	return fl.Text.GetItemCount()-(ni+1) < 5, ni-fl.stickyCount < 4
+}
+
 func (fl *FeedList) Next() (loadOlder bool) {
 	ni := fl.Text.GetCurrentItem() + 1
 	if ni >= fl.Text.GetItemCount() {

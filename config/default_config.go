@@ -8,6 +8,10 @@ var conftext = `# Configuration file for tut
 # default=true
 confirmation=true
 
+# Enable support for using the mouse in tut to select items.
+# default=false
+mouse-support=false
+
 # Timelines adds windows of feeds. You can customize the number of feeds, what
 # they should show and the key to activate them.
 # 

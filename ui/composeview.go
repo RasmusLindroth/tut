@@ -422,7 +422,7 @@ func (m *MediaList) Draw() {
 	topText := "File desc: "
 
 	index := m.list.GetCurrentItem()
-	if len(m.Files) != 0 && index < len(m.Files) && m.Files[index].Description != "" {
+	if len(m.Files) != 0 && index > len(m.Files)-1 && m.Files[index].Description != "" {
 		topText += tview.Escape(m.Files[index].Description)
 	}
 	m.text.SetText(topText)
@@ -466,10 +466,11 @@ func (m *MediaList) Next() {
 
 func (m *MediaList) Delete() {
 	index := m.list.GetCurrentItem()
-	if len(m.Files) == 0 || index > len(m.Files) {
+	if len(m.Files) == 0 || index > len(m.Files)-1 {
 		return
 	}
 	m.list.RemoveItem(index)
+	m.list.SetCurrentItem(index)
 	m.Files = append(m.Files[:index], m.Files[index+1:]...)
 	m.Draw()
 }

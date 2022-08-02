@@ -88,6 +88,7 @@ type Timeline struct {
 
 type General struct {
 	Confirmation      bool
+	MouseSupport      bool
 	DateTodayFormat   string
 	DateFormat        string
 	DateRelative      int
@@ -735,6 +736,7 @@ func parseGeneral(cfg *ini.File) General {
 	general := General{}
 
 	general.Confirmation = cfg.Section("general").Key("confirmation").MustBool(true)
+	general.MouseSupport = cfg.Section("general").Key("mouse-support").MustBool(false)
 	dateFormat := cfg.Section("general").Key("date-format").String()
 	if dateFormat == "" {
 		dateFormat = "2006-01-02 15:04"
