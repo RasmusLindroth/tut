@@ -38,7 +38,7 @@ func (tv *TutView) RedrawContent() {
 	item, err := f.Data.Item(f.List.Text.GetCurrentItem())
 	if err != nil {
 		f.Content.Main.SetText("")
-		f.Content.Controls.SetText("")
+		f.Content.Controls.Clear()
 		return
 	}
 	DrawItem(tv.tut, item, f.Content.Main, f.Content.Controls, f.Data.Type())

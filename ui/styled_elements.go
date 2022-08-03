@@ -26,6 +26,18 @@ func NewTextView(cnf *config.Config) *tview.TextView {
 	return tw
 }
 
+func NewControlView(cnf *config.Config) *tview.Flex {
+	f := tview.NewFlex().SetDirection(tview.FlexColumn)
+	f.SetBackgroundColor(cnf.Style.Background)
+	return f
+}
+
+func NewControlButton(cnf *config.Config, label string) *tview.Button {
+	btn := tview.NewButton(label)
+	btn.SetBackgroundColor(cnf.Style.Background)
+	return btn
+}
+
 func NewList(cnf *config.Config) *tview.List {
 	l := tview.NewList()
 	l.ShowSecondaryText(false)

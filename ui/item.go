@@ -66,7 +66,7 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 	}
 }
 
-func DrawItem(tut *Tut, item api.Item, main *tview.TextView, controls *tview.TextView, ft feed.FeedType) {
+func DrawItem(tut *Tut, item api.Item, main *tview.TextView, controls *tview.Flex, ft feed.FeedType) {
 	switch item.Type() {
 	case api.StatusType:
 		drawStatus(tut, item, item.Raw().(*mastodon.Status), main, controls, "")
@@ -83,7 +83,7 @@ func DrawItem(tut *Tut, item api.Item, main *tview.TextView, controls *tview.Tex
 	}
 }
 
-func DrawItemControls(tut *Tut, item api.Item, controls *tview.TextView, ft feed.FeedType) {
+func DrawItemControls(tut *Tut, item api.Item, controls *tview.Flex, ft feed.FeedType) {
 	switch item.Type() {
 	case api.StatusType:
 		drawStatus(tut, item, item.Raw().(*mastodon.Status), nil, controls, "")

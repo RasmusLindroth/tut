@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
@@ -899,7 +901,30 @@ func (tv *TutView) MouseInput(event *tcell.EventMouse, action tview.MouseAction)
 	if event != nil {
 		tv.mouseX, tv.mouseY = event.Position()
 		tv.mouseEvent = event
-		return nil, action
+		if tv.PageFocus == ViewFocus || tv.PageFocus == MainFocus {
+			f := tv.GetCurrentFeed()
+			if f.Content.Main.InRect(tv.mouseX, tv.mouseY) {
+				if action == tview.MouseScrollDown {
+					tv.Timeline.ScrollDown()
+					return nil, action
+				}
+				if action == tview.MouseScrollUp {
+					tv.Timeline.ScrollUp()
+					return nil, action
+				}
+			}
+			for i, tl := range tv.Timeline.Feeds {
+				fl := tl.GetFeedList()
+				if fl.Text.InRect(tv.mouseX, tv.mouseY) {
+					tv.feedListScroll(fl.Text, i, action)
+					return nil, action
+				}
+				if fl.Symbol.InRect(tv.mouseX, tv.mouseY) {
+					tv.feedListScroll(fl.Symbol, i, action)
+					return nil, action
+				}
+			}
+		}
 	}
 	if tv.PageFocus == MainFocus || tv.PageFocus == ViewFocus {
 		if action == tview.MouseLeftClick {
@@ -1028,4 +1053,34 @@ func (tv *TutView) feedListMouse(list *tview.List, i int, action tview.MouseActi
 	if lastIndex != newIndex {
 		tv.Timeline.SetItemFeedIndex(newIndex)
 	}
+}
+
+type scrollSleep struct {
+	mux  sync.Mutex
+	last time.Time
+}
+
+var feedScrollLock = scrollSleep{}
+
+func (tv *TutView) feedListScroll(list *tview.List, i int, action tview.MouseAction) {
+	mh := list.MouseHandler()
+	if mh == nil {
+		return
+	}
+	lock := feedScrollLock.mux.TryLock()
+	if !lock {
+		return
+	}
+	if time.Since(feedScrollLock.last) < (150 * time.Millisecond) {
+		feedScrollLock.mux.Unlock()
+		return
+	}
+	if action == tview.MouseScrollDown {
+		tv.Timeline.NextItemFeed()
+	}
+	if action == tview.MouseScrollUp {
+		tv.Timeline.PrevItemFeed()
+	}
+	feedScrollLock.last = time.Now()
+	feedScrollLock.mux.Unlock()
 }

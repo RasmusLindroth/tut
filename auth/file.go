@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -27,7 +27,7 @@ func GetAccounts(filepath string) (*AccountData, error) {
 		return &AccountData{}, err
 	}
 	defer f.Close()
-	data, err := ioutil.ReadAll(f)
+	data, err := io.ReadAll(f)
 	if err != nil {
 		return &AccountData{}, err
 	}

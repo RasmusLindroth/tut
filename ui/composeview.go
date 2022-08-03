@@ -34,7 +34,7 @@ type ComposeView struct {
 	content    *tview.TextView
 	input      *MediaInput
 	info       *tview.TextView
-	controls   *tview.TextView
+	controls   *tview.Flex
 	visibility *tview.DropDown
 	media      *MediaList
 	msg        *msgToot
@@ -59,13 +59,12 @@ func NewComposeView(tv *TutView) *ComposeView {
 		shared:     tv.Shared,
 		content:    NewTextView(tv.tut.Config),
 		input:      NewMediaInput(tv),
-		controls:   NewTextView(tv.tut.Config),
+		controls:   NewControlView(tv.tut.Config),
 		info:       NewTextView(tv.tut.Config),
 		visibility: NewDropDown(tv.tut.Config),
 		media:      NewMediaList(tv),
 	}
 	cv.content.SetDynamicColors(true)
-	cv.controls.SetDynamicColors(true)
 	cv.View = newComposeUI(cv)
 	return cv
 }
@@ -109,27 +108,33 @@ func (cv *ComposeView) msgLength() int {
 }
 
 func (cv *ComposeView) SetControls(ctrl ComposeControls) {
-	var items []string
+	var items []Control
 	switch ctrl {
 	case ComposeNormal:
-		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposePost, true))
-		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeEditText, true))
-		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeVisibility, true))
-		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeToggleContentWarning, true))
-		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeEditSpoiler, true))
-		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeMediaFocus, true))
-		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposePoll, true))
+		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposePost, true))
+		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeEditText, true))
+		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeVisibility, true))
+		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeToggleContentWarning, true))
+		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeEditSpoiler, true))
+		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeMediaFocus, true))
+		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposePoll, true))
 		if cv.msg.Status != nil {
-			items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeIncludeQuote, true))
+			items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeIncludeQuote, true))
 		}
 	case ComposeMedia:
-		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.MediaAdd, true))
-		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.MediaDelete, true))
-		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.MediaEditDesc, true))
-		items = append(items, config.ColorFromKey(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.GlobalBack, true))
+		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.MediaAdd, true))
+		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.MediaDelete, true))
+		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.MediaEditDesc, true))
+		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.GlobalBack, true))
 	}
-	res := strings.Join(items, " ")
-	cv.controls.SetText(res)
+	cv.controls.Clear()
+	for i, item := range items {
+		if i < len(items)-1 {
+			cv.controls.AddItem(NewControlButton(cv.tutView.tut.Config, item.Label), item.Len+1, 0, false)
+		} else {
+			cv.controls.AddItem(NewControlButton(cv.tutView.tut.Config, item.Label), item.Len, 0, false)
+		}
+	}
 }
 
 func (cv *ComposeView) SetStatus(status *mastodon.Status) {

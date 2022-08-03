@@ -2,10 +2,8 @@ package ui
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/RasmusLindroth/go-mastodon"
-	"github.com/RasmusLindroth/tut/config"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -35,7 +33,7 @@ type PollView struct {
 	View       *tview.Flex
 	info       *tview.TextView
 	expiration *tview.DropDown
-	controls   *tview.TextView
+	controls   *tview.Flex
 	list       *tview.List
 	poll       *mastodon.TootPoll
 }
@@ -46,7 +44,7 @@ func NewPollView(tv *TutView) *PollView {
 		shared:     tv.Shared,
 		info:       NewTextView(tv.tut.Config),
 		expiration: NewDropDown(tv.tut.Config),
-		controls:   NewTextView(tv.tut.Config),
+		controls:   NewControlView(tv.tut.Config),
 		list:       NewList(tv.tut.Config),
 	}
 	p.Reset()
@@ -56,14 +54,20 @@ func NewPollView(tv *TutView) *PollView {
 }
 
 func pollViewUI(p *PollView) *tview.Flex {
-	var items []string
-	items = append(items, config.ColorFromKey(p.tutView.tut.Config, p.tutView.tut.Config.Input.PollAdd, true))
-	items = append(items, config.ColorFromKey(p.tutView.tut.Config, p.tutView.tut.Config.Input.PollEdit, true))
-	items = append(items, config.ColorFromKey(p.tutView.tut.Config, p.tutView.tut.Config.Input.PollDelete, true))
-	items = append(items, config.ColorFromKey(p.tutView.tut.Config, p.tutView.tut.Config.Input.PollMultiToggle, true))
-	items = append(items, config.ColorFromKey(p.tutView.tut.Config, p.tutView.tut.Config.Input.PollExpiration, true))
-	p.controls.SetText(strings.Join(items, " "))
-
+	var items []Control
+	items = append(items, NewControl(p.tutView.tut.Config, p.tutView.tut.Config.Input.PollAdd, true))
+	items = append(items, NewControl(p.tutView.tut.Config, p.tutView.tut.Config.Input.PollEdit, true))
+	items = append(items, NewControl(p.tutView.tut.Config, p.tutView.tut.Config.Input.PollDelete, true))
+	items = append(items, NewControl(p.tutView.tut.Config, p.tutView.tut.Config.Input.PollMultiToggle, true))
+	items = append(items, NewControl(p.tutView.tut.Config, p.tutView.tut.Config.Input.PollExpiration, true))
+	p.controls.Clear()
+	for i, item := range items {
+		if i < len(items)-1 {
+			p.controls.AddItem(NewControlButton(p.tutView.tut.Config, item.Label), item.Len+1, 0, false)
+		} else {
+			p.controls.AddItem(NewControlButton(p.tutView.tut.Config, item.Label), item.Len, 0, false)
+		}
+	}
 	p.expiration.SetLabel("Expiration: ")
 	p.expiration.SetOptions(durations, p.expirationSelected)
 	p.expiration.SetCurrentOption(4)

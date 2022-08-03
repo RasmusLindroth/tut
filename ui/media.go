@@ -3,8 +3,8 @@ package ui
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"os/exec"
 
 	"github.com/RasmusLindroth/go-mastodon"
@@ -12,7 +12,7 @@ import (
 )
 
 func downloadFile(url string) (string, error) {
-	f, err := ioutil.TempFile("", "tutfile")
+	f, err := os.CreateTemp("", "tutfile")
 	if err != nil {
 		return "", err
 	}

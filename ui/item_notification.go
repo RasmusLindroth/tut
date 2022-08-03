@@ -8,7 +8,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-func drawNotification(tut *Tut, item api.Item, notification *api.NotificationData, main *tview.TextView, controls *tview.TextView) {
+func drawNotification(tut *Tut, item api.Item, notification *api.NotificationData, main *tview.TextView, controls *tview.Flex) {
 	switch notification.Item.Type {
 	case "follow":
 		drawUser(tut, notification.User.Raw().(*api.User), main, controls,

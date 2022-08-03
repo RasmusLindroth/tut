@@ -541,7 +541,7 @@ func (fl *FeedList) SetByID(id uint) {
 
 type FeedContent struct {
 	Main     *tview.TextView
-	Controls *tview.TextView
+	Controls *tview.Flex
 }
 
 func NewFeedContent(t *Tut) *FeedContent {
@@ -558,8 +558,7 @@ func NewFeedContent(t *Tut) *FeedContent {
 			return x, y, rWidth, height
 		})
 	}
-	c := NewTextView(t.Config)
-	c.SetDynamicColors(true)
+	c := NewControlView(t.Config)
 	fc := &FeedContent{
 		Main:     m,
 		Controls: c,

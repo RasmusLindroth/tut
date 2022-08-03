@@ -70,7 +70,7 @@ type DisplayTootData struct {
 	Style config.Style
 }
 
-func drawStatus(tut *Tut, item api.Item, status *mastodon.Status, main *tview.TextView, controls *tview.TextView, additional string) {
+func drawStatus(tut *Tut, item api.Item, status *mastodon.Status, main *tview.TextView, controls *tview.Flex, additional string) {
 	filtered, phrase := item.Filtered()
 	if filtered {
 		var output string
@@ -85,7 +85,6 @@ func drawStatus(tut *Tut, item api.Item, status *mastodon.Status, main *tview.Te
 			}
 			main.SetText(additional + output)
 		}
-		controls.SetText("")
 		return
 	}
 
@@ -188,41 +187,48 @@ func drawStatus(tut *Tut, item api.Item, status *mastodon.Status, main *tview.Te
 		main.ScrollToBeginning()
 	}
 
-	var info []string
+	var info []Control
 	if status.Favourited {
-		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusFavorite, false))
+		info = append(info, NewControl(tut.Config, tut.Config.Input.StatusFavorite, false))
 	} else {
-		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusFavorite, true))
+		info = append(info, NewControl(tut.Config, tut.Config.Input.StatusFavorite, true))
 	}
 	if status.Reblogged {
-		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusBoost, false))
+		info = append(info, NewControl(tut.Config, tut.Config.Input.StatusBoost, false))
 	} else {
-		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusBoost, true))
+		info = append(info, NewControl(tut.Config, tut.Config.Input.StatusBoost, true))
 	}
-	info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusThread, true))
-	info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusReply, true))
-	info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusViewFocus, true))
-	info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusUser, true))
+	info = append(info, NewControl(tut.Config, tut.Config.Input.StatusThread, true))
+	info = append(info, NewControl(tut.Config, tut.Config.Input.StatusReply, true))
+	info = append(info, NewControl(tut.Config, tut.Config.Input.StatusViewFocus, true))
+	info = append(info, NewControl(tut.Config, tut.Config.Input.StatusUser, true))
 	if len(status.MediaAttachments) > 0 {
-		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusMedia, true))
+		info = append(info, NewControl(tut.Config, tut.Config.Input.StatusMedia, true))
 	}
 	_, _, _, length := item.URLs()
 	if length > 0 {
-		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusLinks, true))
+		info = append(info, NewControl(tut.Config, tut.Config.Input.StatusLinks, true))
 	}
-	info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusAvatar, true))
+	info = append(info, NewControl(tut.Config, tut.Config.Input.StatusAvatar, true))
 	if status.Account.ID == tut.Client.Me.ID {
-		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusDelete, true))
+		info = append(info, NewControl(tut.Config, tut.Config.Input.StatusDelete, true))
 	}
 
 	if !status.Bookmarked {
-		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusBookmark, true))
+		info = append(info, NewControl(tut.Config, tut.Config.Input.StatusBookmark, true))
 	} else {
-		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusBookmark, false))
+		info = append(info, NewControl(tut.Config, tut.Config.Input.StatusBookmark, false))
 	}
-	info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusYank, true))
+	info = append(info, NewControl(tut.Config, tut.Config.Input.StatusYank, true))
 
-	controlsS := strings.Join(info, " ")
+	controls.Clear()
+	for i, item := range info {
+		if i < len(info)-1 {
+			controls.AddItem(NewControlButton(tut.Config, item.Label), item.Len+1, 0, false)
+		} else {
+			controls.AddItem(NewControlButton(tut.Config, item.Label), item.Len, 0, false)
+		}
+	}
 
 	td := DisplayTootData{
 		Toot:  toot,
@@ -240,5 +246,4 @@ func drawStatus(tut *Tut, item api.Item, status *mastodon.Status, main *tview.Te
 		}
 		main.SetText(additional + output.String())
 	}
-	controls.SetText(controlsS)
 }

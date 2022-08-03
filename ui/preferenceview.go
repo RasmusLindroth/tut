@@ -2,10 +2,8 @@ package ui
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/RasmusLindroth/go-mastodon"
-	"github.com/RasmusLindroth/tut/config"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -31,7 +29,7 @@ type PreferenceView struct {
 	bio         *tview.TextView
 	fields      *tview.List
 	visibility  *tview.DropDown
-	controls    *tview.TextView
+	controls    *tview.Flex
 	preferences *preferences
 	fieldFocus  bool
 }
@@ -44,7 +42,7 @@ func NewPreferenceView(tv *TutView) *PreferenceView {
 		bio:         NewTextView(tv.tut.Config),
 		fields:      NewList(tv.tut.Config),
 		visibility:  NewDropDown(tv.tut.Config),
-		controls:    NewTextView(tv.tut.Config),
+		controls:    NewControlView(tv.tut.Config),
 		preferences: &preferences{},
 	}
 	p.View = preferenceViewUI(p)
@@ -125,13 +123,19 @@ func (p *PreferenceView) HasFieldFocus() bool {
 func (p *PreferenceView) FieldFocus() {
 	p.fieldFocus = true
 
-	var items []string
-	items = append(items, config.ColorFromKey(p.tutView.tut.Config, p.tutView.tut.Config.Input.PreferenceFieldsAdd, true))
-	items = append(items, config.ColorFromKey(p.tutView.tut.Config, p.tutView.tut.Config.Input.PreferenceFieldsEdit, true))
-	items = append(items, config.ColorFromKey(p.tutView.tut.Config, p.tutView.tut.Config.Input.PreferenceFieldsDelete, true))
-	items = append(items, config.ColorFromKey(p.tutView.tut.Config, p.tutView.tut.Config.Input.GlobalBack, true))
-	p.controls.SetText(strings.Join(items, " "))
-
+	var items []Control
+	items = append(items, NewControl(p.tutView.tut.Config, p.tutView.tut.Config.Input.PreferenceFieldsAdd, true))
+	items = append(items, NewControl(p.tutView.tut.Config, p.tutView.tut.Config.Input.PreferenceFieldsEdit, true))
+	items = append(items, NewControl(p.tutView.tut.Config, p.tutView.tut.Config.Input.PreferenceFieldsDelete, true))
+	items = append(items, NewControl(p.tutView.tut.Config, p.tutView.tut.Config.Input.GlobalBack, true))
+	p.controls.Clear()
+	for i, item := range items {
+		if i < len(items)-1 {
+			p.controls.AddItem(NewControlButton(p.tutView.tut.Config, item.Label), item.Len+1, 0, false)
+		} else {
+			p.controls.AddItem(NewControlButton(p.tutView.tut.Config, item.Label), item.Len, 0, false)
+		}
+	}
 	cnf := p.tutView.tut.Config
 	p.fields.SetSelectedBackgroundColor(cnf.Style.ListSelectedBackground)
 	p.fields.SetSelectedTextColor(cnf.Style.ListSelectedText)
@@ -140,13 +144,20 @@ func (p *PreferenceView) FieldFocus() {
 func (p *PreferenceView) MainFocus() {
 	p.fieldFocus = false
 
-	var items []string
-	items = append(items, config.ColorFromKey(p.tutView.tut.Config, p.tutView.tut.Config.Input.PreferenceName, true))
-	items = append(items, config.ColorFromKey(p.tutView.tut.Config, p.tutView.tut.Config.Input.PreferenceVisibility, true))
-	items = append(items, config.ColorFromKey(p.tutView.tut.Config, p.tutView.tut.Config.Input.PreferenceBio, true))
-	items = append(items, config.ColorFromKey(p.tutView.tut.Config, p.tutView.tut.Config.Input.PreferenceFields, true))
-	items = append(items, config.ColorFromKey(p.tutView.tut.Config, p.tutView.tut.Config.Input.PreferenceSave, true))
-	p.controls.SetText(strings.Join(items, " "))
+	var items []Control
+	items = append(items, NewControl(p.tutView.tut.Config, p.tutView.tut.Config.Input.PreferenceName, true))
+	items = append(items, NewControl(p.tutView.tut.Config, p.tutView.tut.Config.Input.PreferenceVisibility, true))
+	items = append(items, NewControl(p.tutView.tut.Config, p.tutView.tut.Config.Input.PreferenceBio, true))
+	items = append(items, NewControl(p.tutView.tut.Config, p.tutView.tut.Config.Input.PreferenceFields, true))
+	items = append(items, NewControl(p.tutView.tut.Config, p.tutView.tut.Config.Input.PreferenceSave, true))
+	p.controls.Clear()
+	for i, item := range items {
+		if i < len(items)-1 {
+			p.controls.AddItem(NewControlButton(p.tutView.tut.Config, item.Label), item.Len+1, 0, false)
+		} else {
+			p.controls.AddItem(NewControlButton(p.tutView.tut.Config, item.Label), item.Len, 0, false)
+		}
+	}
 
 	cnf := p.tutView.tut.Config
 	p.fields.SetSelectedBackgroundColor(cnf.Style.Background)

@@ -13,7 +13,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.2
 	github.com/rivo/tview v0.0.0-20220801133142-711ef394f9b3
 	github.com/rivo/uniseg v0.3.1
-	golang.org/x/net v0.0.0-20220728211354-c7608f3a8462
+	golang.org/x/net v0.0.0-20220802222814-0bcc04d9c69b
 	gopkg.in/ini.v1 v1.66.6
 )
 
