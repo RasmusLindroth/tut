@@ -28,14 +28,15 @@ var durationsTime = map[string]int64{
 }
 
 type PollView struct {
-	tutView    *TutView
-	shared     *Shared
-	View       *tview.Flex
-	info       *tview.TextView
-	expiration *tview.DropDown
-	controls   *tview.Flex
-	list       *tview.List
-	poll       *mastodon.TootPoll
+	tutView     *TutView
+	shared      *Shared
+	View        *tview.Flex
+	info        *tview.TextView
+	expiration  *tview.DropDown
+	controls    *tview.Flex
+	list        *tview.List
+	poll        *mastodon.TootPoll
+	scrollSleep *scrollSleep
 }
 
 func NewPollView(tv *TutView) *PollView {
@@ -47,6 +48,7 @@ func NewPollView(tv *TutView) *PollView {
 		controls:   NewControlView(tv.tut.Config),
 		list:       NewList(tv.tut.Config),
 	}
+	p.scrollSleep = NewScrollSleep(p.Next, p.Prev)
 	p.Reset()
 	p.View = pollViewUI(p)
 
@@ -63,9 +65,9 @@ func pollViewUI(p *PollView) *tview.Flex {
 	p.controls.Clear()
 	for i, item := range items {
 		if i < len(items)-1 {
-			p.controls.AddItem(NewControlButton(p.tutView.tut.Config, item.Label), item.Len+1, 0, false)
+			p.controls.AddItem(NewControlButton(p.tutView, item), item.Len+1, 0, false)
 		} else {
-			p.controls.AddItem(NewControlButton(p.tutView.tut.Config, item.Label), item.Len, 0, false)
+			p.controls.AddItem(NewControlButton(p.tutView, item), item.Len, 0, false)
 		}
 	}
 	p.expiration.SetLabel("Expiration: ")

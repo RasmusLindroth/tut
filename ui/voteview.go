@@ -8,14 +8,15 @@ import (
 )
 
 type VoteView struct {
-	tutView  *TutView
-	shared   *Shared
-	View     *tview.Flex
-	textTop  *tview.TextView
-	controls *tview.Flex
-	list     *tview.List
-	poll     *mastodon.Poll
-	selected []int
+	tutView     *TutView
+	shared      *Shared
+	View        *tview.Flex
+	textTop     *tview.TextView
+	controls    *tview.Flex
+	list        *tview.List
+	poll        *mastodon.Poll
+	selected    []int
+	scrollSleep *scrollSleep
 }
 
 func NewVoteView(tv *TutView) *VoteView {
@@ -26,6 +27,7 @@ func NewVoteView(tv *TutView) *VoteView {
 		controls: NewControlView(tv.tut.Config),
 		list:     NewList(tv.tut.Config),
 	}
+	v.scrollSleep = NewScrollSleep(v.Next, v.Prev)
 	v.View = voteViewUI(v)
 
 	return v
@@ -37,9 +39,9 @@ func voteViewUI(v *VoteView) *tview.Flex {
 	v.controls.Clear()
 	for i, item := range items {
 		if i < len(items)-1 {
-			v.controls.AddItem(NewControlButton(v.tutView.tut.Config, item.Label), item.Len+1, 0, false)
+			v.controls.AddItem(NewControlButton(v.tutView, item), item.Len+1, 0, false)
 		} else {
-			v.controls.AddItem(NewControlButton(v.tutView.tut.Config, item.Label), item.Len, 0, false)
+			v.controls.AddItem(NewControlButton(v.tutView, item), item.Len, 0, false)
 		}
 	}
 

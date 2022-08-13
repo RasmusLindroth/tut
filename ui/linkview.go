@@ -8,11 +8,12 @@ import (
 )
 
 type LinkView struct {
-	tutView  *TutView
-	shared   *Shared
-	View     *tview.Flex
-	list     *tview.List
-	controls *tview.Flex
+	tutView     *TutView
+	shared      *Shared
+	View        *tview.Flex
+	list        *tview.List
+	controls    *tview.Flex
+	scrollSleep *scrollSleep
 }
 
 func NewLinkView(tv *TutView) *LinkView {
@@ -24,6 +25,7 @@ func NewLinkView(tv *TutView) *LinkView {
 		list:     l,
 		controls: c,
 	}
+	lv.scrollSleep = NewScrollSleep(lv.Next, lv.Prev)
 	lv.View = linkViewUI(lv)
 	return lv
 }
@@ -43,9 +45,9 @@ func linkViewUI(lv *LinkView) *tview.Flex {
 	lv.controls.Clear()
 	for i, item := range items {
 		if i < len(items)-1 {
-			lv.controls.AddItem(NewControlButton(lv.tutView.tut.Config, item.Label), item.Len+1, 0, false)
+			lv.controls.AddItem(NewControlButton(lv.tutView, item), item.Len+1, 0, false)
 		} else {
-			lv.controls.AddItem(NewControlButton(lv.tutView.tut.Config, item.Label), item.Len, 0, false)
+			lv.controls.AddItem(NewControlButton(lv.tutView, item), item.Len, 0, false)
 		}
 	}
 

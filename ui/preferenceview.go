@@ -131,9 +131,9 @@ func (p *PreferenceView) FieldFocus() {
 	p.controls.Clear()
 	for i, item := range items {
 		if i < len(items)-1 {
-			p.controls.AddItem(NewControlButton(p.tutView.tut.Config, item.Label), item.Len+1, 0, false)
+			p.controls.AddItem(NewControlButton(p.tutView, item), item.Len+1, 0, false)
 		} else {
-			p.controls.AddItem(NewControlButton(p.tutView.tut.Config, item.Label), item.Len, 0, false)
+			p.controls.AddItem(NewControlButton(p.tutView, item), item.Len, 0, false)
 		}
 	}
 	cnf := p.tutView.tut.Config
@@ -153,9 +153,9 @@ func (p *PreferenceView) MainFocus() {
 	p.controls.Clear()
 	for i, item := range items {
 		if i < len(items)-1 {
-			p.controls.AddItem(NewControlButton(p.tutView.tut.Config, item.Label), item.Len+1, 0, false)
+			p.controls.AddItem(NewControlButton(p.tutView, item), item.Len+1, 0, false)
 		} else {
-			p.controls.AddItem(NewControlButton(p.tutView.tut.Config, item.Label), item.Len, 0, false)
+			p.controls.AddItem(NewControlButton(p.tutView, item), item.Len, 0, false)
 		}
 	}
 

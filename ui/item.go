@@ -66,35 +66,35 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 	}
 }
 
-func DrawItem(tut *Tut, item api.Item, main *tview.TextView, controls *tview.Flex, ft feed.FeedType) {
+func DrawItem(tv *TutView, item api.Item, main *tview.TextView, controls *tview.Flex, ft feed.FeedType) {
 	switch item.Type() {
 	case api.StatusType:
-		drawStatus(tut, item, item.Raw().(*mastodon.Status), main, controls, "")
+		drawStatus(tv, item, item.Raw().(*mastodon.Status), main, controls, "")
 	case api.UserType, api.ProfileType:
 		if ft == feed.FollowRequests {
-			drawUser(tut, item.Raw().(*api.User), main, controls, "", true)
+			drawUser(tv, item.Raw().(*api.User), main, controls, "", true)
 		} else {
-			drawUser(tut, item.Raw().(*api.User), main, controls, "", false)
+			drawUser(tv, item.Raw().(*api.User), main, controls, "", false)
 		}
 	case api.NotificationType:
-		drawNotification(tut, item, item.Raw().(*api.NotificationData), main, controls)
+		drawNotification(tv, item, item.Raw().(*api.NotificationData), main, controls)
 	case api.ListsType:
-		drawList(tut, item.Raw().(*mastodon.List), main, controls)
+		drawList(tv, item.Raw().(*mastodon.List), main, controls)
 	}
 }
 
-func DrawItemControls(tut *Tut, item api.Item, controls *tview.Flex, ft feed.FeedType) {
+func DrawItemControls(tv *TutView, item api.Item, controls *tview.Flex, ft feed.FeedType) {
 	switch item.Type() {
 	case api.StatusType:
-		drawStatus(tut, item, item.Raw().(*mastodon.Status), nil, controls, "")
+		drawStatus(tv, item, item.Raw().(*mastodon.Status), nil, controls, "")
 	case api.UserType, api.ProfileType:
 		if ft == feed.FollowRequests {
-			drawUser(tut, item.Raw().(*api.User), nil, controls, "", true)
+			drawUser(tv, item.Raw().(*api.User), nil, controls, "", true)
 		} else {
-			drawUser(tut, item.Raw().(*api.User), nil, controls, "", false)
+			drawUser(tv, item.Raw().(*api.User), nil, controls, "", false)
 		}
 	case api.NotificationType:
-		drawNotification(tut, item, item.Raw().(*api.NotificationData), nil, controls)
+		drawNotification(tv, item, item.Raw().(*api.NotificationData), nil, controls)
 	}
 }
 

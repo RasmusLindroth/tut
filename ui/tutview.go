@@ -12,7 +12,6 @@ import (
 	"github.com/RasmusLindroth/tut/api"
 	"github.com/RasmusLindroth/tut/auth"
 	"github.com/RasmusLindroth/tut/config"
-	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
@@ -55,9 +54,6 @@ type TutView struct {
 	PreferenceView *PreferenceView
 	HelpView       *HelpView
 	ModalView      *ModalView
-	mouseX         int
-	mouseY         int
-	mouseEvent     *tcell.EventMouse
 
 	FileList []string
 }

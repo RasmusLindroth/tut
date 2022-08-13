@@ -43,7 +43,7 @@ type DisplayUserData struct {
 	Style config.Style
 }
 
-func drawUser(tut *Tut, data *api.User, main *tview.TextView, controls *tview.Flex, additional string, fr bool) {
+func drawUser(tv *TutView, data *api.User, main *tview.TextView, controls *tview.Flex, additional string, fr bool) {
 	user := data.Data
 	relation := data.Relation
 	showUserControl := true
@@ -80,56 +80,56 @@ func drawUser(tut *Tut, data *api.User, main *tview.TextView, controls *tview.Fl
 
 	var controlItems []Control
 	if fr {
-		controlItems = append(controlItems, NewControl(tut.Config, tut.Config.Input.UserFollowRequestDecide, false))
+		controlItems = append(controlItems, NewControl(tv.tut.Config, tv.tut.Config.Input.UserFollowRequestDecide, false))
 	}
-	if tut.Client.Me.ID != user.ID {
+	if tv.tut.Client.Me.ID != user.ID {
 		if relation.Following {
-			controlItems = append(controlItems, NewControl(tut.Config, tut.Config.Input.UserFollow, false))
+			controlItems = append(controlItems, NewControl(tv.tut.Config, tv.tut.Config.Input.UserFollow, false))
 		} else {
-			controlItems = append(controlItems, NewControl(tut.Config, tut.Config.Input.UserFollow, true))
+			controlItems = append(controlItems, NewControl(tv.tut.Config, tv.tut.Config.Input.UserFollow, true))
 		}
 		if relation.Blocking {
-			controlItems = append(controlItems, NewControl(tut.Config, tut.Config.Input.UserBlock, false))
+			controlItems = append(controlItems, NewControl(tv.tut.Config, tv.tut.Config.Input.UserBlock, false))
 		} else {
-			controlItems = append(controlItems, NewControl(tut.Config, tut.Config.Input.UserBlock, true))
+			controlItems = append(controlItems, NewControl(tv.tut.Config, tv.tut.Config.Input.UserBlock, true))
 		}
 		if relation.Muting {
-			controlItems = append(controlItems, NewControl(tut.Config, tut.Config.Input.UserMute, false))
+			controlItems = append(controlItems, NewControl(tv.tut.Config, tv.tut.Config.Input.UserMute, false))
 		} else {
-			controlItems = append(controlItems, NewControl(tut.Config, tut.Config.Input.UserMute, true))
+			controlItems = append(controlItems, NewControl(tv.tut.Config, tv.tut.Config.Input.UserMute, true))
 		}
 		if len(urls) > 0 {
-			controlItems = append(controlItems, NewControl(tut.Config, tut.Config.Input.UserLinks, true))
+			controlItems = append(controlItems, NewControl(tv.tut.Config, tv.tut.Config.Input.UserLinks, true))
 		}
 	}
 	if showUserControl {
-		controlItems = append(controlItems, NewControl(tut.Config, tut.Config.Input.UserUser, true))
+		controlItems = append(controlItems, NewControl(tv.tut.Config, tv.tut.Config.Input.UserUser, true))
 	}
-	controlItems = append(controlItems, NewControl(tut.Config, tut.Config.Input.UserAvatar, true))
-	controlItems = append(controlItems, NewControl(tut.Config, tut.Config.Input.UserYank, true))
+	controlItems = append(controlItems, NewControl(tv.tut.Config, tv.tut.Config.Input.UserAvatar, true))
+	controlItems = append(controlItems, NewControl(tv.tut.Config, tv.tut.Config.Input.UserYank, true))
 
 	controls.Clear()
 	for i, item := range controlItems {
 		if i < len(controlItems)-1 {
-			controls.AddItem(NewControlButton(tut.Config, item.Label), item.Len+1, 0, false)
+			controls.AddItem(NewControlButton(tv, item), item.Len+1, 0, false)
 		} else {
-			controls.AddItem(NewControlButton(tut.Config, item.Label), item.Len, 0, false)
+			controls.AddItem(NewControlButton(tv, item), item.Len, 0, false)
 		}
 	}
 
 	ud := DisplayUserData{
 		User:  u,
-		Style: tut.Config.Style,
+		Style: tv.tut.Config.Style,
 	}
 	var output bytes.Buffer
-	err := tut.Config.Templates.User.ExecuteTemplate(&output, "user.tmpl", ud)
+	err := tv.tut.Config.Templates.User.ExecuteTemplate(&output, "user.tmpl", ud)
 	if err != nil {
 		panic(err)
 	}
 
 	if main != nil {
 		if additional != "" {
-			additional = fmt.Sprintf("%s\n\n", config.SublteText(tut.Config, additional))
+			additional = fmt.Sprintf("%s\n\n", config.SublteText(tv.tut.Config, additional))
 		}
 		main.SetText(additional + output.String())
 	}

@@ -82,7 +82,7 @@ func (f *Feed) DrawContent() {
 		if id != item.ID() {
 			continue
 		}
-		DrawItem(f.tutView.tut, item, f.Content.Main, f.Content.Controls, f.Data.Type())
+		DrawItem(f.tutView, item, f.Content.Main, f.Content.Controls, f.Data.Type())
 		f.tutView.ShouldSync()
 	}
 }

@@ -40,9 +40,9 @@ func NewHelpView(tv *TutView) *HelpView {
 	items = append(items, NewControl(tv.tut.Config, tv.tut.Config.Input.GlobalExit, true))
 	for i, item := range items {
 		if i < len(items)-1 {
-			hv.controls.AddItem(NewControlButton(hv.tutView.tut.Config, item.Label), item.Len+1, 0, false)
+			hv.controls.AddItem(NewControlButton(hv.tutView, item), item.Len+1, 0, false)
 		} else {
-			hv.controls.AddItem(NewControlButton(hv.tutView.tut.Config, item.Label), item.Len, 0, false)
+			hv.controls.AddItem(NewControlButton(hv.tutView, item), item.Len, 0, false)
 		}
 	}
 	hv.View = newHelpViewUI(hv)

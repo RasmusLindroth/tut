@@ -32,9 +32,19 @@ func NewControlView(cnf *config.Config) *tview.Flex {
 	return f
 }
 
-func NewControlButton(cnf *config.Config, label string) *tview.Button {
-	btn := tview.NewButton(label)
-	btn.SetBackgroundColor(cnf.Style.Background)
+func NewControlButton(tv *TutView, control Control) *tview.Button {
+	btn := tview.NewButton(control.Label)
+	btn.SetBackgroundColor(tv.tut.Config.Style.Background)
+	btn.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
+		if !btn.InRect(event.Position()) {
+			return action, event
+		}
+		if action != tview.MouseLeftClick {
+			return action, event
+		}
+		tv.tut.App.QueueEvent(control.Click())
+		return action, nil
+	})
 	return btn
 }
 

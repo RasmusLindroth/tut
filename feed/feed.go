@@ -103,6 +103,13 @@ func (f *Feed) Delete(id uint) {
 	f.Updated(DekstopNotificationNone)
 }
 
+func (f *Feed) Clear() {
+	f.itemsMux.Lock()
+	defer f.itemsMux.Unlock()
+	f.items = []api.Item{}
+	f.Updated(DekstopNotificationNone)
+}
+
 func (f *Feed) Item(index int) (api.Item, error) {
 	f.itemsMux.RLock()
 	defer f.itemsMux.RUnlock()

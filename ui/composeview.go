@@ -130,9 +130,9 @@ func (cv *ComposeView) SetControls(ctrl ComposeControls) {
 	cv.controls.Clear()
 	for i, item := range items {
 		if i < len(items)-1 {
-			cv.controls.AddItem(NewControlButton(cv.tutView.tut.Config, item.Label), item.Len+1, 0, false)
+			cv.controls.AddItem(NewControlButton(cv.tutView, item), item.Len+1, 0, false)
 		} else {
-			cv.controls.AddItem(NewControlButton(cv.tutView.tut.Config, item.Label), item.Len, 0, false)
+			cv.controls.AddItem(NewControlButton(cv.tutView, item), item.Len, 0, false)
 		}
 	}
 }
@@ -379,12 +379,13 @@ func (cv *ComposeView) Post() {
 }
 
 type MediaList struct {
-	tutView *TutView
-	View    *tview.Flex
-	heading *tview.TextView
-	text    *tview.TextView
-	list    *tview.List
-	Files   []UploadFile
+	tutView     *TutView
+	View        *tview.Flex
+	heading     *tview.TextView
+	text        *tview.TextView
+	list        *tview.List
+	Files       []UploadFile
+	scrollSleep *scrollSleep
 }
 
 func NewMediaList(tv *TutView) *MediaList {
@@ -394,6 +395,7 @@ func NewMediaList(tv *TutView) *MediaList {
 		text:    NewTextView(tv.tut.Config),
 		list:    NewList(tv.tut.Config),
 	}
+	ml.scrollSleep = NewScrollSleep(ml.Next, ml.Prev)
 	ml.heading.SetText(fmt.Sprintf("Media files: %d", ml.list.GetItemCount()))
 	ml.heading.SetBorderPadding(1, 1, 0, 0)
 	ml.View = tview.NewFlex().SetDirection(tview.FlexRow).

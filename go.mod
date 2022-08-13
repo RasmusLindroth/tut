@@ -8,13 +8,13 @@ require (
 	github.com/gdamore/tcell/v2 v2.5.2
 	github.com/gen2brain/beeep v0.0.0-20220518085355-d7852edf42fc
 	github.com/gobwas/glob v0.2.3
-	github.com/icza/gox v0.0.0-20220321141217-e2d488ab2fbc
+	github.com/icza/gox v0.0.0-20220812133721-0fbf7a534d8e
 	github.com/microcosm-cc/bluemonday v1.0.19
 	github.com/pelletier/go-toml/v2 v2.0.2
-	github.com/rivo/tview v0.0.0-20220801133142-711ef394f9b3
-	github.com/rivo/uniseg v0.3.1
-	golang.org/x/net v0.0.0-20220802222814-0bcc04d9c69b
-	gopkg.in/ini.v1 v1.66.6
+	github.com/rivo/tview v0.0.0-20220812085834-0e6b21a48e96
+	github.com/rivo/uniseg v0.3.4
+	golang.org/x/net v0.0.0-20220812174116-3211cb980234
+	gopkg.in/ini.v1 v1.67.0
 )
 
 require (
@@ -29,7 +29,7 @@ require (
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/tadvi/systray v0.0.0-20190226123456-11a2b8fa57af // indirect
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 // indirect
-	golang.org/x/sys v0.0.0-20220731174439-a90be440212d // indirect
+	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect
 	golang.org/x/term v0.0.0-20220722155259-a9ba230a4035 // indirect
 	golang.org/x/text v0.3.7 // indirect
 )
