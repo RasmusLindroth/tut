@@ -70,22 +70,21 @@ type DisplayTootData struct {
 	Style config.Style
 }
 
-func drawStatus(tut *Tut, item api.Item, status *mastodon.Status, main *tview.TextView, controls *tview.TextView, additional string) {
+func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview.TextView, controls *tview.Flex, additional string) {
 	filtered, phrase := item.Filtered()
 	if filtered {
 		var output string
-		if tut.Config.General.ShowFilterPhrase {
+		if tv.tut.Config.General.ShowFilterPhrase {
 			output = fmt.Sprintf("Filtered by phrase: %s", tview.Escape(phrase))
 		} else {
 			output = "Filtered."
 		}
 		if main != nil {
 			if additional != "" {
-				additional = fmt.Sprintf("%s\n\n", config.SublteText(tut.Config, additional))
+				additional = fmt.Sprintf("%s\n\n", config.SublteText(tv.tut.Config, additional))
 			}
 			main.SetText(additional + output)
 		}
-		controls.SetText("")
 		return
 	}
 
@@ -188,57 +187,63 @@ func drawStatus(tut *Tut, item api.Item, status *mastodon.Status, main *tview.Te
 		main.ScrollToBeginning()
 	}
 
-	var info []string
+	var info []Control
 	if status.Favourited {
-		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusFavorite, false))
+		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusFavorite, false))
 	} else {
-		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusFavorite, true))
+		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusFavorite, true))
 	}
 	if status.Reblogged {
-		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusBoost, false))
+		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusBoost, false))
 	} else {
-		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusBoost, true))
+		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusBoost, true))
 	}
-	info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusThread, true))
-	info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusReply, true))
-	info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusViewFocus, true))
-	info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusUser, true))
+	info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusThread, true))
+	info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusReply, true))
+	info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusViewFocus, true))
+	info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusUser, true))
 	if len(status.MediaAttachments) > 0 {
-		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusMedia, true))
+		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusMedia, true))
 	}
 	_, _, _, length := item.URLs()
 	if length > 0 {
-		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusLinks, true))
+		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusLinks, true))
 	}
-	info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusAvatar, true))
-	if status.Account.ID == tut.Client.Me.ID {
-		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusDelete, true))
+	info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusAvatar, true))
+	if status.Account.ID == tv.tut.Client.Me.ID {
+		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusDelete, true))
 	}
 
 	if !status.Bookmarked {
-		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusBookmark, true))
+		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusBookmark, true))
 	} else {
-		info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusBookmark, false))
+		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusBookmark, false))
 	}
-	info = append(info, config.ColorFromKey(tut.Config, tut.Config.Input.StatusYank, true))
+	info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusYank, true))
 
-	controlsS := strings.Join(info, " ")
+	controls.Clear()
+	for i, item := range info {
+		if i < len(info)-1 {
+			controls.AddItem(NewControlButton(tv, item), item.Len+1, 0, false)
+		} else {
+			controls.AddItem(NewControlButton(tv, item), item.Len, 0, false)
+		}
+	}
 
 	td := DisplayTootData{
 		Toot:  toot,
-		Style: tut.Config.Style,
+		Style: tv.tut.Config.Style,
 	}
 	var output bytes.Buffer
-	err := tut.Config.Templates.Toot.ExecuteTemplate(&output, "toot.tmpl", td)
+	err := tv.tut.Config.Templates.Toot.ExecuteTemplate(&output, "toot.tmpl", td)
 	if err != nil {
 		panic(err)
 	}
 
 	if main != nil {
 		if additional != "" {
-			additional = fmt.Sprintf("%s\n\n", config.SublteText(tut.Config, additional))
+			additional = fmt.Sprintf("%s\n\n", config.SublteText(tv.tut.Config, additional))
 		}
 		main.SetText(additional + output.String())
 	}
-	controls.SetText(controlsS)
 }

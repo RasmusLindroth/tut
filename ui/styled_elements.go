@@ -26,6 +26,28 @@ func NewTextView(cnf *config.Config) *tview.TextView {
 	return tw
 }
 
+func NewControlView(cnf *config.Config) *tview.Flex {
+	f := tview.NewFlex().SetDirection(tview.FlexColumn)
+	f.SetBackgroundColor(cnf.Style.Background)
+	return f
+}
+
+func NewControlButton(tv *TutView, control Control) *tview.Button {
+	btn := tview.NewButton(control.Label)
+	btn.SetBackgroundColor(tv.tut.Config.Style.Background)
+	btn.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
+		if !btn.InRect(event.Position()) {
+			return action, event
+		}
+		if action != tview.MouseLeftClick {
+			return action, event
+		}
+		tv.tut.App.QueueEvent(control.Click())
+		return action, nil
+	})
+	return btn
+}
+
 func NewList(cnf *config.Config) *tview.List {
 	l := tview.NewList()
 	l.ShowSecondaryText(false)

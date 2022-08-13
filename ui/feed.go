@@ -82,7 +82,7 @@ func (f *Feed) DrawContent() {
 		if id != item.ID() {
 			continue
 		}
-		DrawItem(f.tutView.tut, item, f.Content.Main, f.Content.Controls, f.Data.Type())
+		DrawItem(f.tutView, item, f.Content.Main, f.Content.Controls, f.Data.Type())
 		f.tutView.ShouldSync()
 	}
 }
@@ -541,7 +541,7 @@ func (fl *FeedList) SetByID(id uint) {
 
 type FeedContent struct {
 	Main     *tview.TextView
-	Controls *tview.TextView
+	Controls *tview.Flex
 }
 
 func NewFeedContent(t *Tut) *FeedContent {
@@ -558,8 +558,7 @@ func NewFeedContent(t *Tut) *FeedContent {
 			return x, y, rWidth, height
 		})
 	}
-	c := NewTextView(t.Config)
-	c.SetDynamicColors(true)
+	c := NewControlView(t.Config)
 	fc := &FeedContent{
 		Main:     m,
 		Controls: c,

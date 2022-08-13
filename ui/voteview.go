@@ -2,22 +2,21 @@ package ui
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/RasmusLindroth/go-mastodon"
-	"github.com/RasmusLindroth/tut/config"
 	"github.com/rivo/tview"
 )
 
 type VoteView struct {
-	tutView  *TutView
-	shared   *Shared
-	View     *tview.Flex
-	textTop  *tview.TextView
-	controls *tview.TextView
-	list     *tview.List
-	poll     *mastodon.Poll
-	selected []int
+	tutView     *TutView
+	shared      *Shared
+	View        *tview.Flex
+	textTop     *tview.TextView
+	controls    *tview.Flex
+	list        *tview.List
+	poll        *mastodon.Poll
+	selected    []int
+	scrollSleep *scrollSleep
 }
 
 func NewVoteView(tv *TutView) *VoteView {
@@ -25,18 +24,26 @@ func NewVoteView(tv *TutView) *VoteView {
 		tutView:  tv,
 		shared:   tv.Shared,
 		textTop:  NewTextView(tv.tut.Config),
-		controls: NewTextView(tv.tut.Config),
+		controls: NewControlView(tv.tut.Config),
 		list:     NewList(tv.tut.Config),
 	}
+	v.scrollSleep = NewScrollSleep(v.Next, v.Prev)
 	v.View = voteViewUI(v)
 
 	return v
 }
 
 func voteViewUI(v *VoteView) *tview.Flex {
-	var items []string
-	items = append(items, config.ColorFromKey(v.tutView.tut.Config, v.tutView.tut.Config.Input.VoteSelect, true))
-	v.controls.SetText(strings.Join(items, " "))
+	var items []Control
+	items = append(items, NewControl(v.tutView.tut.Config, v.tutView.tut.Config.Input.VoteSelect, true))
+	v.controls.Clear()
+	for i, item := range items {
+		if i < len(items)-1 {
+			v.controls.AddItem(NewControlButton(v.tutView, item), item.Len+1, 0, false)
+		} else {
+			v.controls.AddItem(NewControlButton(v.tutView, item), item.Len, 0, false)
+		}
+	}
 
 	r := tview.NewFlex().SetDirection(tview.FlexRow)
 	if v.tutView.tut.Config.General.TerminalTitle < 2 {

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -56,6 +55,7 @@ const (
 	LeaderDirect
 	LeaderLocal
 	LeaderFederated
+	LeaderClearNotifications
 	LeaderCompose
 	LeaderBlocking
 	LeaderBookmarks
@@ -849,6 +849,8 @@ func parseGeneral(cfg *ini.File) General {
 				la.Command = LeaderLocal
 			case "federated":
 				la.Command = LeaderFederated
+			case "clear-notifications":
+				la.Command = LeaderClearNotifications
 			case "compose":
 				la.Command = LeaderCompose
 			case "blocking":
@@ -1481,7 +1483,7 @@ func getTheme(fname string, isLocal bool) (*ini.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	content, err := ioutil.ReadAll(f)
+	content, err := io.ReadAll(f)
 	if err != nil {
 		return nil, err
 	}

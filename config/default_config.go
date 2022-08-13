@@ -151,10 +151,10 @@ leader-timeout=1000
 # of two parts first the action then the shortcut. And they're separated by a
 # comma.
 # 
-# Available commands: home, direct, local, federated, compose, blocking,
-# bookmarks, saved, favorited, boosts, favorites, following, followers, muting,
-# newer, preferences, profile, notifications, lists, tag, window,
-# list-placement, list-split, proportions
+# Available commands: home, direct, local, federated, clear-notifications,
+# compose, blocking, bookmarks, saved, favorited, boosts, favorites, following,
+# followers, muting, newer, preferences, profile, notifications, lists, tag,
+# window, list-placement, list-split, proportions
 # 
 # The shortcuts are up to you, but keep them quite short and make sure they
 # don't collide. If you have one shortcut that is "f" and an other one that is

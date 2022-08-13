@@ -7,6 +7,7 @@ import (
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
 	"github.com/RasmusLindroth/tut/config"
+	"github.com/RasmusLindroth/tut/feed"
 	"github.com/RasmusLindroth/tut/util"
 )
 
@@ -198,4 +199,19 @@ func (tv *TutView) ProportionsCommand(lp string, cp string) {
 func (tv *TutView) LoadNewerCommand() {
 	f := tv.GetCurrentFeed()
 	f.LoadNewer(true)
+}
+
+func (tv *TutView) ClearNotificationsCommand() {
+	err := tv.tut.Client.ClearNotifications()
+	if err != nil {
+		tv.ShowError(fmt.Sprintf("Couldn't clear notifications. Error: %v\n", err))
+		return
+	}
+	for _, tl := range tv.Timeline.Feeds {
+		for _, f := range tl.Feeds {
+			if f.Data.Type() == feed.Notification {
+				f.Data.Clear()
+			}
+		}
+	}
 }

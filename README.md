@@ -10,6 +10,8 @@ features you can find in the web client.
 
 Press `C` to create a new toot and `N` to focus on your notifications.
 
+You can also enable [mouse support](#mouse-support).
+
 You can find Linux binaries under [releases](https://github.com/RasmusLindroth/tut/releases).
 
 ![Preview](./images/preview.png "Preview")
@@ -28,6 +30,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * [Build it yourself](#build-it-yourself)
 * [Flags and commands](#flags-and-commands)
 * [Templates](#templates)
+* [Mouse support](#mouse-support)
 * [Password manager for secrets](#password-manager-for-secrets)
 * [Thanks to](#thanks-to)
 
@@ -38,6 +41,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:blocking` lists users that you have blocked
 * `:boosts` lists users that boosted the toot
 * `:bookmarks` lists all your bookmarks
+* `:clear-notifications` clear all notifications
 * `:compose` compose a new toot
 * `:favorited` lists toots you've favorited
 * `:favorites` lists users that favorited the toot
@@ -190,6 +194,10 @@ You acces them with `.Toot` and `.Style` in your template file.
 The data available in `user.tmpl` is almost the same. You still have the
 `Style` but instead of `Toot` you have a struct named `User`. You can see
 all fields in [./ui/item_user.go](./ui/item_user.go).
+
+## Mouse support
+To enable mouse support you'll have to set `mouse-support=true` under `[general]`
+in your [config](#configuration).
 
 ## Password manager for secrets
 If you run `pass`, `gopass` or  something similar you can protect your secrets.

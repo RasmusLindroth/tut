@@ -2,7 +2,6 @@ package ui
 
 import (
 	"bytes"
-	"strings"
 
 	"github.com/RasmusLindroth/tut/config"
 	"github.com/rivo/tview"
@@ -13,7 +12,7 @@ type HelpView struct {
 	shared   *Shared
 	View     *tview.Flex
 	content  *tview.TextView
-	controls *tview.TextView
+	controls *tview.Flex
 }
 
 type HelpData struct {
@@ -22,7 +21,7 @@ type HelpData struct {
 
 func NewHelpView(tv *TutView) *HelpView {
 	content := NewTextView(tv.tut.Config)
-	controls := NewTextView(tv.tut.Config)
+	controls := NewControlView(tv.tut.Config)
 	hv := &HelpView{
 		tutView:  tv,
 		shared:   tv.Shared,
@@ -36,11 +35,16 @@ func NewHelpView(tv *TutView) *HelpView {
 		panic(err)
 	}
 	hv.content.SetText(output.String())
-	var items []string
-	items = append(items, config.ColorFromKey(tv.tut.Config, tv.tut.Config.Input.GlobalBack, true))
-	items = append(items, config.ColorFromKey(tv.tut.Config, tv.tut.Config.Input.GlobalExit, true))
-	res := strings.Join(items, " ")
-	hv.controls.SetText(res)
+	var items []Control
+	items = append(items, NewControl(tv.tut.Config, tv.tut.Config.Input.GlobalBack, true))
+	items = append(items, NewControl(tv.tut.Config, tv.tut.Config.Input.GlobalExit, true))
+	for i, item := range items {
+		if i < len(items)-1 {
+			hv.controls.AddItem(NewControlButton(hv.tutView, item), item.Len+1, 0, false)
+		} else {
+			hv.controls.AddItem(NewControlButton(hv.tutView, item), item.Len, 0, false)
+		}
+	}
 	hv.View = newHelpViewUI(hv)
 	return hv
 }

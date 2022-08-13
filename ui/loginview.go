@@ -8,10 +8,11 @@ import (
 )
 
 type LoginView struct {
-	tutView  *TutView
-	accounts *auth.AccountData
-	View     tview.Primitive
-	list     *tview.List
+	tutView     *TutView
+	accounts    *auth.AccountData
+	View        tview.Primitive
+	list        *tview.List
+	scrollSleep *scrollSleep
 }
 
 func NewLoginView(tv *TutView, accs *auth.AccountData) *LoginView {
@@ -28,12 +29,14 @@ func NewLoginView(tv *TutView, accs *auth.AccountData) *LoginView {
 	v.AddItem(list, 0, 1, false).
 		AddItem(tv.Shared.Bottom.View, 2, 0, false)
 
-	return &LoginView{
+	lv := &LoginView{
 		tutView:  tv,
 		accounts: accs,
 		View:     v,
 		list:     list,
 	}
+	lv.scrollSleep = NewScrollSleep(lv.Next, lv.Prev)
+	return lv
 }
 
 func (l *LoginView) Selected() {

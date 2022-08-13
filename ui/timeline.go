@@ -17,6 +17,7 @@ type Timeline struct {
 	Feeds          []*FeedHolder
 	FeedFocusIndex int
 	update         chan bool
+	scrollSleep    *scrollSleep
 }
 
 func NewTimeline(tv *TutView, update chan bool) *Timeline {
@@ -25,6 +26,7 @@ func NewTimeline(tv *TutView, update chan bool) *Timeline {
 		Feeds:   []*FeedHolder{},
 		update:  update,
 	}
+	tl.scrollSleep = NewScrollSleep(tl.NextItemFeed, tl.PrevItemFeed)
 	var nf *Feed
 	for _, f := range tv.tut.Config.General.Timelines {
 		switch f.FeedType {

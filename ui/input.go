@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
@@ -113,6 +115,8 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.LocalCommand()
 		case config.LeaderFederated:
 			tv.FederatedCommand()
+		case config.LeaderClearNotifications:
+			tv.ClearNotificationsCommand()
 		case config.LeaderCompose:
 			tv.ComposeCommand()
 		case config.LeaderBlocking:
@@ -896,126 +900,41 @@ func (tv *TutView) InputCmdView(event *tcell.EventKey) *tcell.EventKey {
 }
 
 func (tv *TutView) MouseInput(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
-	if event != nil {
-		tv.mouseX, tv.mouseY = event.Position()
-		tv.mouseEvent = event
+	if event == nil {
 		return nil, action
 	}
-	if tv.PageFocus == MainFocus || tv.PageFocus == ViewFocus {
-		if action == tview.MouseLeftClick {
-			f := tv.GetCurrentFeed()
-			if f.Content.Main.InRect(tv.mouseX, tv.mouseY) {
-				tv.SetPage(ViewFocus)
-				return nil, action
-			}
-			for i, tl := range tv.Timeline.Feeds {
-				fl := tl.GetFeedList()
-				if fl.Text.InRect(tv.mouseX, tv.mouseY) {
-					tv.feedListMouse(fl.Text, i, action)
-					return nil, action
-				}
-				if fl.Symbol.InRect(tv.mouseX, tv.mouseY) {
-					tv.feedListMouse(fl.Symbol, i, action)
-					return nil, action
-				}
-			}
-		}
+	switch action {
+	case tview.MouseLeftUp, tview.MouseMiddleUp, tview.MouseRightUp:
+		return event, action
 	}
-	if tv.PageFocus == LoginFocus {
-		if action == tview.MouseLeftClick {
-			list := tv.LoginView.list
-			if !list.InRect(tv.mouseX, tv.mouseY) {
-				return nil, action
-			}
-			mh := list.MouseHandler()
-			if mh == nil {
-				return nil, action
-			}
-			mh(action, tv.mouseEvent, func(p tview.Primitive) {})
-			tv.LoginView.Selected()
-		}
+
+	switch tv.PageFocus {
+	case ViewFocus, MainFocus:
+		return tv.MouseInputMainView(event, action)
+	case LoginFocus:
+		tv.MouseInputLoginView(event, action)
+	case LinkFocus:
+		return tv.MouseInputLinkView(event, action)
+	case MediaFocus:
+		return tv.MouseInputMediaView(event, action)
+	case VoteFocus:
+		return tv.MouseInputVoteView(event, action)
+	case ModalFocus:
+		tv.MouseInputModalView(event, action)
+	case PollFocus:
+		return tv.MouseInputPollView(event, action)
+	case HelpFocus:
+		return tv.MouseInputHelpView(event, action)
+	case ComposeFocus:
+		return tv.MouseInputComposeView(event, action)
+	case PreferenceFocus:
+		return tv.MouseInputPreferenceView(event, action)
 	}
-	if tv.PageFocus == LinkFocus {
-		if action == tview.MouseLeftClick {
-			list := tv.LinkView.list
-			if !list.InRect(tv.mouseX, tv.mouseY) {
-				return nil, action
-			}
-			mh := list.MouseHandler()
-			if mh == nil {
-				return nil, action
-			}
-			mh(action, tv.mouseEvent, func(p tview.Primitive) {})
-			tv.LinkView.Open()
-		}
-	}
-	if tv.PageFocus == MediaFocus {
-		if action == tview.MouseLeftClick {
-			list := tv.ComposeView.media.list
-			if !list.InRect(tv.mouseX, tv.mouseY) {
-				return nil, action
-			}
-			mh := list.MouseHandler()
-			if mh == nil {
-				return nil, action
-			}
-			mh(action, tv.mouseEvent, func(p tview.Primitive) {})
-		}
-		if tv.PageFocus == MediaFocus {
-			if action == tview.MouseLeftClick {
-				list := tv.ComposeView.media.list
-				if !list.InRect(tv.mouseX, tv.mouseY) {
-					return nil, action
-				}
-				mh := list.MouseHandler()
-				if mh == nil {
-					return nil, action
-				}
-				mh(action, tv.mouseEvent, func(p tview.Primitive) {})
-			}
-		}
-	}
-	if tv.PageFocus == VoteFocus {
-		if action == tview.MouseLeftClick {
-			list := tv.VoteView.list
-			if !list.InRect(tv.mouseX, tv.mouseY) {
-				return nil, action
-			}
-			mh := list.MouseHandler()
-			if mh == nil {
-				return nil, action
-			}
-			mh(action, tv.mouseEvent, func(p tview.Primitive) {})
-			tv.VoteView.ToggleSelect()
-		}
-	}
-	if tv.PageFocus == ModalFocus {
-		if action == tview.MouseLeftClick {
-			modal := tv.ModalView.View
-			mh := modal.MouseHandler()
-			if mh == nil {
-				return nil, action
-			}
-			mh(action, tv.mouseEvent, func(p tview.Primitive) {})
-		}
-	}
-	if tv.PageFocus == PollFocus {
-		if action == tview.MouseLeftClick {
-			list := tv.PollView.list
-			if !list.InRect(tv.mouseX, tv.mouseY) {
-				return nil, action
-			}
-			mh := list.MouseHandler()
-			if mh == nil {
-				return nil, action
-			}
-			mh(action, tv.mouseEvent, func(p tview.Primitive) {})
-		}
-	}
+
 	return nil, action
 }
 
-func (tv *TutView) feedListMouse(list *tview.List, i int, action tview.MouseAction) {
+func (tv *TutView) feedListMouse(list *tview.List, i int, event *tcell.EventMouse, action tview.MouseAction) {
 	tv.SetPage(MainFocus)
 	tv.FocusFeed(i)
 	mh := list.MouseHandler()
@@ -1023,9 +942,252 @@ func (tv *TutView) feedListMouse(list *tview.List, i int, action tview.MouseActi
 		return
 	}
 	lastIndex := list.GetCurrentItem()
-	mh(action, tv.mouseEvent, func(p tview.Primitive) {})
+	mh(action, event, func(p tview.Primitive) {})
 	newIndex := list.GetCurrentItem()
 	if lastIndex != newIndex {
 		tv.Timeline.SetItemFeedIndex(newIndex)
 	}
+}
+
+var scrollSleepTime time.Duration = 150
+
+type scrollSleep struct {
+	mux  sync.Mutex
+	last time.Time
+	next func()
+	prev func()
+}
+
+func NewScrollSleep(next func(), prev func()) *scrollSleep {
+	return &scrollSleep{
+		next: next,
+		prev: prev,
+	}
+}
+
+func (sc *scrollSleep) Action(list *tview.List, action tview.MouseAction) {
+	mh := list.MouseHandler()
+	if mh == nil {
+		return
+	}
+	lock := sc.mux.TryLock()
+	if !lock {
+		return
+	}
+	if time.Since(sc.last) < (scrollSleepTime * time.Millisecond) {
+		sc.mux.Unlock()
+		return
+	}
+	if action == tview.MouseScrollDown {
+		sc.next()
+	}
+	if action == tview.MouseScrollUp {
+		sc.prev()
+	}
+	sc.last = time.Now()
+	sc.mux.Unlock()
+}
+
+func (tv *TutView) MouseInputMainView(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
+	x, y := event.Position()
+	switch action {
+	case tview.MouseScrollDown, tview.MouseScrollUp:
+		f := tv.GetCurrentFeed()
+		if f.Content.Main.InRect(x, y) {
+			if action == tview.MouseScrollDown {
+				tv.Timeline.ScrollDown()
+				return nil, action
+			}
+			if action == tview.MouseScrollUp {
+				tv.Timeline.ScrollUp()
+				return nil, action
+			}
+		}
+		for _, tl := range tv.Timeline.Feeds {
+			fl := tl.GetFeedList()
+			if fl.Text.InRect(x, y) {
+				tv.Timeline.scrollSleep.Action(fl.Text, action)
+				return nil, action
+			}
+			if fl.Symbol.InRect(x, y) {
+				tv.Timeline.scrollSleep.Action(fl.Symbol, action)
+				return nil, action
+			}
+		}
+	case tview.MouseLeftClick:
+		f := tv.GetCurrentFeed()
+		if f.Content.Main.InRect(x, y) {
+			tv.SetPage(ViewFocus)
+			return nil, action
+		}
+		if f.Content.Controls.InRect(x, y) {
+			return event, action
+		}
+		for i, tl := range tv.Timeline.Feeds {
+			fl := tl.GetFeedList()
+			if fl.Text.InRect(x, y) {
+				tv.feedListMouse(fl.Text, i, event, action)
+				return nil, action
+			}
+			if fl.Symbol.InRect(x, y) {
+				tv.feedListMouse(fl.Symbol, i, event, action)
+				return nil, action
+			}
+		}
+	}
+	return nil, action
+}
+
+func (tv *TutView) MouseInputLoginView(event *tcell.EventMouse, action tview.MouseAction) {
+	x, y := event.Position()
+	switch action {
+	case tview.MouseLeftClick:
+		list := tv.LoginView.list
+		if !list.InRect(x, y) {
+			return
+		}
+		mh := list.MouseHandler()
+		if mh == nil {
+			return
+		}
+		mh(action, event, func(p tview.Primitive) {})
+		tv.LoginView.Selected()
+	case tview.MouseScrollDown, tview.MouseScrollUp:
+		tv.LoginView.scrollSleep.Action(tv.LoginView.list, action)
+	}
+}
+
+func (tv *TutView) MouseInputLinkView(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
+	x, y := event.Position()
+	switch action {
+	case tview.MouseLeftClick:
+		if tv.LinkView.controls.InRect(x, y) {
+			return event, action
+		}
+		list := tv.LinkView.list
+		if !list.InRect(x, y) {
+			return nil, action
+		}
+		mh := list.MouseHandler()
+		if mh == nil {
+			return nil, action
+		}
+		mh(action, event, func(p tview.Primitive) {})
+		tv.LinkView.Open()
+	case tview.MouseScrollDown, tview.MouseScrollUp:
+		tv.LinkView.scrollSleep.Action(tv.LinkView.list, action)
+	}
+	return nil, action
+}
+
+func (tv *TutView) MouseInputMediaView(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
+	x, y := event.Position()
+	switch action {
+	case tview.MouseLeftClick:
+		if tv.ComposeView.controls.InRect(x, y) {
+			return event, action
+		}
+		list := tv.ComposeView.media.list
+		if !list.InRect(x, y) {
+			return nil, action
+		}
+		mh := list.MouseHandler()
+		if mh == nil {
+			return nil, action
+		}
+		mh(action, event, func(p tview.Primitive) {})
+	case tview.MouseScrollDown, tview.MouseScrollUp:
+		tv.ComposeView.media.scrollSleep.Action(tv.ComposeView.media.list, action)
+	}
+	return nil, action
+}
+
+func (tv *TutView) MouseInputVoteView(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
+	x, y := event.Position()
+	switch action {
+	case tview.MouseLeftClick:
+		if tv.VoteView.controls.InRect(x, y) {
+			return event, action
+		}
+		list := tv.VoteView.list
+		if !list.InRect(x, y) {
+			return nil, action
+		}
+		mh := list.MouseHandler()
+		if mh == nil {
+			return nil, action
+		}
+		mh(action, event, func(p tview.Primitive) {})
+		tv.VoteView.ToggleSelect()
+	case tview.MouseScrollDown, tview.MouseScrollUp:
+		tv.VoteView.scrollSleep.Action(tv.VoteView.list, action)
+	}
+	return nil, action
+}
+
+func (tv *TutView) MouseInputModalView(event *tcell.EventMouse, action tview.MouseAction) {
+	switch action {
+	case tview.MouseLeftClick:
+		modal := tv.ModalView.View
+		mh := modal.MouseHandler()
+		if mh == nil {
+			return
+		}
+		mh(action, event, func(p tview.Primitive) {})
+	}
+}
+
+func (tv *TutView) MouseInputPollView(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
+	x, y := event.Position()
+	switch action {
+	case tview.MouseLeftClick:
+		if tv.PollView.controls.InRect(x, y) {
+			return event, action
+		}
+		list := tv.PollView.list
+		if !list.InRect(x, y) {
+			return nil, action
+		}
+		mh := list.MouseHandler()
+		if mh == nil {
+			return nil, action
+		}
+		mh(action, event, func(p tview.Primitive) {})
+	case tview.MouseScrollDown, tview.MouseScrollUp:
+		tv.PollView.scrollSleep.Action(tv.PollView.list, action)
+	}
+	return nil, action
+}
+
+func (tv *TutView) MouseInputHelpView(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
+	x, y := event.Position()
+	switch action {
+	case tview.MouseLeftClick:
+		if tv.HelpView.controls.InRect(x, y) {
+			return event, action
+		}
+	}
+	return nil, action
+}
+
+func (tv *TutView) MouseInputPreferenceView(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
+	x, y := event.Position()
+	switch action {
+	case tview.MouseLeftClick:
+		if tv.PreferenceView.controls.InRect(x, y) {
+			return event, action
+		}
+	}
+	return nil, action
+}
+
+func (tv *TutView) MouseInputComposeView(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
+	x, y := event.Position()
+	switch action {
+	case tview.MouseLeftClick:
+		if tv.ComposeView.controls.InRect(x, y) {
+			return event, action
+		}
+	}
+	return nil, action
 }

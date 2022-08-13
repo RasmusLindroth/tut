@@ -2,44 +2,54 @@ package ui
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/RasmusLindroth/tut/config"
 	"github.com/rivo/tview"
 )
 
 type LinkView struct {
-	tutView  *TutView
-	shared   *Shared
-	View     *tview.Flex
-	list     *tview.List
-	controls *tview.TextView
+	tutView     *TutView
+	shared      *Shared
+	View        *tview.Flex
+	list        *tview.List
+	controls    *tview.Flex
+	scrollSleep *scrollSleep
 }
 
 func NewLinkView(tv *TutView) *LinkView {
 	l := NewList(tv.tut.Config)
-	txt := NewTextView(tv.tut.Config)
+	c := NewControlView(tv.tut.Config)
 	lv := &LinkView{
 		tutView:  tv,
 		shared:   tv.Shared,
 		list:     l,
-		controls: txt,
+		controls: c,
 	}
+	lv.scrollSleep = NewScrollSleep(lv.Next, lv.Prev)
 	lv.View = linkViewUI(lv)
 	return lv
 }
 
 func linkViewUI(lv *LinkView) *tview.Flex {
 	lv.controls.SetBorderPadding(0, 0, 1, 1)
-	items := []string{
-		config.ColorFromKey(lv.tutView.tut.Config, lv.tutView.tut.Config.Input.LinkOpen, true),
-		config.ColorFromKey(lv.tutView.tut.Config, lv.tutView.tut.Config.Input.LinkYank, true),
+	items := []Control{
+		NewControl(lv.tutView.tut.Config, lv.tutView.tut.Config.Input.LinkOpen, true),
+		NewControl(lv.tutView.tut.Config, lv.tutView.tut.Config.Input.LinkYank, true),
 	}
 	for _, cust := range lv.tutView.tut.Config.OpenCustom.OpenCustoms {
-		items = append(items, config.ColorKey(lv.tutView.tut.Config, "", fmt.Sprintf("%d", cust.Index), cust.Name))
+		key := config.Key{
+			Hint: [][]string{{"", fmt.Sprintf("%d", cust.Index), cust.Name}},
+		}
+		items = append(items, NewControl(lv.tutView.tut.Config, key, true))
 	}
-	res := strings.Join(items, " ")
-	lv.controls.SetText(res)
+	lv.controls.Clear()
+	for i, item := range items {
+		if i < len(items)-1 {
+			lv.controls.AddItem(NewControlButton(lv.tutView, item), item.Len+1, 0, false)
+		} else {
+			lv.controls.AddItem(NewControlButton(lv.tutView, item), item.Len, 0, false)
+		}
+	}
 
 	r := tview.NewFlex().SetDirection(tview.FlexRow)
 	if lv.tutView.tut.Config.General.TerminalTitle < 2 {

@@ -6,18 +6,18 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-func ColorFromKey(c *Config, k Key, first bool) string {
+func ColorFromKey(c *Config, k Key, first bool) (string, int) {
 	if len(k.Hint) == 0 {
-		return ""
+		return "", 0
 	}
 	parts := k.Hint[0]
 	if !first && len(k.Hint) > 1 {
 		parts = k.Hint[1]
 	}
 	if len(parts) != 3 {
-		return ""
+		return "", 0
 	}
-	return ColorKey(c, parts[0], parts[1], parts[2])
+	return ColorKey(c, parts[0], parts[1], parts[2]), len(fmt.Sprintf("%s%s%s", parts[0], parts[1], parts[2]))
 }
 
 func ColorKey(c *Config, pre, key, end string) string {
