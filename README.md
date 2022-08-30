@@ -128,7 +128,7 @@ you will need Go. Use a newer one that supports modules.
 
 ```bash
 # Fetches and installs tut. Usally /home/user/go/bin
-go get -u github.com/RasmusLindroth/tut
+go install github.com/RasmusLindroth/tut@latest
 
 # You can also clone the repo if you like
 # First clone this repository
