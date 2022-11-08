@@ -95,7 +95,10 @@ func DrawItemControls(tv *TutView, item api.Item, controls *tview.Flex, ft feed.
 		}
 	case api.NotificationType:
 		drawNotification(tv, item, item.Raw().(*api.NotificationData), nil, controls)
+	case api.ListsType:
+		drawList(tv, item.Raw().(*mastodon.List), nil, controls)
 	}
+
 }
 
 func OutputDate(cfg *config.Config, status time.Time) string {
