@@ -25,6 +25,7 @@ type msgToot struct {
 	ScheduledAt   *time.Time
 	QuoteIncluded bool
 	Visibility    string
+	Language      string
 }
 
 type ComposeView struct {
@@ -36,6 +37,7 @@ type ComposeView struct {
 	info       *tview.TextView
 	controls   *tview.Flex
 	visibility *tview.DropDown
+	lang       *tview.DropDown
 	media      *MediaList
 	msg        *msgToot
 }
@@ -62,6 +64,7 @@ func NewComposeView(tv *TutView) *ComposeView {
 		controls:   NewControlView(tv.tut.Config),
 		info:       NewTextView(tv.tut.Config),
 		visibility: NewDropDown(tv.tut.Config),
+		lang:       NewDropDown(tv.tut.Config),
 		media:      NewMediaList(tv),
 	}
 	cv.content.SetDynamicColors(true)
@@ -80,6 +83,7 @@ func newComposeUI(cv *ComposeView) *tview.Flex {
 		AddItem(tview.NewBox(), 2, 0, false).
 		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 			AddItem(cv.visibility, 1, 0, false).
+			AddItem(cv.lang, 1, 0, false).
 			AddItem(cv.info, 5, 0, false).
 			AddItem(cv.media.View, 0, 1, false), 0, 1, false), 0, 1, false).
 		AddItem(cv.input.View, 1, 0, false).
@@ -118,6 +122,7 @@ func (cv *ComposeView) SetControls(ctrl ComposeControls) {
 		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeEditSpoiler, true))
 		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeMediaFocus, true))
 		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposePoll, true))
+		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeLanguage, true))
 		if cv.msg.Status != nil {
 			items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeIncludeQuote, true))
 		}
@@ -143,8 +148,12 @@ func (cv *ComposeView) SetStatus(status *mastodon.Status) {
 	msg := &msgToot{}
 	me := cv.tutView.tut.Client.Me
 	visibility := mastodon.VisibilityPublic
+	lang := ""
 	if me.Source != nil && me.Source.Privacy != nil {
 		visibility = *me.Source.Privacy
+	}
+	if me.Source != nil && me.Source.Language != nil {
+		lang = *me.Source.Language
 	}
 	if status != nil {
 		if status.Reblog != nil {
@@ -160,6 +169,7 @@ func (cv *ComposeView) SetStatus(status *mastodon.Status) {
 		}
 	}
 	msg.Visibility = visibility
+	msg.Language = lang
 	cv.msg = msg
 	cv.msg.Text = cv.getAccs()
 	if cv.tutView.tut.Config.General.QuoteReply {
@@ -176,6 +186,18 @@ func (cv *ComposeView) SetStatus(status *mastodon.Status) {
 	cv.visibility.SetOptions(visibilitiesStr, cv.visibilitySelected)
 	cv.visibility.SetCurrentOption(index)
 	cv.visibility.SetInputCapture(cv.visibilityInput)
+
+	cv.lang.SetLabel("Lang: ")
+	langStrs := []string{}
+	for i, l := range util.Languages {
+		if msg.Language == l.Code {
+			index = i
+		}
+		langStrs = append(langStrs, fmt.Sprintf("%s (%s)", l.Local, l.English))
+	}
+	cv.lang.SetOptions(langStrs, cv.langSelected)
+	cv.lang.SetCurrentOption(index)
+
 	cv.UpdateContent()
 	cv.SetControls(ComposeNormal)
 }
@@ -321,6 +343,41 @@ func (cv *ComposeView) FocusVisibility() {
 	cv.tutView.tut.App.QueueEvent(ev)
 }
 
+func (cv *ComposeView) langInput(event *tcell.EventKey) *tcell.EventKey {
+	if cv.tutView.tut.Config.Input.GlobalDown.Match(event.Key(), event.Rune()) {
+		return tcell.NewEventKey(tcell.KeyDown, 0, tcell.ModNone)
+	}
+	if cv.tutView.tut.Config.Input.GlobalUp.Match(event.Key(), event.Rune()) {
+		return tcell.NewEventKey(tcell.KeyUp, 0, tcell.ModNone)
+	}
+	if cv.tutView.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) ||
+		cv.tutView.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) {
+		cv.exitLang()
+		return nil
+	}
+	return event
+}
+
+func (cv *ComposeView) exitLang() {
+	cv.tutView.tut.App.SetInputCapture(cv.tutView.Input)
+	cv.tutView.tut.App.SetFocus(cv.content)
+}
+
+func (cv *ComposeView) langSelected(s string, index int) {
+	i, _ := cv.lang.GetCurrentOption()
+	if i >= 0 && i < len(util.Languages) {
+		cv.msg.Language = util.Languages[i].Code
+	}
+	cv.exitLang()
+}
+
+func (cv *ComposeView) FocusLang() {
+	cv.tutView.tut.App.SetInputCapture(cv.langInput)
+	cv.tutView.tut.App.SetFocus(cv.lang)
+	ev := tcell.NewEventKey(tcell.KeyDown, 0, tcell.ModNone)
+	cv.tutView.tut.App.QueueEvent(ev)
+}
+
 func (cv *ComposeView) Post() {
 	toot := cv.msg
 	send := mastodon.Toot{
@@ -367,6 +424,7 @@ func (cv *ComposeView) Post() {
 		send.Poll = cv.tutView.PollView.GetPoll()
 	}
 	send.Visibility = cv.msg.Visibility
+	send.Language = cv.msg.Language
 
 	_, err := cv.tutView.tut.Client.Client.PostStatus(context.Background(), &send)
 	if err != nil {

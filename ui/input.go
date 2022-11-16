@@ -694,6 +694,10 @@ func (tv *TutView) InputComposeView(event *tcell.EventKey) *tcell.EventKey {
 		tv.ComposeView.FocusVisibility()
 		return nil
 	}
+	if tv.tut.Config.Input.ComposeLanguage.Match(event.Key(), event.Rune()) {
+		tv.ComposeView.FocusLang()
+		return nil
+	}
 	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) ||
 		tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
 		tv.ModalView.Run(
