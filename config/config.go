@@ -389,6 +389,7 @@ type Input struct {
 	ComposePost                 Key
 	ComposeToggleContentWarning Key
 	ComposeVisibility           Key
+	ComposeLanguage             Key
 	ComposePoll                 Key
 
 	MediaDelete   Key
@@ -1270,6 +1271,7 @@ func parseInput(cfg *ini.File) Input {
 		ComposePost:                 inputStrOrErr([]string{"\"[P]ost\"", "'p'", "'P'"}, false),
 		ComposeToggleContentWarning: inputStrOrErr([]string{"\"[T]oggle CW\"", "'t'", "'T'"}, false),
 		ComposeVisibility:           inputStrOrErr([]string{"\"[V]isibility\"", "'v'", "'V'"}, false),
+		ComposeLanguage:             inputStrOrErr([]string{"\"[L]ang\"", "'l'", "'L'"}, false),
 		ComposePoll:                 inputStrOrErr([]string{"\"P[O]ll\"", "'o'", "'O'"}, false),
 
 		MediaDelete:   inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
@@ -1343,6 +1345,7 @@ func parseInput(cfg *ini.File) Input {
 	ic.ComposePost = inputOrErr(cfg, "compose-post", false, ic.ComposePost)
 	ic.ComposeToggleContentWarning = inputOrErr(cfg, "compose-toggle-content-warning", false, ic.ComposeToggleContentWarning)
 	ic.ComposeVisibility = inputOrErr(cfg, "compose-visibility", false, ic.ComposeVisibility)
+	ic.ComposeLanguage = inputOrErr(cfg, "compose-language", false, ic.ComposeLanguage)
 	ic.ComposePoll = inputOrErr(cfg, "compose-poll", false, ic.ComposePoll)
 
 	ic.MediaDelete = inputOrErr(cfg, "media-delete", false, ic.MediaDelete)

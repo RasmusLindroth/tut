@@ -82,7 +82,7 @@ func MakeDirs() {
 		os.Exit(1)
 	}
 	dir := cd + "/tut"
-	err = os.Mkdir(dir, 0755)
+	err = os.MkdirAll(dir, os.ModePerm)
 	if err != nil && !os.IsExist(err) {
 		log.Printf("couldn't create dirs. Error: %v\n", err)
 		os.Exit(1)
