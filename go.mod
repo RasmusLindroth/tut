@@ -10,8 +10,8 @@ require (
 	github.com/gobwas/glob v0.2.3
 	github.com/icza/gox v0.0.0-20221026131554-a08a8cdc726a
 	github.com/microcosm-cc/bluemonday v1.0.21
-	github.com/pelletier/go-toml/v2 v2.0.5
-	github.com/rivo/tview v0.0.0-20221115143349-ed3ea789e9f7
+	github.com/pelletier/go-toml/v2 v2.0.6
+	github.com/rivo/tview v0.0.0-20221117065207-09f052e6ca98
 	github.com/rivo/uniseg v0.4.3
 	golang.org/x/net v0.2.0
 	gopkg.in/ini.v1 v1.67.0
