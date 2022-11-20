@@ -34,6 +34,11 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 		}
 		d := OutputDate(cfg, s.CreatedAt.Local())
 		return fmt.Sprintf("%s %s", d, acc), symbol
+	case api.StatusHistoryType:
+		s := item.Raw().(*mastodon.StatusHistory)
+		acc := strings.TrimSpace(s.Account.Acct)
+		d := OutputDate(cfg, s.CreatedAt.Local())
+		return fmt.Sprintf("%s %s", d, acc), ""
 	case api.UserType:
 		a := item.Raw().(*api.User)
 		return strings.TrimSpace(a.Data.Acct), ""
@@ -71,7 +76,20 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 func DrawItem(tv *TutView, item api.Item, main *tview.TextView, controls *tview.Flex, ft feed.FeedType) {
 	switch item.Type() {
 	case api.StatusType:
-		drawStatus(tv, item, item.Raw().(*mastodon.Status), main, controls, "")
+		drawStatus(tv, item, item.Raw().(*mastodon.Status), main, controls, false, "")
+	case api.StatusHistoryType:
+		s := item.Raw().(*mastodon.StatusHistory)
+		status := mastodon.Status{
+			Content:          s.Content,
+			SpoilerText:      s.SpoilerText,
+			Account:          s.Account,
+			Sensitive:        s.Sensitive,
+			CreatedAt:        s.CreatedAt,
+			Emojis:           s.Emojis,
+			MediaAttachments: s.MediaAttachments,
+			Visibility:       mastodon.VisibilityPublic,
+		}
+		drawStatus(tv, item, &status, main, controls, true, "")
 	case api.UserType, api.ProfileType:
 		if ft == feed.FollowRequests {
 			drawUser(tv, item.Raw().(*api.User), main, controls, "", true)
@@ -88,7 +106,20 @@ func DrawItem(tv *TutView, item api.Item, main *tview.TextView, controls *tview.
 func DrawItemControls(tv *TutView, item api.Item, controls *tview.Flex, ft feed.FeedType) {
 	switch item.Type() {
 	case api.StatusType:
-		drawStatus(tv, item, item.Raw().(*mastodon.Status), nil, controls, "")
+		drawStatus(tv, item, item.Raw().(*mastodon.Status), nil, controls, false, "")
+	case api.StatusHistoryType:
+		s := item.Raw().(*mastodon.StatusHistory)
+		status := mastodon.Status{
+			Content:          s.Content,
+			SpoilerText:      s.SpoilerText,
+			Account:          s.Account,
+			Sensitive:        s.Sensitive,
+			CreatedAt:        s.CreatedAt,
+			Emojis:           s.Emojis,
+			MediaAttachments: s.MediaAttachments,
+			Visibility:       mastodon.VisibilityPublic,
+		}
+		drawStatus(tv, item, &status, nil, controls, true, "")
 	case api.UserType, api.ProfileType:
 		if ft == feed.FollowRequests {
 			drawUser(tv, item.Raw().(*api.User), nil, controls, "", true)

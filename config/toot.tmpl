@@ -17,7 +17,7 @@
 {{ Color .Style.TextSpecial1 }}{{ .Toot.Account }}
 {{- else -}}
 {{ Color .Style.TextSpecial2 }}{{- .Toot.Account }}
-{{- end }}
+{{- end }} {{- if .Toot.Edited -}}{{ Color .Style.Subtle }} (edited toot){{ end }}
 
 {{ if .Toot.Spoiler -}}
 {{ Color .Style.Text }}{{ .Toot.SpoilerText }}

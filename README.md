@@ -46,6 +46,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:favorited` lists toots you've favorited
 * `:favorites` lists users that favorited the toot
 * `:h` `:help` view help 
+* `:history` show edits of a toot 
 * `:lists` show a list of your lists
 * `:list-placement` top, right, bottom, left
 * `:list-split` row, column

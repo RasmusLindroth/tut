@@ -33,6 +33,7 @@ type Toot struct {
 	Replies            int
 	Boosts             int
 	Favorites          int
+	Edited             bool
 	Controls           string
 }
 
@@ -70,7 +71,7 @@ type DisplayTootData struct {
 	Style config.Style
 }
 
-func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview.TextView, controls *tview.Flex, additional string) {
+func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview.TextView, controls *tview.Flex, isHistory bool, additional string) {
 	filtered, phrase := item.Filtered()
 	if filtered {
 		var output string
@@ -119,6 +120,7 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 	toot.Bookmarked = status.Bookmarked
 	toot.Visibility = status.Visibility
 	toot.Spoiler = status.Sensitive
+	toot.Edited = status.CreatedAt.Before(status.EditedAt)
 
 	if status.Poll != nil {
 		p := *status.Poll
@@ -188,20 +190,22 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 	}
 
 	var info []Control
-	if status.Favourited {
+	if status.Favourited && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusFavorite, false))
-	} else {
+	} else if !status.Favourited && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusFavorite, true))
 	}
-	if status.Reblogged {
+	if status.Reblogged && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusBoost, false))
-	} else {
+	} else if !status.Reblogged && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusBoost, true))
 	}
-	info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusThread, true))
-	info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusReply, true))
-	info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusViewFocus, true))
-	info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusUser, true))
+	if !isHistory {
+		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusThread, true))
+		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusReply, true))
+		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusViewFocus, true))
+		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusUser, true))
+	}
 	if len(status.MediaAttachments) > 0 {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusMedia, true))
 	}
@@ -210,16 +214,18 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusLinks, true))
 	}
 	info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusAvatar, true))
-	if status.Account.ID == tv.tut.Client.Me.ID {
+	if status.Account.ID == tv.tut.Client.Me.ID && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusDelete, true))
 	}
 
-	if !status.Bookmarked {
+	if !status.Bookmarked && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusBookmark, true))
-	} else {
+	} else if status.Bookmarked && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusBookmark, false))
 	}
-	info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusYank, true))
+	if !isHistory {
+		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusYank, true))
+	}
 
 	controls.Clear()
 	for i, item := range info {

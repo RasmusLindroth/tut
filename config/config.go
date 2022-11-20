@@ -74,6 +74,7 @@ const (
 	LeaderNotifications
 	LeaderLists
 	LeaderTag
+	LeaderHistory
 	LeaderUser
 	LeaderWindow
 	LeaderLoadNewer
@@ -864,6 +865,8 @@ func parseGeneral(cfg *ini.File) General {
 				la.Command = LeaderSaved
 			case "favorited":
 				la.Command = LeaderFavorited
+			case "history":
+				la.Command = LeaderHistory
 			case "boosts":
 				la.Command = LeaderBoosts
 			case "favorites":

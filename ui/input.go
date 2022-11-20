@@ -125,6 +125,8 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.BookmarksCommand()
 		case config.LeaderFavorited:
 			tv.FavoritedCommand()
+		case config.LeaderHistory:
+			tv.HistoryCommand()
 		case config.LeaderBoosts:
 			tv.BoostsCommand()
 		case config.LeaderFavorites:
@@ -299,6 +301,8 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 	switch item.Type() {
 	case api.StatusType:
 		return tv.InputStatus(event, item, item.Raw().(*mastodon.Status), nil)
+	case api.StatusHistoryType:
+		return tv.InputStatusHistory(event, item, item.Raw().(*mastodon.StatusHistory), nil)
 	case api.UserType, api.ProfileType:
 		if ft == feed.FollowRequests {
 			return tv.InputUser(event, item.Raw().(*api.User), true)
@@ -478,6 +482,56 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 	}
 	if tv.tut.Config.Input.StatusYank.Match(event.Key(), event.Rune()) {
 		copyToClipboard(sr.URL)
+		return nil
+	}
+	if tv.tut.Config.Input.StatusToggleSpoiler.Match(event.Key(), event.Rune()) {
+		if !hasSpoiler {
+			return nil
+		}
+		if !item.ShowSpoiler() {
+			item.ToggleSpoiler()
+			tv.RedrawContent()
+		}
+		return nil
+	}
+
+	return event
+}
+
+func (tv *TutView) InputStatusHistory(event *tcell.EventKey, item api.Item, sr *mastodon.StatusHistory, nAcc *mastodon.Account) *tcell.EventKey {
+	hasMedia := len(sr.MediaAttachments) > 0
+	hasSpoiler := sr.Sensitive
+
+	status := &mastodon.Status{
+		Content:          sr.Content,
+		SpoilerText:      sr.SpoilerText,
+		Account:          sr.Account,
+		Sensitive:        sr.Sensitive,
+		CreatedAt:        sr.CreatedAt,
+		Emojis:           sr.Emojis,
+		MediaAttachments: sr.MediaAttachments,
+	}
+
+	if tv.tut.Config.Input.StatusAvatar.Match(event.Key(), event.Rune()) {
+		if nAcc != nil {
+			openAvatar(tv, *nAcc)
+		} else {
+			openAvatar(tv, sr.Account)
+		}
+		return nil
+	}
+	if tv.tut.Config.Input.StatusMedia.Match(event.Key(), event.Rune()) {
+		if hasMedia {
+			openMedia(tv, status)
+		}
+		return nil
+	}
+	if tv.tut.Config.Input.StatusLinks.Match(event.Key(), event.Rune()) {
+		tv.SetPage(LinkFocus)
+		return nil
+	}
+	if tv.tut.Config.Input.StatusViewFocus.Match(event.Key(), event.Rune()) {
+		tv.SetPage(ViewFocus)
 		return nil
 	}
 	if tv.tut.Config.Input.StatusToggleSpoiler.Match(event.Key(), event.Rune()) {

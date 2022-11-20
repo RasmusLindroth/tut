@@ -17,6 +17,7 @@ type apiIDFunc func(pg *mastodon.Pagination, id mastodon.ID) ([]api.Item, error)
 type apiSearchFunc func(search string) ([]api.Item, error)
 type apiSearchPGFunc func(pg *mastodon.Pagination, search string) ([]api.Item, error)
 type apiThreadFunc func(status *mastodon.Status) ([]api.Item, error)
+type apiHistoryFunc func(status *mastodon.Status) ([]api.Item, error)
 
 type FeedType uint
 
@@ -29,6 +30,7 @@ const (
 	FollowRequests
 	Blocking
 	Muting
+	History
 	InvalidFeed
 	Notification
 	Saved
@@ -198,6 +200,19 @@ func (f *Feed) singleNewerSearch(fn apiSearchFunc, search string) {
 }
 
 func (f *Feed) singleThread(fn apiThreadFunc, status *mastodon.Status) {
+	items, err := fn(status)
+	if err != nil {
+		return
+	}
+	f.itemsMux.Lock()
+	if len(items) > 0 {
+		f.items = append(items, f.items...)
+		f.Updated(DeskstopNotificationNone)
+	}
+	f.itemsMux.Unlock()
+}
+
+func (f *Feed) singleHistory(fn apiHistoryFunc, status *mastodon.Status) {
 	items, err := fn(status)
 	if err != nil {
 		return
@@ -718,6 +733,18 @@ func NewThread(ac *api.AccountClient, status *mastodon.Status) *Feed {
 	feed := newFeed(ac, Thread)
 	feed.loadNewer = func() { feed.singleThread(feed.accountClient.GetThread, status) }
 
+	return feed
+}
+
+func NewHistory(ac *api.AccountClient, status *mastodon.Status) *Feed {
+	feed := newFeed(ac, History)
+	once := true
+	feed.loadNewer = func() {
+		if once {
+			feed.singleHistory(feed.accountClient.GetHistory, status)
+			once = false
+		}
+	}
 	return feed
 }
 

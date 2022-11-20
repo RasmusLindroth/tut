@@ -151,6 +151,8 @@ func (tl *Timeline) GetTitle() string {
 		ct = fmt.Sprintf("tag #%s", name)
 	case feed.Thread:
 		ct = "thread feed"
+	case feed.History:
+		ct = "history feed"
 	case feed.TimelineFederated:
 		ct = "federated"
 	case feed.TimelineHome:

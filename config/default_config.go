@@ -152,9 +152,9 @@ leader-timeout=1000
 # comma.
 # 
 # Available commands: home, direct, local, federated, clear-notifications,
-# compose, blocking, bookmarks, saved, favorited, boosts, favorites, following,
-# followers, muting, newer, preferences, profile, notifications, lists, tag,
-# window, list-placement, list-split, proportions
+# compose, history, blocking, bookmarks, saved, favorited, boosts, favorites,
+# following, followers, muting, newer, preferences, profile, notifications,
+# lists, tag, window, list-placement, list-split, proportions
 # 
 # The shortcuts are up to you, but keep them quite short and make sure they
 # don't collide. If you have one shortcut that is "f" and an other one that is
@@ -176,6 +176,7 @@ leader-timeout=1000
 # leader-action=lists,li
 # leader-action=federated,fed
 # leader-action=direct,d
+# leader-action=history,h
 # leader-action=tag linux,tl
 # leader-action=window 0,h
 # leader-action=list-placement bottom,b

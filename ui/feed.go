@@ -218,6 +218,27 @@ func NewThreadFeed(tv *TutView, item api.Item) *Feed {
 	return fd
 }
 
+func NewHistoryFeed(tv *TutView, item api.Item) *Feed {
+	status := util.StatusOrReblog(item.Raw().(*mastodon.Status))
+	f := feed.NewHistory(tv.tut.Client, status)
+	f.LoadNewer()
+	fd := &Feed{
+		tutView:   tv,
+		Data:      f,
+		ListIndex: 0,
+		List:      NewFeedList(tv.tut, f.StickyCount()),
+		Content:   NewFeedContent(tv.tut),
+	}
+	for _, s := range f.List() {
+		main, symbol := DrawListItem(tv.tut.Config, s)
+		fd.List.AddItem(main, symbol, s.ID())
+	}
+	fd.List.SetCurrentItem(0)
+	fd.DrawContent()
+
+	return fd
+}
+
 func NewConversationsFeed(tv *TutView) *Feed {
 	f := feed.NewConversations(tv.tut.Client)
 	f.LoadNewer()
