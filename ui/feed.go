@@ -102,6 +102,10 @@ func (f *Feed) update() {
 			if f.tutView.tut.Config.NotificationConfig.NotificationMention {
 				beeep.Notify("Mentioned you", "", "")
 			}
+		case feed.DesktopNotificationUpdate:
+			if f.tutView.tut.Config.NotificationConfig.NotificationUpdate {
+				beeep.Notify("Changed their toot", "", "")
+			}
 		case feed.DesktopNotificationBoost:
 			if f.tutView.tut.Config.NotificationConfig.NotificationBoost {
 				beeep.Notify("Boosted your toot", "", "")
@@ -209,6 +213,27 @@ func NewThreadFeed(tv *TutView, item api.Item) *Feed {
 			fd.List.SetCurrentItem(i)
 		}
 	}
+	fd.DrawContent()
+
+	return fd
+}
+
+func NewHistoryFeed(tv *TutView, item api.Item) *Feed {
+	status := util.StatusOrReblog(item.Raw().(*mastodon.Status))
+	f := feed.NewHistory(tv.tut.Client, status)
+	f.LoadNewer()
+	fd := &Feed{
+		tutView:   tv,
+		Data:      f,
+		ListIndex: 0,
+		List:      NewFeedList(tv.tut, f.StickyCount()),
+		Content:   NewFeedContent(tv.tut),
+	}
+	for _, s := range f.List() {
+		main, symbol := DrawListItem(tv.tut.Config, s)
+		fd.List.AddItem(main, symbol, s.ID())
+	}
+	fd.List.SetCurrentItem(0)
 	fd.DrawContent()
 
 	return fd

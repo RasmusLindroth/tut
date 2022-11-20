@@ -88,6 +88,9 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 	case ":followers":
 		c.tutView.FollowersCommand()
 		c.Back()
+	case ":history":
+		c.tutView.HistoryCommand()
+		c.Back()
 	case ":newer":
 		c.tutView.LoadNewerCommand()
 		c.Back()
@@ -208,7 +211,7 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 
 func (c *CmdBar) Autocomplete(curr string) []string {
 	var entries []string
-	words := strings.Split(":blocking,:boosts,:bookmarks,:clear-notifications,:compose,:favorites,:favorited,:followers,:following,:help,:h,:lists,:list-placement,:list-split,:muting,:newer,:preferences,:profile,:proportions,:requests,:saved,:tag,:timeline,:tl,:user,:window,:quit,:q", ",")
+	words := strings.Split(":blocking,:boosts,:bookmarks,:clear-notifications,:compose,:favorites,:favorited,:followers,:following,:help,:h,:history,:lists,:list-placement,:list-split,:muting,:newer,:preferences,:profile,:proportions,:requests,:saved,:tag,:timeline,:tl,:user,:window,:quit,:q", ",")
 	if curr == "" {
 		return entries
 	}

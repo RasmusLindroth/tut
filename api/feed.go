@@ -98,6 +98,18 @@ func (ac *AccountClient) GetNotifications(pg *mastodon.Pagination) ([]Item, erro
 	return items, nil
 }
 
+func (ac *AccountClient) GetHistory(status *mastodon.Status) ([]Item, error) {
+	var items []Item
+	statuses, err := ac.Client.GetStatusHistory(context.Background(), status.ID)
+	if err != nil {
+		return items, err
+	}
+	for _, s := range statuses {
+		items = append(items, NewStatusHistoryItem(s))
+	}
+	return items, nil
+}
+
 func (ac *AccountClient) GetThread(status *mastodon.Status) ([]Item, error) {
 	var items []Item
 	statuses, err := ac.Client.GetStatusContext(context.Background(), status.ID)

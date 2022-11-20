@@ -54,7 +54,7 @@ func AddAccount(ad *AccountData) *mastodon.Client {
 	}
 
 	util.OpenURL(srv.AuthURI)
-	fmt.Println("You need to autorize Tut to use your account. Your browser")
+	fmt.Println("You need to authorize Tut to use your account. Your browser")
 	fmt.Println("should've opened. If not you can use the URL below.")
 	fmt.Printf("\n%s\n\n", srv.AuthURI)
 

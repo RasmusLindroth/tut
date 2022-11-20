@@ -11,6 +11,7 @@ type MastodonType uint
 
 const (
 	StatusType MastodonType = iota
+	StatusHistoryType
 	UserType
 	ProfileType
 	NotificationType

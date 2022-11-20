@@ -106,10 +106,7 @@ func OpenEditor(tv *TutView, content string) (string, error) {
 	cmd.Stderr = os.Stderr
 	var text []byte
 	tv.tut.App.Suspend(func() {
-		err = cmd.Run()
-		if err != nil {
-			log.Fatalln(err)
-		}
+		cmd.Run()
 		text, err = os.ReadFile(fname)
 	})
 	os.Remove(fname)

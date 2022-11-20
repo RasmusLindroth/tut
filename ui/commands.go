@@ -155,6 +155,19 @@ func (tv *TutView) FollowersCommand() {
 	)
 }
 
+func (tv *TutView) HistoryCommand() {
+	item, itemErr := tv.GetCurrentItem()
+	if itemErr != nil {
+		return
+	}
+	if item.Type() != api.StatusType {
+		return
+	}
+	tv.Timeline.AddFeed(
+		NewHistoryFeed(tv, item),
+	)
+}
+
 func (tv *TutView) ProfileCommand() {
 	item, err := tv.tut.Client.GetUserByID(tv.tut.Client.Me.ID)
 	if err != nil {

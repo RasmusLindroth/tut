@@ -174,6 +174,57 @@ func (s *StatusItem) Pinned() bool {
 	return s.pinned
 }
 
+func NewStatusHistoryItem(item *mastodon.StatusHistory) (sitem Item) {
+	return &StatusHistoryItem{id: newID(), item: item, showSpoiler: false}
+}
+
+type StatusHistoryItem struct {
+	id          uint
+	item        *mastodon.StatusHistory
+	showSpoiler bool
+}
+
+func (s *StatusHistoryItem) ID() uint {
+	return s.id
+}
+
+func (s *StatusHistoryItem) Type() MastodonType {
+	return StatusHistoryType
+}
+
+func (s *StatusHistoryItem) ToggleSpoiler() {
+	s.showSpoiler = !s.showSpoiler
+}
+
+func (s *StatusHistoryItem) ShowSpoiler() bool {
+	return s.showSpoiler
+}
+
+func (s *StatusHistoryItem) Raw() interface{} {
+	return s.item
+}
+
+func (s *StatusHistoryItem) URLs() ([]util.URL, []mastodon.Mention, []mastodon.Tag, int) {
+	status := mastodon.Status{
+		Content:          s.item.Content,
+		SpoilerText:      s.item.SpoilerText,
+		Account:          s.item.Account,
+		Sensitive:        s.item.Sensitive,
+		CreatedAt:        s.item.CreatedAt,
+		Emojis:           s.item.Emojis,
+		MediaAttachments: s.item.MediaAttachments,
+	}
+	return getUrlsStatus(&status)
+}
+
+func (s *StatusHistoryItem) Filtered() (bool, string) {
+	return false, ""
+}
+
+func (s *StatusHistoryItem) Pinned() bool {
+	return false
+}
+
 func NewUserItem(item *User, profile bool) Item {
 	return &UserItem{id: newID(), item: item, profile: profile}
 }
@@ -282,12 +333,15 @@ func (n *NotificationItem) URLs() ([]util.URL, []mastodon.Mention, []mastodon.Ta
 		return getUrlsStatus(nd.Status.Raw().(*mastodon.Status))
 	case "poll":
 		return getUrlsStatus(nd.Status.Raw().(*mastodon.Status))
+	case "update":
+		return getUrlsStatus(nd.Status.Raw().(*mastodon.Status))
 	case "follow":
 		return getUrlsUser(nd.User.Raw().(*User).Data)
 	case "follow_request":
 		return getUrlsUser(nd.User.Raw().(*User).Data)
+	default:
+		return []util.URL{}, []mastodon.Mention{}, []mastodon.Tag{}, 0
 	}
-	return nil, nil, nil, 0
 }
 
 func (n *NotificationItem) Filtered() (bool, string) {
