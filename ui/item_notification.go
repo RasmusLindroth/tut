@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/RasmusLindroth/tut/api"
+	"github.com/RasmusLindroth/tut/config"
 	"github.com/RasmusLindroth/tut/util"
 	"github.com/rivo/tview"
 )
@@ -26,6 +27,10 @@ func drawNotification(tv *TutView, item api.Item, notification *api.Notification
 		drawStatus(tv, notification.Status, notification.Item.Status, main, controls,
 			fmt.Sprintf("%s mentioned you", util.FormatUsername(notification.Item.Account)),
 		)
+	case "update":
+		drawStatus(tv, notification.Status, notification.Item.Status, main, controls,
+			fmt.Sprintf("%s updated their toot", util.FormatUsername(notification.Item.Account)),
+		)
 	case "status":
 		drawStatus(tv, notification.Status, notification.Item.Status, main, controls,
 			fmt.Sprintf("%s posted a new toot", util.FormatUsername(notification.Item.Account)),
@@ -39,5 +44,12 @@ func drawNotification(tv *TutView, item api.Item, notification *api.Notification
 			fmt.Sprintf("%s  wants to follow you.", util.FormatUsername(notification.Item.Account)),
 			true,
 		)
+	default:
+		controls.Clear()
+		text := fmt.Sprintf("%s\n", config.SublteText(tv.tut.Config,
+			fmt.Sprintf("Notification \"%s\" is not implemented. Open an issue at https://github.com/RasmusLindroth/tut",
+				notification.Item.Type),
+		))
+		main.SetText(text)
 	}
 }

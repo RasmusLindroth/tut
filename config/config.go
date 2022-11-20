@@ -226,6 +226,7 @@ const (
 	NotificationFollower NotificationType = iota
 	NotificationFavorite
 	NotificationMention
+	NotificationUpdate
 	NotificationBoost
 	NotificationPoll
 	NotificationPost
@@ -235,6 +236,7 @@ type Notification struct {
 	NotificationFollower bool
 	NotificationFavorite bool
 	NotificationMention  bool
+	NotificationUpdate   bool
 	NotificationBoost    bool
 	NotificationPoll     bool
 	NotificationPost     bool
@@ -1131,6 +1133,7 @@ func parseNotifications(cfg *ini.File) Notification {
 	nc.NotificationFollower = cfg.Section("desktop-notification").Key("followers").MustBool(false)
 	nc.NotificationFavorite = cfg.Section("desktop-notification").Key("favorite").MustBool(false)
 	nc.NotificationMention = cfg.Section("desktop-notification").Key("mention").MustBool(false)
+	nc.NotificationUpdate = cfg.Section("desktop-notification").Key("update").MustBool(false)
 	nc.NotificationBoost = cfg.Section("desktop-notification").Key("boost").MustBool(false)
 	nc.NotificationPoll = cfg.Section("desktop-notification").Key("poll").MustBool(false)
 	nc.NotificationPost = cfg.Section("desktop-notification").Key("posts").MustBool(false)

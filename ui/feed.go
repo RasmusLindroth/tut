@@ -102,6 +102,10 @@ func (f *Feed) update() {
 			if f.tutView.tut.Config.NotificationConfig.NotificationMention {
 				beeep.Notify("Mentioned you", "", "")
 			}
+		case feed.DesktopNotificationUpdate:
+			if f.tutView.tut.Config.NotificationConfig.NotificationUpdate {
+				beeep.Notify("Changed their toot", "", "")
+			}
 		case feed.DesktopNotificationBoost:
 			if f.tutView.tut.Config.NotificationConfig.NotificationBoost {
 				beeep.Notify("Boosted your toot", "", "")

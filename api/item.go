@@ -282,12 +282,15 @@ func (n *NotificationItem) URLs() ([]util.URL, []mastodon.Mention, []mastodon.Ta
 		return getUrlsStatus(nd.Status.Raw().(*mastodon.Status))
 	case "poll":
 		return getUrlsStatus(nd.Status.Raw().(*mastodon.Status))
+	case "update":
+		return getUrlsStatus(nd.Status.Raw().(*mastodon.Status))
 	case "follow":
 		return getUrlsUser(nd.User.Raw().(*User).Data)
 	case "follow_request":
 		return getUrlsUser(nd.User.Raw().(*User).Data)
+	default:
+		return []util.URL{}, []mastodon.Mention{}, []mastodon.Tag{}, 0
 	}
-	return nil, nil, nil, 0
 }
 
 func (n *NotificationItem) Filtered() (bool, string) {

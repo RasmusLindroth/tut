@@ -51,6 +51,8 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 			symbol = " ♺ "
 		case "mention":
 			symbol = " ⤶ "
+		case "update":
+			symbol = " ☢ "
 		case "poll":
 			symbol = " = "
 		case "status":

@@ -318,6 +318,8 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), user.Data)
 		case "mention":
 			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), nil)
+		case "update":
+			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), nil)
 		case "status":
 			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), nil)
 		case "poll":
