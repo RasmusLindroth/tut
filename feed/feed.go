@@ -731,7 +731,13 @@ func NewUserProfile(ac *api.AccountClient, user *api.User) *Feed {
 
 func NewThread(ac *api.AccountClient, status *mastodon.Status) *Feed {
 	feed := newFeed(ac, Thread)
-	feed.loadNewer = func() { feed.singleThread(feed.accountClient.GetThread, status) }
+	once := true
+	feed.loadNewer = func() {
+		if once {
+			feed.singleThread(feed.accountClient.GetThread, status)
+			once = false
+		}
+	}
 
 	return feed
 }
