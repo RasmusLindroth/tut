@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -36,11 +36,11 @@ func openInTerminal(tv *TutView, command string, args ...string) error {
 	var err error
 	tv.tut.App.Suspend(func() {
 		err = cmd.Run()
-		if err != nil {
-			log.Fatalln(err)
-		}
 	})
-	return err
+	if err != nil {
+		tv.ShowError(fmt.Sprintf("Eroror while opening: %v", err))
+	}
+	return nil
 }
 
 func openCustom(tv *TutView, program string, args []string, terminal bool, url string) {
