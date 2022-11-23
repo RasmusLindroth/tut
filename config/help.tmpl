@@ -57,6 +57,15 @@ Here's a list of supported commands.
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:favorites{{ Flags "-" }}{{ Color .Style.Text }}
 	Lists users that favorited the toot
 
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:follow-tag{{ Flags "-" }}{{ Color .Style.Text }}
+    Followed by the hashtag to follow e.g. :follow-tag tut
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:followers{{ Flags "-" }}{{ Color .Style.Text }}
+    List of people the account are following. It only works on profiles.
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:following{{ Flags "-" }}{{ Color .Style.Text }}
+    List of people following the account. It only works on profiles.
+
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:h{{ Flags "-" }}{{ Color .Style.Text }} or
 {{- Color .Style.TextSpecial2 }}{{ Flags "b" }} :help{{ Flags "-" }}{{ Color .Style.Text }}
 	View this help message
@@ -92,7 +101,10 @@ Here's a list of supported commands.
 	Alias for :bookmarks
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:tag{{ Flags "-" }}{{ Color .Style.Text }} tagname
-	See toots for a tag. E.g. :tag linux
+	See toots for a tag e.g. :tag linux
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:unfollow-tag{{ Flags "-" }}{{ Color .Style.Text }}
+    Followed by the hashtag to unfollow e.g. :unfollow-tag tut
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:user{{ Flags "-" }}{{ Color .Style.Text }} username
 	Go to profile for <username>. E.g. :user rasmus

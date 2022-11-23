@@ -183,8 +183,10 @@ func (tl *Timeline) GetTitle() string {
 		ct = "follow requests"
 	case feed.Blocking:
 		ct = "blocking"
-	case feed.Muting:
-		ct = "muting"
+	case feed.ListUsersAdd:
+		ct = fmt.Sprintf("Add users to %s", name)
+	case feed.ListUsersIn:
+		ct = fmt.Sprintf("Delete users from %s", name)
 	}
 	return fmt.Sprintf("%s (%d/%d)", ct, index+1, total)
 }

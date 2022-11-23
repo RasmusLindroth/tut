@@ -304,16 +304,21 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 	case api.StatusHistoryType:
 		return tv.InputStatusHistory(event, item, item.Raw().(*mastodon.StatusHistory), nil)
 	case api.UserType, api.ProfileType:
-		if ft == feed.FollowRequests {
-			return tv.InputUser(event, item.Raw().(*api.User), true)
-		} else {
-			return tv.InputUser(event, item.Raw().(*api.User), false)
+		switch ft {
+		case feed.FollowRequests:
+			return tv.InputUser(event, item.Raw().(*api.User), InputUserFollowRequest)
+		case feed.ListUsersAdd:
+			return tv.InputUser(event, item.Raw().(*api.User), InputUserListAdd)
+		case feed.ListUsersIn:
+			return tv.InputUser(event, item.Raw().(*api.User), InputUserListDelete)
+		default:
+			return tv.InputUser(event, item.Raw().(*api.User), InputUserNormal)
 		}
 	case api.NotificationType:
 		nd := item.Raw().(*api.NotificationData)
 		switch nd.Item.Type {
 		case "follow":
-			return tv.InputUser(event, nd.User.Raw().(*api.User), false)
+			return tv.InputUser(event, nd.User.Raw().(*api.User), InputUserNormal)
 		case "favourite":
 			user := nd.User.Raw().(*api.User)
 			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), user.Data)
@@ -329,7 +334,7 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 		case "poll":
 			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), nil)
 		case "follow_request":
-			return tv.InputUser(event, nd.User.Raw().(*api.User), true)
+			return tv.InputUser(event, nd.User.Raw().(*api.User), InputUserFollowRequest)
 		}
 	case api.ListsType:
 		ld := item.Raw().(*mastodon.List)
@@ -548,12 +553,60 @@ func (tv *TutView) InputStatusHistory(event *tcell.EventKey, item api.Item, sr *
 	return event
 }
 
-func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User, fr bool) *tcell.EventKey {
+type InputUserType uint
+
+const (
+	InputUserNormal = iota
+	InputUserFollowRequest
+	InputUserListAdd
+	InputUserListDelete
+)
+
+func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User, ut InputUserType) *tcell.EventKey {
 	blocking := user.Relation.Blocking
 	muting := user.Relation.Muting
 	following := user.Relation.Following
 
-	if tv.tut.Config.Input.UserFollowRequestDecide.Match(event.Key(), event.Rune()) {
+	if ut == InputUserListAdd {
+		if tv.tut.Config.Input.GlobalEnter.Match(event.Key(), event.Rune()) ||
+			tv.tut.Config.Input.ListUserAdd.Match(event.Key(), event.Rune()) {
+			ad := user.AdditionalData
+			switch ad.(type) {
+			case *mastodon.List:
+				l := user.AdditionalData.(*mastodon.List)
+				err := tv.tut.Client.AddUserToList(user.Data, l)
+				if err != nil {
+					tv.ShowError(fmt.Sprintf("Couldn't add user to list. Error: %v", err))
+				}
+				return nil
+			default:
+				return event
+			}
+
+		}
+		return event
+	}
+
+	if ut == InputUserListDelete {
+		if tv.tut.Config.Input.GlobalEnter.Match(event.Key(), event.Rune()) ||
+			tv.tut.Config.Input.ListUserDelete.Match(event.Key(), event.Rune()) {
+			ad := user.AdditionalData
+			switch ad.(type) {
+			case *mastodon.List:
+				l := user.AdditionalData.(*mastodon.List)
+				err := tv.tut.Client.DeleteUserFromList(user.Data, l)
+				if err != nil {
+					tv.ShowError(fmt.Sprintf("Couldn't remove user from list. Error: %v", err))
+				}
+				return nil
+			default:
+				return event
+			}
+		}
+		return event
+	}
+
+	if ut == InputUserFollowRequest && tv.tut.Config.Input.UserFollowRequestDecide.Match(event.Key(), event.Rune()) {
 		tv.ModalView.RunDecide("Do you want accept the follow request?",
 			func() {
 				err := tv.tut.Client.FollowRequestAccept(user.Data)
@@ -669,6 +722,14 @@ func (tv *TutView) InputList(event *tcell.EventKey, list *mastodon.List) *tcell.
 	if tv.tut.Config.Input.ListOpenFeed.Match(event.Key(), event.Rune()) ||
 		tv.tut.Config.Input.GlobalEnter.Match(event.Key(), event.Rune()) {
 		tv.Timeline.AddFeed(NewListFeed(tv, list))
+		return nil
+	}
+	if tv.tut.Config.Input.ListUserList.Match(event.Key(), event.Rune()) {
+		tv.Timeline.AddFeed(NewUsersInListFeed(tv, list))
+		return nil
+	}
+	if tv.tut.Config.Input.ListUserAdd.Match(event.Key(), event.Rune()) {
+		tv.Timeline.AddFeed(NewUsersAddListFeed(tv, list))
 		return nil
 	}
 	return event

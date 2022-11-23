@@ -380,7 +380,10 @@ type Input struct {
 	UserViewFocus           Key
 	UserYank                Key
 
-	ListOpenFeed Key
+	ListOpenFeed   Key
+	ListUserList   Key
+	ListUserAdd    Key
+	ListUserDelete Key
 
 	LinkOpen Key
 	LinkYank Key
@@ -1265,7 +1268,10 @@ func parseInput(cfg *ini.File) Input {
 		UserViewFocus:           inputStrOrErr([]string{"\"[V]iew\"", "'v'", "'V'"}, false),
 		UserYank:                inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
 
-		ListOpenFeed: inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
+		ListOpenFeed:   inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
+		ListUserList:   inputStrOrErr([]string{"\"[U]sers\"", "'u'", "'U'"}, false),
+		ListUserAdd:    inputStrOrErr([]string{"\"[A]dd\"", "'a'", "'A'"}, false),
+		ListUserDelete: inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
 
 		LinkOpen: inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
 		LinkYank: inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
@@ -1340,6 +1346,9 @@ func parseInput(cfg *ini.File) Input {
 	ic.UserYank = inputOrErr(cfg, "user-yank", false, ic.UserYank)
 
 	ic.ListOpenFeed = inputOrErr(cfg, "list-open-feed", false, ic.ListOpenFeed)
+	ic.ListUserList = inputOrErr(cfg, "list-user-list", false, ic.ListUserList)
+	ic.ListUserAdd = inputOrErr(cfg, "list-user-add", false, ic.ListUserAdd)
+	ic.ListUserDelete = inputOrErr(cfg, "list-user-delete", false, ic.ListUserDelete)
 
 	ic.LinkOpen = inputOrErr(cfg, "link-open", false, ic.LinkOpen)
 	ic.LinkYank = inputOrErr(cfg, "link-yank", false, ic.LinkYank)

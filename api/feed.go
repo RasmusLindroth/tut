@@ -21,7 +21,7 @@ func (ac *AccountClient) getStatusSimilar(fn func() ([]*mastodon.Status, error),
 	return items, nil
 }
 
-func (ac *AccountClient) getUserSimilar(fn func() ([]*mastodon.Account, error)) ([]Item, error) {
+func (ac *AccountClient) getUserSimilar(fn func() ([]*mastodon.Account, error), data interface{}) ([]Item, error) {
 	var items []Item
 	users, err := fn()
 	if err != nil {
@@ -39,8 +39,9 @@ func (ac *AccountClient) getUserSimilar(fn func() ([]*mastodon.Account, error)) 
 		for _, r := range rel {
 			if u.ID == r.ID {
 				items = append(items, NewUserItem(&User{
-					Data:     u,
-					Relation: r,
+					Data:           u,
+					Relation:       r,
+					AdditionalData: data,
 				}, false))
 				break
 			}
@@ -185,49 +186,49 @@ func (ac *AccountClient) GetBoostsStatus(pg *mastodon.Pagination, id mastodon.ID
 	fn := func() ([]*mastodon.Account, error) {
 		return ac.Client.GetRebloggedBy(context.Background(), id, pg)
 	}
-	return ac.getUserSimilar(fn)
+	return ac.getUserSimilar(fn, nil)
 }
 
 func (ac *AccountClient) GetFavoritesStatus(pg *mastodon.Pagination, id mastodon.ID) ([]Item, error) {
 	fn := func() ([]*mastodon.Account, error) {
 		return ac.Client.GetFavouritedBy(context.Background(), id, pg)
 	}
-	return ac.getUserSimilar(fn)
+	return ac.getUserSimilar(fn, nil)
 }
 
 func (ac *AccountClient) GetFollowers(pg *mastodon.Pagination, id mastodon.ID) ([]Item, error) {
 	fn := func() ([]*mastodon.Account, error) {
 		return ac.Client.GetAccountFollowers(context.Background(), id, pg)
 	}
-	return ac.getUserSimilar(fn)
+	return ac.getUserSimilar(fn, nil)
 }
 
 func (ac *AccountClient) GetFollowing(pg *mastodon.Pagination, id mastodon.ID) ([]Item, error) {
 	fn := func() ([]*mastodon.Account, error) {
 		return ac.Client.GetAccountFollowing(context.Background(), id, pg)
 	}
-	return ac.getUserSimilar(fn)
+	return ac.getUserSimilar(fn, nil)
 }
 
 func (ac *AccountClient) GetBlocking(pg *mastodon.Pagination) ([]Item, error) {
 	fn := func() ([]*mastodon.Account, error) {
 		return ac.Client.GetBlocks(context.Background(), pg)
 	}
-	return ac.getUserSimilar(fn)
+	return ac.getUserSimilar(fn, nil)
 }
 
 func (ac *AccountClient) GetMuting(pg *mastodon.Pagination) ([]Item, error) {
 	fn := func() ([]*mastodon.Account, error) {
 		return ac.Client.GetMutes(context.Background(), pg)
 	}
-	return ac.getUserSimilar(fn)
+	return ac.getUserSimilar(fn, nil)
 }
 
 func (ac *AccountClient) GetFollowRequests(pg *mastodon.Pagination) ([]Item, error) {
 	fn := func() ([]*mastodon.Account, error) {
 		return ac.Client.GetFollowRequests(context.Background(), pg)
 	}
-	return ac.getUserSimilar(fn)
+	return ac.getUserSimilar(fn, nil)
 }
 
 func (ac *AccountClient) GetUser(pg *mastodon.Pagination, id mastodon.ID) ([]Item, error) {
@@ -279,6 +280,20 @@ func (ac *AccountClient) GetListStatuses(pg *mastodon.Pagination, id mastodon.ID
 		items = append(items, item)
 	}
 	return items, nil
+}
+
+func (ac *AccountClient) GetFollowingForList(pg *mastodon.Pagination, id mastodon.ID, data interface{}) ([]Item, error) {
+	fn := func() ([]*mastodon.Account, error) {
+		return ac.Client.GetAccountFollowing(context.Background(), id, pg)
+	}
+	return ac.getUserSimilar(fn, data)
+}
+
+func (ac *AccountClient) GetListUsers(pg *mastodon.Pagination, id mastodon.ID, data interface{}) ([]Item, error) {
+	fn := func() ([]*mastodon.Account, error) {
+		return ac.Client.GetListAccounts(context.Background(), id)
+	}
+	return ac.getUserSimilar(fn, data)
 }
 
 func (ac *AccountClient) GetTag(pg *mastodon.Pagination, search string) ([]Item, error) {

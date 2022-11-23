@@ -15,6 +15,7 @@ type AccountClient struct {
 }
 
 type User struct {
-	Data     *mastodon.Account
-	Relation *mastodon.Relationship
+	Data           *mastodon.Account
+	Relation       *mastodon.Relationship
+	AdditionalData interface{}
 }

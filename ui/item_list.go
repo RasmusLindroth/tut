@@ -11,9 +11,19 @@ type List struct {
 }
 
 func drawList(tv *TutView, data *mastodon.List, main *tview.TextView, controls *tview.Flex) {
-	btn := NewControl(tv.tut.Config, tv.tut.Config.Input.ListOpenFeed, true)
 	controls.Clear()
-	controls.AddItem(NewControlButton(tv, btn), btn.Len, 0, false)
+	var items []Control
+	items = append(items, NewControl(tv.tut.Config, tv.tut.Config.Input.ListOpenFeed, true))
+	items = append(items, NewControl(tv.tut.Config, tv.tut.Config.Input.ListUserList, true))
+	items = append(items, NewControl(tv.tut.Config, tv.tut.Config.Input.ListUserAdd, true))
+	controls.Clear()
+	for i, item := range items {
+		if i < len(items)-1 {
+			controls.AddItem(NewControlButton(tv, item), item.Len+1, 0, false)
+		} else {
+			controls.AddItem(NewControlButton(tv, item), item.Len, 0, false)
+		}
+	}
 
 	main.SetText(fmt.Sprintf("List %s", tview.Escape(data.Title)))
 }

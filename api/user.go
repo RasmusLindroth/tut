@@ -87,3 +87,11 @@ func (ac *AccountClient) SavePreferences(p *mastodon.Profile) error {
 	}
 	return err
 }
+
+func (ac *AccountClient) AddUserToList(u *mastodon.Account, l *mastodon.List) error {
+	return ac.Client.AddToList(context.Background(), l.ID, u.ID)
+}
+
+func (ac *AccountClient) DeleteUserFromList(u *mastodon.Account, l *mastodon.List) error {
+	return ac.Client.RemoveFromList(context.Background(), l.ID, u.ID)
+}

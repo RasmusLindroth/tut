@@ -91,10 +91,15 @@ func DrawItem(tv *TutView, item api.Item, main *tview.TextView, controls *tview.
 		}
 		drawStatus(tv, item, &status, main, controls, true, "")
 	case api.UserType, api.ProfileType:
-		if ft == feed.FollowRequests {
-			drawUser(tv, item.Raw().(*api.User), main, controls, "", true)
-		} else {
-			drawUser(tv, item.Raw().(*api.User), main, controls, "", false)
+		switch ft {
+		case feed.FollowRequests:
+			drawUser(tv, item.Raw().(*api.User), main, controls, "", InputUserFollowRequest)
+		case feed.ListUsersAdd:
+			drawUser(tv, item.Raw().(*api.User), main, controls, "", InputUserListAdd)
+		case feed.ListUsersIn:
+			drawUser(tv, item.Raw().(*api.User), main, controls, "", InputUserListDelete)
+		default:
+			drawUser(tv, item.Raw().(*api.User), main, controls, "", InputUserFollowRequest)
 		}
 	case api.NotificationType:
 		drawNotification(tv, item, item.Raw().(*api.NotificationData), main, controls)
@@ -122,9 +127,9 @@ func DrawItemControls(tv *TutView, item api.Item, controls *tview.Flex, ft feed.
 		drawStatus(tv, item, &status, nil, controls, true, "")
 	case api.UserType, api.ProfileType:
 		if ft == feed.FollowRequests {
-			drawUser(tv, item.Raw().(*api.User), nil, controls, "", true)
+			drawUser(tv, item.Raw().(*api.User), nil, controls, "", InputUserFollowRequest)
 		} else {
-			drawUser(tv, item.Raw().(*api.User), nil, controls, "", false)
+			drawUser(tv, item.Raw().(*api.User), nil, controls, "", InputUserNormal)
 		}
 	case api.NotificationType:
 		drawNotification(tv, item, item.Raw().(*api.NotificationData), nil, controls)
