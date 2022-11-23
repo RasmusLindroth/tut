@@ -43,7 +43,7 @@ type DisplayUserData struct {
 	Style config.Style
 }
 
-func drawUser(tv *TutView, data *api.User, main *tview.TextView, controls *tview.Flex, additional string, fr bool) {
+func drawUser(tv *TutView, data *api.User, main *tview.TextView, controls *tview.Flex, additional string, ut InputUserType) {
 	user := data.Data
 	relation := data.Relation
 	showUserControl := true
@@ -79,7 +79,7 @@ func drawUser(tv *TutView, data *api.User, main *tview.TextView, controls *tview
 	u.Fields = fields
 
 	var controlItems []Control
-	if fr {
+	if ut == InputUserFollowRequest {
 		controlItems = append(controlItems, NewControl(tv.tut.Config, tv.tut.Config.Input.UserFollowRequestDecide, false))
 	}
 	if tv.tut.Client.Me.ID != user.ID {
@@ -107,6 +107,13 @@ func drawUser(tv *TutView, data *api.User, main *tview.TextView, controls *tview
 	}
 	controlItems = append(controlItems, NewControl(tv.tut.Config, tv.tut.Config.Input.UserAvatar, true))
 	controlItems = append(controlItems, NewControl(tv.tut.Config, tv.tut.Config.Input.UserYank, true))
+
+	// Clear controls and only have add and delete for lists.
+	if ut == InputUserListAdd {
+		controlItems = []Control{NewControl(tv.tut.Config, tv.tut.Config.Input.ListUserAdd, true)}
+	} else if ut == InputUserListDelete {
+		controlItems = []Control{NewControl(tv.tut.Config, tv.tut.Config.Input.ListUserDelete, true)}
+	}
 
 	controls.Clear()
 	for i, item := range controlItems {

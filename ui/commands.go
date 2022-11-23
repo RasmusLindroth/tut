@@ -86,6 +86,22 @@ func (tv *TutView) TagCommand(tag string) {
 	)
 }
 
+func (tv *TutView) TagFollowCommand(tag string) {
+	err := tv.tut.Client.FollowTag(tag)
+	if err != nil {
+		tv.ShowError(fmt.Sprintf("Couldn't follow tag. Error: %v\n", err))
+		return
+	}
+}
+
+func (tv *TutView) TagUnfollowCommand(tag string) {
+	err := tv.tut.Client.UnfollowTag(tag)
+	if err != nil {
+		tv.ShowError(fmt.Sprintf("Couldn't unfollow tag. Error: %v\n", err))
+		return
+	}
+}
+
 func (tv *TutView) WindowCommand(index string) {
 	i, err := strconv.Atoi(index)
 	if err != nil {

@@ -13,7 +13,7 @@ func drawNotification(tv *TutView, item api.Item, notification *api.Notification
 	switch notification.Item.Type {
 	case "follow":
 		drawUser(tv, notification.User.Raw().(*api.User), main, controls,
-			fmt.Sprintf("%s started following you", util.FormatUsername(notification.Item.Account)), false,
+			fmt.Sprintf("%s started following you", util.FormatUsername(notification.Item.Account)), InputUserNormal,
 		)
 	case "favourite":
 		drawStatus(tv, notification.Status, notification.Item.Status, main, controls, false,
@@ -42,7 +42,7 @@ func drawNotification(tv *TutView, item api.Item, notification *api.Notification
 	case "follow_request":
 		drawUser(tv, notification.User.Raw().(*api.User), main, controls,
 			fmt.Sprintf("%s  wants to follow you.", util.FormatUsername(notification.Item.Account)),
-			true,
+			InputUserFollowRequest,
 		)
 	default:
 		controls.Clear()

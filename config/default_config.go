@@ -644,6 +644,18 @@ user-yank="[Y]ank",'y','Y'
 # default="[O]pen",'o','O'
 list-open-feed="[O]pen",'o','O'
 
+# List all users in a list
+# default="[U]sers",'u','U'
+list-user-list="[U]sers",'u','U'
+
+# Add user to list
+# default="[A]dd",'a','A'
+list-user-add="[A]dd",'a','A'
+
+# Delete user from list
+# default="[D]elete",'d','D'
+list-user-delete="[D]elete",'d','D'
+
 # Open URL
 # default="[O]pen",'o','O'
 link-open="[O]pen",'o','O'

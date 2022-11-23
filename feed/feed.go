@@ -14,6 +14,7 @@ import (
 type apiFunc func(pg *mastodon.Pagination) ([]api.Item, error)
 type apiEmptyFunc func() ([]api.Item, error)
 type apiIDFunc func(pg *mastodon.Pagination, id mastodon.ID) ([]api.Item, error)
+type apiIDFuncData func(pg *mastodon.Pagination, id mastodon.ID, data interface{}) ([]api.Item, error)
 type apiSearchFunc func(search string) ([]api.Item, error)
 type apiSearchPGFunc func(pg *mastodon.Pagination, search string) ([]api.Item, error)
 type apiThreadFunc func(status *mastodon.Status) ([]api.Item, error)
@@ -44,6 +45,8 @@ const (
 	UserList
 	Lists
 	List
+	ListUsersIn
+	ListUsersAdd
 )
 
 type LoadingLock struct {
@@ -556,6 +559,57 @@ func (f *Feed) linkOlderID(fn apiIDFunc, id mastodon.ID) {
 	f.itemsMux.Unlock()
 }
 
+func (f *Feed) linkNewerIDdata(fn apiIDFuncData, id mastodon.ID, data interface{}) {
+	f.apiDataMux.Lock()
+	pg := &mastodon.Pagination{}
+	pg.MinID = f.apiData.MinID
+	maxTmp := f.apiData.MaxID
+
+	items, err := fn(pg, id, data)
+	if err != nil {
+		f.apiDataMux.Unlock()
+		return
+	}
+	f.apiData.MinID = pg.MinID
+	if pg.MaxID == "" {
+		f.apiData.MaxID = maxTmp
+	} else {
+		f.apiData.MaxID = pg.MaxID
+	}
+	f.apiDataMux.Unlock()
+	f.itemsMux.Lock()
+	if len(items) > 0 {
+		f.items = append(items, f.items...)
+		f.Updated(DeskstopNotificationNone)
+	}
+	f.itemsMux.Unlock()
+}
+
+func (f *Feed) linkOlderIDdata(fn apiIDFuncData, id mastodon.ID, data interface{}) {
+	f.apiDataMux.Lock()
+	pg := &mastodon.Pagination{}
+	pg.MaxID = f.apiData.MaxID
+	if pg.MaxID == "" {
+		f.apiDataMux.Unlock()
+		return
+	}
+
+	items, err := fn(pg, id, data)
+	if err != nil {
+		f.apiDataMux.Unlock()
+		return
+	}
+	f.apiData.MaxID = pg.MaxID
+	f.apiDataMux.Unlock()
+
+	f.itemsMux.Lock()
+	if len(items) > 0 {
+		f.items = append(f.items, items...)
+		f.Updated(DeskstopNotificationNone)
+	}
+	f.itemsMux.Unlock()
+}
+
 func (f *Feed) startStream(rec *api.Receiver, timeline string, err error) {
 	if err != nil {
 		log.Fatalln("Couldn't open stream")
@@ -785,6 +839,36 @@ func NewList(ac *api.AccountClient, list *mastodon.List) *Feed {
 	feed.loadOlder = func() { feed.normalOlderID(feed.accountClient.GetListStatuses, list.ID) }
 	feed.startStream(feed.accountClient.NewListStream(list.ID))
 	feed.close = func() { feed.accountClient.RemoveListReceiver(feed.stream, list.ID) }
+
+	return feed
+}
+
+func NewUsersInList(ac *api.AccountClient, list *mastodon.List) *Feed {
+	feed := newFeed(ac, ListUsersIn)
+	feed.name = list.Title
+	once := true
+	feed.loadNewer = func() {
+		if once {
+			feed.linkNewerIDdata(feed.accountClient.GetListUsers, list.ID, list)
+		}
+		once = false
+	}
+	feed.loadOlder = func() { feed.linkOlderIDdata(feed.accountClient.GetListUsers, list.ID, list) }
+
+	return feed
+}
+
+func NewUsersAddList(ac *api.AccountClient, list *mastodon.List) *Feed {
+	feed := newFeed(ac, ListUsersAdd)
+	feed.name = list.Title
+	once := true
+	feed.loadNewer = func() {
+		if once {
+			feed.linkNewerIDdata(feed.accountClient.GetFollowingForList, ac.Me.ID, list)
+		}
+		once = false
+	}
+	feed.loadOlder = func() { feed.linkOlderIDdata(feed.accountClient.GetFollowingForList, ac.Me.ID, list) }
 
 	return feed
 }

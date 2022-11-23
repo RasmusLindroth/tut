@@ -198,6 +198,26 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 			NewUserSearchFeed(c.tutView, user),
 		)
 		c.Back()
+	case ":follow-tag":
+		if len(parts) < 2 {
+			break
+		}
+		tag := strings.TrimSpace(parts[1])
+		if len(tag) == 0 {
+			break
+		}
+		c.tutView.TagFollowCommand(parts[1])
+		c.Back()
+	case ":unfollow-tag":
+		if len(parts) < 2 {
+			break
+		}
+		tag := strings.TrimSpace(parts[1])
+		if len(tag) == 0 {
+			break
+		}
+		c.tutView.TagUnfollowCommand(parts[1])
+		c.Back()
 	case ":lists":
 		c.tutView.ListsCommand()
 		c.Back()
@@ -211,7 +231,7 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 
 func (c *CmdBar) Autocomplete(curr string) []string {
 	var entries []string
-	words := strings.Split(":blocking,:boosts,:bookmarks,:clear-notifications,:compose,:favorites,:favorited,:followers,:following,:help,:h,:history,:lists,:list-placement,:list-split,:muting,:newer,:preferences,:profile,:proportions,:requests,:saved,:tag,:timeline,:tl,:user,:window,:quit,:q", ",")
+	words := strings.Split(":blocking,:boosts,:bookmarks,:clear-notifications,:compose,:favorites,:favorited,:follow-tag,:followers,:following,:help,:h,:history,:lists,:list-placement,:list-split,:muting,:newer,:preferences,:profile,:proportions,:requests,:saved,:tag,:timeline,:tl,:unfollow-tag,:user,:window,:quit,:q", ",")
 	if curr == "" {
 		return entries
 	}

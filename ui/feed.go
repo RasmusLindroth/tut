@@ -336,6 +336,36 @@ func NewListFeed(tv *TutView, l *mastodon.List) *Feed {
 	return fd
 }
 
+func NewUsersInListFeed(tv *TutView, l *mastodon.List) *Feed {
+	f := feed.NewUsersInList(tv.tut.Client, l)
+	f.LoadNewer()
+	fd := &Feed{
+		tutView:   tv,
+		Data:      f,
+		ListIndex: 0,
+		List:      NewFeedList(tv.tut, f.StickyCount()),
+		Content:   NewFeedContent(tv.tut),
+	}
+	go fd.update()
+
+	return fd
+}
+
+func NewUsersAddListFeed(tv *TutView, l *mastodon.List) *Feed {
+	f := feed.NewUsersAddList(tv.tut.Client, l)
+	f.LoadNewer()
+	fd := &Feed{
+		tutView:   tv,
+		Data:      f,
+		ListIndex: 0,
+		List:      NewFeedList(tv.tut, f.StickyCount()),
+		Content:   NewFeedContent(tv.tut),
+	}
+	go fd.update()
+
+	return fd
+}
+
 func NewFavoritedFeed(tv *TutView) *Feed {
 	f := feed.NewFavorites(tv.tut.Client)
 	f.LoadNewer()
