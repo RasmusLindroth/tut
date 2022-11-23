@@ -27,6 +27,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
   * [Alpine Linux](#alpine-linux)
   * [Debian](#debian)
   * [FreeBSD](#freebsd)
+  * [openSUSE](#opensuse)
 * [Build it yourself](#build-it-yourself)
 * [Flags and commands](#flags-and-commands)
 * [Templates](#templates)
@@ -126,6 +127,13 @@ http://packages.azlux.fr/ (I'm not the maintainer)
 
 https://www.freshports.org/net-im/tut (I'm not the maintainer)
 
+### openSUSE
+
+`tut` package is shipped as part of openSUSE Tumbleweed and openSUSE Leap 15.5+. It can be installed via:
+
+`sudo zypper in tut`
+
+[suntorytimed](https://build.opensuse.org/users/suntorytimed) is the maintainer of the package.
 
 ## Build it yourself
 If you don't use the binary that you find under releases
