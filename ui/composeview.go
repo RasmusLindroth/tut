@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/RasmusLindroth/go-mastodon"
+	"github.com/RasmusLindroth/tut/api"
 	"github.com/RasmusLindroth/tut/config"
 	"github.com/RasmusLindroth/tut/util"
 	"github.com/gdamore/tcell/v2"
@@ -17,8 +18,10 @@ import (
 )
 
 type msgToot struct {
+	ID            mastodon.ID
 	Text          string
-	Status        *mastodon.Status
+	Reply         *mastodon.Status
+	Edit          *mastodon.Status
 	MediaIDs      []mastodon.ID
 	Sensitive     bool
 	SpoilerText   string
@@ -123,7 +126,7 @@ func (cv *ComposeView) SetControls(ctrl ComposeControls) {
 		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeMediaFocus, true))
 		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposePoll, true))
 		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeLanguage, true))
-		if cv.msg.Status != nil {
+		if cv.msg.Reply != nil {
 			items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeIncludeQuote, true))
 		}
 	case ComposeMedia:
@@ -142,7 +145,7 @@ func (cv *ComposeView) SetControls(ctrl ComposeControls) {
 	}
 }
 
-func (cv *ComposeView) SetStatus(status *mastodon.Status) {
+func (cv *ComposeView) SetStatus(reply *mastodon.Status, edit *mastodon.Status) error {
 	cv.tutView.PollView.Reset()
 	cv.media.Reset()
 	msg := &msgToot{}
@@ -155,30 +158,60 @@ func (cv *ComposeView) SetStatus(status *mastodon.Status) {
 	if me.Source != nil && me.Source.Language != nil {
 		lang = *me.Source.Language
 	}
-	if status != nil {
-		if status.Reblog != nil {
-			status = status.Reblog
+	if reply != nil {
+		if reply.Reblog != nil {
+			reply = reply.Reblog
 		}
-		msg.Status = status
-		if status.Sensitive {
+		msg.Reply = reply
+		if reply.Sensitive {
 			msg.Sensitive = true
-			msg.SpoilerText = status.SpoilerText
+			msg.SpoilerText = reply.SpoilerText
 		}
-		if visibilities[status.Visibility] > visibilities[visibility] {
-			visibility = status.Visibility
+		if visibilities[reply.Visibility] > visibilities[visibility] {
+			visibility = reply.Visibility
 		}
 	}
 	msg.Visibility = visibility
 	msg.Language = lang
 	cv.msg = msg
 	cv.msg.Text = cv.getAccs()
-	if cv.tutView.tut.Config.General.QuoteReply {
+
+	if edit != nil {
+		source, err := cv.tutView.tut.Client.Client.GetStatusSource(context.Background(), edit.ID)
+		if err != nil {
+			cv.tutView.ShowError(
+				fmt.Sprintf("Couldn't get status. Error: %v\n", err),
+			)
+			return err
+		}
+		msg := &msgToot{}
+		msg.Edit = edit
+		msg.ID = source.ID
+		msg.Text = source.Text
+		msg.SpoilerText = source.SpoilerText
+		for _, mid := range edit.MediaAttachments {
+			msg.MediaIDs = append(msg.MediaIDs, mid.ID)
+		}
+		msg.Sensitive = edit.Sensitive
+		msg.Visibility = edit.Visibility
+		msg.Language = edit.Language
+		if edit.Poll != nil {
+			cv.tutView.PollView.AddPoll(edit.Poll)
+		}
+		if len(edit.MediaAttachments) > 0 {
+			cv.media.AddFromEdit(edit)
+		}
+
+		cv.msg = msg
+	}
+
+	if cv.tutView.tut.Config.General.QuoteReply && edit == nil {
 		cv.IncludeQuote()
 	}
 	cv.visibility.SetLabel("Visibility: ")
 	index := 0
 	for i, v := range visibilitiesStr {
-		if msg.Visibility == v {
+		if cv.msg.Visibility == v {
 			index = i
 			break
 		}
@@ -190,7 +223,7 @@ func (cv *ComposeView) SetStatus(status *mastodon.Status) {
 	cv.lang.SetLabel("Lang: ")
 	langStrs := []string{}
 	for i, l := range util.Languages {
-		if msg.Language == l.Code {
+		if cv.msg.Language == l.Code {
 			index = i
 		}
 		langStrs = append(langStrs, fmt.Sprintf("%s (%s)", l.Local, l.English))
@@ -200,13 +233,14 @@ func (cv *ComposeView) SetStatus(status *mastodon.Status) {
 
 	cv.UpdateContent()
 	cv.SetControls(ComposeNormal)
+	return nil
 }
 
 func (cv *ComposeView) getAccs() string {
-	if cv.msg.Status == nil {
+	if cv.msg.Reply == nil {
 		return ""
 	}
-	s := cv.msg.Status
+	s := cv.msg.Reply
 	var users []string
 	if s.Account.Acct != cv.tutView.tut.Client.Me.Acct {
 		users = append(users, "@"+s.Account.Acct)
@@ -259,12 +293,12 @@ func (cv *ComposeView) UpdateContent() {
 	var outputHead string
 	var output string
 
-	if cv.msg.Status != nil {
+	if cv.msg.Reply != nil {
 		var acct string
-		if cv.msg.Status.Account.DisplayName != "" {
-			acct = fmt.Sprintf("%s (%s)\n", cv.msg.Status.Account.DisplayName, cv.msg.Status.Account.Acct)
+		if cv.msg.Reply.Account.DisplayName != "" {
+			acct = fmt.Sprintf("%s (%s)\n", cv.msg.Reply.Account.DisplayName, cv.msg.Reply.Account.Acct)
 		} else {
-			acct = fmt.Sprintf("%s\n", cv.msg.Status.Account.Acct)
+			acct = fmt.Sprintf("%s\n", cv.msg.Reply.Account.Acct)
 		}
 		outputHead += subtleColor + "Replying to " + tview.Escape(acct) + "\n" + normal
 	}
@@ -291,7 +325,7 @@ func (cv *ComposeView) IncludeQuote() {
 		return
 	}
 	t := cv.msg.Text
-	s := cv.msg.Status
+	s := cv.msg.Reply
 	if s == nil {
 		return
 	}
@@ -383,8 +417,11 @@ func (cv *ComposeView) Post() {
 	send := mastodon.Toot{
 		Status: strings.TrimSpace(toot.Text),
 	}
-	if toot.Status != nil {
-		send.InReplyToID = toot.Status.ID
+	if toot.Reply != nil {
+		send.InReplyToID = toot.Reply.ID
+	}
+	if toot.Edit != nil && toot.Edit.InReplyToID != nil {
+		send.InReplyToID = toot.Edit.InReplyToID.(mastodon.ID)
 	}
 	if toot.Sensitive {
 		send.Sensitive = true
@@ -394,6 +431,10 @@ func (cv *ComposeView) Post() {
 	if cv.HasMedia() {
 		attachments := cv.media.Files
 		for _, ap := range attachments {
+			if ap.Remote {
+				send.MediaIDs = append(send.MediaIDs, ap.ID)
+				continue
+			}
 			f, err := os.Open(ap.Path)
 			if err != nil {
 				cv.tutView.ShowError(
@@ -426,7 +467,25 @@ func (cv *ComposeView) Post() {
 	send.Visibility = cv.msg.Visibility
 	send.Language = cv.msg.Language
 
-	_, err := cv.tutView.tut.Client.Client.PostStatus(context.Background(), &send)
+	var err error
+	var newPost *mastodon.Status
+	if toot.Edit != nil {
+		newPost, err = cv.tutView.tut.Client.Client.UpdateStatus(context.Background(), &send, toot.Edit.ID)
+		if err == nil {
+			item, itemErr := cv.tutView.GetCurrentItem()
+			if itemErr != nil {
+				return
+			}
+			if item.Type() != api.StatusType {
+				return
+			}
+			s := item.Raw().(*mastodon.Status)
+			*s = *newPost
+			cv.tutView.RedrawContent()
+		}
+	} else {
+		_, err = cv.tutView.tut.Client.Client.PostStatus(context.Background(), &send)
+	}
 	if err != nil {
 		cv.tutView.ShowError(
 			fmt.Sprintf("Couldn't post toot. Error: %v\n", err),
@@ -466,6 +525,26 @@ func NewMediaList(tv *TutView) *MediaList {
 type UploadFile struct {
 	Path        string
 	Description string
+	Remote      bool
+	ID          mastodon.ID
+}
+
+func (m *MediaList) AddFromEdit(edit *mastodon.Status) {
+	m.Files = nil
+	m.list.Clear()
+	for i, ma := range edit.MediaAttachments {
+		m.Files = append(m.Files, UploadFile{
+			Description: ma.Description,
+			Remote:      true,
+			ID:          ma.ID,
+		})
+		m.list.AddItem(fmt.Sprintf("From edit: %d", i+1), "", 0, nil)
+	}
+	index := m.list.GetItemCount()
+	if index > 0 {
+		m.list.SetCurrentItem(index - 1)
+	}
+	m.Draw()
 }
 
 func (m *MediaList) Reset() {
@@ -546,6 +625,12 @@ func (m *MediaList) EditDesc() {
 		return
 	}
 	file := m.Files[index]
+	if file.Remote {
+		m.tutView.ShowError(
+			"Can't edit desc of a file that's already uploaded",
+		)
+		return
+	}
 	desc, err := OpenEditor(m.tutView, file.Description)
 	if err != nil {
 		m.tutView.ShowError(

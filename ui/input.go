@@ -119,6 +119,8 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.ClearNotificationsCommand()
 		case config.LeaderCompose:
 			tv.ComposeCommand()
+		case config.LeaderEdit:
+			tv.EditCommand()
 		case config.LeaderBlocking:
 			tv.BlockingCommand()
 		case config.LeaderBookmarks, config.LeaderSaved:
@@ -295,7 +297,7 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 		return event
 	}
 	if tv.tut.Config.Input.MainCompose.Match(event.Key(), event.Rune()) {
-		tv.InitPost(nil)
+		tv.InitPost(nil, nil)
 		return nil
 	}
 	switch item.Type() {
@@ -405,6 +407,10 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 		})
 		return nil
 	}
+	if tv.tut.Config.Input.StatusEdit.Match(event.Key(), event.Rune()) {
+		tv.EditCommand()
+		return nil
+	}
 	if tv.tut.Config.Input.StatusFavorite.Match(event.Key(), event.Rune()) {
 		txt := "favorite"
 		if favorited {
@@ -443,7 +449,7 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 		return nil
 	}
 	if tv.tut.Config.Input.StatusReply.Match(event.Key(), event.Rune()) {
-		tv.InitPost(status)
+		tv.InitPost(status, nil)
 		return nil
 	}
 	if tv.tut.Config.Input.StatusBookmark.Match(event.Key(), event.Rune()) {

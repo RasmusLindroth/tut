@@ -8,7 +8,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-const version = "1.0.20"
+const version = "1.0.21"
 
 func main() {
 	util.SetTerminalTitle("tut")
