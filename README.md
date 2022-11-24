@@ -43,6 +43,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:bookmarks` lists all your bookmarks
 * `:clear-notifications` clear all notifications
 * `:compose` compose a new toot
+* `:edit` edit one of your toots
 * `:favorited` lists toots you've favorited
 * `:favorites` lists users that favorited the toot
 * `:follow-tag` followed by the hashtag to follow e.g. `:follow-tag tut`

@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/gdamore/tcell/v2"
@@ -98,6 +99,23 @@ func (p *PollView) Reset() {
 		HideTotals:       false,
 	}
 	p.list.Clear()
+	p.redrawInfo()
+}
+
+func (p *PollView) AddPoll(np *mastodon.Poll) {
+	p.poll = &mastodon.TootPoll{
+		Options:          []string{},
+		ExpiresInSeconds: durationsTime[durations[4]],
+		Multiple:         false,
+		HideTotals:       false,
+	}
+	for _, opt := range np.Options {
+		p.poll.Options = append(p.poll.Options, opt.Title)
+		p.list.AddItem(opt.Title, "", 0, nil)
+	}
+	p.poll.Multiple = np.Multiple
+	diff := time.Until(np.ExpiresAt)
+	p.poll.ExpiresInSeconds = int64(diff.Seconds())
 	p.redrawInfo()
 }
 

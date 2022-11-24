@@ -152,9 +152,9 @@ leader-timeout=1000
 # comma.
 # 
 # Available commands: home, direct, local, federated, clear-notifications,
-# compose, history, blocking, bookmarks, saved, favorited, boosts, favorites,
-# following, followers, muting, newer, preferences, profile, notifications,
-# lists, tag, window, list-placement, list-split, proportions
+# compose, edit, history, blocking, bookmarks, saved, favorited, boosts,
+# favorites, following, followers, muting, newer, preferences, profile,
+# notifications, lists, tag, window, list-placement, list-split, proportions
 # 
 # The shortcuts are up to you, but keep them quite short and make sure they
 # don't collide. If you have one shortcut that is "f" and an other one that is
@@ -555,6 +555,10 @@ status-avatar="[A]vatar",'a','A'
 # Boost a toot
 # default="[B]oost","Un[B]oost",'b','B'
 status-boost="[B]oost","Un[B]oost",'b','B'
+
+# Edit a toot
+# default="[E]dit",'e','E'
+status-edit="[E]dit",'e','E'
 
 # Delete a toot
 # default="[D]elete",'d','D'

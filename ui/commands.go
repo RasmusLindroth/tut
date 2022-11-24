@@ -12,7 +12,23 @@ import (
 )
 
 func (tv *TutView) ComposeCommand() {
-	tv.InitPost(nil)
+	tv.InitPost(nil, nil)
+}
+
+func (tv *TutView) EditCommand() {
+	item, itemErr := tv.GetCurrentItem()
+	if itemErr != nil {
+		return
+	}
+	if item.Type() != api.StatusType {
+		return
+	}
+	s := item.Raw().(*mastodon.Status)
+	s = util.StatusOrReblog(s)
+	if tv.tut.Client.Me.ID != s.Account.ID {
+		return
+	}
+	tv.InitPost(nil, s)
 }
 
 func (tv *TutView) BlockingCommand() {

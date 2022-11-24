@@ -57,6 +57,7 @@ const (
 	LeaderFederated
 	LeaderClearNotifications
 	LeaderCompose
+	LeaderEdit
 	LeaderBlocking
 	LeaderBookmarks
 	LeaderSaved
@@ -358,6 +359,7 @@ type Input struct {
 	StatusAvatar        Key
 	StatusBoost         Key
 	StatusDelete        Key
+	StatusEdit          Key
 	StatusFavorite      Key
 	StatusMedia         Key
 	StatusLinks         Key
@@ -860,6 +862,8 @@ func parseGeneral(cfg *ini.File) General {
 				la.Command = LeaderClearNotifications
 			case "compose":
 				la.Command = LeaderCompose
+			case "edit":
+				la.Command = LeaderEdit
 			case "blocking":
 				la.Command = LeaderBlocking
 			case "bookmarks":
@@ -1246,6 +1250,7 @@ func parseInput(cfg *ini.File) Input {
 		StatusAvatar:        inputStrOrErr([]string{"\"[A]vatar\"", "'a'", "'A'"}, false),
 		StatusBoost:         inputStrOrErr([]string{"\"[B]oost\"", "\"Un[B]oost\"", "'b'", "'B'"}, true),
 		StatusDelete:        inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
+		StatusEdit:          inputStrOrErr([]string{"\"[E]dit\"", "'e'", "'E'"}, false),
 		StatusFavorite:      inputStrOrErr([]string{"\"[F]avorite\"", "\"Un[F]avorite\"", "'f'", "'F'"}, true),
 		StatusMedia:         inputStrOrErr([]string{"\"[M]edia\"", "'m'", "'M'"}, false),
 		StatusLinks:         inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
@@ -1323,6 +1328,7 @@ func parseInput(cfg *ini.File) Input {
 	ic.StatusAvatar = inputOrErr(cfg, "status-avatar", false, ic.StatusAvatar)
 	ic.StatusBoost = inputOrErr(cfg, "status-boost", true, ic.StatusBoost)
 	ic.StatusDelete = inputOrErr(cfg, "status-delete", false, ic.StatusDelete)
+	ic.StatusEdit = inputOrErr(cfg, "status-edit", false, ic.StatusEdit)
 	ic.StatusFavorite = inputOrErr(cfg, "status-favorite", true, ic.StatusFavorite)
 	ic.StatusMedia = inputOrErr(cfg, "status-media", false, ic.StatusMedia)
 	ic.StatusLinks = inputOrErr(cfg, "status-links", false, ic.StatusLinks)

@@ -215,6 +215,9 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 	}
 	info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusAvatar, true))
 	if status.Account.ID == tv.tut.Client.Me.ID && !isHistory {
+		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusEdit, true))
+	}
+	if status.Account.ID == tv.tut.Client.Me.ID && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusDelete, true))
 	}
 

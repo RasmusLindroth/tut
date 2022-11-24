@@ -67,6 +67,11 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 		c.tutView.ComposeCommand()
 		c.ClearInput()
 		c.View.Autocomplete()
+	case ":edit":
+		c.ClearInput()
+		c.View.Autocomplete()
+		c.Back()
+		c.tutView.EditCommand()
 	case ":blocking":
 		c.tutView.BlockingCommand()
 		c.Back()

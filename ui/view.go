@@ -165,9 +165,11 @@ func (tv *TutView) PrevFocus() {
 	tv.PrevPageFocus = MainFocus
 }
 
-func (tv *TutView) InitPost(status *mastodon.Status) {
-	tv.ComposeView.SetStatus(status)
-	tv.SetPage(ComposeFocus)
+func (tv *TutView) InitPost(status *mastodon.Status, original *mastodon.Status) {
+	err := tv.ComposeView.SetStatus(status, original)
+	if err == nil {
+		tv.SetPage(ComposeFocus)
+	}
 }
 
 func (tv *TutView) ShowError(s string) {
