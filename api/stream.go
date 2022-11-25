@@ -193,6 +193,8 @@ func (ac *AccountClient) RemoveGenericReceiver(rec *Receiver, st StreamType, dat
 		id = "LocalStream"
 	case FederatedStream:
 		id = "FederatedStream"
+	case DirectStream:
+		id = "DirectStream"
 	case TagStream:
 		id = "TagStream" + data
 	case ListStream:
