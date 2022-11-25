@@ -421,7 +421,7 @@ func (cv *ComposeView) Post() {
 		send.InReplyToID = toot.Reply.ID
 	}
 	if toot.Edit != nil && toot.Edit.InReplyToID != nil {
-		send.InReplyToID = toot.Edit.InReplyToID.(mastodon.ID)
+		send.InReplyToID = mastodon.ID(toot.Edit.InReplyToID.(string))
 	}
 	if toot.Sensitive {
 		send.Sensitive = true
