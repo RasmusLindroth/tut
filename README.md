@@ -89,7 +89,7 @@ Tut is configurable, so you can change things like the colors, the default timel
 what image viewer to use and some more. Check out the configuration file to see 
 all the options.
 
-You find it in `XDG_CONFIG_HOME/tut/config.ini` which usally equals to `~/.config/tut/config.ini`.
+You find it in `XDG_CONFIG_HOME/tut/config.ini` which usually equals to `~/.config/tut/config.ini`.
 
 You can find an updated configuration file in this repo named `config.example.ini`.
 If there are any new configurations options you can copy them frome that file.
