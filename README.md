@@ -122,11 +122,11 @@ https://pkgs.alpinelinux.org/package/edge/community/x86_64/tut
 
 ### Debian
 
-http://packages.azlux.fr/ (I'm not the maintainer)
+http://packages.azlux.fr/
 
 ### FreeBSD
 
-https://www.freshports.org/net-im/tut (I'm not the maintainer)
+https://www.freshports.org/net-im/tut 
 
 ### openSUSE
 
