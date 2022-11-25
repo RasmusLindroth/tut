@@ -35,7 +35,7 @@ func AddAccount(ad *AccountData) *mastodon.Client {
 		})
 		_, err = client.GetInstance(context.Background())
 		if err != nil {
-			fmt.Printf("\nCouldn't connect to instance: %s\nTry again or press ^C.\n", server)
+			fmt.Printf("\nCouldn't connect to instance %s:\n%s\nTry again or press ^C.\n", server, err)
 			fmt.Println("--------------------------------------------------------------")
 		} else {
 			break
