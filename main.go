@@ -13,13 +13,13 @@ const version = "1.0.23"
 func main() {
 	util.SetTerminalTitle("tut")
 	util.MakeDirs()
-	newUser, selectedUser := ui.CliView(version)
+	newUser, selectedUser, cnfPath, cnfDir := ui.CliView(version)
 	accs := auth.StartAuth(newUser)
 
 	app := tview.NewApplication()
 	t := &ui.Tut{
 		App:    app,
-		Config: config.Load(),
+		Config: config.Load(cnfPath, cnfDir),
 	}
 	if t.Config.General.MouseSupport {
 		app.EnableMouse(true)
