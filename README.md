@@ -27,6 +27,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
   * [Alpine Linux](#alpine-linux)
   * [Debian](#debian)
   * [FreeBSD](#freebsd)
+  * [OpenBSD](#openbsd)
   * [openSUSE](#opensuse)
 * [Build it yourself](#build-it-yourself)
 * [Flags and commands](#flags-and-commands)
@@ -127,6 +128,14 @@ http://packages.azlux.fr/
 ### FreeBSD
 
 https://www.freshports.org/net-im/tut 
+
+### OpenBSD
+
+https://openports.pl/path/net/tut
+
+The `tut` is available since OpenBSD 7.3.  It can be installed with:
+
+	pkg_add tut
 
 ### openSUSE
 
