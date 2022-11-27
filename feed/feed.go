@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
@@ -36,6 +37,7 @@ const (
 	Notification
 	Saved
 	Tag
+	Tags
 	Thread
 	TimelineFederated
 	TimelineHome
@@ -80,7 +82,7 @@ type Feed struct {
 	Update        chan DesktopNotificationType
 	apiData       *api.RequestData
 	apiDataMux    sync.Mutex
-	stream        *api.Receiver
+	streams       []*api.Receiver
 	name          string
 	close         func()
 }
@@ -172,7 +174,7 @@ func (f *Feed) LoadOlder() {
 }
 
 func (f *Feed) HasStream() bool {
-	return f.stream != nil
+	return len(f.streams) > 0
 }
 
 func (f *Feed) Close() {
@@ -614,16 +616,30 @@ func (f *Feed) startStream(rec *api.Receiver, timeline string, err error) {
 	if err != nil {
 		log.Fatalln("Couldn't open stream")
 	}
-	f.stream = rec
+	f.streams = append(f.streams, rec)
 	go func() {
-		for e := range f.stream.Ch {
+		for e := range rec.Ch {
 			switch t := e.(type) {
 			case *mastodon.UpdateEvent:
 				s := api.NewStatusItem(t.Status, f.accountClient.Filters, timeline, false)
 				f.itemsMux.Lock()
-				f.items = append([]api.Item{s}, f.items...)
-				f.Updated(DesktopNotificationPost)
-				f.apiData.MinID = t.Status.ID
+				found := false
+				if len(f.streams) > 0 {
+					for _, item := range f.items {
+						switch v := item.Raw().(type) {
+						case *mastodon.Status:
+							if t.Status.ID == v.ID {
+								found = true
+								break
+							}
+						}
+					}
+				}
+				if !found {
+					f.items = append([]api.Item{s}, f.items...)
+					f.Updated(DesktopNotificationPost)
+					f.apiData.MinID = t.Status.ID
+				}
 				f.itemsMux.Unlock()
 			}
 		}
@@ -634,9 +650,9 @@ func (f *Feed) startStreamNotification(rec *api.Receiver, timeline string, err e
 	if err != nil {
 		log.Fatalln("Couldn't open stream")
 	}
-	f.stream = rec
+	f.streams = append(f.streams, rec)
 	go func() {
-		for e := range f.stream.Ch {
+		for e := range rec.Ch {
 			switch t := e.(type) {
 			case *mastodon.NotificationEvent:
 				rel, err := f.accountClient.Client.GetAccountRelationships(context.Background(), []string{string(t.Notification.Account.ID)})
@@ -700,7 +716,11 @@ func NewTimelineHome(ac *api.AccountClient) *Feed {
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetTimeline) }
 	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetTimeline) }
 	feed.startStream(feed.accountClient.NewHomeStream())
-	feed.close = func() { feed.accountClient.RemoveHomeReceiver(feed.stream) }
+	feed.close = func() {
+		for _, s := range feed.streams {
+			feed.accountClient.RemoveHomeReceiver(s)
+		}
+	}
 
 	return feed
 }
@@ -710,7 +730,11 @@ func NewTimelineFederated(ac *api.AccountClient) *Feed {
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetTimelineFederated) }
 	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetTimelineFederated) }
 	feed.startStream(feed.accountClient.NewFederatedStream())
-	feed.close = func() { feed.accountClient.RemoveFederatedReceiver(feed.stream) }
+	feed.close = func() {
+		for _, s := range feed.streams {
+			feed.accountClient.RemoveFederatedReceiver(s)
+		}
+	}
 
 	return feed
 }
@@ -720,8 +744,11 @@ func NewTimelineLocal(ac *api.AccountClient) *Feed {
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetTimelineLocal) }
 	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetTimelineLocal) }
 	feed.startStream(feed.accountClient.NewLocalStream())
-	feed.close = func() { feed.accountClient.RemoveLocalReceiver(feed.stream) }
-
+	feed.close = func() {
+		for _, s := range feed.streams {
+			feed.accountClient.RemoveLocalReceiver(s)
+		}
+	}
 	return feed
 }
 
@@ -730,7 +757,11 @@ func NewConversations(ac *api.AccountClient) *Feed {
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetConversations) }
 	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetConversations) }
 	feed.startStream(feed.accountClient.NewDirectStream())
-	feed.close = func() { feed.accountClient.RemoveConversationReceiver(feed.stream) }
+	feed.close = func() {
+		for _, s := range feed.streams {
+			feed.accountClient.RemoveConversationReceiver(s)
+		}
+	}
 
 	return feed
 }
@@ -740,7 +771,11 @@ func NewNotifications(ac *api.AccountClient) *Feed {
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetNotifications) }
 	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetNotifications) }
 	feed.startStreamNotification(feed.accountClient.NewHomeStream())
-	feed.close = func() { feed.accountClient.RemoveHomeReceiver(feed.stream) }
+	feed.close = func() {
+		for _, s := range feed.streams {
+			feed.accountClient.RemoveHomeReceiver(s)
+		}
+	}
 
 	return feed
 }
@@ -810,11 +845,40 @@ func NewHistory(ac *api.AccountClient, status *mastodon.Status) *Feed {
 
 func NewTag(ac *api.AccountClient, search string) *Feed {
 	feed := newFeed(ac, Tag)
-	feed.name = search
-	feed.loadNewer = func() { feed.newerSearchPG(feed.accountClient.GetTag, search) }
-	feed.loadOlder = func() { feed.olderSearchPG(feed.accountClient.GetTag, search) }
-	feed.startStream(feed.accountClient.NewTagStream(search))
-	feed.close = func() { feed.accountClient.RemoveTagReceiver(feed.stream, search) }
+	parts := strings.Split(search, " ")
+	var tparts []string
+	for _, p := range parts {
+		p = strings.TrimPrefix(p, "#")
+		if len(p) > 0 {
+			tparts = append(tparts, p)
+		}
+	}
+	joined := strings.Join(tparts, " ")
+	feed.name = joined
+	feed.loadNewer = func() { feed.newerSearchPG(feed.accountClient.GetTagMultiple, joined) }
+	feed.loadOlder = func() { feed.olderSearchPG(feed.accountClient.GetTagMultiple, joined) }
+	for _, t := range tparts {
+		feed.startStream(feed.accountClient.NewTagStream(t))
+	}
+	feed.close = func() {
+		for i, s := range feed.streams {
+			feed.accountClient.RemoveTagReceiver(s, tparts[i])
+		}
+	}
+
+	return feed
+}
+
+func NewTags(ac *api.AccountClient) *Feed {
+	feed := newFeed(ac, Tags)
+	once := true
+	feed.loadNewer = func() {
+		if once {
+			feed.normalNewer(feed.accountClient.GetTags)
+		}
+		once = false
+	}
+	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetTags) }
 
 	return feed
 }
@@ -838,7 +902,11 @@ func NewList(ac *api.AccountClient, list *mastodon.List) *Feed {
 	feed.loadNewer = func() { feed.normalNewerID(feed.accountClient.GetListStatuses, list.ID) }
 	feed.loadOlder = func() { feed.normalOlderID(feed.accountClient.GetListStatuses, list.ID) }
 	feed.startStream(feed.accountClient.NewListStream(list.ID))
-	feed.close = func() { feed.accountClient.RemoveListReceiver(feed.stream, list.ID) }
+	feed.close = func() {
+		for _, s := range feed.streams {
+			feed.accountClient.RemoveListReceiver(s, list.ID)
+		}
+	}
 
 	return feed
 }

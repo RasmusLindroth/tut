@@ -392,3 +392,44 @@ func (s *ListItem) Filtered() (bool, string) {
 func (n *ListItem) Pinned() bool {
 	return false
 }
+
+func NewTagItem(item *mastodon.Tag) Item {
+	return &TagItem{id: newID(), item: item, showSpoiler: true}
+}
+
+type TagItem struct {
+	id          uint
+	item        *mastodon.Tag
+	showSpoiler bool
+}
+
+func (t *TagItem) ID() uint {
+	return t.id
+}
+
+func (t *TagItem) Type() MastodonType {
+	return TagType
+}
+
+func (t *TagItem) ToggleSpoiler() {
+}
+
+func (t *TagItem) ShowSpoiler() bool {
+	return true
+}
+
+func (t *TagItem) Raw() interface{} {
+	return t.item
+}
+
+func (t *TagItem) URLs() ([]util.URL, []mastodon.Mention, []mastodon.Tag, int) {
+	return nil, nil, nil, 0
+}
+
+func (t *TagItem) Filtered() (bool, string) {
+	return false, ""
+}
+
+func (t *TagItem) Pinned() bool {
+	return false
+}

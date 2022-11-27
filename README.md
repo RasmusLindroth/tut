@@ -63,6 +63,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:requests` see following requests
 * `:saved` alias for bookmarks
 * `:tag` followed by the hashtag e.g. `:tag linux`
+* `:tags` list of followed tags
 * `:unfollow-tag` followed by the hashtag to unfollow e.g. `:unfollow-tag tut`
 * `:user` followed by a username e.g. `:user rasmus` to narrow a search include 
 * `:window` switch window by index (zero indexed) e.g. `:window 0` for the first window.
@@ -169,13 +170,17 @@ Commands:
     example-config - creates the default configuration file in the current directory and names it ./config.example.ini
 
 Flags:
-    --help -h - prints this message
-    --version -v - prints the version
-    --new-user -n - add one more user to tut
-    --user <name> -u <name> - login directly to user named <name>
-        Don't use a = between --user and the <name> 
-        If two users are named the same. Use full name like tut@fosstodon.org
+	-h  --help             prints this message
+	-v  --version          prints the version
+	-n  --new-user         add one more user to tut
+	-c  --config <path>    load config.ini from <path>
+	-d --config-dir <path> load all config from <path>
+	-u  --user <name>      login directly to user named <name>
+		If two users are named the same. Use full name like tut@fosstodon.org
 ```
+
+If you don't want to set `--config` or `--config-dir` everytime you can set
+the environment variables `TUT_CONF` and `TUT_CONF_DIR` instead.
 
 ## Templates
 You can customise how toots and user profiles are displayed with a

@@ -154,7 +154,8 @@ leader-timeout=1000
 # Available commands: home, direct, local, federated, clear-notifications,
 # compose, edit, history, blocking, bookmarks, saved, favorited, boosts,
 # favorites, following, followers, muting, newer, preferences, profile,
-# notifications, lists, tag, window, list-placement, list-split, proportions
+# notifications, lists, tag, tags, window, list-placement, list-split,
+# proportions
 # 
 # The shortcuts are up to you, but keep them quite short and make sure they
 # don't collide. If you have one shortcut that is "f" and an other one that is
@@ -667,6 +668,14 @@ link-open="[O]pen",'o','O'
 # Yank the URL
 # default="[Y]ank",'y','Y'
 link-yank="[Y]ank",'y','Y'
+
+# Open tag feed
+# default="[O]pen",'o','O'
+tag-open-feed="[O]pen",'o','O'
+
+# Toggle follow on tag
+# default="[F]ollow","Un[F]ollow",'f','F'
+tag-follow="[F]ollow","Un[F]ollow",'f','F'
 
 # Edit spoiler text on new toot
 # default="[C]W text",'c','C'

@@ -102,6 +102,12 @@ func (tv *TutView) TagCommand(tag string) {
 	)
 }
 
+func (tv *TutView) TagsCommand() {
+	tv.Timeline.AddFeed(
+		NewTagsFeed(tv),
+	)
+}
+
 func (tv *TutView) TagFollowCommand(tag string) {
 	err := tv.tut.Client.FollowTag(tag)
 	if err != nil {

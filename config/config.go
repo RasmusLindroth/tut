@@ -75,6 +75,7 @@ const (
 	LeaderNotifications
 	LeaderLists
 	LeaderTag
+	LeaderTags
 	LeaderHistory
 	LeaderUser
 	LeaderWindow
@@ -387,6 +388,9 @@ type Input struct {
 	ListUserAdd    Key
 	ListUserDelete Key
 
+	TagOpenFeed Key
+	TagFollow   Key
+
 	LinkOpen Key
 	LinkYank Key
 
@@ -439,7 +443,7 @@ func parseColor(input string, def string, xrdb map[string]string) tcell.Color {
 	return tcell.GetColor(input)
 }
 
-func parseStyle(cfg *ini.File) Style {
+func parseStyle(cfg *ini.File, cnfPath string, cnfDir string) Style {
 	var xrdbColors map[string]string
 	xrdbMap, _ := GetXrdbColors()
 	prefix := cfg.Section("style").Key("xrdb-prefix").String()
@@ -464,7 +468,7 @@ func parseStyle(cfg *ini.File) Style {
 	style := Style{}
 	theme := cfg.Section("style").Key("theme").String()
 	if theme != "none" && theme != "" {
-		bundled, local, err := getThemes()
+		bundled, local, err := getThemes(cnfPath, cnfDir)
 		if err != nil {
 			log.Fatalf("Couldn't load themes. Error: %s\n", err)
 		}
@@ -488,7 +492,7 @@ func parseStyle(cfg *ini.File) Style {
 		if !found {
 			log.Fatalf("Couldn't find theme %s\n", theme)
 		}
-		tcfg, err := getTheme(theme, isLocal)
+		tcfg, err := getTheme(theme, isLocal, cnfDir)
 		if err != nil {
 			log.Fatalf("Couldn't load theme. Error: %s\n", err)
 		}
@@ -895,6 +899,8 @@ func parseGeneral(cfg *ini.File) General {
 			case "tag":
 				la.Command = LeaderTag
 				la.Subaction = subaction
+			case "tags":
+				la.Command = LeaderTags
 			case "list-placement":
 				la.Command = LeaderListPlacement
 				la.Subaction = subaction
@@ -1150,9 +1156,9 @@ func parseNotifications(cfg *ini.File) Notification {
 	return nc
 }
 
-func parseTemplates(cfg *ini.File) Templates {
+func parseTemplates(cfg *ini.File, cnfPath string, cnfDir string) Templates {
 	var tootTmpl *template.Template
-	tootTmplPath, exists, err := checkConfig("toot.tmpl")
+	tootTmplPath, exists, err := checkConfig("toot.tmpl", cnfPath, cnfDir)
 	if err != nil {
 		log.Fatalf(
 			fmt.Sprintf("Couldn't access toot.tmpl. Error: %v", err),
@@ -1174,7 +1180,7 @@ func parseTemplates(cfg *ini.File) Templates {
 		log.Fatalf("Couldn't parse toot.tmpl. Error: %v", err)
 	}
 	var userTmpl *template.Template
-	userTmplPath, exists, err := checkConfig("user.tmpl")
+	userTmplPath, exists, err := checkConfig("user.tmpl", cnfPath, cnfDir)
 	if err != nil {
 		log.Fatalf(
 			fmt.Sprintf("Couldn't access user.tmpl. Error: %v", err),
@@ -1278,6 +1284,9 @@ func parseInput(cfg *ini.File) Input {
 		ListUserAdd:    inputStrOrErr([]string{"\"[A]dd\"", "'a'", "'A'"}, false),
 		ListUserDelete: inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
 
+		TagOpenFeed: inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
+		TagFollow:   inputStrOrErr([]string{"\"[F]ollow\"", "\"Un[F]ollow\"", "'f'", "'F'"}, true),
+
 		LinkOpen: inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
 		LinkYank: inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
 
@@ -1356,6 +1365,9 @@ func parseInput(cfg *ini.File) Input {
 	ic.ListUserAdd = inputOrErr(cfg, "list-user-add", false, ic.ListUserAdd)
 	ic.ListUserDelete = inputOrErr(cfg, "list-user-delete", false, ic.ListUserDelete)
 
+	ic.TagOpenFeed = inputOrErr(cfg, "tag-open-feed", false, ic.TagOpenFeed)
+	ic.TagFollow = inputOrErr(cfg, "tag-follow", false, ic.TagFollow)
+
 	ic.LinkOpen = inputOrErr(cfg, "link-open", false, ic.LinkOpen)
 	ic.LinkYank = inputOrErr(cfg, "link-yank", false, ic.LinkYank)
 
@@ -1393,7 +1405,7 @@ func parseInput(cfg *ini.File) Input {
 	return ic
 }
 
-func parseConfig(filepath string) (Config, error) {
+func parseConfig(filepath string, cnfPath string, cnfDir string) (Config, error) {
 	cfg, err := ini.LoadSources(ini.LoadOptions{
 		SpaceBeforeInlineComment: true,
 		AllowShadows:             true,
@@ -1404,11 +1416,11 @@ func parseConfig(filepath string) (Config, error) {
 	}
 	conf.General = parseGeneral(cfg)
 	conf.Media = parseMedia(cfg)
-	conf.Style = parseStyle(cfg)
+	conf.Style = parseStyle(cfg, cnfPath, cnfDir)
 	conf.OpenPattern = parseOpenPattern(cfg)
 	conf.OpenCustom = parseCustom(cfg)
 	conf.NotificationConfig = parseNotifications(cfg)
-	conf.Templates = parseTemplates(cfg)
+	conf.Templates = parseTemplates(cfg, cnfPath, cnfDir)
 	conf.Input = parseInput(cfg)
 
 	return conf, nil
@@ -1423,7 +1435,25 @@ func createConfigDir() error {
 	return os.MkdirAll(path, os.ModePerm)
 }
 
-func checkConfig(filename string) (path string, exists bool, err error) {
+func checkConfig(filename string, cnfPath string, cnfDir string) (path string, exists bool, err error) {
+	if cnfPath != "" && filename == "config.ini" {
+		_, err = os.Stat(cnfPath)
+		if os.IsNotExist(err) {
+			return cnfPath, false, nil
+		} else if err != nil {
+			return cnfPath, true, err
+		}
+		return cnfPath, true, err
+	}
+	if cnfDir != "" {
+		p := filepath.Join(cnfDir, filename)
+		if os.IsNotExist(err) {
+			return p, false, nil
+		} else if err != nil {
+			return p, true, err
+		}
+		return p, true, err
+	}
 	cd, err := os.UserConfigDir()
 	if err != nil {
 		log.Fatalf("couldn't find config dir. Err %v", err)
@@ -1452,7 +1482,7 @@ func CreateDefaultConfig(filepath string) error {
 	return nil
 }
 
-func getThemes() (bundled []string, local []string, err error) {
+func getThemes(cnfPath string, cnfDir string) (bundled []string, local []string, err error) {
 	entries, err := themesFS.ReadDir("themes")
 	if err != nil {
 		return bundled, local, err
@@ -1464,18 +1494,23 @@ func getThemes() (bundled []string, local []string, err error) {
 		fp := filepath.Join("themes/", entry.Name())
 		bundled = append(bundled, fp)
 	}
-	_, exists, err := checkConfig("themes")
+	_, exists, err := checkConfig("themes", cnfPath, cnfDir)
 	if err != nil {
 		return bundled, local, err
 	}
 	if !exists {
 		return bundled, local, err
 	}
-	cd, err := os.UserConfigDir()
-	if err != nil {
-		log.Fatalf("couldn't find config dir. Err %v", err)
+	var dir string
+	if cnfDir != "" {
+		dir = filepath.Join(cnfDir, "themes")
+	} else {
+		cd, err := os.UserConfigDir()
+		if err != nil {
+			log.Fatalf("couldn't find config dir. Err %v", err)
+		}
+		dir = filepath.Join(cd, "/tut/themes")
 	}
-	dir := cd + "/tut/themes"
 	entries, err = os.ReadDir(dir)
 	if err != nil {
 		return bundled, local, err
@@ -1490,17 +1525,23 @@ func getThemes() (bundled []string, local []string, err error) {
 	return bundled, local, nil
 }
 
-func getTheme(fname string, isLocal bool) (*ini.File, error) {
+func getTheme(fname string, isLocal bool, cnfDir string) (*ini.File, error) {
 	var f io.Reader
 	var err error
 	if isLocal {
-		var cd string
-		cd, err = os.UserConfigDir()
-		if err != nil {
-			log.Fatalf("couldn't find config dir. Err %v", err)
+		var dir string
+		if cnfDir != "" {
+			dir = filepath.Join(cnfDir, "themes")
+		} else {
+			cd, err := os.UserConfigDir()
+			if err != nil {
+				log.Fatalf("couldn't find config dir. Err %v", err)
+			}
+			dir = filepath.Join(cd, "/tut/themes")
 		}
-		dir := cd + "/tut/themes"
-		f, err = os.Open(fmt.Sprintf("%s/%s.ini", dir, strings.TrimSpace(fname)))
+		f, err = os.Open(
+			filepath.Join(dir, fmt.Sprintf("%s.ini", strings.TrimSpace(fname))),
+		)
 	} else {
 		f, err = themesFS.Open(fmt.Sprintf("themes/%s.ini", strings.TrimSpace(fname)))
 	}

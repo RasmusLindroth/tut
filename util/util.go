@@ -13,6 +13,18 @@ import (
 	"golang.org/x/net/html"
 )
 
+func GetAbsPath(path string) (string, error) {
+	if filepath.IsAbs(path) {
+		return path, nil
+	}
+	curr, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	np := filepath.Join(curr, path)
+	return np, nil
+}
+
 type URL struct {
 	Text    string
 	URL     string
