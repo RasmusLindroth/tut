@@ -179,11 +179,11 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 		if len(parts) < 2 {
 			break
 		}
-		tag := strings.TrimSpace(strings.TrimPrefix(parts[1], "#"))
-		if len(tag) == 0 {
+		tParts := strings.TrimSpace(strings.Join(parts[1:], " "))
+		if len(tParts) == 0 {
 			break
 		}
-		c.tutView.TagCommand(tag)
+		c.tutView.TagCommand(tParts)
 		c.Back()
 	case ":tags":
 		c.tutView.TagsCommand()

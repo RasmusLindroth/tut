@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"strings"
 
 	"github.com/RasmusLindroth/go-mastodon"
 )
@@ -156,7 +157,14 @@ func (ac *AccountClient) GetConversations(pg *mastodon.Pagination) ([]Item, erro
 
 func (ac *AccountClient) GetUsers(search string) ([]Item, error) {
 	var items []Item
-	users, err := ac.Client.AccountsSearch(context.Background(), search, 10)
+	var users []*mastodon.Account
+	var err error
+	if strings.HasPrefix(search, "@") && len(strings.Split(search, "@")) == 3 {
+		users, err = ac.Client.AccountsSearch(context.Background(), search, 10, true)
+	}
+	if len(users) == 0 || err != nil {
+		users, err = ac.Client.AccountsSearch(context.Background(), search, 10, false)
+	}
 	if err != nil {
 		return items, err
 	}
@@ -311,6 +319,25 @@ func (ac *AccountClient) GetListUsers(pg *mastodon.Pagination, id mastodon.ID, d
 func (ac *AccountClient) GetTag(pg *mastodon.Pagination, search string) ([]Item, error) {
 	fn := func() ([]*mastodon.Status, error) {
 		return ac.Client.GetTimelineHashtag(context.Background(), search, false, pg)
+	}
+	return ac.getStatusSimilar(fn, "public")
+}
+
+func (ac *AccountClient) GetTagMultiple(pg *mastodon.Pagination, search string) ([]Item, error) {
+	fn := func() ([]*mastodon.Status, error) {
+		var s string
+		td := mastodon.TagData{}
+		parts := strings.Split(search, " ")
+		for i, p := range parts {
+			if i == 0 {
+				s = p
+				continue
+			}
+			if len(p) > 0 {
+				td.Any = append(td.Any, p)
+			}
+		}
+		return ac.Client.GetTimelineHashtagMultiple(context.Background(), s, false, &td, pg)
 	}
 	return ac.getStatusSimilar(fn, "public")
 }

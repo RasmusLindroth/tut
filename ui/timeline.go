@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/RasmusLindroth/tut/feed"
 )
@@ -148,7 +149,11 @@ func (tl *Timeline) GetTitle() string {
 	case feed.Notification:
 		ct = "notifications"
 	case feed.Tag:
-		ct = fmt.Sprintf("tag #%s", name)
+		parts := strings.Split(name, " ")
+		for i, p := range parts {
+			parts[i] = fmt.Sprintf("#%s", p)
+		}
+		ct = fmt.Sprintf("tag %s", strings.Join(parts, " "))
 	case feed.Thread:
 		ct = "thread feed"
 	case feed.History:
