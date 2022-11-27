@@ -36,6 +36,7 @@ const (
 	Notification
 	Saved
 	Tag
+	Tags
 	Thread
 	TimelineFederated
 	TimelineHome
@@ -815,6 +816,20 @@ func NewTag(ac *api.AccountClient, search string) *Feed {
 	feed.loadOlder = func() { feed.olderSearchPG(feed.accountClient.GetTag, search) }
 	feed.startStream(feed.accountClient.NewTagStream(search))
 	feed.close = func() { feed.accountClient.RemoveTagReceiver(feed.stream, search) }
+
+	return feed
+}
+
+func NewTags(ac *api.AccountClient) *Feed {
+	feed := newFeed(ac, Tags)
+	once := true
+	feed.loadNewer = func() {
+		if once {
+			feed.normalNewer(feed.accountClient.GetTags)
+		}
+		once = false
+	}
+	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetTags) }
 
 	return feed
 }

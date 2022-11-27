@@ -306,6 +306,22 @@ func NewTagFeed(tv *TutView, search string) *Feed {
 
 	return fd
 }
+
+func NewTagsFeed(tv *TutView) *Feed {
+	f := feed.NewTags(tv.tut.Client)
+	f.LoadNewer()
+	fd := &Feed{
+		tutView:   tv,
+		Data:      f,
+		ListIndex: 0,
+		List:      NewFeedList(tv.tut, f.StickyCount()),
+		Content:   NewFeedContent(tv.tut),
+	}
+	go fd.update()
+
+	return fd
+}
+
 func NewListsFeed(tv *TutView) *Feed {
 	f := feed.NewListList(tv.tut.Client)
 	f.LoadNewer()

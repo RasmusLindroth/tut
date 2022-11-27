@@ -16,6 +16,7 @@ const (
 	ProfileType
 	NotificationType
 	ListsType
+	TagType
 )
 
 type StreamType uint

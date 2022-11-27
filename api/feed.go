@@ -257,6 +257,18 @@ func (ac *AccountClient) GetUserPinned(id mastodon.ID) ([]Item, error) {
 	return items, nil
 }
 
+func (ac *AccountClient) GetTags(pg *mastodon.Pagination) ([]Item, error) {
+	var items []Item
+	tags, err := ac.Client.TagsFollowed(context.Background(), pg)
+	if err != nil {
+		return items, err
+	}
+	for _, t := range tags {
+		items = append(items, NewTagItem(t))
+	}
+	return items, nil
+}
+
 func (ac *AccountClient) GetLists() ([]Item, error) {
 	var items []Item
 	lists, err := ac.Client.GetLists(context.Background())

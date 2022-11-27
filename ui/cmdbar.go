@@ -185,6 +185,9 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 		}
 		c.tutView.TagCommand(tag)
 		c.Back()
+	case ":tags":
+		c.tutView.TagsCommand()
+		c.Back()
 	case ":window":
 		if len(parts) < 2 {
 			break

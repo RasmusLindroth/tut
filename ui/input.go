@@ -151,6 +151,8 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.ListsCommand()
 		case config.LeaderTag:
 			tv.TagCommand(subaction)
+		case config.LeaderTags:
+			tv.TagsCommand()
 		case config.LeaderWindow:
 			tv.WindowCommand(subaction)
 		case config.LeaderListPlacement:
@@ -341,6 +343,9 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 	case api.ListsType:
 		ld := item.Raw().(*mastodon.List)
 		return tv.InputList(event, ld)
+	case api.TagType:
+		tag := item.Raw().(*mastodon.Tag)
+		return tv.InputTag(event, tag)
 	}
 	return event
 }
@@ -736,6 +741,34 @@ func (tv *TutView) InputList(event *tcell.EventKey, list *mastodon.List) *tcell.
 	}
 	if tv.tut.Config.Input.ListUserAdd.Match(event.Key(), event.Rune()) {
 		tv.Timeline.AddFeed(NewUsersAddListFeed(tv, list))
+		return nil
+	}
+	return event
+}
+
+func (tv *TutView) InputTag(event *tcell.EventKey, tag *mastodon.Tag) *tcell.EventKey {
+	if tv.tut.Config.Input.TagOpenFeed.Match(event.Key(), event.Rune()) ||
+		tv.tut.Config.Input.GlobalEnter.Match(event.Key(), event.Rune()) {
+		tv.Timeline.AddFeed(NewTagFeed(tv, tag.Name))
+		return nil
+	}
+	if tv.tut.Config.Input.TagFollow.Match(event.Key(), event.Rune()) {
+		txt := "follow"
+		if tag.Following != nil && tag.Following == true {
+			txt = "unfollow"
+		}
+		tv.ModalView.Run(fmt.Sprintf("Do you want to %s #%s?", txt, tag.Name),
+			func() {
+				nt, err := tv.tut.Client.TagToggleFollow(tag)
+				if err != nil {
+					tv.ShowError(
+						fmt.Sprintf("Couldn't %s tag. Error: %v\n", txt, err),
+					)
+					return
+				}
+				*tag = *nt
+				tv.RedrawControls()
+			})
 		return nil
 	}
 	return event

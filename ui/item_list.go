@@ -25,5 +25,7 @@ func drawList(tv *TutView, data *mastodon.List, main *tview.TextView, controls *
 		}
 	}
 
-	main.SetText(fmt.Sprintf("List %s", tview.Escape(data.Title)))
+	if main != nil {
+		main.SetText(fmt.Sprintf("List %s", tview.Escape(data.Title)))
+	}
 }

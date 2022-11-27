@@ -63,6 +63,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:requests` see following requests
 * `:saved` alias for bookmarks
 * `:tag` followed by the hashtag e.g. `:tag linux`
+* `:tags` list of followed tags
 * `:unfollow-tag` followed by the hashtag to unfollow e.g. `:unfollow-tag tut`
 * `:user` followed by a username e.g. `:user rasmus` to narrow a search include 
 * `:window` switch window by index (zero indexed) e.g. `:window 0` for the first window.

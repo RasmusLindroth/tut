@@ -68,6 +68,9 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 	case api.ListsType:
 		a := item.Raw().(*mastodon.List)
 		return tview.Escape(a.Title), ""
+	case api.TagType:
+		a := item.Raw().(*mastodon.Tag)
+		return tview.Escape("#" + a.Name), ""
 	default:
 		return "", ""
 	}
@@ -105,6 +108,8 @@ func DrawItem(tv *TutView, item api.Item, main *tview.TextView, controls *tview.
 		drawNotification(tv, item, item.Raw().(*api.NotificationData), main, controls)
 	case api.ListsType:
 		drawList(tv, item.Raw().(*mastodon.List), main, controls)
+	case api.TagType:
+		drawTag(tv, item.Raw().(*mastodon.Tag), main, controls)
 	}
 }
 
@@ -135,6 +140,8 @@ func DrawItemControls(tv *TutView, item api.Item, controls *tview.Flex, ft feed.
 		drawNotification(tv, item, item.Raw().(*api.NotificationData), nil, controls)
 	case api.ListsType:
 		drawList(tv, item.Raw().(*mastodon.List), nil, controls)
+	case api.TagType:
+		drawTag(tv, item.Raw().(*mastodon.Tag), nil, controls)
 	}
 
 }

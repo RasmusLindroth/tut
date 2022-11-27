@@ -1,7 +1,7 @@
-github.com/RasmusLindroth/go-mastodon v0.0.10 h1:huGNcPn5SASfJDhBL4drKL0PFJ29+hqjCroIrkf2R0E=
-github.com/RasmusLindroth/go-mastodon v0.0.10/go.mod h1:Lr6n8V1U2b+9P89YZKsICkNc+oNeJXkygY7raei9SXE=
 github.com/RasmusLindroth/go-mastodon v0.0.11 h1:Qcad+urrDVrboo13ayoHG3DcwsGK/07qR6IfOPPMilY=
 github.com/RasmusLindroth/go-mastodon v0.0.11/go.mod h1:Lr6n8V1U2b+9P89YZKsICkNc+oNeJXkygY7raei9SXE=
+github.com/RasmusLindroth/go-mastodon v0.0.12 h1:hfrji+k2Aj3GaTxXCCl0JhCDCJQJBsVV5P7VSwDRwVg=
+github.com/RasmusLindroth/go-mastodon v0.0.12/go.mod h1:Lr6n8V1U2b+9P89YZKsICkNc+oNeJXkygY7raei9SXE=
 github.com/atotto/clipboard v0.1.4 h1:EH0zSVneZPSuFR11BlR9YppQTVDbh5+16AmcJi4g1z4=
 github.com/atotto/clipboard v0.1.4/go.mod h1:ZY9tmq7sm5xIbd9bOK4onWV4S6X0u6GY7Vn0Yu86PYI=
 github.com/aymerick/douceur v0.2.0 h1:Mv+mAeH1Q+n9Fr+oyamOlAkUNPWPlA8PPGR0QAaYuPk=

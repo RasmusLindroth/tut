@@ -75,6 +75,7 @@ const (
 	LeaderNotifications
 	LeaderLists
 	LeaderTag
+	LeaderTags
 	LeaderHistory
 	LeaderUser
 	LeaderWindow
@@ -386,6 +387,9 @@ type Input struct {
 	ListUserList   Key
 	ListUserAdd    Key
 	ListUserDelete Key
+
+	TagOpenFeed Key
+	TagFollow   Key
 
 	LinkOpen Key
 	LinkYank Key
@@ -895,6 +899,8 @@ func parseGeneral(cfg *ini.File) General {
 			case "tag":
 				la.Command = LeaderTag
 				la.Subaction = subaction
+			case "tags":
+				la.Command = LeaderTags
 			case "list-placement":
 				la.Command = LeaderListPlacement
 				la.Subaction = subaction
@@ -1278,6 +1284,9 @@ func parseInput(cfg *ini.File) Input {
 		ListUserAdd:    inputStrOrErr([]string{"\"[A]dd\"", "'a'", "'A'"}, false),
 		ListUserDelete: inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
 
+		TagOpenFeed: inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
+		TagFollow:   inputStrOrErr([]string{"\"[F]ollow\"", "\"Un[F]ollow\"", "'f'", "'F'"}, true),
+
 		LinkOpen: inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
 		LinkYank: inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
 
@@ -1355,6 +1364,9 @@ func parseInput(cfg *ini.File) Input {
 	ic.ListUserList = inputOrErr(cfg, "list-user-list", false, ic.ListUserList)
 	ic.ListUserAdd = inputOrErr(cfg, "list-user-add", false, ic.ListUserAdd)
 	ic.ListUserDelete = inputOrErr(cfg, "list-user-delete", false, ic.ListUserDelete)
+
+	ic.TagOpenFeed = inputOrErr(cfg, "tag-open-feed", false, ic.TagOpenFeed)
+	ic.TagFollow = inputOrErr(cfg, "tag-follow", false, ic.TagFollow)
 
 	ic.LinkOpen = inputOrErr(cfg, "link-open", false, ic.LinkOpen)
 	ic.LinkYank = inputOrErr(cfg, "link-yank", false, ic.LinkYank)
