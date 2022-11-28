@@ -147,9 +147,14 @@ Available as [net/tut](https://pkgsrc.se/net/tut) in
 Also for Linux, macOS, Illumos, etc. Install from the tree or with
 pkgin:
 
-    pkgin install tut
+```
+pkgin install tut
+```
 
 ### Homebrew (macOS)
+
+Available as a Homebrew Formulae over [here](https://formulae.brew.sh/formula/tut).
+Install it like this:
 
 ```
 brew update
