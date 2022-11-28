@@ -29,6 +29,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
   * [FreeBSD](#freebsd)
   * [OpenBSD](#openbsd)
   * [NetBSD](#netbsd-and-others) and others
+  * [Homebrew (macOS)](#homebrew-macos)
   * [openSUSE](#opensuse)
 * [Build it yourself](#build-it-yourself)
 * [Flags and commands](#flags-and-commands)
@@ -147,6 +148,13 @@ Also for Linux, macOS, Illumos, etc. Install from the tree or with
 pkgin:
 
     pkgin install tut
+
+### Homebrew (macOS)
+
+```
+brew update
+brew install tut
+```
 
 ### openSUSE
 
