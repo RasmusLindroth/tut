@@ -28,6 +28,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
   * [Debian](#debian)
   * [FreeBSD](#freebsd)
   * [OpenBSD](#openbsd)
+  * [NetBSD](#netbsd-and-others) and others
   * [openSUSE](#opensuse)
 * [Build it yourself](#build-it-yourself)
 * [Flags and commands](#flags-and-commands)
@@ -137,6 +138,15 @@ https://openports.pl/path/net/tut
 The `tut` is available since OpenBSD 7.3.  It can be installed with:
 
 	pkg_add tut
+
+### NetBSD (and others)
+
+Available as [net/tut](https://pkgsrc.se/net/tut) in
+[pkgsrc](https://pkgsrc.org), NetBSD's portable package manager.
+Also for Linux, macOS, Illumos, etc. Install from the tree or with
+pkgin:
+
+    pkgin install tut
 
 ### openSUSE
 
