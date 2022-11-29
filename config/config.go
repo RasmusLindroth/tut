@@ -1366,7 +1366,7 @@ func parseInput(cfg *ini.File) Input {
 	ic.ListUserDelete = inputOrErr(cfg, "list-user-delete", false, ic.ListUserDelete)
 
 	ic.TagOpenFeed = inputOrErr(cfg, "tag-open-feed", false, ic.TagOpenFeed)
-	ic.TagFollow = inputOrErr(cfg, "tag-follow", false, ic.TagFollow)
+	ic.TagFollow = inputOrErr(cfg, "tag-follow", true, ic.TagFollow)
 
 	ic.LinkOpen = inputOrErr(cfg, "link-open", false, ic.LinkOpen)
 	ic.LinkYank = inputOrErr(cfg, "link-yank", false, ic.LinkYank)
