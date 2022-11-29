@@ -11,7 +11,7 @@ require (
 	github.com/icza/gox v0.0.0-20221026131554-a08a8cdc726a
 	github.com/microcosm-cc/bluemonday v1.0.21
 	github.com/pelletier/go-toml/v2 v2.0.6
-	github.com/rivo/tview v0.0.0-20221117065207-09f052e6ca98
+	github.com/rivo/tview v0.0.0-20221128165837-db36428c92d9
 	github.com/rivo/uniseg v0.4.3
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/net v0.2.0
