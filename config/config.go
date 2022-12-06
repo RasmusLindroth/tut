@@ -160,6 +160,8 @@ type Style struct {
 	TimelineNameText       tcell.Color
 
 	IconColor tcell.Color
+
+	CommandText tcell.Color
 }
 
 type Media struct {
@@ -526,6 +528,9 @@ func parseStyle(cfg *ini.File, cnfPath string, cnfDir string) Style {
 		s = tcfg.Section("").Key("status-bar-text").String()
 		style.StatusBarText = tcell.GetColor(s)
 
+		s = tcfg.Section("").Key("command-text").String()
+		style.CommandText = tcell.GetColor(s)
+
 		s = tcfg.Section("").Key("status-bar-view-background").String()
 		style.StatusBarViewBackground = tcell.GetColor(s)
 
@@ -651,6 +656,9 @@ func parseStyle(cfg *ini.File, cnfPath string, cnfDir string) Style {
 
 		s = cfg.Section("style").Key("status-bar-text").String()
 		style.StatusBarText = parseColor(s, "white", xrdbColors)
+
+		s = cfg.Section("style").Key("command-text").String()
+		style.CommandText = parseColor(s, "white", xrdbColors)
 
 		s = cfg.Section("style").Key("status-bar-view-background").String()
 		style.StatusBarViewBackground = parseColor(s, "#ae81ff", xrdbColors)
