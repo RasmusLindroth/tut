@@ -20,12 +20,14 @@ func downloadFile(url string) (string, error) {
 
 	resp, err := http.Get(url)
 	if err != nil {
+		os.Remove(f.Name())
 		return "", err
 	}
 	defer resp.Body.Close()
 
 	_, err = io.Copy(f, resp.Body)
 	if err != nil {
+		os.Remove(f.Name())
 		return "", nil
 	}
 
