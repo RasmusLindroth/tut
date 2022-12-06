@@ -34,12 +34,12 @@ func (c *CmdBar) ShowError(s string) {
 }
 
 func (c *CmdBar) ShowMsg(s string) {
-	c.View.SetFieldTextColor(c.tutView.tut.Config.Style.StatusBarText)
+	c.View.SetFieldTextColor(c.tutView.tut.Config.Style.CommandText)
 	c.View.SetText(s)
 }
 
 func (c *CmdBar) ClearInput() {
-	c.View.SetFieldTextColor(c.tutView.tut.Config.Style.StatusBarText)
+	c.View.SetFieldTextColor(c.tutView.tut.Config.Style.CommandText)
 	c.View.SetText("")
 }
 

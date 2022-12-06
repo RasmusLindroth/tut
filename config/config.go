@@ -160,6 +160,8 @@ type Style struct {
 	TimelineNameText       tcell.Color
 
 	IconColor tcell.Color
+
+	CommandText tcell.Color
 }
 
 type Media struct {
