@@ -126,7 +126,12 @@ func (f *Feed) update() {
 				main, symbol := DrawListItem(f.tutView.tut.Config, item)
 				f.List.AddItem(main, symbol, item.ID())
 			}
-			f.List.SetByID(curr)
+			if f.tutView.tut.Config.General.StickToTop {
+				f.List.SetCurrentItem(f.List.stickyCount)
+				f.DrawContent()
+			} else {
+				f.List.SetByID(curr)
+			}
 			if lLen == 0 {
 				f.DrawContent()
 			}

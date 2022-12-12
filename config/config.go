@@ -115,6 +115,7 @@ type General struct {
 	LeaderActions     []LeaderAction
 	TimelineName      bool
 	Timelines         []Timeline
+	StickToTop        bool
 }
 
 type Style struct {
@@ -789,6 +790,7 @@ func parseGeneral(cfg *ini.File) General {
 	general.ShowIcons = cfg.Section("general").Key("show-icons").MustBool(true)
 	general.ShowHelp = cfg.Section("general").Key("show-help").MustBool(true)
 	general.RedrawUI = cfg.Section("general").Key("redraw-ui").MustBool(true)
+	general.StickToTop = cfg.Section("general").Key("stick-to-top").MustBool(false)
 
 	lp := cfg.Section("general").Key("list-placement").In("left", []string{"left", "right", "top", "bottom"})
 	switch lp {
