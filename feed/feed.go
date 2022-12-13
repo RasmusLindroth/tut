@@ -2,7 +2,6 @@ package feed
 
 import (
 	"context"
-	"errors"
 	"log"
 	"strings"
 	"sync"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
+	"github.com/RasmusLindroth/tut/config"
 )
 
 type apiFunc func(pg *mastodon.Pagination) ([]api.Item, error)
@@ -20,36 +20,6 @@ type apiSearchFunc func(search string) ([]api.Item, error)
 type apiSearchPGFunc func(pg *mastodon.Pagination, search string) ([]api.Item, error)
 type apiThreadFunc func(status *mastodon.Status) ([]api.Item, error)
 type apiHistoryFunc func(status *mastodon.Status) ([]api.Item, error)
-
-type FeedType uint
-
-const (
-	Favorites FeedType = iota
-	Favorited
-	Boosts
-	Followers
-	Following
-	FollowRequests
-	Blocking
-	Muting
-	History
-	InvalidFeed
-	Notification
-	Saved
-	Tag
-	Tags
-	Thread
-	TimelineFederated
-	TimelineHome
-	TimelineLocal
-	Conversations
-	User
-	UserList
-	Lists
-	List
-	ListUsersIn
-	ListUsersAdd
-)
 
 type LoadingLock struct {
 	mux  sync.Mutex
@@ -71,7 +41,8 @@ const (
 
 type Feed struct {
 	accountClient *api.AccountClient
-	feedType      FeedType
+	config        *config.Config
+	feedType      config.FeedType
 	sticky        []api.Item
 	items         []api.Item
 	itemsMux      sync.RWMutex
@@ -85,17 +56,36 @@ type Feed struct {
 	streams       []*api.Receiver
 	name          string
 	close         func()
+	showBoosts    bool
+	showReplies   bool
 }
 
-func (f *Feed) Type() FeedType {
+func (f *Feed) Type() config.FeedType {
 	return f.feedType
 }
 
-func (f *Feed) List() []api.Item {
+func (f *Feed) filteredList() []api.Item {
 	f.itemsMux.RLock()
 	defer f.itemsMux.RUnlock()
+	filtered := []api.Item{}
+	for _, fd := range f.items {
+		switch x := fd.Raw().(type) {
+		case *mastodon.Status:
+			if x.Reblog != nil && !f.showBoosts {
+				continue
+			}
+			if x.InReplyToID != nil && !f.showReplies {
+				continue
+			}
+		}
+		filtered = append(filtered, fd)
+	}
 	r := f.sticky
-	return append(r, f.items...)
+	return append(r, filtered...)
+}
+
+func (f *Feed) List() []api.Item {
+	return f.filteredList()
 }
 
 func (f *Feed) Delete(id uint) {
@@ -119,15 +109,18 @@ func (f *Feed) Clear() {
 }
 
 func (f *Feed) Item(index int) (api.Item, error) {
-	f.itemsMux.RLock()
-	defer f.itemsMux.RUnlock()
-	if f.StickyCount() > 0 && index < f.StickyCount() {
-		return f.sticky[index], nil
-	}
-	if index < 0 || index >= len(f.items)+f.StickyCount() {
-		return nil, errors.New("item out of range")
-	}
-	return f.items[index-f.StickyCount()], nil
+	/*
+		f.itemsMux.RLock()
+		defer f.itemsMux.RUnlock()
+		if f.StickyCount() > 0 && index < f.StickyCount() {
+			return f.sticky[index], nil
+		}
+		if index < 0 || index >= len(f.items)+f.StickyCount() {
+			return nil, errors.New("item out of range")
+		}
+	*/
+	filtered := f.filteredList()
+	return filtered[index], nil
 }
 
 func (f *Feed) Updated(nt DesktopNotificationType) {
@@ -696,9 +689,10 @@ func (f *Feed) startStreamNotification(rec *api.Receiver, timeline string, err e
 	}()
 }
 
-func newFeed(ac *api.AccountClient, ft FeedType) *Feed {
+func newFeed(ac *api.AccountClient, ft config.FeedType, cnf *config.Config, showBoosts bool, showReplies bool) *Feed {
 	return &Feed{
 		accountClient: ac,
+		config:        cnf,
 		sticky:        make([]api.Item, 0),
 		items:         make([]api.Item, 0),
 		feedType:      ft,
@@ -708,11 +702,13 @@ func newFeed(ac *api.AccountClient, ft FeedType) *Feed {
 		Update:        make(chan DesktopNotificationType, 1),
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
+		showBoosts:    showBoosts,
+		showReplies:   showReplies,
 	}
 }
 
-func NewTimelineHome(ac *api.AccountClient) *Feed {
-	feed := newFeed(ac, TimelineHome)
+func NewTimelineHome(ac *api.AccountClient, cnf *config.Config, showBoosts bool, showReplies bool) *Feed {
+	feed := newFeed(ac, config.TimelineHome, cnf, showBoosts, showReplies)
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetTimeline) }
 	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetTimeline) }
 	feed.startStream(feed.accountClient.NewHomeStream())
@@ -725,8 +721,8 @@ func NewTimelineHome(ac *api.AccountClient) *Feed {
 	return feed
 }
 
-func NewTimelineFederated(ac *api.AccountClient) *Feed {
-	feed := newFeed(ac, TimelineFederated)
+func NewTimelineFederated(ac *api.AccountClient, cnf *config.Config, showBoosts bool, showReplies bool) *Feed {
+	feed := newFeed(ac, config.TimelineFederated, cnf, showBoosts, showReplies)
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetTimelineFederated) }
 	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetTimelineFederated) }
 	feed.startStream(feed.accountClient.NewFederatedStream())
@@ -739,8 +735,8 @@ func NewTimelineFederated(ac *api.AccountClient) *Feed {
 	return feed
 }
 
-func NewTimelineLocal(ac *api.AccountClient) *Feed {
-	feed := newFeed(ac, TimelineLocal)
+func NewTimelineLocal(ac *api.AccountClient, cnf *config.Config, showBoosts bool, showReplies bool) *Feed {
+	feed := newFeed(ac, config.TimelineLocal, cnf, showBoosts, showReplies)
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetTimelineLocal) }
 	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetTimelineLocal) }
 	feed.startStream(feed.accountClient.NewLocalStream())
@@ -752,8 +748,8 @@ func NewTimelineLocal(ac *api.AccountClient) *Feed {
 	return feed
 }
 
-func NewConversations(ac *api.AccountClient) *Feed {
-	feed := newFeed(ac, Conversations)
+func NewConversations(ac *api.AccountClient, cnf *config.Config) *Feed {
+	feed := newFeed(ac, config.Conversations, cnf, true, true)
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetConversations) }
 	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetConversations) }
 	feed.startStream(feed.accountClient.NewDirectStream())
@@ -766,8 +762,8 @@ func NewConversations(ac *api.AccountClient) *Feed {
 	return feed
 }
 
-func NewNotifications(ac *api.AccountClient) *Feed {
-	feed := newFeed(ac, Notification)
+func NewNotifications(ac *api.AccountClient, cnf *config.Config, showBoosts bool, showReplies bool) *Feed {
+	feed := newFeed(ac, config.Notifications, cnf, showBoosts, showReplies)
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetNotifications) }
 	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetNotifications) }
 	feed.startStreamNotification(feed.accountClient.NewHomeStream())
@@ -780,32 +776,32 @@ func NewNotifications(ac *api.AccountClient) *Feed {
 	return feed
 }
 
-func NewFavorites(ac *api.AccountClient) *Feed {
-	feed := newFeed(ac, Favorited)
+func NewFavorites(ac *api.AccountClient, cnf *config.Config) *Feed {
+	feed := newFeed(ac, config.Favorited, cnf, true, true)
 	feed.loadNewer = func() { feed.linkNewer(feed.accountClient.GetFavorites) }
 	feed.loadOlder = func() { feed.linkOlder(feed.accountClient.GetFavorites) }
 
 	return feed
 }
 
-func NewBookmarks(ac *api.AccountClient) *Feed {
-	feed := newFeed(ac, Saved)
+func NewBookmarks(ac *api.AccountClient, cnf *config.Config) *Feed {
+	feed := newFeed(ac, config.Saved, cnf, true, true)
 	feed.loadNewer = func() { feed.linkNewer(feed.accountClient.GetBookmarks) }
 	feed.loadOlder = func() { feed.linkOlder(feed.accountClient.GetBookmarks) }
 
 	return feed
 }
 
-func NewUserSearch(ac *api.AccountClient, search string) *Feed {
-	feed := newFeed(ac, UserList)
+func NewUserSearch(ac *api.AccountClient, cnf *config.Config, search string) *Feed {
+	feed := newFeed(ac, config.UserList, cnf, true, true)
 	feed.name = search
 	feed.loadNewer = func() { feed.singleNewerSearch(feed.accountClient.GetUsers, search) }
 
 	return feed
 }
 
-func NewUserProfile(ac *api.AccountClient, user *api.User) *Feed {
-	feed := newFeed(ac, User)
+func NewUserProfile(ac *api.AccountClient, cnf *config.Config, user *api.User) *Feed {
+	feed := newFeed(ac, config.User, cnf, true, true)
 	feed.name = user.Data.Acct
 	feed.sticky = append(feed.sticky, api.NewUserItem(user, true))
 	pinned, err := ac.GetUserPinned(user.Data.ID)
@@ -818,8 +814,8 @@ func NewUserProfile(ac *api.AccountClient, user *api.User) *Feed {
 	return feed
 }
 
-func NewThread(ac *api.AccountClient, status *mastodon.Status) *Feed {
-	feed := newFeed(ac, Thread)
+func NewThread(ac *api.AccountClient, cnf *config.Config, status *mastodon.Status) *Feed {
+	feed := newFeed(ac, config.Thread, cnf, true, true)
 	once := true
 	feed.loadNewer = func() {
 		if once {
@@ -831,8 +827,8 @@ func NewThread(ac *api.AccountClient, status *mastodon.Status) *Feed {
 	return feed
 }
 
-func NewHistory(ac *api.AccountClient, status *mastodon.Status) *Feed {
-	feed := newFeed(ac, History)
+func NewHistory(ac *api.AccountClient, cnf *config.Config, status *mastodon.Status) *Feed {
+	feed := newFeed(ac, config.History, cnf, true, true)
 	once := true
 	feed.loadNewer = func() {
 		if once {
@@ -843,8 +839,8 @@ func NewHistory(ac *api.AccountClient, status *mastodon.Status) *Feed {
 	return feed
 }
 
-func NewTag(ac *api.AccountClient, search string) *Feed {
-	feed := newFeed(ac, Tag)
+func NewTag(ac *api.AccountClient, cnf *config.Config, search string, showBoosts bool, showReplies bool) *Feed {
+	feed := newFeed(ac, config.Tag, cnf, showBoosts, showReplies)
 	parts := strings.Split(search, " ")
 	var tparts []string
 	for _, p := range parts {
@@ -869,8 +865,8 @@ func NewTag(ac *api.AccountClient, search string) *Feed {
 	return feed
 }
 
-func NewTags(ac *api.AccountClient) *Feed {
-	feed := newFeed(ac, Tags)
+func NewTags(ac *api.AccountClient, cnf *config.Config) *Feed {
+	feed := newFeed(ac, config.Tags, cnf, true, true)
 	once := true
 	feed.loadNewer = func() {
 		if once {
@@ -883,8 +879,8 @@ func NewTags(ac *api.AccountClient) *Feed {
 	return feed
 }
 
-func NewListList(ac *api.AccountClient) *Feed {
-	feed := newFeed(ac, Lists)
+func NewListList(ac *api.AccountClient, cnf *config.Config) *Feed {
+	feed := newFeed(ac, config.Lists, cnf, true, true)
 	once := true
 	feed.loadNewer = func() {
 		if once {
@@ -896,8 +892,8 @@ func NewListList(ac *api.AccountClient) *Feed {
 	return feed
 }
 
-func NewList(ac *api.AccountClient, list *mastodon.List) *Feed {
-	feed := newFeed(ac, List)
+func NewList(ac *api.AccountClient, cnf *config.Config, list *mastodon.List, showBoosts bool, showReplies bool) *Feed {
+	feed := newFeed(ac, config.List, cnf, showBoosts, showReplies)
 	feed.name = list.Title
 	feed.loadNewer = func() { feed.normalNewerID(feed.accountClient.GetListStatuses, list.ID) }
 	feed.loadOlder = func() { feed.normalOlderID(feed.accountClient.GetListStatuses, list.ID) }
@@ -911,8 +907,8 @@ func NewList(ac *api.AccountClient, list *mastodon.List) *Feed {
 	return feed
 }
 
-func NewUsersInList(ac *api.AccountClient, list *mastodon.List) *Feed {
-	feed := newFeed(ac, ListUsersIn)
+func NewUsersInList(ac *api.AccountClient, cnf *config.Config, list *mastodon.List) *Feed {
+	feed := newFeed(ac, config.ListUsersIn, cnf, true, true)
 	feed.name = list.Title
 	once := true
 	feed.loadNewer = func() {
@@ -926,8 +922,8 @@ func NewUsersInList(ac *api.AccountClient, list *mastodon.List) *Feed {
 	return feed
 }
 
-func NewUsersAddList(ac *api.AccountClient, list *mastodon.List) *Feed {
-	feed := newFeed(ac, ListUsersAdd)
+func NewUsersAddList(ac *api.AccountClient, cnf *config.Config, list *mastodon.List) *Feed {
+	feed := newFeed(ac, config.ListUsersAdd, cnf, true, true)
 	feed.name = list.Title
 	once := true
 	feed.loadNewer = func() {
@@ -941,8 +937,8 @@ func NewUsersAddList(ac *api.AccountClient, list *mastodon.List) *Feed {
 	return feed
 }
 
-func NewFavoritesStatus(ac *api.AccountClient, id mastodon.ID) *Feed {
-	feed := newFeed(ac, Favorites)
+func NewFavoritesStatus(ac *api.AccountClient, cnf *config.Config, id mastodon.ID) *Feed {
+	feed := newFeed(ac, config.Favorites, cnf, true, true)
 	once := true
 	feed.loadNewer = func() {
 		if once {
@@ -954,8 +950,8 @@ func NewFavoritesStatus(ac *api.AccountClient, id mastodon.ID) *Feed {
 	return feed
 }
 
-func NewBoosts(ac *api.AccountClient, id mastodon.ID) *Feed {
-	feed := newFeed(ac, Boosts)
+func NewBoosts(ac *api.AccountClient, cnf *config.Config, id mastodon.ID) *Feed {
+	feed := newFeed(ac, config.Boosts, cnf, true, true)
 	once := true
 	feed.loadNewer = func() {
 		if once {
@@ -967,8 +963,8 @@ func NewBoosts(ac *api.AccountClient, id mastodon.ID) *Feed {
 	return feed
 }
 
-func NewFollowers(ac *api.AccountClient, id mastodon.ID) *Feed {
-	feed := newFeed(ac, Followers)
+func NewFollowers(ac *api.AccountClient, cnf *config.Config, id mastodon.ID) *Feed {
+	feed := newFeed(ac, config.Followers, cnf, true, true)
 	once := true
 	feed.loadNewer = func() {
 		if once {
@@ -981,8 +977,8 @@ func NewFollowers(ac *api.AccountClient, id mastodon.ID) *Feed {
 	return feed
 }
 
-func NewFollowing(ac *api.AccountClient, id mastodon.ID) *Feed {
-	feed := newFeed(ac, Following)
+func NewFollowing(ac *api.AccountClient, cnf *config.Config, id mastodon.ID) *Feed {
+	feed := newFeed(ac, config.Following, cnf, true, true)
 	once := true
 	feed.loadNewer = func() {
 		if once {
@@ -995,8 +991,8 @@ func NewFollowing(ac *api.AccountClient, id mastodon.ID) *Feed {
 	return feed
 }
 
-func NewBlocking(ac *api.AccountClient) *Feed {
-	feed := newFeed(ac, Blocking)
+func NewBlocking(ac *api.AccountClient, cnf *config.Config) *Feed {
+	feed := newFeed(ac, config.Blocking, cnf, true, true)
 	once := true
 	feed.loadNewer = func() {
 		if once {
@@ -1009,8 +1005,8 @@ func NewBlocking(ac *api.AccountClient) *Feed {
 	return feed
 }
 
-func NewMuting(ac *api.AccountClient) *Feed {
-	feed := newFeed(ac, Muting)
+func NewMuting(ac *api.AccountClient, cnf *config.Config) *Feed {
+	feed := newFeed(ac, config.Muting, cnf, true, true)
 	once := true
 	feed.loadNewer = func() {
 		if once {
@@ -1023,8 +1019,8 @@ func NewMuting(ac *api.AccountClient) *Feed {
 	return feed
 }
 
-func NewFollowRequests(ac *api.AccountClient) *Feed {
-	feed := newFeed(ac, FollowRequests)
+func NewFollowRequests(ac *api.AccountClient, cnf *config.Config) *Feed {
+	feed := newFeed(ac, config.FollowRequests, cnf, true, true)
 	once := true
 	feed.loadNewer = func() {
 		if once {

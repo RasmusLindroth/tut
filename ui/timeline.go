@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/RasmusLindroth/tut/feed"
+	"github.com/RasmusLindroth/tut/config"
 )
 
 type FeedHolder struct {
@@ -31,24 +31,24 @@ func NewTimeline(tv *TutView, update chan bool) *Timeline {
 	var nf *Feed
 	for _, f := range tv.tut.Config.General.Timelines {
 		switch f.FeedType {
-		case feed.TimelineHome:
-			nf = NewHomeFeed(tv)
-		case feed.Conversations:
+		case config.TimelineHome:
+			nf = NewHomeFeed(tv, f.ShowBoosts, f.ShowReplies)
+		case config.Conversations:
 			nf = NewConversationsFeed(tv)
-		case feed.TimelineLocal:
-			nf = NewLocalFeed(tv)
-		case feed.TimelineFederated:
-			nf = NewFederatedFeed(tv)
-		case feed.Saved:
+		case config.TimelineLocal:
+			nf = NewLocalFeed(tv, f.ShowBoosts, f.ShowReplies)
+		case config.TimelineFederated:
+			nf = NewFederatedFeed(tv, f.ShowBoosts, f.ShowReplies)
+		case config.Saved:
 			nf = NewBookmarksFeed(tv)
-		case feed.Favorited:
+		case config.Favorited:
 			nf = NewFavoritedFeed(tv)
-		case feed.Notification:
-			nf = NewNotificationFeed(tv)
-		case feed.Lists:
+		case config.Notifications:
+			nf = NewNotificationFeed(tv, f.ShowBoosts, f.ShowReplies)
+		case config.Lists:
 			nf = NewListsFeed(tv)
-		case feed.Tag:
-			nf = NewTagFeed(tv, f.Subaction)
+		case config.Tag:
+			nf = NewTagFeed(tv, f.Subaction, f.ShowBoosts, f.ShowReplies)
 		default:
 			fmt.Println("Invalid feed")
 			tl.tutView.CleanExit(1)
@@ -144,53 +144,53 @@ func (tl *Timeline) GetTitle() string {
 	name := f.Data.Name()
 	ct := ""
 	switch current {
-	case feed.Favorited:
+	case config.Favorited:
 		ct = "favorited"
-	case feed.Notification:
+	case config.Notifications:
 		ct = "notifications"
-	case feed.Tag:
+	case config.Tag:
 		parts := strings.Split(name, " ")
 		for i, p := range parts {
 			parts[i] = fmt.Sprintf("#%s", p)
 		}
 		ct = fmt.Sprintf("tag %s", strings.Join(parts, " "))
-	case feed.Thread:
+	case config.Thread:
 		ct = "thread feed"
-	case feed.History:
+	case config.History:
 		ct = "history feed"
-	case feed.TimelineFederated:
+	case config.TimelineFederated:
 		ct = "federated"
-	case feed.TimelineHome:
+	case config.TimelineHome:
 		ct = "home"
-	case feed.TimelineLocal:
+	case config.TimelineLocal:
 		ct = "local"
-	case feed.Saved:
+	case config.Saved:
 		ct = "saved/bookmarked toots"
-	case feed.User:
+	case config.User:
 		ct = fmt.Sprintf("user %s", name)
-	case feed.UserList:
+	case config.UserList:
 		ct = fmt.Sprintf("user search %s", name)
-	case feed.Conversations:
+	case config.Conversations:
 		ct = "direct"
-	case feed.Lists:
+	case config.Lists:
 		ct = "lists"
-	case feed.List:
+	case config.List:
 		ct = fmt.Sprintf("list named %s", name)
-	case feed.Boosts:
+	case config.Boosts:
 		ct = "boosts"
-	case feed.Favorites:
+	case config.Favorites:
 		ct = "favorites"
-	case feed.Followers:
+	case config.Followers:
 		ct = "followers"
-	case feed.Following:
+	case config.Following:
 		ct = "following"
-	case feed.FollowRequests:
+	case config.FollowRequests:
 		ct = "follow requests"
-	case feed.Blocking:
+	case config.Blocking:
 		ct = "blocking"
-	case feed.ListUsersAdd:
+	case config.ListUsersAdd:
 		ct = fmt.Sprintf("Add users to %s", name)
-	case feed.ListUsersIn:
+	case config.ListUsersIn:
 		ct = fmt.Sprintf("Delete users from %s", name)
 	}
 	return fmt.Sprintf("%s (%d/%d)", ct, index+1, total)

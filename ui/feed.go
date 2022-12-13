@@ -139,8 +139,8 @@ func (f *Feed) update() {
 	}
 }
 
-func NewHomeFeed(tv *TutView) *Feed {
-	f := feed.NewTimelineHome(tv.tut.Client)
+func NewHomeFeed(tv *TutView, showBoosts bool, showReplies bool) *Feed {
+	f := feed.NewTimelineHome(tv.tut.Client, tv.tut.Config, showBoosts, showReplies)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -153,8 +153,8 @@ func NewHomeFeed(tv *TutView) *Feed {
 	return fd
 }
 
-func NewFederatedFeed(tv *TutView) *Feed {
-	f := feed.NewTimelineFederated(tv.tut.Client)
+func NewFederatedFeed(tv *TutView, showBoosts bool, showReplies bool) *Feed {
+	f := feed.NewTimelineFederated(tv.tut.Client, tv.tut.Config, showBoosts, showReplies)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -167,8 +167,8 @@ func NewFederatedFeed(tv *TutView) *Feed {
 	return fd
 }
 
-func NewLocalFeed(tv *TutView) *Feed {
-	f := feed.NewTimelineLocal(tv.tut.Client)
+func NewLocalFeed(tv *TutView, showBoosts bool, showReplies bool) *Feed {
+	f := feed.NewTimelineLocal(tv.tut.Client, tv.tut.Config, showBoosts, showReplies)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -181,8 +181,8 @@ func NewLocalFeed(tv *TutView) *Feed {
 	return fd
 }
 
-func NewNotificationFeed(tv *TutView) *Feed {
-	f := feed.NewNotifications(tv.tut.Client)
+func NewNotificationFeed(tv *TutView, showBoosts bool, showReplies bool) *Feed {
+	f := feed.NewNotifications(tv.tut.Client, tv.tut.Config, showBoosts, showReplies)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -197,7 +197,7 @@ func NewNotificationFeed(tv *TutView) *Feed {
 
 func NewThreadFeed(tv *TutView, item api.Item) *Feed {
 	status := util.StatusOrReblog(item.Raw().(*mastodon.Status))
-	f := feed.NewThread(tv.tut.Client, status)
+	f := feed.NewThread(tv.tut.Client, tv.tut.Config, status)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -219,7 +219,7 @@ func NewThreadFeed(tv *TutView, item api.Item) *Feed {
 
 func NewHistoryFeed(tv *TutView, item api.Item) *Feed {
 	status := util.StatusOrReblog(item.Raw().(*mastodon.Status))
-	f := feed.NewHistory(tv.tut.Client, status)
+	f := feed.NewHistory(tv.tut.Client, tv.tut.Config, status)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -238,7 +238,7 @@ func NewHistoryFeed(tv *TutView, item api.Item) *Feed {
 }
 
 func NewConversationsFeed(tv *TutView) *Feed {
-	f := feed.NewConversations(tv.tut.Client)
+	f := feed.NewConversations(tv.tut.Client, tv.tut.Config)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -256,7 +256,7 @@ func NewUserFeed(tv *TutView, item api.Item) *Feed {
 		panic("Can't open user. Wrong type.\n")
 	}
 	u := item.Raw().(*api.User)
-	f := feed.NewUserProfile(tv.tut.Client, u)
+	f := feed.NewUserProfile(tv.tut.Client, tv.tut.Config, u)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -270,7 +270,7 @@ func NewUserFeed(tv *TutView, item api.Item) *Feed {
 }
 
 func NewUserSearchFeed(tv *TutView, search string) *Feed {
-	f := feed.NewUserSearch(tv.tut.Client, search)
+	f := feed.NewUserSearch(tv.tut.Client, tv.tut.Config, search)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -287,8 +287,8 @@ func NewUserSearchFeed(tv *TutView, search string) *Feed {
 	return fd
 }
 
-func NewTagFeed(tv *TutView, search string) *Feed {
-	f := feed.NewTag(tv.tut.Client, search)
+func NewTagFeed(tv *TutView, search string, showBoosts bool, showReplies bool) *Feed {
+	f := feed.NewTag(tv.tut.Client, tv.tut.Config, search, showBoosts, showReplies)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -302,7 +302,7 @@ func NewTagFeed(tv *TutView, search string) *Feed {
 }
 
 func NewTagsFeed(tv *TutView) *Feed {
-	f := feed.NewTags(tv.tut.Client)
+	f := feed.NewTags(tv.tut.Client, tv.tut.Config)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -316,7 +316,7 @@ func NewTagsFeed(tv *TutView) *Feed {
 }
 
 func NewListsFeed(tv *TutView) *Feed {
-	f := feed.NewListList(tv.tut.Client)
+	f := feed.NewListList(tv.tut.Client, tv.tut.Config)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -329,8 +329,8 @@ func NewListsFeed(tv *TutView) *Feed {
 	return fd
 }
 
-func NewListFeed(tv *TutView, l *mastodon.List) *Feed {
-	f := feed.NewList(tv.tut.Client, l)
+func NewListFeed(tv *TutView, l *mastodon.List, showBoosts bool, showReplies bool) *Feed {
+	f := feed.NewList(tv.tut.Client, tv.tut.Config, l, showBoosts, showReplies)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -344,7 +344,7 @@ func NewListFeed(tv *TutView, l *mastodon.List) *Feed {
 }
 
 func NewUsersInListFeed(tv *TutView, l *mastodon.List) *Feed {
-	f := feed.NewUsersInList(tv.tut.Client, l)
+	f := feed.NewUsersInList(tv.tut.Client, tv.tut.Config, l)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -358,7 +358,7 @@ func NewUsersInListFeed(tv *TutView, l *mastodon.List) *Feed {
 }
 
 func NewUsersAddListFeed(tv *TutView, l *mastodon.List) *Feed {
-	f := feed.NewUsersAddList(tv.tut.Client, l)
+	f := feed.NewUsersAddList(tv.tut.Client, tv.tut.Config, l)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -372,7 +372,7 @@ func NewUsersAddListFeed(tv *TutView, l *mastodon.List) *Feed {
 }
 
 func NewFavoritedFeed(tv *TutView) *Feed {
-	f := feed.NewFavorites(tv.tut.Client)
+	f := feed.NewFavorites(tv.tut.Client, tv.tut.Config)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -386,7 +386,7 @@ func NewFavoritedFeed(tv *TutView) *Feed {
 }
 
 func NewBookmarksFeed(tv *TutView) *Feed {
-	f := feed.NewBookmarks(tv.tut.Client)
+	f := feed.NewBookmarks(tv.tut.Client, tv.tut.Config)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -400,7 +400,7 @@ func NewBookmarksFeed(tv *TutView) *Feed {
 }
 
 func NewFavoritesStatus(tv *TutView, id mastodon.ID) *Feed {
-	f := feed.NewFavoritesStatus(tv.tut.Client, id)
+	f := feed.NewFavoritesStatus(tv.tut.Client, tv.tut.Config, id)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -414,7 +414,7 @@ func NewFavoritesStatus(tv *TutView, id mastodon.ID) *Feed {
 }
 
 func NewBoosts(tv *TutView, id mastodon.ID) *Feed {
-	f := feed.NewBoosts(tv.tut.Client, id)
+	f := feed.NewBoosts(tv.tut.Client, tv.tut.Config, id)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -428,7 +428,7 @@ func NewBoosts(tv *TutView, id mastodon.ID) *Feed {
 }
 
 func NewFollowers(tv *TutView, id mastodon.ID) *Feed {
-	f := feed.NewFollowers(tv.tut.Client, id)
+	f := feed.NewFollowers(tv.tut.Client, tv.tut.Config, id)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -442,7 +442,7 @@ func NewFollowers(tv *TutView, id mastodon.ID) *Feed {
 }
 
 func NewFollowing(tv *TutView, id mastodon.ID) *Feed {
-	f := feed.NewFollowing(tv.tut.Client, id)
+	f := feed.NewFollowing(tv.tut.Client, tv.tut.Config, id)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -456,7 +456,7 @@ func NewFollowing(tv *TutView, id mastodon.ID) *Feed {
 }
 
 func NewBlocking(tv *TutView) *Feed {
-	f := feed.NewBlocking(tv.tut.Client)
+	f := feed.NewBlocking(tv.tut.Client, tv.tut.Config)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -470,7 +470,7 @@ func NewBlocking(tv *TutView) *Feed {
 }
 
 func NewMuting(tv *TutView) *Feed {
-	f := feed.NewMuting(tv.tut.Client)
+	f := feed.NewMuting(tv.tut.Client, tv.tut.Config)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,
@@ -484,7 +484,7 @@ func NewMuting(tv *TutView) *Feed {
 }
 
 func NewFollowRequests(tv *TutView) *Feed {
-	f := feed.NewFollowRequests(tv.tut.Client)
+	f := feed.NewFollowRequests(tv.tut.Client, tv.tut.Config)
 	f.LoadNewer()
 	fd := &Feed{
 		tutView: tv,

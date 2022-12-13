@@ -10,7 +10,6 @@ import (
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
 	"github.com/RasmusLindroth/tut/config"
-	"github.com/RasmusLindroth/tut/feed"
 	"github.com/RasmusLindroth/tut/util"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -309,11 +308,11 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 		return tv.InputStatusHistory(event, item, item.Raw().(*mastodon.StatusHistory), nil)
 	case api.UserType, api.ProfileType:
 		switch ft {
-		case feed.FollowRequests:
+		case config.FollowRequests:
 			return tv.InputUser(event, item.Raw().(*api.User), InputUserFollowRequest)
-		case feed.ListUsersAdd:
+		case config.ListUsersAdd:
 			return tv.InputUser(event, item.Raw().(*api.User), InputUserListAdd)
-		case feed.ListUsersIn:
+		case config.ListUsersIn:
 			return tv.InputUser(event, item.Raw().(*api.User), InputUserListDelete)
 		default:
 			return tv.InputUser(event, item.Raw().(*api.User), InputUserNormal)
@@ -732,7 +731,7 @@ func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User, ut InputUser
 func (tv *TutView) InputList(event *tcell.EventKey, list *mastodon.List) *tcell.EventKey {
 	if tv.tut.Config.Input.ListOpenFeed.Match(event.Key(), event.Rune()) ||
 		tv.tut.Config.Input.GlobalEnter.Match(event.Key(), event.Rune()) {
-		tv.Timeline.AddFeed(NewListFeed(tv, list))
+		tv.Timeline.AddFeed(NewListFeed(tv, list, true, true))
 		return nil
 	}
 	if tv.tut.Config.Input.ListUserList.Match(event.Key(), event.Rune()) {
@@ -749,7 +748,7 @@ func (tv *TutView) InputList(event *tcell.EventKey, list *mastodon.List) *tcell.
 func (tv *TutView) InputTag(event *tcell.EventKey, tag *mastodon.Tag) *tcell.EventKey {
 	if tv.tut.Config.Input.TagOpenFeed.Match(event.Key(), event.Rune()) ||
 		tv.tut.Config.Input.GlobalEnter.Match(event.Key(), event.Rune()) {
-		tv.Timeline.AddFeed(NewTagFeed(tv, tag.Name))
+		tv.Timeline.AddFeed(NewTagFeed(tv, tag.Name, true, true))
 		return nil
 	}
 	if tv.tut.Config.Input.TagFollow.Match(event.Key(), event.Rune()) {
