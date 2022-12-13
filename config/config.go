@@ -1045,15 +1045,19 @@ func parseGeneral(cfg *ini.File) General {
 	if len(tls) == 0 {
 		tls = append(tls,
 			Timeline{
-				FeedType: TimelineHome,
-				Name:     "",
+				FeedType:    TimelineHome,
+				Name:        "",
+				ShowBoosts:  true,
+				ShowReplies: true,
 			},
 		)
 		tls = append(tls,
 			Timeline{
-				FeedType: Notifications,
-				Name:     "[N]otifications",
-				Key:      inputStrOrErr([]string{"", "'n'", "'N'"}, false),
+				FeedType:    Notifications,
+				Name:        "[N]otifications",
+				Key:         inputStrOrErr([]string{"", "'n'", "'N'"}, false),
+				ShowBoosts:  true,
+				ShowReplies: true,
 			},
 		)
 	}
