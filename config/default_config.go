@@ -21,18 +21,22 @@ mouse-support=false
 # Tag is special as you need to add the tag after, see the example below.
 # 
 # The syntax is:
-# timelines=feed,[name],[keys...]
+# timelines=feed,[name],[keys...],[showBoosts],[showReplies]
 # 
 # Tha values in brackets are optional. You can see the syntax for keys under the
 # [input] section.
+# 
+# showBoosts and showReplies must be formated as bools. So either true or false.
+# They always defaults to true.
 # 
 # Some examples:
 # 
 # home timeline with the name Home
 # timelines=home,Home
 # 
-# local timeline with the name Local and it gets focus when you press 2
-# timelines=local,Local,'2'
+# local timeline with the name Local and it gets focus when you press 2. It will
+# also hide boosts in the timeline, but show toots that are replies.
+# timelines=local,Local,'2',false,true
 # 
 # notification timeline with the name [N]otifications and it gets focus when you
 # press n or N
@@ -120,6 +124,11 @@ show-filter-phrase=true
 # If you want to show a message in the cmdbar on how to access the help text.
 # default=true
 show-help=true
+
+# If you always want tut to jump to the newest post. May ruin your reading
+# experience.
+# default=false
+stick-to-top=false
 
 # 0 = No terminal title
 # 1 = Show title in terminal and top bar
@@ -253,7 +262,7 @@ link-viewer=xdg-open
 link-terminal=false
 
 [open-custom]
-# This sections allows you to set up to five custom programs to upen URLs with.
+# This sections allows you to set up to five custom programs to open URLs with.
 # If the url points to an image, you can set c1-name to img and c1-use to imv.
 # If the program runs in a terminal and you want to run it in the same terminal
 # as tut. Set cX-terminal to true. The name will show up in the UI, so keep it
@@ -366,7 +375,7 @@ background=
 # default=
 text=
 
-# The color to display sublte elements or subtle text. Like lines and help text.
+# The color to display subtle elements or subtle text. Like lines and help text.
 # default=
 subtle=
 
@@ -405,6 +414,10 @@ status-bar-view-background=
 # The color of the text in the bar at the bottom in view mode.
 # default=
 status-bar-view-text=
+
+# The color of the text in the command bar at the bottom.
+# default=
+command-text=
 
 # Background of selected list items.
 # default=
@@ -490,7 +503,7 @@ timeline-name-text=
 # with single quotation marks or double ones.
 # 
 # The single ones are for single chars like 'a', 'b', 'c' and double marks are
-# for special keys like "Enter". Remember that they are case sensetive.
+# for special keys like "Enter". Remember that they are case sensitive.
 # 
 # To find the names of special keys you have to go to the following site and
 # look for "var KeyNames = map[Key]string{"

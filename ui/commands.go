@@ -7,7 +7,6 @@ import (
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
 	"github.com/RasmusLindroth/tut/config"
-	"github.com/RasmusLindroth/tut/feed"
 	"github.com/RasmusLindroth/tut/util"
 )
 
@@ -62,13 +61,13 @@ func (tv *TutView) FollowRequestsCommand() {
 
 func (tv *TutView) LocalCommand() {
 	tv.Timeline.AddFeed(
-		NewLocalFeed(tv),
+		NewLocalFeed(tv, true, true),
 	)
 }
 
 func (tv *TutView) FederatedCommand() {
 	tv.Timeline.AddFeed(
-		NewFederatedFeed(tv),
+		NewFederatedFeed(tv, true, true),
 	)
 }
 
@@ -80,13 +79,13 @@ func (tv *TutView) DirectCommand() {
 
 func (tv *TutView) HomeCommand() {
 	tv.Timeline.AddFeed(
-		NewHomeFeed(tv),
+		NewHomeFeed(tv, true, true),
 	)
 }
 
 func (tv *TutView) NotificationsCommand() {
 	tv.Timeline.AddFeed(
-		NewNotificationFeed(tv),
+		NewNotificationFeed(tv, true, true),
 	)
 }
 
@@ -98,7 +97,7 @@ func (tv *TutView) ListsCommand() {
 
 func (tv *TutView) TagCommand(tag string) {
 	tv.Timeline.AddFeed(
-		NewTagFeed(tv, tag),
+		NewTagFeed(tv, tag, true, true),
 	)
 }
 
@@ -260,7 +259,7 @@ func (tv *TutView) ClearNotificationsCommand() {
 	}
 	for _, tl := range tv.Timeline.Feeds {
 		for _, f := range tl.Feeds {
-			if f.Data.Type() == feed.Notification {
+			if f.Data.Type() == config.Notifications {
 				f.Data.Clear()
 			}
 		}

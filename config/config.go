@@ -12,9 +12,9 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/RasmusLindroth/tut/feed"
 	"github.com/gdamore/tcell/v2"
 	"github.com/gobwas/glob"
+	"golang.org/x/exp/slices"
 	"gopkg.in/ini.v1"
 )
 
@@ -82,11 +82,43 @@ const (
 	LeaderLoadNewer
 )
 
+type FeedType uint
+
+const (
+	Favorites FeedType = iota
+	Favorited
+	Boosts
+	Followers
+	Following
+	FollowRequests
+	Blocking
+	Muting
+	History
+	InvalidFeed
+	Notifications
+	Saved
+	Tag
+	Tags
+	Thread
+	TimelineFederated
+	TimelineHome
+	TimelineLocal
+	Conversations
+	User
+	UserList
+	Lists
+	List
+	ListUsersIn
+	ListUsersAdd
+)
+
 type Timeline struct {
-	FeedType  feed.FeedType
-	Subaction string
-	Name      string
-	Key       Key
+	FeedType    FeedType
+	Subaction   string
+	Name        string
+	Key         Key
+	ShowBoosts  bool
+	ShowReplies bool
 }
 
 type General struct {
@@ -96,7 +128,7 @@ type General struct {
 	DateFormat        string
 	DateRelative      int
 	MaxWidth          int
-	StartTimeline     feed.FeedType
+	StartTimeline     FeedType
 	NotificationFeed  bool
 	QuoteReply        bool
 	CharLimit         int
@@ -115,6 +147,7 @@ type General struct {
 	LeaderActions     []LeaderAction
 	TimelineName      bool
 	Timelines         []Timeline
+	StickToTop        bool
 }
 
 type Style struct {
@@ -160,6 +193,8 @@ type Style struct {
 	TimelineNameText       tcell.Color
 
 	IconColor tcell.Color
+
+	CommandText tcell.Color
 }
 
 type Media struct {
@@ -621,6 +656,12 @@ func parseStyle(cfg *ini.File, cnfPath string, cnfDir string) Style {
 		} else {
 			style.TimelineNameText = style.Subtle
 		}
+		s = tcfg.Section("").Key("command-text").String()
+		if len(s) > 0 {
+			style.CommandText = tcell.GetColor(s)
+		} else {
+			style.CommandText = style.StatusBarText
+		}
 	} else {
 		s := cfg.Section("style").Key("background").String()
 		style.Background = parseColor(s, "#27822", xrdbColors)
@@ -740,6 +781,13 @@ func parseStyle(cfg *ini.File, cnfPath string, cnfDir string) Style {
 		} else {
 			style.TimelineNameText = style.Subtle
 		}
+
+		s = cfg.Section("style").Key("command-text").String()
+		if len(s) > 0 {
+			style.CommandText = parseColor(s, "white", xrdbColors)
+		} else {
+			style.CommandText = style.StatusBarText
+		}
 	}
 
 	return style
@@ -771,13 +819,13 @@ func parseGeneral(cfg *ini.File) General {
 	tl := cfg.Section("general").Key("timeline").In("home", []string{"home", "direct", "local", "federated"})
 	switch tl {
 	case "direct":
-		general.StartTimeline = feed.Conversations
+		general.StartTimeline = Conversations
 	case "local":
-		general.StartTimeline = feed.TimelineLocal
+		general.StartTimeline = TimelineLocal
 	case "federated":
-		general.StartTimeline = feed.TimelineFederated
+		general.StartTimeline = TimelineFederated
 	default:
-		general.StartTimeline = feed.TimelineHome
+		general.StartTimeline = TimelineHome
 	}
 
 	general.NotificationFeed = cfg.Section("general").Key("notification-feed").MustBool(true)
@@ -789,6 +837,7 @@ func parseGeneral(cfg *ini.File) General {
 	general.ShowIcons = cfg.Section("general").Key("show-icons").MustBool(true)
 	general.ShowHelp = cfg.Section("general").Key("show-help").MustBool(true)
 	general.RedrawUI = cfg.Section("general").Key("redraw-ui").MustBool(true)
+	general.StickToTop = cfg.Section("general").Key("stick-to-top").MustBool(false)
 
 	lp := cfg.Section("general").Key("list-placement").In("left", []string{"left", "right", "top", "bottom"})
 	switch lp {
@@ -950,50 +999,72 @@ func parseGeneral(cfg *ini.File) General {
 		tl := Timeline{}
 		switch cmd {
 		case "home":
-			tl.FeedType = feed.TimelineHome
+			tl.FeedType = TimelineHome
 		case "direct":
-			tl.FeedType = feed.Conversations
+			tl.FeedType = Conversations
 		case "local":
-			tl.FeedType = feed.TimelineLocal
+			tl.FeedType = TimelineLocal
 		case "federated":
-			tl.FeedType = feed.TimelineFederated
+			tl.FeedType = TimelineFederated
 		case "bookmarks":
-			tl.FeedType = feed.Saved
+			tl.FeedType = Saved
 		case "saved":
-			tl.FeedType = feed.Saved
+			tl.FeedType = Saved
 		case "favorited":
-			tl.FeedType = feed.Favorited
+			tl.FeedType = Favorited
 		case "notifications":
-			tl.FeedType = feed.Notification
+			tl.FeedType = Notifications
 		case "lists":
-			tl.FeedType = feed.Lists
+			tl.FeedType = Lists
 		case "tag":
-			tl.FeedType = feed.Tag
+			tl.FeedType = Tag
 			tl.Subaction = subaction
 		default:
 			fmt.Printf("timeline %s is invalid\n", parts[0])
 			os.Exit(1)
 		}
 		tl.Name = parts[1]
+		tfs := []bool{true, true}
+		tfStr := []string{"true", "false"}
+		stop := len(parts)
 		if len(parts) > 2 {
-			vals := []string{""}
-			vals = append(vals, parts[2:]...)
-			tl.Key = inputStrOrErr(vals, false)
+			if slices.Contains(tfStr, parts[len(parts)-2]) &&
+				slices.Contains(tfStr, parts[len(parts)-1]) &&
+				len(parts)-2 > 1 {
+				tfs[0] = parts[len(parts)-2] == "true"
+				tfs[1] = parts[len(parts)-1] == "true"
+				stop = len(parts) - 2
+			} else if slices.Contains(tfStr, parts[len(parts)-1]) &&
+				len(parts)-1 > 1 {
+				tfs[0] = parts[len(parts)-1] == "true"
+				stop = len(parts) - 1
+			}
+			if stop > 2 {
+				vals := []string{""}
+				vals = append(vals, parts[2:stop]...)
+				tl.Key = inputStrOrErr(vals, false)
+			}
 		}
+		tl.ShowBoosts = tfs[0]
+		tl.ShowReplies = tfs[1]
 		tls = append(tls, tl)
 	}
 	if len(tls) == 0 {
 		tls = append(tls,
 			Timeline{
-				FeedType: feed.TimelineHome,
-				Name:     "",
+				FeedType:    TimelineHome,
+				Name:        "",
+				ShowBoosts:  true,
+				ShowReplies: true,
 			},
 		)
 		tls = append(tls,
 			Timeline{
-				FeedType: feed.Notification,
-				Name:     "[N]otifications",
-				Key:      inputStrOrErr([]string{"", "'n'", "'N'"}, false),
+				FeedType:    Notifications,
+				Name:        "[N]otifications",
+				Key:         inputStrOrErr([]string{"", "'n'", "'N'"}, false),
+				ShowBoosts:  true,
+				ShowReplies: true,
 			},
 		)
 	}

@@ -122,7 +122,7 @@ func (lv *LinkView) Open() {
 	tIndex := index - len(mentions) - len(urls)
 	if tIndex < len(tags) {
 		lv.tutView.Timeline.AddFeed(
-			NewTagFeed(lv.tutView, tags[tIndex].Name),
+			NewTagFeed(lv.tutView, tags[tIndex].Name, true, true),
 		)
 		lv.tutView.FocusMainNoHistory()
 		return

@@ -8,7 +8,6 @@ import (
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
 	"github.com/RasmusLindroth/tut/config"
-	"github.com/RasmusLindroth/tut/feed"
 	"github.com/icza/gox/timex"
 	"github.com/rivo/tview"
 )
@@ -76,7 +75,7 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 	}
 }
 
-func DrawItem(tv *TutView, item api.Item, main *tview.TextView, controls *tview.Flex, ft feed.FeedType) {
+func DrawItem(tv *TutView, item api.Item, main *tview.TextView, controls *tview.Flex, ft config.FeedType) {
 	switch item.Type() {
 	case api.StatusType:
 		drawStatus(tv, item, item.Raw().(*mastodon.Status), main, controls, false, "")
@@ -95,11 +94,11 @@ func DrawItem(tv *TutView, item api.Item, main *tview.TextView, controls *tview.
 		drawStatus(tv, item, &status, main, controls, true, "")
 	case api.UserType, api.ProfileType:
 		switch ft {
-		case feed.FollowRequests:
+		case config.FollowRequests:
 			drawUser(tv, item.Raw().(*api.User), main, controls, "", InputUserFollowRequest)
-		case feed.ListUsersAdd:
+		case config.ListUsersAdd:
 			drawUser(tv, item.Raw().(*api.User), main, controls, "", InputUserListAdd)
-		case feed.ListUsersIn:
+		case config.ListUsersIn:
 			drawUser(tv, item.Raw().(*api.User), main, controls, "", InputUserListDelete)
 		default:
 			drawUser(tv, item.Raw().(*api.User), main, controls, "", InputUserFollowRequest)
@@ -113,7 +112,7 @@ func DrawItem(tv *TutView, item api.Item, main *tview.TextView, controls *tview.
 	}
 }
 
-func DrawItemControls(tv *TutView, item api.Item, controls *tview.Flex, ft feed.FeedType) {
+func DrawItemControls(tv *TutView, item api.Item, controls *tview.Flex, ft config.FeedType) {
 	switch item.Type() {
 	case api.StatusType:
 		drawStatus(tv, item, item.Raw().(*mastodon.Status), nil, controls, false, "")
@@ -131,7 +130,7 @@ func DrawItemControls(tv *TutView, item api.Item, controls *tview.Flex, ft feed.
 		}
 		drawStatus(tv, item, &status, nil, controls, true, "")
 	case api.UserType, api.ProfileType:
-		if ft == feed.FollowRequests {
+		if ft == config.FollowRequests {
 			drawUser(tv, item.Raw().(*api.User), nil, controls, "", InputUserFollowRequest)
 		} else {
 			drawUser(tv, item.Raw().(*api.User), nil, controls, "", InputUserNormal)
