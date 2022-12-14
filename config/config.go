@@ -158,6 +158,8 @@ type General struct {
 	ContentProportion   int
 	TerminalTitle       int
 	ShowIcons           bool
+	SymbolWidth         int
+	SymbolFormat        string
 	ShowHelp            bool
 	RedrawUI            bool
 	LeaderKey           rune
@@ -844,6 +846,9 @@ func parseGeneral(cfg *ini.File) General {
 	general.ShortHints = cfg.Section("general").Key("short-hints").MustBool(false)
 	general.ShowFilterPhrase = cfg.Section("general").Key("show-filter-phrase").MustBool(true)
 	general.ShowIcons = cfg.Section("general").Key("show-icons").MustBool(true)
+	general.SymbolWidth = cfg.Section("general").Key("symbol-width").MustInt(6)
+	symbolFormat := "%" + fmt.Sprintf("%d", general.SymbolWidth) + "s"
+	general.SymbolFormat = cfg.Section("general").Key("symbol-format").MustString(symbolFormat)
 	general.ShowHelp = cfg.Section("general").Key("show-help").MustBool(true)
 	general.RedrawUI = cfg.Section("general").Key("redraw-ui").MustBool(true)
 	general.StickToTop = cfg.Section("general").Key("stick-to-top").MustBool(false)

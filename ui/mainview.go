@@ -31,7 +31,7 @@ func (mv *MainView) ForceUpdate() {
 }
 
 func feedList(mv *TutView, fh *FeedHolder) *tview.Flex {
-	iw := 3
+	iw := mv.tut.Config.General.SymbolWidth
 	if !mv.tut.Config.General.ShowIcons {
 		iw = 0
 	}
