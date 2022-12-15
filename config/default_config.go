@@ -100,6 +100,12 @@ list-proportion=1
 # default=2
 content-proportion=2
 
+# Hide notifications of this type. If you have multiple you separate them with a
+# comma. Valid types: mention, status, boost, follow, follow_request, favorite,
+# poll, edit.
+# default=
+notifications-to-hide=
+
 # If you always want to quote original message when replying.
 # default=false
 quote-reply=false
@@ -163,8 +169,8 @@ leader-timeout=1000
 # Available commands: home, direct, local, federated, clear-notifications,
 # compose, edit, history, blocking, bookmarks, saved, favorited, boosts,
 # favorites, following, followers, muting, newer, preferences, profile,
-# notifications, lists, tag, tags, window, list-placement, list-split,
-# proportions
+# notifications, lists, stick-to-top, tag, tags, window, list-placement,
+# list-split, proportions
 # 
 # The shortcuts are up to you, but keep them quite short and make sure they
 # don't collide. If you have one shortcut that is "f" and an other one that is
