@@ -39,6 +39,11 @@ const (
 	DesktopNotificationPost
 )
 
+type DesktopNotificationHolder struct {
+	Type DesktopNotificationType
+	Data string
+}
+
 type Feed struct {
 	accountClient *api.AccountClient
 	config        *config.Config
@@ -50,7 +55,7 @@ type Feed struct {
 	loadingOlder  *LoadingLock
 	loadNewer     func()
 	loadOlder     func()
-	Update        chan DesktopNotificationType
+	Update        chan DesktopNotificationHolder
 	apiData       *api.RequestData
 	apiDataMux    sync.Mutex
 	streams       []*api.Receiver
@@ -98,14 +103,14 @@ func (f *Feed) Delete(id uint) {
 		}
 	}
 	f.items = items
-	f.Updated(DeskstopNotificationNone)
+	f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 }
 
 func (f *Feed) Clear() {
 	f.itemsMux.Lock()
 	defer f.itemsMux.Unlock()
 	f.items = []api.Item{}
-	f.Updated(DeskstopNotificationNone)
+	f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 }
 
 func (f *Feed) Item(index int) (api.Item, error) {
@@ -123,7 +128,7 @@ func (f *Feed) Item(index int) (api.Item, error) {
 	return filtered[index], nil
 }
 
-func (f *Feed) Updated(nt DesktopNotificationType) {
+func (f *Feed) Updated(nt DesktopNotificationHolder) {
 	if len(f.Update) > 0 {
 		return
 	}
@@ -143,7 +148,7 @@ func (f *Feed) LoadNewer() {
 		return
 	}
 	f.loadNewer()
-	f.Updated(DeskstopNotificationNone)
+	f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 	f.loadingNewer.last = time.Now()
 	f.loadingNewer.mux.Unlock()
 }
@@ -161,7 +166,7 @@ func (f *Feed) LoadOlder() {
 		return
 	}
 	f.loadOlder()
-	f.Updated(DeskstopNotificationNone)
+	f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 	f.loadingOlder.last = time.Now()
 	f.loadingOlder.mux.Unlock()
 }
@@ -192,7 +197,7 @@ func (f *Feed) singleNewerSearch(fn apiSearchFunc, search string) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(items, f.items...)
-		f.Updated(DeskstopNotificationNone)
+		f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 	}
 	f.itemsMux.Unlock()
 }
@@ -205,7 +210,7 @@ func (f *Feed) singleThread(fn apiThreadFunc, status *mastodon.Status) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(items, f.items...)
-		f.Updated(DeskstopNotificationNone)
+		f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 	}
 	f.itemsMux.Unlock()
 }
@@ -218,7 +223,7 @@ func (f *Feed) singleHistory(fn apiHistoryFunc, status *mastodon.Status) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(items, f.items...)
-		f.Updated(DeskstopNotificationNone)
+		f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 	}
 	f.itemsMux.Unlock()
 }
@@ -251,7 +256,7 @@ func (f *Feed) normalNewer(fn apiFunc) {
 			}
 		}
 		f.items = append(items, f.items...)
-		f.Updated(DeskstopNotificationNone)
+		f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 	}
 	f.itemsMux.Unlock()
 	f.apiDataMux.Unlock()
@@ -280,7 +285,7 @@ func (f *Feed) normalOlder(fn apiFunc) {
 			f.apiData.MaxID = item.Item.ID
 		}
 		f.items = append(f.items, items...)
-		f.Updated(DeskstopNotificationNone)
+		f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 	}
 	f.itemsMux.Unlock()
 	f.apiDataMux.Unlock()
@@ -302,7 +307,7 @@ func (f *Feed) newerSearchPG(fn apiSearchPGFunc, search string) {
 		item := items[0].Raw().(*mastodon.Status)
 		f.apiData.MinID = item.ID
 		f.items = append(items, f.items...)
-		f.Updated(DeskstopNotificationNone)
+		f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 		if f.apiData.MaxID == mastodon.ID("") {
 			item = items[len(items)-1].Raw().(*mastodon.Status)
 			f.apiData.MaxID = item.ID
@@ -331,7 +336,7 @@ func (f *Feed) olderSearchPG(fn apiSearchPGFunc, search string) {
 		item := items[len(items)-1].Raw().(*mastodon.Status)
 		f.apiData.MaxID = item.ID
 		f.items = append(f.items, items...)
-		f.Updated(DeskstopNotificationNone)
+		f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 	}
 	f.itemsMux.Unlock()
 	f.apiDataMux.Unlock()
@@ -353,7 +358,7 @@ func (f *Feed) normalNewerUser(fn apiIDFunc, id mastodon.ID) {
 		item := items[0].Raw().(*mastodon.Status)
 		f.apiData.MinID = item.ID
 		f.items = append(items, f.items...)
-		f.Updated(DeskstopNotificationNone)
+		f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 		if f.apiData.MaxID == mastodon.ID("") {
 			item = items[len(items)-1].Raw().(*mastodon.Status)
 			f.apiData.MaxID = item.ID
@@ -382,7 +387,7 @@ func (f *Feed) normalOlderUser(fn apiIDFunc, id mastodon.ID) {
 		item := items[len(items)-1].Raw().(*mastodon.Status)
 		f.apiData.MaxID = item.ID
 		f.items = append(f.items, items...)
-		f.Updated(DeskstopNotificationNone)
+		f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 	}
 	f.itemsMux.Unlock()
 	f.apiDataMux.Unlock()
@@ -404,7 +409,7 @@ func (f *Feed) normalNewerID(fn apiIDFunc, id mastodon.ID) {
 		item := items[0].Raw().(*mastodon.Status)
 		f.apiData.MinID = item.ID
 		f.items = append(items, f.items...)
-		f.Updated(DeskstopNotificationNone)
+		f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 		if f.apiData.MaxID == mastodon.ID("") {
 			item = items[len(items)-1].Raw().(*mastodon.Status)
 			f.apiData.MaxID = item.ID
@@ -433,7 +438,7 @@ func (f *Feed) normalOlderID(fn apiIDFunc, id mastodon.ID) {
 		item := items[len(items)-1].Raw().(*mastodon.Status)
 		f.apiData.MaxID = item.ID
 		f.items = append(f.items, items...)
-		f.Updated(DeskstopNotificationNone)
+		f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 	}
 	f.itemsMux.Unlock()
 	f.apiDataMux.Unlock()
@@ -447,7 +452,7 @@ func (f *Feed) normalEmpty(fn apiEmptyFunc) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(f.items, items...)
-		f.Updated(DeskstopNotificationNone)
+		f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 	}
 	f.itemsMux.Unlock()
 }
@@ -473,7 +478,7 @@ func (f *Feed) linkNewer(fn apiFunc) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(items, f.items...)
-		f.Updated(DeskstopNotificationNone)
+		f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 	}
 	f.itemsMux.Unlock()
 }
@@ -498,7 +503,7 @@ func (f *Feed) linkOlder(fn apiFunc) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(f.items, items...)
-		f.Updated(DeskstopNotificationNone)
+		f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 	}
 	f.itemsMux.Unlock()
 }
@@ -524,7 +529,7 @@ func (f *Feed) linkNewerID(fn apiIDFunc, id mastodon.ID) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(items, f.items...)
-		f.Updated(DeskstopNotificationNone)
+		f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 	}
 	f.itemsMux.Unlock()
 }
@@ -549,7 +554,7 @@ func (f *Feed) linkOlderID(fn apiIDFunc, id mastodon.ID) {
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(f.items, items...)
-		f.Updated(DeskstopNotificationNone)
+		f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 	}
 	f.itemsMux.Unlock()
 }
@@ -575,7 +580,7 @@ func (f *Feed) linkNewerIDdata(fn apiIDFuncData, id mastodon.ID, data interface{
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(items, f.items...)
-		f.Updated(DeskstopNotificationNone)
+		f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 	}
 	f.itemsMux.Unlock()
 }
@@ -600,7 +605,7 @@ func (f *Feed) linkOlderIDdata(fn apiIDFuncData, id mastodon.ID, data interface{
 	f.itemsMux.Lock()
 	if len(items) > 0 {
 		f.items = append(f.items, items...)
-		f.Updated(DeskstopNotificationNone)
+		f.Updated(DesktopNotificationHolder{Type: DeskstopNotificationNone})
 	}
 	f.itemsMux.Unlock()
 }
@@ -630,7 +635,9 @@ func (f *Feed) startStream(rec *api.Receiver, timeline string, err error) {
 				}
 				if !found {
 					f.items = append([]api.Item{s}, f.items...)
-					f.Updated(DesktopNotificationPost)
+					f.Updated(DesktopNotificationHolder{
+						Type: DesktopNotificationPost,
+					})
 					f.apiData.MinID = t.Status.ID
 				}
 				f.itemsMux.Unlock()
@@ -664,6 +671,7 @@ func (f *Feed) startStreamNotification(rec *api.Receiver, timeline string, err e
 				f.itemsMux.Lock()
 				f.items = append([]api.Item{s}, f.items...)
 				nft := DeskstopNotificationNone
+				data := t.Notification.Account.DisplayName
 				switch t.Notification.Type {
 				case "follow", "follow_request":
 					nft = DesktopNotificationFollower
@@ -682,7 +690,10 @@ func (f *Feed) startStreamNotification(rec *api.Receiver, timeline string, err e
 				default:
 					nft = DeskstopNotificationNone
 				}
-				f.Updated(nft)
+				f.Updated(DesktopNotificationHolder{
+					Type: nft,
+					Data: data,
+				})
 				f.itemsMux.Unlock()
 			}
 		}
@@ -699,7 +710,7 @@ func newFeed(ac *api.AccountClient, ft config.FeedType, cnf *config.Config, show
 		loadNewer:     func() {},
 		loadOlder:     func() {},
 		apiData:       &api.RequestData{},
-		Update:        make(chan DesktopNotificationType, 1),
+		Update:        make(chan DesktopNotificationHolder, 1),
 		loadingNewer:  &LoadingLock{},
 		loadingOlder:  &LoadingLock{},
 		showBoosts:    showBoosts,
