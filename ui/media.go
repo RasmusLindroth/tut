@@ -20,12 +20,14 @@ func downloadFile(url string) (string, error) {
 
 	resp, err := http.Get(url)
 	if err != nil {
+		os.Remove(f.Name())
 		return "", err
 	}
 	defer resp.Body.Close()
 
 	_, err = io.Copy(f, resp.Body)
 	if err != nil {
+		os.Remove(f.Name())
 		return "", nil
 	}
 
@@ -147,9 +149,19 @@ func openMediaType(tv *TutView, filenames []string, mediaType string) {
 		for _, ext := range external {
 			exec.Command(ext.Name, ext.Args...).Run()
 		}
+		deleteFiles(filenames)
 	}()
 	for _, term := range terminal {
 		openInTerminal(tv, term.Name, term.Args...)
+	}
+	if len(terminal) != 0 {
+		deleteFiles(filenames)
+	}
+}
+
+func deleteFiles(filenames []string) {
+	for _, filename := range filenames {
+		os.Remove(filename)
 	}
 }
 
