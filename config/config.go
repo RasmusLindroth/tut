@@ -76,6 +76,7 @@ const (
 	LeaderLists
 	LeaderTag
 	LeaderTags
+	LeaderStickToTop
 	LeaderHistory
 	LeaderUser
 	LeaderWindow
@@ -945,6 +946,8 @@ func parseGeneral(cfg *ini.File) General {
 				la.Command = LeaderNotifications
 			case "lists":
 				la.Command = LeaderLists
+			case "stick-to-top":
+				la.Command = LeaderStickToTop
 			case "tag":
 				la.Command = LeaderTag
 				la.Subaction = subaction
@@ -983,7 +986,7 @@ func parseGeneral(cfg *ini.File) General {
 			parts[i] = strings.TrimSpace(p)
 		}
 		if len(parts) == 0 {
-			fmt.Printf("timelines must consist of atleast one part seperated by a comma. Your value is: %s\n", strings.Join(parts, ","))
+			fmt.Printf("timelines must consist of atleast one part seper ated by a comma. Your value is: %s\n", strings.Join(parts, ","))
 			os.Exit(1)
 		}
 		if len(parts) == 1 {

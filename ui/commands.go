@@ -265,3 +265,7 @@ func (tv *TutView) ClearNotificationsCommand() {
 		}
 	}
 }
+
+func (tv *TutView) ToggleStickToTop() {
+	tv.tut.Config.General.StickToTop = !tv.tut.Config.General.StickToTop
+}
