@@ -20,12 +20,14 @@ func downloadFile(url string) (string, error) {
 
 	resp, err := http.Get(url)
 	if err != nil {
+		os.Remove(f.Name())
 		return "", err
 	}
 	defer resp.Body.Close()
 
 	_, err = io.Copy(f, resp.Body)
 	if err != nil {
+		os.Remove(f.Name())
 		return "", nil
 	}
 
@@ -40,7 +42,6 @@ func openAvatar(tv *TutView, user mastodon.Account) {
 		)
 		return
 	}
-	tv.FileList = append(tv.FileList, f)
 	openMediaType(tv, []string{f}, "image")
 }
 
@@ -56,15 +57,17 @@ func reverseFiles(filenames []string) []string {
 }
 
 type runProgram struct {
-	Name     string
-	Args     []string
-	Terminal bool
+	Name      string
+	Filenames []string
+	Args      []string
+	Terminal  bool
 }
 
-func newRunProgram(name string, args ...string) runProgram {
+func newRunProgram(name string, filenames []string, args ...string) runProgram {
 	return runProgram{
-		Name: name,
-		Args: args,
+		Name:      name,
+		Filenames: filenames,
+		Args:      args,
 	}
 }
 
@@ -80,7 +83,7 @@ func openMediaType(tv *TutView, filenames []string, mediaType string) {
 		if mc.ImageSingle {
 			for _, f := range filenames {
 				args := append(mc.ImageArgs, f)
-				c := newRunProgram(mc.ImageViewer, args...)
+				c := newRunProgram(mc.ImageViewer, []string{f}, args...)
 				if mc.ImageTerminal {
 					terminal = append(terminal, c)
 				} else {
@@ -89,7 +92,7 @@ func openMediaType(tv *TutView, filenames []string, mediaType string) {
 			}
 		} else {
 			args := append(mc.ImageArgs, filenames...)
-			c := newRunProgram(mc.ImageViewer, args...)
+			c := newRunProgram(mc.ImageViewer, filenames, args...)
 			if mc.ImageTerminal {
 				terminal = append(terminal, c)
 			} else {
@@ -103,7 +106,7 @@ func openMediaType(tv *TutView, filenames []string, mediaType string) {
 		if mc.VideoSingle {
 			for _, f := range filenames {
 				args := append(mc.VideoArgs, f)
-				c := newRunProgram(mc.VideoViewer, args...)
+				c := newRunProgram(mc.VideoViewer, []string{f}, args...)
 				if mc.VideoTerminal {
 					terminal = append(terminal, c)
 				} else {
@@ -112,7 +115,7 @@ func openMediaType(tv *TutView, filenames []string, mediaType string) {
 			}
 		} else {
 			args := append(mc.VideoArgs, filenames...)
-			c := newRunProgram(mc.VideoViewer, args...)
+			c := newRunProgram(mc.VideoViewer, filenames, args...)
 			if mc.VideoTerminal {
 				terminal = append(terminal, c)
 			} else {
@@ -126,7 +129,7 @@ func openMediaType(tv *TutView, filenames []string, mediaType string) {
 		if mc.AudioSingle {
 			for _, f := range filenames {
 				args := append(mc.AudioArgs, f)
-				c := newRunProgram(mc.AudioViewer, args...)
+				c := newRunProgram(mc.AudioViewer, []string{f}, args...)
 				if mc.AudioTerminal {
 					terminal = append(terminal, c)
 				} else {
@@ -135,7 +138,7 @@ func openMediaType(tv *TutView, filenames []string, mediaType string) {
 			}
 		} else {
 			args := append(mc.AudioArgs, filenames...)
-			c := newRunProgram(mc.AudioViewer, args...)
+			c := newRunProgram(mc.AudioViewer, filenames, args...)
 			if mc.AudioTerminal {
 				terminal = append(terminal, c)
 			} else {
@@ -146,10 +149,18 @@ func openMediaType(tv *TutView, filenames []string, mediaType string) {
 	go func() {
 		for _, ext := range external {
 			exec.Command(ext.Name, ext.Args...).Run()
+			deleteFiles(ext.Filenames)
 		}
 	}()
 	for _, term := range terminal {
 		openInTerminal(tv, term.Name, term.Args...)
+		deleteFiles(term.Filenames)
+	}
+}
+
+func deleteFiles(filenames []string) {
+	for _, filename := range filenames {
+		os.Remove(filename)
 	}
 }
 
@@ -178,7 +189,6 @@ func openMedia(tv *TutView, status *mastodon.Status) {
 			files = append(files, f)
 		}
 		openMediaType(tv, files, key)
-		tv.FileList = append(tv.FileList, files...)
 		tv.ShouldSync()
 	}
 }

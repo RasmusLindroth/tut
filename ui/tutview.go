@@ -54,14 +54,9 @@ type TutView struct {
 	PreferenceView *PreferenceView
 	HelpView       *HelpView
 	ModalView      *ModalView
-
-	FileList []string
 }
 
 func (tv *TutView) CleanExit(code int) {
-	for _, f := range tv.FileList {
-		os.Remove(f)
-	}
 	os.Exit(code)
 }
 
@@ -102,9 +97,8 @@ func (l *Leader) Content() string {
 
 func NewTutView(t *Tut, accs *auth.AccountData, selectedUser string) *TutView {
 	tv := &TutView{
-		tut:      t,
-		View:     tview.NewPages(),
-		FileList: []string{},
+		tut:  t,
+		View: tview.NewPages(),
 	}
 	tv.Leader = NewLeader(tv)
 	tv.Shared = NewShared(tv)

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/RasmusLindroth/go-mastodon"
+	"github.com/RasmusLindroth/tut/config"
 )
 
 type TimelineType uint
@@ -72,9 +73,13 @@ func (ac *AccountClient) GetTimelineLocal(pg *mastodon.Pagination) ([]Item, erro
 	return ac.getStatusSimilar(fn, "public")
 }
 
-func (ac *AccountClient) GetNotifications(pg *mastodon.Pagination) ([]Item, error) {
+func (ac *AccountClient) GetNotifications(nth []config.NotificationToHide, pg *mastodon.Pagination) ([]Item, error) {
 	var items []Item
-	notifications, err := ac.Client.GetNotifications(context.Background(), pg)
+	toHide := []string{}
+	for _, n := range nth {
+		toHide = append(toHide, string(n))
+	}
+	notifications, err := ac.Client.GetNotificationsExclude(context.Background(), &toHide, pg)
 	if err != nil {
 		return items, err
 	}

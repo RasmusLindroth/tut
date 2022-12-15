@@ -136,7 +136,7 @@ func drawUser(tv *TutView, data *api.User, main *tview.TextView, controls *tview
 
 	if main != nil {
 		if additional != "" {
-			additional = fmt.Sprintf("%s\n\n", config.SublteText(tv.tut.Config, additional))
+			additional = fmt.Sprintf("%s\n\n", config.SublteText(tv.tut.Config, tview.Escape(additional)))
 		}
 		main.SetText(additional + output.String())
 	}

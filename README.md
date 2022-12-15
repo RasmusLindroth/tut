@@ -65,6 +65,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:proportions` [int] [int], where the first integer is the list and the other content, e.g. `:proportions 1 3`
 * `:requests` see following requests
 * `:saved` alias for bookmarks
+* `:stick-to-top` toggle the stick-to-top setting.
 * `:tag` followed by the hashtag e.g. `:tag linux`
 * `:tags` list of followed tags
 * `:unfollow-tag` followed by the hashtag to unfollow e.g. `:unfollow-tag tut`

@@ -88,26 +88,26 @@ func (f *Feed) DrawContent() {
 
 func (f *Feed) update() {
 	for nft := range f.Data.Update {
-		switch nft {
+		switch nft.Type {
 		case feed.DesktopNotificationFollower:
 			if f.tutView.tut.Config.NotificationConfig.NotificationFollower {
-				beeep.Notify("New follower", "", "")
+				beeep.Notify(fmt.Sprintf("%s follows you", nft.Data), "", "")
 			}
 		case feed.DesktopNotificationFavorite:
 			if f.tutView.tut.Config.NotificationConfig.NotificationFavorite {
-				beeep.Notify("Favorited your toot", "", "")
+				beeep.Notify(fmt.Sprintf("%s favorited your toot", nft.Data), "", "")
 			}
 		case feed.DesktopNotificationMention:
 			if f.tutView.tut.Config.NotificationConfig.NotificationMention {
-				beeep.Notify("Mentioned you", "", "")
+				beeep.Notify(fmt.Sprintf("%s mentioned you", nft.Data), "", "")
 			}
 		case feed.DesktopNotificationUpdate:
 			if f.tutView.tut.Config.NotificationConfig.NotificationUpdate {
-				beeep.Notify("Changed their toot", "", "")
+				beeep.Notify(fmt.Sprintf("%s changed their toot", nft.Data), "", "")
 			}
 		case feed.DesktopNotificationBoost:
 			if f.tutView.tut.Config.NotificationConfig.NotificationBoost {
-				beeep.Notify("Boosted your toot", "", "")
+				beeep.Notify(fmt.Sprintf("%s boosted your toot", nft.Data), "", "")
 			}
 		case feed.DesktopNotificationPoll:
 			if f.tutView.tut.Config.NotificationConfig.NotificationPoll {

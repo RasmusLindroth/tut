@@ -76,6 +76,7 @@ const (
 	LeaderLists
 	LeaderTag
 	LeaderTags
+	LeaderStickToTop
 	LeaderHistory
 	LeaderUser
 	LeaderWindow
@@ -112,6 +113,19 @@ const (
 	ListUsersAdd
 )
 
+type NotificationToHide string
+
+const (
+	HideMention       NotificationToHide = "mention"
+	HideStatus        NotificationToHide = "status"
+	HideBoost         NotificationToHide = "reblog"
+	HideFollow        NotificationToHide = "follow"
+	HideFollowRequest NotificationToHide = "follow_request"
+	HideFavorite      NotificationToHide = "favourite"
+	HidePoll          NotificationToHide = "poll"
+	HideEdited        NotificationToHide = "update"
+)
+
 type Timeline struct {
 	FeedType    FeedType
 	Subaction   string
@@ -122,32 +136,33 @@ type Timeline struct {
 }
 
 type General struct {
-	Confirmation      bool
-	MouseSupport      bool
-	DateTodayFormat   string
-	DateFormat        string
-	DateRelative      int
-	MaxWidth          int
-	StartTimeline     FeedType
-	NotificationFeed  bool
-	QuoteReply        bool
-	CharLimit         int
-	ShortHints        bool
-	ShowFilterPhrase  bool
-	ListPlacement     ListPlacement
-	ListSplit         ListSplit
-	ListProportion    int
-	ContentProportion int
-	TerminalTitle     int
-	ShowIcons         bool
-	ShowHelp          bool
-	RedrawUI          bool
-	LeaderKey         rune
-	LeaderTimeout     int64
-	LeaderActions     []LeaderAction
-	TimelineName      bool
-	Timelines         []Timeline
-	StickToTop        bool
+	Confirmation        bool
+	MouseSupport        bool
+	DateTodayFormat     string
+	DateFormat          string
+	DateRelative        int
+	MaxWidth            int
+	StartTimeline       FeedType
+	NotificationFeed    bool
+	QuoteReply          bool
+	CharLimit           int
+	ShortHints          bool
+	ShowFilterPhrase    bool
+	ListPlacement       ListPlacement
+	ListSplit           ListSplit
+	ListProportion      int
+	ContentProportion   int
+	TerminalTitle       int
+	ShowIcons           bool
+	ShowHelp            bool
+	RedrawUI            bool
+	LeaderKey           rune
+	LeaderTimeout       int64
+	LeaderActions       []LeaderAction
+	TimelineName        bool
+	Timelines           []Timeline
+	StickToTop          bool
+	NotificationsToHide []NotificationToHide
 }
 
 type Style struct {
@@ -945,6 +960,8 @@ func parseGeneral(cfg *ini.File) General {
 				la.Command = LeaderNotifications
 			case "lists":
 				la.Command = LeaderLists
+			case "stick-to-top":
+				la.Command = LeaderStickToTop
 			case "tag":
 				la.Command = LeaderTag
 				la.Subaction = subaction
@@ -1078,6 +1095,37 @@ func parseGeneral(cfg *ini.File) General {
 	*/
 	if general.TerminalTitle < 0 || general.TerminalTitle > 2 {
 		general.TerminalTitle = 0
+	}
+
+	nths := []NotificationToHide{}
+	nth := cfg.Section("general").Key("notifications-to-hide").MustString("")
+	parts := strings.Split(nth, ",")
+	for _, p := range parts {
+		s := strings.TrimSpace(p)
+		switch s {
+		case "mention":
+			nths = append(nths, HideMention)
+		case "status":
+			nths = append(nths, HideStatus)
+		case "boost":
+			nths = append(nths, HideBoost)
+		case "follow":
+			nths = append(nths, HideFollow)
+		case "follow_request":
+			nths = append(nths, HideFollowRequest)
+		case "favorite":
+			nths = append(nths, HideFavorite)
+		case "poll":
+			nths = append(nths, HidePoll)
+		case "edit":
+			nths = append(nths, HideEdited)
+		default:
+			if len(s) > 0 {
+				log.Fatalf("%s in notifications-to-hide is invalid\n", s)
+				os.Exit(1)
+			}
+		}
+		general.NotificationsToHide = nths
 	}
 
 	return general

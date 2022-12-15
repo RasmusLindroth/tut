@@ -83,14 +83,14 @@ func (s *Stream) listen() {
 		switch e.(type) {
 		case *mastodon.UpdateEvent, *mastodon.NotificationEvent, *mastodon.DeleteEvent, *mastodon.ErrorEvent:
 			for _, r := range s.receivers {
-				go func(rec *Receiver) {
+				go func(rec *Receiver, e mastodon.Event) {
 					rec.mux.Lock()
 					if rec.Closed {
 						return
 					}
 					rec.mux.Unlock()
 					rec.Ch <- e
-				}(r)
+				}(r, e)
 			}
 		}
 	}
