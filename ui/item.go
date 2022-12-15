@@ -101,7 +101,7 @@ func DrawItem(tv *TutView, item api.Item, main *tview.TextView, controls *tview.
 		case config.ListUsersIn:
 			drawUser(tv, item.Raw().(*api.User), main, controls, "", InputUserListDelete)
 		default:
-			drawUser(tv, item.Raw().(*api.User), main, controls, "", InputUserFollowRequest)
+			drawUser(tv, item.Raw().(*api.User), main, controls, "", InputUserNormal)
 		}
 	case api.NotificationType:
 		drawNotification(tv, item, item.Raw().(*api.NotificationData), main, controls)
