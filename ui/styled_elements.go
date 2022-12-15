@@ -79,6 +79,7 @@ func NewInputField(cnf *config.Config) *tview.InputField {
 	i := tview.NewInputField()
 	i.SetBackgroundColor(cnf.Style.Background)
 	i.SetFieldBackgroundColor(cnf.Style.Background)
+	i.SetFieldTextColor((cnf.Style.CommandText))
 
 	selected := tcell.Style{}.
 		Background(cnf.Style.AutocompleteSelectedBackground).
