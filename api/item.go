@@ -117,11 +117,11 @@ func NewStatusItem(item *mastodon.Status, filters []*mastodon.Filter, timeline s
 				}
 			}
 		} else {
-			if strings.Contains(s.Content, strings.ToLower(f.Phrase)) {
+			if strings.Contains(strings.ToLower(s.Content), strings.ToLower(f.Phrase)) {
 				filtered.inUse = true
 				filtered.name = f.Phrase
 			}
-			if strings.Contains(s.SpoilerText, strings.ToLower(f.Phrase)) {
+			if strings.Contains(strings.ToLower(s.SpoilerText), strings.ToLower(f.Phrase)) {
 				filtered.inUse = true
 				filtered.name = f.Phrase
 			}
