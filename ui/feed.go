@@ -153,6 +153,20 @@ func NewHomeFeed(tv *TutView, showBoosts bool, showReplies bool) *Feed {
 	return fd
 }
 
+func NewHomeSpecialFeed(tv *TutView, showBoosts bool, showReplies bool) *Feed {
+	f := feed.NewTimelineHomeSpecial(tv.tut.Client, tv.tut.Config, showBoosts, showReplies)
+	f.LoadNewer()
+	fd := &Feed{
+		tutView: tv,
+		Data:    f,
+		List:    NewFeedList(tv.tut, f.StickyCount()),
+		Content: NewFeedContent(tv.tut),
+	}
+	go fd.update()
+
+	return fd
+}
+
 func NewFederatedFeed(tv *TutView, showBoosts bool, showReplies bool) *Feed {
 	f := feed.NewTimelineFederated(tv.tut.Client, tv.tut.Config, showBoosts, showReplies)
 	f.LoadNewer()

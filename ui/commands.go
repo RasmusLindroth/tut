@@ -71,6 +71,12 @@ func (tv *TutView) FederatedCommand() {
 	)
 }
 
+func (tv *TutView) SpecialCommand(boosts, replies bool) {
+	tv.Timeline.AddFeed(
+		NewHomeSpecialFeed(tv, boosts, replies),
+	)
+}
+
 func (tv *TutView) DirectCommand() {
 	tv.Timeline.AddFeed(
 		NewConversationsFeed(tv),

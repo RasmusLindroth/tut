@@ -114,6 +114,12 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.LocalCommand()
 		case config.LeaderFederated:
 			tv.FederatedCommand()
+		case config.LeaderSpecialAll:
+			tv.SpecialCommand(true, true)
+		case config.LeaderSpecialBoosts:
+			tv.SpecialCommand(true, false)
+		case config.LeaderSpecialReplies:
+			tv.SpecialCommand(false, true)
 		case config.LeaderClearNotifications:
 			tv.ClearNotificationsCommand()
 		case config.LeaderCompose:

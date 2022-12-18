@@ -149,7 +149,7 @@ func (s *StatusItem) Filtered(tl config.FeedType) (bool, string, string, bool) {
 		used := false
 		for _, w := range f.Where {
 			switch w {
-			case "home":
+			case "home", "special":
 				if tl == config.TimelineHome || tl == config.List {
 					used = true
 				}
@@ -174,6 +174,7 @@ func (s *StatusItem) Filtered(tl config.FeedType) (bool, string, string, bool) {
 					config.Tag,
 					config.Notifications,
 					config.TimelineHome,
+					config.TimelineHomeSpecial,
 					config.Conversations,
 					config.User,
 					config.List,

@@ -55,6 +55,9 @@ const (
 	LeaderDirect
 	LeaderLocal
 	LeaderFederated
+	LeaderSpecialAll
+	LeaderSpecialBoosts
+	LeaderSpecialReplies
 	LeaderClearNotifications
 	LeaderCompose
 	LeaderEdit
@@ -104,6 +107,7 @@ const (
 	Thread
 	TimelineFederated
 	TimelineHome
+	TimelineHomeSpecial
 	TimelineLocal
 	Conversations
 	User
@@ -143,7 +147,6 @@ type General struct {
 	DateFormat          string
 	DateRelative        int
 	MaxWidth            int
-	StartTimeline       FeedType
 	NotificationFeed    bool
 	QuoteReply          bool
 	CharLimit           int
@@ -834,18 +837,6 @@ func parseGeneral(cfg *ini.File) General {
 	}
 	general.DateRelative = dateRelative
 
-	tl := cfg.Section("general").Key("timeline").In("home", []string{"home", "direct", "local", "federated"})
-	switch tl {
-	case "direct":
-		general.StartTimeline = Conversations
-	case "local":
-		general.StartTimeline = TimelineLocal
-	case "federated":
-		general.StartTimeline = TimelineFederated
-	default:
-		general.StartTimeline = TimelineHome
-	}
-
 	general.NotificationFeed = cfg.Section("general").Key("notification-feed").MustBool(true)
 	general.QuoteReply = cfg.Section("general").Key("quote-reply").MustBool(false)
 	general.CharLimit = cfg.Section("general").Key("char-limit").MustInt(500)
@@ -930,6 +921,12 @@ func parseGeneral(cfg *ini.File) General {
 				la.Command = LeaderLocal
 			case "federated":
 				la.Command = LeaderFederated
+			case "special-all":
+				la.Command = LeaderSpecialAll
+			case "special-boosts":
+				la.Command = LeaderSpecialBoosts
+			case "special-replies":
+				la.Command = LeaderSpecialReplies
 			case "clear-notifications":
 				la.Command = LeaderClearNotifications
 			case "compose":
@@ -1023,6 +1020,8 @@ func parseGeneral(cfg *ini.File) General {
 		switch cmd {
 		case "home":
 			tl.FeedType = TimelineHome
+		case "special":
+			tl.FeedType = TimelineHomeSpecial
 		case "direct":
 			tl.FeedType = Conversations
 		case "local":

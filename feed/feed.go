@@ -78,6 +78,9 @@ func (f *Feed) filteredList() []api.Item {
 	for _, fd := range f.items {
 		switch x := fd.Raw().(type) {
 		case *mastodon.Status:
+			if f.Type() == config.TimelineHomeSpecial && x.Reblog == nil && x.InReplyToID == nil {
+				continue
+			}
 			if x.Reblog != nil && !f.showBoosts {
 				continue
 			}
@@ -823,6 +826,20 @@ func newFeed(ac *api.AccountClient, ft config.FeedType, cnf *config.Config, show
 
 func NewTimelineHome(ac *api.AccountClient, cnf *config.Config, showBoosts bool, showReplies bool) *Feed {
 	feed := newFeed(ac, config.TimelineHome, cnf, showBoosts, showReplies)
+	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetTimeline) }
+	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetTimeline) }
+	feed.startStream(feed.accountClient.NewHomeStream())
+	feed.close = func() {
+		for _, s := range feed.streams {
+			feed.accountClient.RemoveHomeReceiver(s)
+		}
+	}
+
+	return feed
+}
+
+func NewTimelineHomeSpecial(ac *api.AccountClient, cnf *config.Config, showBoosts bool, showReplies bool) *Feed {
+	feed := newFeed(ac, config.TimelineHomeSpecial, cnf, showBoosts, showReplies)
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetTimeline) }
 	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetTimeline) }
 	feed.startStream(feed.accountClient.NewHomeStream())

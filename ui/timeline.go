@@ -33,6 +33,8 @@ func NewTimeline(tv *TutView, update chan bool) *Timeline {
 		switch f.FeedType {
 		case config.TimelineHome:
 			nf = NewHomeFeed(tv, f.ShowBoosts, f.ShowReplies)
+		case config.TimelineHomeSpecial:
+			nf = NewHomeSpecialFeed(tv, f.ShowBoosts, f.ShowReplies)
 		case config.Conversations:
 			nf = NewConversationsFeed(tv)
 		case config.TimelineLocal:
@@ -162,6 +164,8 @@ func (tl *Timeline) GetTitle() string {
 		ct = "federated"
 	case config.TimelineHome:
 		ct = "home"
+	case config.TimelineHomeSpecial:
+		ct = "special"
 	case config.TimelineLocal:
 		ct = "local"
 	case config.Saved:
