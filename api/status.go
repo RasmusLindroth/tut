@@ -90,3 +90,7 @@ func (ac *AccountClient) Unbookmark(s *mastodon.Status) (*mastodon.Status, error
 func (ac *AccountClient) DeleteStatus(s *mastodon.Status) error {
 	return ac.Client.DeleteStatus(context.Background(), util.StatusOrReblog(s).ID)
 }
+
+func (ac *AccountClient) GetStatus(id mastodon.ID) (*mastodon.Status, error) {
+	return ac.Client.GetStatus(context.Background(), id)
+}

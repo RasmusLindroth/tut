@@ -71,6 +71,12 @@ func (tv *TutView) FederatedCommand() {
 	)
 }
 
+func (tv *TutView) SpecialCommand(boosts, replies bool) {
+	tv.Timeline.AddFeed(
+		NewHomeSpecialFeed(tv, boosts, replies),
+	)
+}
+
 func (tv *TutView) DirectCommand() {
 	tv.Timeline.AddFeed(
 		NewConversationsFeed(tv),
@@ -268,4 +274,16 @@ func (tv *TutView) ClearNotificationsCommand() {
 
 func (tv *TutView) ToggleStickToTop() {
 	tv.tut.Config.General.StickToTop = !tv.tut.Config.General.StickToTop
+}
+
+func (tv *TutView) RefetchCommand() {
+	item, itemErr := tv.GetCurrentItem()
+	f := tv.GetCurrentFeed()
+	if itemErr != nil {
+		return
+	}
+	update := item.Refetch(tv.tut.Client)
+	if update {
+		f.DrawContent()
+	}
 }

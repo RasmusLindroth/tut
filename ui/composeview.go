@@ -24,7 +24,7 @@ type msgToot struct {
 	Edit          *mastodon.Status
 	MediaIDs      []mastodon.ID
 	Sensitive     bool
-	SpoilerText   string
+	CWText        string
 	ScheduledAt   *time.Time
 	QuoteIncluded bool
 	Visibility    string
@@ -105,7 +105,7 @@ const (
 func (cv *ComposeView) msgLength() int {
 	m := cv.msg
 	charCount := uniseg.GraphemeClusterCount(m.Text)
-	spoilerCount := uniseg.GraphemeClusterCount(m.SpoilerText)
+	spoilerCount := uniseg.GraphemeClusterCount(m.CWText)
 	totalCount := charCount
 	if m.Sensitive {
 		totalCount += spoilerCount
@@ -122,7 +122,7 @@ func (cv *ComposeView) SetControls(ctrl ComposeControls) {
 		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeEditText, true))
 		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeVisibility, true))
 		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeToggleContentWarning, true))
-		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeEditSpoiler, true))
+		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeEditCW, true))
 		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeMediaFocus, true))
 		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposePoll, true))
 		items = append(items, NewControl(cv.tutView.tut.Config, cv.tutView.tut.Config.Input.ComposeLanguage, true))
@@ -165,7 +165,7 @@ func (cv *ComposeView) SetStatus(reply *mastodon.Status, edit *mastodon.Status) 
 		msg.Reply = reply
 		if reply.Sensitive {
 			msg.Sensitive = true
-			msg.SpoilerText = reply.SpoilerText
+			msg.CWText = reply.SpoilerText
 		}
 		if visibilities[reply.Visibility] > visibilities[visibility] {
 			visibility = reply.Visibility
@@ -188,7 +188,7 @@ func (cv *ComposeView) SetStatus(reply *mastodon.Status, edit *mastodon.Status) 
 		msg.Edit = edit
 		msg.ID = source.ID
 		msg.Text = source.Text
-		msg.SpoilerText = source.SpoilerText
+		msg.CWText = source.SpoilerText
 		for _, mid := range edit.MediaAttachments {
 			msg.MediaIDs = append(msg.MediaIDs, mid.ID)
 		}
@@ -268,14 +268,14 @@ func (cv *ComposeView) EditText() {
 }
 
 func (cv *ComposeView) EditSpoiler() {
-	text, err := OpenEditor(cv.tutView, cv.msg.SpoilerText)
+	text, err := OpenEditor(cv.tutView, cv.msg.CWText)
 	if err != nil {
 		cv.tutView.ShowError(
 			fmt.Sprintf("Couldn't open editor. Error: %v", err),
 		)
 		return
 	}
-	cv.msg.SpoilerText = text
+	cv.msg.CWText = text
 	cv.UpdateContent()
 }
 
@@ -285,7 +285,7 @@ func (cv *ComposeView) ToggleCW() {
 }
 
 func (cv *ComposeView) UpdateContent() {
-	cv.info.SetText(fmt.Sprintf("Chars left: %d\nSpoiler: %t\nHas poll: %t\n", cv.msgLength(), cv.msg.Sensitive, cv.tutView.PollView.HasPoll()))
+	cv.info.SetText(fmt.Sprintf("Chars left: %d\nCW: %t\nHas poll: %t\n", cv.msgLength(), cv.msg.Sensitive, cv.tutView.PollView.HasPoll()))
 	normal := config.ColorMark(cv.tutView.tut.Config.Style.Text)
 	subtleColor := config.ColorMark(cv.tutView.tut.Config.Style.Subtle)
 	warningColor := config.ColorMark(cv.tutView.tut.Config.Style.WarningText)
@@ -302,17 +302,17 @@ func (cv *ComposeView) UpdateContent() {
 		}
 		outputHead += subtleColor + "Replying to " + tview.Escape(acct) + "\n" + normal
 	}
-	if cv.msg.SpoilerText != "" && !cv.msg.Sensitive {
-		outputHead += warningColor + "You have entered spoiler text, but haven't set an content warning. Do it by pressing " + tview.Escape("[T]") + "\n\n" + normal
+	if cv.msg.CWText != "" && !cv.msg.Sensitive {
+		outputHead += warningColor + "You have entered content warning text, but haven't set an content warning. Do it by pressing " + tview.Escape("[T]") + "\n\n" + normal
 	}
 
-	if cv.msg.Sensitive && cv.msg.SpoilerText == "" {
+	if cv.msg.Sensitive && cv.msg.CWText == "" {
 		outputHead += warningColor + "You have added an content warning, but haven't set any text above the hidden text. Do it by pressing " + tview.Escape("[C]") + "\n\n" + normal
 	}
 
-	if cv.msg.Sensitive && cv.msg.SpoilerText != "" {
+	if cv.msg.Sensitive && cv.msg.CWText != "" {
 		outputHead += subtleColor + "Content warning\n\n" + normal
-		outputHead += tview.Escape(cv.msg.SpoilerText)
+		outputHead += tview.Escape(cv.msg.CWText)
 		outputHead += "\n\n" + subtleColor + "---hidden content below---\n\n" + normal
 	}
 	output = outputHead + normal + tview.Escape(cv.msg.Text)
@@ -425,7 +425,7 @@ func (cv *ComposeView) Post() {
 	}
 	if toot.Sensitive {
 		send.Sensitive = true
-		send.SpoilerText = toot.SpoilerText
+		send.SpoilerText = toot.CWText
 	}
 
 	if cv.HasMedia() {

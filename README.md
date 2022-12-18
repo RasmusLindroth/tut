@@ -40,8 +40,8 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 
 ## Currently supported commands
 * `:q` `:quit` exit
-* `:timeline` home, local, federated, direct, notifications, favorited
-  * `:tl` h, l, f, d, n, fav (shorter form)
+* `:timeline` home, local, federated, direct, notifications, favorited, special-all, special-boosts, special-replies
+  * `:tl` h, l, f, d, n, fav, sa, sb, sr (shorter form)
 * `:blocking` lists users that you have blocked
 * `:boosts` lists users that boosted the toot
 * `:bookmarks` lists all your bookmarks
@@ -63,6 +63,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:preferences` update your profile and some other settings
 * `:profile` go to your profile
 * `:proportions` [int] [int], where the first integer is the list and the other content, e.g. `:proportions 1 3`
+* `:refetch` refetches the current item
 * `:requests` see following requests
 * `:saved` alias for bookmarks
 * `:stick-to-top` toggle the stick-to-top setting.

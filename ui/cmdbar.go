@@ -162,6 +162,15 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 		case "federated", "f":
 			c.tutView.FederatedCommand()
 			c.Back()
+		case "special-all", "sa":
+			c.tutView.SpecialCommand(true, true)
+			c.Back()
+		case "special-boosts", "sb":
+			c.tutView.SpecialCommand(true, false)
+			c.Back()
+		case "special-replies", "sr":
+			c.tutView.SpecialCommand(false, true)
+			c.Back()
 		case "direct", "d":
 			c.tutView.DirectCommand()
 			c.Back()
@@ -206,6 +215,9 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 			NewUserSearchFeed(c.tutView, user),
 		)
 		c.Back()
+	case ":refetch":
+		c.tutView.RefetchCommand()
+		c.Back()
 	case ":stick-to-top":
 		c.tutView.ToggleStickToTop()
 		c.Back()
@@ -242,16 +254,16 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 
 func (c *CmdBar) Autocomplete(curr string) []string {
 	var entries []string
-	words := strings.Split(":blocking,:boosts,:bookmarks,:clear-notifications,:compose,:favorites,:favorited,:follow-tag,:followers,:following,:help,:h,:history,:lists,:list-placement,:list-split,:muting,:newer,:preferences,:profile,:proportions,:requests,:saved,:stick-to-top,:tag,:timeline,:tl,:unfollow-tag,:user,:window,:quit,:q", ",")
+	words := strings.Split(":blocking,:boosts,:bookmarks,:clear-notifications,:compose,:favorites,:favorited,:follow-tag,:followers,:following,:help,:h,:history,:lists,:list-placement,:list-split,:muting,:newer,:preferences,:profile,:proportions,:refetch,:requests,:saved,:stick-to-top,:tag,:timeline,:tl,:unfollow-tag,:user,:window,:quit,:q", ",")
 	if curr == "" {
 		return entries
 	}
 
 	if len(curr) > 2 && curr[:3] == ":tl" {
-		words = strings.Split(":tl home,:tl notifications,:tl local,:tl federated,:tl direct,:tl favorited", ",")
+		words = strings.Split(":tl home,:tl notifications,:tl local,:tl federated,:tl direct,:tl favorited,:tl special-all,:tl special-boosts,:tl-special-replies", ",")
 	}
 	if len(curr) > 8 && curr[:9] == ":timeline" {
-		words = strings.Split(":timeline home,:timeline notifications,:timeline local,:timeline federated,:timeline direct,:timeline favorited", ",")
+		words = strings.Split(":timeline home,:timeline notifications,:timeline local,:timeline federated,:timeline direct,:timeline favorited,:timeline special-all,:timeline special-boosts,:timeline special-replies", ",")
 	}
 	if len(curr) > 14 && curr[:15] == ":list-placement" {
 		words = strings.Split(":list-placement top,:list-placement right,:list-placement bottom,:list-placement left", ",")

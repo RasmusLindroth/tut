@@ -22,8 +22,9 @@ type Toot struct {
 	AccountDisplayName string
 	Account            string
 	Spoiler            bool
-	SpoilerText        string
+	CWText             string
 	ShowSpoiler        bool
+	CWlabel            string
 	ContentText        string
 	Width              int
 	HasExtra           bool
@@ -71,15 +72,18 @@ type DisplayTootData struct {
 	Style config.Style
 }
 
-func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview.TextView, controls *tview.Flex, isHistory bool, additional string) {
-	filtered, phrase := item.Filtered()
+func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview.TextView, controls *tview.Flex, ft config.FeedType, isHistory bool, additional string) {
+	controls.Clear()
+	filtered, _, phrase, _ := item.Filtered(ft)
 	if filtered {
 		var output string
 		if tv.tut.Config.General.ShowFilterPhrase {
-			output = fmt.Sprintf("Filtered by phrase: %s", tview.Escape(phrase))
+			output = fmt.Sprintf("Filtered by phrase: %s\n\n", tview.Escape(phrase))
 		} else {
-			output = "Filtered."
+			output = "Filtered.\n\n"
 		}
+		ctrl := NewControl(tv.tut.Config, tv.tut.Config.Input.StatusShowFiltered, true)
+		output += ctrl.Label
 		if main != nil {
 			if additional != "" {
 				additional = fmt.Sprintf("%s\n\n", config.SublteText(tv.tut.Config, additional))
@@ -89,7 +93,7 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 		return
 	}
 
-	showSensitive := item.ShowSpoiler()
+	showSensitive := item.ShowCW()
 
 	var strippedContent string
 	var strippedSpoiler string
@@ -106,6 +110,7 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 	if main != nil {
 		_, _, width, _ = main.GetInnerRect()
 	}
+	cwToggle := NewControl(tv.tut.Config, tv.tut.Config.Input.StatusToggleCW, true)
 	toot := Toot{
 		Width:              width,
 		ContentText:        strippedContent,
@@ -113,6 +118,7 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 		BoostedDisplayName: tview.Escape(so.Account.DisplayName),
 		BoostedAcct:        tview.Escape(so.Account.Acct),
 		ShowSpoiler:        showSensitive,
+		CWlabel:            cwToggle.Label,
 	}
 
 	toot.AccountDisplayName = tview.Escape(status.Account.DisplayName)
@@ -156,7 +162,7 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 		strippedSpoiler = tview.Escape(strippedSpoiler)
 	}
 
-	toot.SpoilerText = strippedSpoiler
+	toot.CWText = strippedSpoiler
 
 	media := []Media{}
 	for _, att := range status.MediaAttachments {
@@ -230,7 +236,6 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusYank, true))
 	}
 
-	controls.Clear()
 	for i, item := range info {
 		if i < len(info)-1 {
 			controls.AddItem(NewControlButton(tv, item), item.Len+1, 0, false)

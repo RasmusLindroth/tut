@@ -55,6 +55,9 @@ const (
 	LeaderDirect
 	LeaderLocal
 	LeaderFederated
+	LeaderSpecialAll
+	LeaderSpecialBoosts
+	LeaderSpecialReplies
 	LeaderClearNotifications
 	LeaderCompose
 	LeaderEdit
@@ -74,6 +77,7 @@ const (
 	LeaderProportions
 	LeaderNotifications
 	LeaderLists
+	LeaderRefetch
 	LeaderTag
 	LeaderTags
 	LeaderStickToTop
@@ -103,6 +107,7 @@ const (
 	Thread
 	TimelineFederated
 	TimelineHome
+	TimelineHomeSpecial
 	TimelineLocal
 	Conversations
 	User
@@ -142,7 +147,6 @@ type General struct {
 	DateFormat          string
 	DateRelative        int
 	MaxWidth            int
-	StartTimeline       FeedType
 	NotificationFeed    bool
 	QuoteReply          bool
 	CharLimit           int
@@ -163,6 +167,7 @@ type General struct {
 	Timelines           []Timeline
 	StickToTop          bool
 	NotificationsToHide []NotificationToHide
+	ShowBoostedUser     bool
 }
 
 type Style struct {
@@ -407,21 +412,22 @@ type Input struct {
 	MainNextWindow Key
 	MainCompose    Key
 
-	StatusAvatar        Key
-	StatusBoost         Key
-	StatusDelete        Key
-	StatusEdit          Key
-	StatusFavorite      Key
-	StatusMedia         Key
-	StatusLinks         Key
-	StatusPoll          Key
-	StatusReply         Key
-	StatusBookmark      Key
-	StatusThread        Key
-	StatusUser          Key
-	StatusViewFocus     Key
-	StatusYank          Key
-	StatusToggleSpoiler Key
+	StatusAvatar       Key
+	StatusBoost        Key
+	StatusDelete       Key
+	StatusEdit         Key
+	StatusFavorite     Key
+	StatusMedia        Key
+	StatusLinks        Key
+	StatusPoll         Key
+	StatusReply        Key
+	StatusBookmark     Key
+	StatusThread       Key
+	StatusUser         Key
+	StatusViewFocus    Key
+	StatusYank         Key
+	StatusToggleCW     Key
+	StatusShowFiltered Key
 
 	UserAvatar              Key
 	UserBlock               Key
@@ -444,7 +450,7 @@ type Input struct {
 	LinkOpen Key
 	LinkYank Key
 
-	ComposeEditSpoiler          Key
+	ComposeEditCW               Key
 	ComposeEditText             Key
 	ComposeIncludeQuote         Key
 	ComposeMediaFocus           Key
@@ -831,18 +837,6 @@ func parseGeneral(cfg *ini.File) General {
 	}
 	general.DateRelative = dateRelative
 
-	tl := cfg.Section("general").Key("timeline").In("home", []string{"home", "direct", "local", "federated"})
-	switch tl {
-	case "direct":
-		general.StartTimeline = Conversations
-	case "local":
-		general.StartTimeline = TimelineLocal
-	case "federated":
-		general.StartTimeline = TimelineFederated
-	default:
-		general.StartTimeline = TimelineHome
-	}
-
 	general.NotificationFeed = cfg.Section("general").Key("notification-feed").MustBool(true)
 	general.QuoteReply = cfg.Section("general").Key("quote-reply").MustBool(false)
 	general.CharLimit = cfg.Section("general").Key("char-limit").MustInt(500)
@@ -853,6 +847,7 @@ func parseGeneral(cfg *ini.File) General {
 	general.ShowHelp = cfg.Section("general").Key("show-help").MustBool(true)
 	general.RedrawUI = cfg.Section("general").Key("redraw-ui").MustBool(true)
 	general.StickToTop = cfg.Section("general").Key("stick-to-top").MustBool(false)
+	general.ShowBoostedUser = cfg.Section("general").Key("show-boosted-user").MustBool(false)
 
 	lp := cfg.Section("general").Key("list-placement").In("left", []string{"left", "right", "top", "bottom"})
 	switch lp {
@@ -926,6 +921,12 @@ func parseGeneral(cfg *ini.File) General {
 				la.Command = LeaderLocal
 			case "federated":
 				la.Command = LeaderFederated
+			case "special-all":
+				la.Command = LeaderSpecialAll
+			case "special-boosts":
+				la.Command = LeaderSpecialBoosts
+			case "special-replies":
+				la.Command = LeaderSpecialReplies
 			case "clear-notifications":
 				la.Command = LeaderClearNotifications
 			case "compose":
@@ -962,6 +963,8 @@ func parseGeneral(cfg *ini.File) General {
 				la.Command = LeaderLists
 			case "stick-to-top":
 				la.Command = LeaderStickToTop
+			case "refetch":
+				la.Command = LeaderRefetch
 			case "tag":
 				la.Command = LeaderTag
 				la.Subaction = subaction
@@ -1017,6 +1020,8 @@ func parseGeneral(cfg *ini.File) General {
 		switch cmd {
 		case "home":
 			tl.FeedType = TimelineHome
+		case "special":
+			tl.FeedType = TimelineHomeSpecial
 		case "direct":
 			tl.FeedType = Conversations
 		case "local":
@@ -1372,21 +1377,22 @@ func parseInput(cfg *ini.File) Input {
 		MainNextWindow: inputStrOrErr([]string{"\"\"", "\"Tab\""}, false),
 		MainCompose:    inputStrOrErr([]string{"\"\"", "'c'", "'C'"}, false),
 
-		StatusAvatar:        inputStrOrErr([]string{"\"[A]vatar\"", "'a'", "'A'"}, false),
-		StatusBoost:         inputStrOrErr([]string{"\"[B]oost\"", "\"Un[B]oost\"", "'b'", "'B'"}, true),
-		StatusDelete:        inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
-		StatusEdit:          inputStrOrErr([]string{"\"[E]dit\"", "'e'", "'E'"}, false),
-		StatusFavorite:      inputStrOrErr([]string{"\"[F]avorite\"", "\"Un[F]avorite\"", "'f'", "'F'"}, true),
-		StatusMedia:         inputStrOrErr([]string{"\"[M]edia\"", "'m'", "'M'"}, false),
-		StatusLinks:         inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
-		StatusPoll:          inputStrOrErr([]string{"\"[P]oll\"", "'p'", "'P'"}, false),
-		StatusReply:         inputStrOrErr([]string{"\"[R]eply\"", "'r'", "'R'"}, false),
-		StatusBookmark:      inputStrOrErr([]string{"\"[S]ave\"", "\"Un[S]ave\"", "'s'", "'S'"}, true),
-		StatusThread:        inputStrOrErr([]string{"\"[T]hread\"", "'t'", "'T'"}, false),
-		StatusUser:          inputStrOrErr([]string{"\"[U]ser\"", "'u'", "'U'"}, false),
-		StatusViewFocus:     inputStrOrErr([]string{"\"[V]iew\"", "'v'", "'V'"}, false),
-		StatusYank:          inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
-		StatusToggleSpoiler: inputStrOrErr([]string{"\"Press [Z] to toggle spoiler\"", "'z'", "'Z'"}, false),
+		StatusAvatar:       inputStrOrErr([]string{"\"[A]vatar\"", "'a'", "'A'"}, false),
+		StatusBoost:        inputStrOrErr([]string{"\"[B]oost\"", "\"Un[B]oost\"", "'b'", "'B'"}, true),
+		StatusDelete:       inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
+		StatusEdit:         inputStrOrErr([]string{"\"[E]dit\"", "'e'", "'E'"}, false),
+		StatusFavorite:     inputStrOrErr([]string{"\"[F]avorite\"", "\"Un[F]avorite\"", "'f'", "'F'"}, true),
+		StatusMedia:        inputStrOrErr([]string{"\"[M]edia\"", "'m'", "'M'"}, false),
+		StatusLinks:        inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
+		StatusPoll:         inputStrOrErr([]string{"\"[P]oll\"", "'p'", "'P'"}, false),
+		StatusReply:        inputStrOrErr([]string{"\"[R]eply\"", "'r'", "'R'"}, false),
+		StatusBookmark:     inputStrOrErr([]string{"\"[S]ave\"", "\"Un[S]ave\"", "'s'", "'S'"}, true),
+		StatusThread:       inputStrOrErr([]string{"\"[T]hread\"", "'t'", "'T'"}, false),
+		StatusUser:         inputStrOrErr([]string{"\"[U]ser\"", "'u'", "'U'"}, false),
+		StatusViewFocus:    inputStrOrErr([]string{"\"[V]iew\"", "'v'", "'V'"}, false),
+		StatusYank:         inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
+		StatusToggleCW:     inputStrOrErr([]string{"\"Press [Z] to toggle CW\"", "'z'", "'Z'"}, false),
+		StatusShowFiltered: inputStrOrErr([]string{"\"Press [Z] to view filtered toot\"", "'z'", "'Z'"}, false),
 
 		UserAvatar:              inputStrOrErr([]string{"\"[A]vatar\"", "'a'", "'A'"}, false),
 		UserBlock:               inputStrOrErr([]string{"\"[B]lock\"", "\"Un[B]lock\"", "'b'", "'B'"}, true),
@@ -1409,7 +1415,7 @@ func parseInput(cfg *ini.File) Input {
 		LinkOpen: inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
 		LinkYank: inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
 
-		ComposeEditSpoiler:          inputStrOrErr([]string{"\"[C]W Text\"", "'c'", "'C'"}, false),
+		ComposeEditCW:               inputStrOrErr([]string{"\"[C]W Text\"", "'c'", "'C'"}, false),
 		ComposeEditText:             inputStrOrErr([]string{"\"[E]dit text\"", "'e'", "'E'"}, false),
 		ComposeIncludeQuote:         inputStrOrErr([]string{"\"[I]nclude quote\"", "'i'", "'I'"}, false),
 		ComposeMediaFocus:           inputStrOrErr([]string{"\"[M]edia\"", "'m'", "'M'"}, false),
@@ -1467,7 +1473,13 @@ func parseInput(cfg *ini.File) Input {
 	ic.StatusUser = inputOrErr(cfg, "status-user", false, ic.StatusUser)
 	ic.StatusViewFocus = inputOrErr(cfg, "status-view-focus", false, ic.StatusViewFocus)
 	ic.StatusYank = inputOrErr(cfg, "status-yank", false, ic.StatusYank)
-	ic.StatusToggleSpoiler = inputOrErr(cfg, "status-toggle-spoiler", false, ic.StatusToggleSpoiler)
+	ic.StatusToggleCW = inputOrErr(cfg, "status-toggle-spoiler", false, ic.StatusToggleCW)
+	ts := cfg.Section("input").Key("status-toggle-spoiler").MustString("")
+	if ts != "" {
+		ic.StatusToggleCW = inputOrErr(cfg, "status-toggle-spoiler", false, ic.StatusToggleCW)
+	} else {
+		ic.StatusToggleCW = inputOrErr(cfg, "status-toggle-cw", false, ic.StatusToggleCW)
+	}
 
 	ic.UserAvatar = inputOrErr(cfg, "user-avatar", false, ic.UserAvatar)
 	ic.UserBlock = inputOrErr(cfg, "user-block", true, ic.UserBlock)
@@ -1490,7 +1502,12 @@ func parseInput(cfg *ini.File) Input {
 	ic.LinkOpen = inputOrErr(cfg, "link-open", false, ic.LinkOpen)
 	ic.LinkYank = inputOrErr(cfg, "link-yank", false, ic.LinkYank)
 
-	ic.ComposeEditSpoiler = inputOrErr(cfg, "compose-edit-spoiler", false, ic.ComposeEditSpoiler)
+	es := cfg.Section("input").Key("compose-edit-spoiler").MustString("")
+	if es != "" {
+		ic.ComposeEditCW = inputOrErr(cfg, "compose-edit-spoiler", false, ic.ComposeEditCW)
+	} else {
+		ic.ComposeEditCW = inputOrErr(cfg, "compose-edit-cw", false, ic.ComposeEditCW)
+	}
 	ic.ComposeEditText = inputOrErr(cfg, "compose-edit-text", false, ic.ComposeEditText)
 	ic.ComposeIncludeQuote = inputOrErr(cfg, "compose-include-quote", false, ic.ComposeIncludeQuote)
 	ic.ComposeMediaFocus = inputOrErr(cfg, "compose-media-focus", false, ic.ComposeMediaFocus)

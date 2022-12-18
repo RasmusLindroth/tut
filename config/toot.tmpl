@@ -20,9 +20,9 @@
 {{- end }} {{- if .Toot.Edited -}}{{ Color .Style.Subtle }} (edited toot){{ end }}
 
 {{ if .Toot.Spoiler -}}
-{{ Color .Style.Text }}{{ .Toot.SpoilerText }}
+{{ Color .Style.Text }}{{ .Toot.CWText }}
 {{ if not .Toot.ShowSpoiler }}
-{{ Color .Style.Subtle }}Press [z[] to show hidden text{{ Color .Style.Text }}
+{{ Color .Style.Subtle }}{{ .Toot.CWlabel }}{{ Color .Style.Text }}
 {{ end }}
 {{ end -}}
 {{- if or (not .Toot.Spoiler) (.Toot.ShowSpoiler) -}}

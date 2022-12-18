@@ -16,27 +16,27 @@ func drawNotification(tv *TutView, item api.Item, notification *api.Notification
 			fmt.Sprintf("%s started following you", util.FormatUsername(notification.Item.Account)), InputUserNormal,
 		)
 	case "favourite":
-		drawStatus(tv, notification.Status, notification.Item.Status, main, controls, false,
+		drawStatus(tv, notification.Status, notification.Item.Status, main, controls, config.Notifications, false,
 			fmt.Sprintf("%s favorited your toot", util.FormatUsername(notification.Item.Account)),
 		)
 	case "reblog":
-		drawStatus(tv, notification.Status, notification.Item.Status, main, controls, false,
+		drawStatus(tv, notification.Status, notification.Item.Status, main, controls, config.Notifications, false,
 			fmt.Sprintf("%s boosted your toot", util.FormatUsername(notification.Item.Account)),
 		)
 	case "mention":
-		drawStatus(tv, notification.Status, notification.Item.Status, main, controls, false,
+		drawStatus(tv, notification.Status, notification.Item.Status, main, controls, config.Notifications, false,
 			fmt.Sprintf("%s mentioned you", util.FormatUsername(notification.Item.Account)),
 		)
 	case "update":
-		drawStatus(tv, notification.Status, notification.Item.Status, main, controls, false,
+		drawStatus(tv, notification.Status, notification.Item.Status, main, controls, config.Notifications, false,
 			fmt.Sprintf("%s updated their toot", util.FormatUsername(notification.Item.Account)),
 		)
 	case "status":
-		drawStatus(tv, notification.Status, notification.Item.Status, main, controls, false,
+		drawStatus(tv, notification.Status, notification.Item.Status, main, controls, config.Notifications, false,
 			fmt.Sprintf("%s posted a new toot", util.FormatUsername(notification.Item.Account)),
 		)
 	case "poll":
-		drawStatus(tv, notification.Status, notification.Item.Status, main, controls, false,
+		drawStatus(tv, notification.Status, notification.Item.Status, main, controls, config.Notifications, false,
 			"A poll of yours or one you participated in has ended",
 		)
 	case "follow_request":

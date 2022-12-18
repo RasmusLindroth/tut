@@ -114,6 +114,12 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.LocalCommand()
 		case config.LeaderFederated:
 			tv.FederatedCommand()
+		case config.LeaderSpecialAll:
+			tv.SpecialCommand(true, true)
+		case config.LeaderSpecialBoosts:
+			tv.SpecialCommand(true, false)
+		case config.LeaderSpecialReplies:
+			tv.SpecialCommand(false, true)
 		case config.LeaderClearNotifications:
 			tv.ClearNotificationsCommand()
 		case config.LeaderCompose:
@@ -150,6 +156,8 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.ListsCommand()
 		case config.LeaderStickToTop:
 			tv.ToggleStickToTop()
+		case config.LeaderRefetch:
+			tv.RefetchCommand()
 		case config.LeaderTag:
 			tv.TagCommand(subaction)
 		case config.LeaderTags:
@@ -305,7 +313,7 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 	}
 	switch item.Type() {
 	case api.StatusType:
-		return tv.InputStatus(event, item, item.Raw().(*mastodon.Status), nil)
+		return tv.InputStatus(event, item, item.Raw().(*mastodon.Status), nil, fd.Data.Type())
 	case api.StatusHistoryType:
 		return tv.InputStatusHistory(event, item, item.Raw().(*mastodon.StatusHistory), nil)
 	case api.UserType, api.ProfileType:
@@ -326,18 +334,18 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 			return tv.InputUser(event, nd.User.Raw().(*api.User), InputUserNormal)
 		case "favourite":
 			user := nd.User.Raw().(*api.User)
-			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), user.Data)
+			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), user.Data, config.Notifications)
 		case "reblog":
 			user := nd.User.Raw().(*api.User)
-			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), user.Data)
+			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), user.Data, config.Notifications)
 		case "mention":
-			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), nil)
+			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), nil, config.Notifications)
 		case "update":
-			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), nil)
+			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), nil, config.Notifications)
 		case "status":
-			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), nil)
+			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), nil, config.Notifications)
 		case "poll":
-			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), nil)
+			return tv.InputStatus(event, nd.Status, nd.Status.Raw().(*mastodon.Status), nil, config.Notifications)
 		case "follow_request":
 			return tv.InputUser(event, nd.User.Raw().(*api.User), InputUserFollowRequest)
 		}
@@ -351,7 +359,7 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 	return event
 }
 
-func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mastodon.Status, nAcc *mastodon.Account) *tcell.EventKey {
+func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mastodon.Status, nAcc *mastodon.Account, fd config.FeedType) *tcell.EventKey {
 	sr := util.StatusOrReblog(status)
 
 	hasMedia := len(sr.MediaAttachments) > 0
@@ -501,12 +509,18 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 		copyToClipboard(sr.URL)
 		return nil
 	}
-	if tv.tut.Config.Input.StatusToggleSpoiler.Match(event.Key(), event.Rune()) {
+	if tv.tut.Config.Input.StatusToggleCW.Match(event.Key(), event.Rune()) {
+		filtered, _, _, forceView := item.Filtered(fd)
+		if filtered && !forceView {
+			item.ForceViewFilter()
+			tv.RedrawContent()
+			return nil
+		}
 		if !hasSpoiler {
 			return nil
 		}
-		if !item.ShowSpoiler() {
-			item.ToggleSpoiler()
+		if !item.ShowCW() {
+			item.ToggleCW()
 			tv.RedrawContent()
 		}
 		return nil
@@ -551,12 +565,12 @@ func (tv *TutView) InputStatusHistory(event *tcell.EventKey, item api.Item, sr *
 		tv.SetPage(ViewFocus)
 		return nil
 	}
-	if tv.tut.Config.Input.StatusToggleSpoiler.Match(event.Key(), event.Rune()) {
+	if tv.tut.Config.Input.StatusToggleCW.Match(event.Key(), event.Rune()) {
 		if !hasSpoiler {
 			return nil
 		}
-		if !item.ShowSpoiler() {
-			item.ToggleSpoiler()
+		if !item.ShowCW() {
+			item.ToggleCW()
 			tv.RedrawContent()
 		}
 		return nil
@@ -811,7 +825,7 @@ func (tv *TutView) InputLinkView(event *tcell.EventKey) *tcell.EventKey {
 }
 
 func (tv *TutView) InputComposeView(event *tcell.EventKey) *tcell.EventKey {
-	if tv.tut.Config.Input.ComposeEditSpoiler.Match(event.Key(), event.Rune()) {
+	if tv.tut.Config.Input.ComposeEditCW.Match(event.Key(), event.Rune()) {
 		tv.ComposeView.EditSpoiler()
 		return nil
 	}

@@ -78,12 +78,19 @@ func (f *Feed) filteredList() []api.Item {
 	for _, fd := range f.items {
 		switch x := fd.Raw().(type) {
 		case *mastodon.Status:
+			if f.Type() == config.TimelineHomeSpecial && x.Reblog == nil && x.InReplyToID == nil {
+				continue
+			}
 			if x.Reblog != nil && !f.showBoosts {
 				continue
 			}
 			if x.InReplyToID != nil && !f.showReplies {
 				continue
 			}
+		}
+		inUse, fType, _, _ := fd.Filtered(f.feedType)
+		if inUse && fType == "hide" {
+			continue
 		}
 		filtered = append(filtered, fd)
 	}
@@ -684,7 +691,7 @@ func (f *Feed) startStream(rec *api.Receiver, timeline string, err error) {
 		for e := range rec.Ch {
 			switch t := e.(type) {
 			case *mastodon.UpdateEvent:
-				s := api.NewStatusItem(t.Status, f.accountClient.Filters, timeline, false)
+				s := api.NewStatusItem(t.Status, false)
 				f.itemsMux.Lock()
 				found := false
 				if len(f.streams) > 0 {
@@ -766,7 +773,7 @@ func (f *Feed) startStreamNotification(rec *api.Receiver, timeline string, err e
 					&api.User{
 						Data:     &t.Notification.Account,
 						Relation: rel[0],
-					}, f.accountClient.Filters)
+					})
 				f.itemsMux.Lock()
 				f.items = append([]api.Item{s}, f.items...)
 				nft := DesktopNotificationNone
@@ -819,6 +826,20 @@ func newFeed(ac *api.AccountClient, ft config.FeedType, cnf *config.Config, show
 
 func NewTimelineHome(ac *api.AccountClient, cnf *config.Config, showBoosts bool, showReplies bool) *Feed {
 	feed := newFeed(ac, config.TimelineHome, cnf, showBoosts, showReplies)
+	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetTimeline) }
+	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetTimeline) }
+	feed.startStream(feed.accountClient.NewHomeStream())
+	feed.close = func() {
+		for _, s := range feed.streams {
+			feed.accountClient.RemoveHomeReceiver(s)
+		}
+	}
+
+	return feed
+}
+
+func NewTimelineHomeSpecial(ac *api.AccountClient, cnf *config.Config, showBoosts bool, showReplies bool) *Feed {
+	feed := newFeed(ac, config.TimelineHomeSpecial, cnf, showBoosts, showReplies)
 	feed.loadNewer = func() { feed.normalNewer(feed.accountClient.GetTimeline) }
 	feed.loadOlder = func() { feed.normalOlder(feed.accountClient.GetTimeline) }
 	feed.startStream(feed.accountClient.NewHomeStream())
