@@ -150,6 +150,8 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.ListsCommand()
 		case config.LeaderStickToTop:
 			tv.ToggleStickToTop()
+		case config.LeaderRefetch:
+			tv.RefetchCommand()
 		case config.LeaderTag:
 			tv.TagCommand(subaction)
 		case config.LeaderTags:

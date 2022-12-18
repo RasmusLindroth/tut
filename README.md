@@ -63,6 +63,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:preferences` update your profile and some other settings
 * `:profile` go to your profile
 * `:proportions` [int] [int], where the first integer is the list and the other content, e.g. `:proportions 1 3`
+* `:refetch` refetches the current item
 * `:requests` see following requests
 * `:saved` alias for bookmarks
 * `:stick-to-top` toggle the stick-to-top setting.

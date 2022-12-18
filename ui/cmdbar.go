@@ -206,6 +206,9 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 			NewUserSearchFeed(c.tutView, user),
 		)
 		c.Back()
+	case ":refetch":
+		c.tutView.RefetchCommand()
+		c.Back()
 	case ":stick-to-top":
 		c.tutView.ToggleStickToTop()
 		c.Back()
@@ -242,7 +245,7 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 
 func (c *CmdBar) Autocomplete(curr string) []string {
 	var entries []string
-	words := strings.Split(":blocking,:boosts,:bookmarks,:clear-notifications,:compose,:favorites,:favorited,:follow-tag,:followers,:following,:help,:h,:history,:lists,:list-placement,:list-split,:muting,:newer,:preferences,:profile,:proportions,:requests,:saved,:stick-to-top,:tag,:timeline,:tl,:unfollow-tag,:user,:window,:quit,:q", ",")
+	words := strings.Split(":blocking,:boosts,:bookmarks,:clear-notifications,:compose,:favorites,:favorited,:follow-tag,:followers,:following,:help,:h,:history,:lists,:list-placement,:list-split,:muting,:newer,:preferences,:profile,:proportions,:refetch,:requests,:saved,:stick-to-top,:tag,:timeline,:tl,:unfollow-tag,:user,:window,:quit,:q", ",")
 	if curr == "" {
 		return entries
 	}

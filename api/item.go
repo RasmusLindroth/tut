@@ -30,6 +30,7 @@ type Item interface {
 	Filtered(config.FeedType) (bool, string, string, bool)
 	ForceViewFilter()
 	Pinned() bool
+	Refetch(*AccountClient) bool
 }
 
 type filtered struct {
@@ -80,7 +81,7 @@ func getUrlsUser(user *mastodon.Account) ([]util.URL, []mastodon.Mention, []mast
 	return urls, []mastodon.Mention{}, []mastodon.Tag{}, len(urls)
 }
 
-func NewStatusItem(item *mastodon.Status, timeline string, pinned bool) (sitem Item) {
+func NewStatusItem(item *mastodon.Status, pinned bool) (sitem Item) {
 	filtered := filtered{InUse: false}
 	if item == nil {
 		return &StatusItem{id: newID(), item: item, showSpoiler: false, filtered: filtered, pinned: pinned}
@@ -96,6 +97,12 @@ func NewStatusItem(item *mastodon.Status, timeline string, pinned bool) (sitem I
 			})
 	}
 	sitem = &StatusItem{id: newID(), item: item, showSpoiler: false, filtered: filtered, pinned: pinned}
+	return sitem
+}
+
+func NewStatusItemID(item *mastodon.Status, pinned bool, id uint) (sitem Item) {
+	sitem = NewStatusItem(item, pinned)
+	sitem.(*StatusItem).id = id
 	return sitem
 }
 
@@ -195,6 +202,16 @@ func (s *StatusItem) Pinned() bool {
 	return s.pinned
 }
 
+func (s *StatusItem) Refetch(ac *AccountClient) bool {
+	ns, err := ac.GetStatus(s.item.ID)
+	if err != nil {
+		return false
+	}
+	nsi := NewStatusItemID(ns, s.pinned, s.id)
+	*s = *nsi.(*StatusItem)
+	return true
+}
+
 func NewStatusHistoryItem(item *mastodon.StatusHistory) (sitem Item) {
 	return &StatusHistoryItem{id: newID(), item: item, showSpoiler: false}
 }
@@ -248,6 +265,10 @@ func (s *StatusHistoryItem) Pinned() bool {
 	return false
 }
 
+func (s *StatusHistoryItem) Refetch(ac *AccountClient) bool {
+	return false
+}
+
 func NewUserItem(item *User, profile bool) Item {
 	return &UserItem{id: newID(), item: item, profile: profile}
 }
@@ -294,8 +315,12 @@ func (u *UserItem) Pinned() bool {
 	return false
 }
 
+func (u *UserItem) Refetch(ac *AccountClient) bool {
+	return false
+}
+
 func NewNotificationItem(item *mastodon.Notification, user *User) (nitem Item) {
-	status := NewStatusItem(item.Status, "notifications", false)
+	status := NewStatusItem(item.Status, false)
 	nitem = &NotificationItem{
 		id:          newID(),
 		item:        item,
@@ -379,6 +404,10 @@ func (n *NotificationItem) Pinned() bool {
 	return false
 }
 
+func (n *NotificationItem) Refetch(ac *AccountClient) bool {
+	return false
+}
+
 func NewListsItem(item *mastodon.List) Item {
 	return &ListItem{id: newID(), item: item, showSpoiler: true}
 }
@@ -422,6 +451,10 @@ func (n *ListItem) Pinned() bool {
 	return false
 }
 
+func (l *ListItem) Refetch(ac *AccountClient) bool {
+	return false
+}
+
 func NewTagItem(item *mastodon.Tag) Item {
 	return &TagItem{id: newID(), item: item, showSpoiler: true}
 }
@@ -462,5 +495,9 @@ func (t *TagItem) Filtered(config.FeedType) (bool, string, string, bool) {
 func (t *TagItem) ForceViewFilter() {}
 
 func (t *TagItem) Pinned() bool {
+	return false
+}
+
+func (t *TagItem) Refetch(ac *AccountClient) bool {
 	return false
 }

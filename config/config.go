@@ -74,6 +74,7 @@ const (
 	LeaderProportions
 	LeaderNotifications
 	LeaderLists
+	LeaderRefetch
 	LeaderTag
 	LeaderTags
 	LeaderStickToTop
@@ -965,6 +966,8 @@ func parseGeneral(cfg *ini.File) General {
 				la.Command = LeaderLists
 			case "stick-to-top":
 				la.Command = LeaderStickToTop
+			case "refetch":
+				la.Command = LeaderRefetch
 			case "tag":
 				la.Command = LeaderTag
 				la.Subaction = subaction

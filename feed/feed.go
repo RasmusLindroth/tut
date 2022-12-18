@@ -688,7 +688,7 @@ func (f *Feed) startStream(rec *api.Receiver, timeline string, err error) {
 		for e := range rec.Ch {
 			switch t := e.(type) {
 			case *mastodon.UpdateEvent:
-				s := api.NewStatusItem(t.Status, timeline, false)
+				s := api.NewStatusItem(t.Status, false)
 				f.itemsMux.Lock()
 				found := false
 				if len(f.streams) > 0 {
