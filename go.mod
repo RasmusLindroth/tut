@@ -3,7 +3,7 @@ module github.com/RasmusLindroth/tut
 go 1.18
 
 require (
-	github.com/RasmusLindroth/go-mastodon v0.0.16
+	github.com/RasmusLindroth/go-mastodon v0.0.17
 	github.com/atotto/clipboard v0.1.4
 	github.com/gdamore/tcell/v2 v2.5.3
 	github.com/gen2brain/beeep v0.0.0-20220909211152-5a9ec94374f6
@@ -11,10 +11,10 @@ require (
 	github.com/icza/gox v0.0.0-20221026131554-a08a8cdc726a
 	github.com/microcosm-cc/bluemonday v1.0.21
 	github.com/pelletier/go-toml/v2 v2.0.6
-	github.com/rivo/tview v0.0.0-20221212150847-19d943d59543
+	github.com/rivo/tview v0.0.0-20221217182043-ccce554c3803
 	github.com/rivo/uniseg v0.4.3
 	github.com/spf13/pflag v1.0.5
-	golang.org/x/exp v0.0.0-20221212164502-fae10dda9338
+	golang.org/x/exp v0.0.0-20221217163422-3c43f8badb15
 	golang.org/x/net v0.4.0
 	gopkg.in/ini.v1 v1.67.0
 )

@@ -3,10 +3,11 @@ package api
 import (
 	"strings"
 	"sync"
-	"unicode"
 
 	"github.com/RasmusLindroth/go-mastodon"
+	"github.com/RasmusLindroth/tut/config"
 	"github.com/RasmusLindroth/tut/util"
+	"golang.org/x/exp/slices"
 )
 
 var id uint = 0
@@ -22,17 +23,24 @@ func newID() uint {
 type Item interface {
 	ID() uint
 	Type() MastodonType
-	ToggleSpoiler()
-	ShowSpoiler() bool
+	ToggleCW()
+	ShowCW() bool
 	Raw() interface{}
 	URLs() ([]util.URL, []mastodon.Mention, []mastodon.Tag, int)
-	Filtered() (bool, string)
+	Filtered(config.FeedType) (bool, string, string, bool)
+	ForceViewFilter()
 	Pinned() bool
 }
 
 type filtered struct {
-	inUse bool
-	name  string
+	InUse   bool
+	Filters []filter
+}
+
+type filter struct {
+	Values []string
+	Where  []string
+	Type   string
 }
 
 func getUrlsStatus(status *mastodon.Status) ([]util.URL, []mastodon.Mention, []mastodon.Tag, int) {
@@ -72,63 +80,20 @@ func getUrlsUser(user *mastodon.Account) ([]util.URL, []mastodon.Mention, []mast
 	return urls, []mastodon.Mention{}, []mastodon.Tag{}, len(urls)
 }
 
-func NewStatusItem(item *mastodon.Status, filters []*mastodon.Filter, timeline string, pinned bool) (sitem Item) {
-	filtered := filtered{inUse: false}
+func NewStatusItem(item *mastodon.Status, timeline string, pinned bool) (sitem Item) {
+	filtered := filtered{InUse: false}
 	if item == nil {
 		return &StatusItem{id: newID(), item: item, showSpoiler: false, filtered: filtered, pinned: pinned}
 	}
 	s := util.StatusOrReblog(item)
-	content := s.Content
-	if s.Sensitive {
-		content += "\n" + s.SpoilerText
-	}
-	content = strings.ToLower(content)
-	for _, f := range filters {
-		apply := false
-		for _, c := range f.Context {
-			if timeline == c {
-				apply = true
-				break
-			}
-		}
-		if !apply {
-			continue
-		}
-		if f.WholeWord {
-			lines := strings.Split(content, "\n")
-			var stripped []string
-			for _, l := range lines {
-				var words []string
-				words = append(words, strings.Split(l, " ")...)
-				for _, w := range words {
-					ns := strings.TrimSpace(w)
-					ns = strings.TrimFunc(ns, func(r rune) bool {
-						return !unicode.IsLetter(r) && !unicode.IsNumber(r)
-					})
-					stripped = append(stripped, ns)
-				}
-			}
-			filter := strings.Split(strings.ToLower(f.Phrase), " ")
-			for i := 0; i+len(filter)-1 < len(stripped); i++ {
-				if strings.ToLower(f.Phrase) == strings.Join(stripped[i:i+len(filter)], " ") {
-					filtered.inUse = true
-					filtered.name = f.Phrase
-					break
-				}
-			}
-		} else {
-			if strings.Contains(s.Content, strings.ToLower(f.Phrase)) {
-				filtered.inUse = true
-				filtered.name = f.Phrase
-			}
-			if strings.Contains(s.SpoilerText, strings.ToLower(f.Phrase)) {
-				filtered.inUse = true
-				filtered.name = f.Phrase
-			}
-		}
-		if filtered.inUse {
-			break
-		}
+	for _, f := range s.Filtered {
+		filtered.InUse = true
+		filtered.Filters = append(filtered.Filters,
+			filter{
+				Type:   f.Filter.FilterAction,
+				Values: f.KeywordMatches,
+				Where:  f.Filter.Context,
+			})
 	}
 	sitem = &StatusItem{id: newID(), item: item, showSpoiler: false, filtered: filtered, pinned: pinned}
 	return sitem
@@ -138,6 +103,7 @@ type StatusItem struct {
 	id          uint
 	item        *mastodon.Status
 	showSpoiler bool
+	forceView   bool
 	filtered    filtered
 	pinned      bool
 }
@@ -150,11 +116,11 @@ func (s *StatusItem) Type() MastodonType {
 	return StatusType
 }
 
-func (s *StatusItem) ToggleSpoiler() {
+func (s *StatusItem) ToggleCW() {
 	s.showSpoiler = !s.showSpoiler
 }
 
-func (s *StatusItem) ShowSpoiler() bool {
+func (s *StatusItem) ShowCW() bool {
 	return s.showSpoiler
 }
 
@@ -166,8 +132,63 @@ func (s *StatusItem) URLs() ([]util.URL, []mastodon.Mention, []mastodon.Tag, int
 	return getUrlsStatus(s.item)
 }
 
-func (s *StatusItem) Filtered() (bool, string) {
-	return s.filtered.inUse, s.filtered.name
+func (s *StatusItem) Filtered(tl config.FeedType) (bool, string, string, bool) {
+	if !s.filtered.InUse || s.forceView {
+		return false, "", "", true
+	}
+	words := []string{}
+	t := ""
+	for _, f := range s.filtered.Filters {
+		used := false
+		for _, w := range f.Where {
+			switch w {
+			case "home":
+				if tl == config.TimelineHome || tl == config.List {
+					used = true
+				}
+			case "thread":
+				if tl == config.Thread || tl == config.Conversations {
+					used = true
+				}
+			case "notifications":
+				if tl == config.Notifications {
+					used = true
+				}
+
+			case "account":
+				if tl == config.User {
+					used = true
+				}
+			case "public":
+				where := []config.FeedType{
+					config.Favorites,
+					config.Favorited,
+					config.Boosts,
+					config.Tag,
+					config.Notifications,
+					config.TimelineHome,
+					config.Conversations,
+					config.User,
+					config.List,
+				}
+				if !slices.Contains(where, tl) {
+					used = true
+				}
+			}
+			if used {
+				words = append(words, f.Values...)
+				if t == "" || t == "warn" {
+					t = f.Type
+				}
+				break
+			}
+		}
+	}
+	return len(words) > 0, t, strings.Join(words, ", "), s.forceView
+}
+
+func (s *StatusItem) ForceViewFilter() {
+	s.forceView = true
 }
 
 func (s *StatusItem) Pinned() bool {
@@ -192,11 +213,11 @@ func (s *StatusHistoryItem) Type() MastodonType {
 	return StatusHistoryType
 }
 
-func (s *StatusHistoryItem) ToggleSpoiler() {
+func (s *StatusHistoryItem) ToggleCW() {
 	s.showSpoiler = !s.showSpoiler
 }
 
-func (s *StatusHistoryItem) ShowSpoiler() bool {
+func (s *StatusHistoryItem) ShowCW() bool {
 	return s.showSpoiler
 }
 
@@ -217,9 +238,11 @@ func (s *StatusHistoryItem) URLs() ([]util.URL, []mastodon.Mention, []mastodon.T
 	return getUrlsStatus(&status)
 }
 
-func (s *StatusHistoryItem) Filtered() (bool, string) {
-	return false, ""
+func (s *StatusHistoryItem) Filtered(config.FeedType) (bool, string, string, bool) {
+	return false, "", "", true
 }
+
+func (t *StatusHistoryItem) ForceViewFilter() {}
 
 func (s *StatusHistoryItem) Pinned() bool {
 	return false
@@ -246,10 +269,10 @@ func (u *UserItem) Type() MastodonType {
 	return UserType
 }
 
-func (u *UserItem) ToggleSpoiler() {
+func (u *UserItem) ToggleCW() {
 }
 
-func (u *UserItem) ShowSpoiler() bool {
+func (u *UserItem) ShowCW() bool {
 	return false
 }
 
@@ -261,16 +284,18 @@ func (u *UserItem) URLs() ([]util.URL, []mastodon.Mention, []mastodon.Tag, int) 
 	return getUrlsUser(u.item.Data)
 }
 
-func (s *UserItem) Filtered() (bool, string) {
-	return false, ""
+func (u *UserItem) Filtered(config.FeedType) (bool, string, string, bool) {
+	return false, "", "", true
 }
+
+func (u *UserItem) ForceViewFilter() {}
 
 func (u *UserItem) Pinned() bool {
 	return false
 }
 
-func NewNotificationItem(item *mastodon.Notification, user *User, filters []*mastodon.Filter) (nitem Item) {
-	status := NewStatusItem(item.Status, filters, "notifications", false)
+func NewNotificationItem(item *mastodon.Notification, user *User) (nitem Item) {
+	status := NewStatusItem(item.Status, "notifications", false)
 	nitem = &NotificationItem{
 		id:          newID(),
 		item:        item,
@@ -304,11 +329,11 @@ func (n *NotificationItem) Type() MastodonType {
 	return NotificationType
 }
 
-func (n *NotificationItem) ToggleSpoiler() {
+func (n *NotificationItem) ToggleCW() {
 	n.showSpoiler = !n.showSpoiler
 }
 
-func (n *NotificationItem) ShowSpoiler() bool {
+func (n *NotificationItem) ShowCW() bool {
 	return n.showSpoiler
 }
 
@@ -344,9 +369,11 @@ func (n *NotificationItem) URLs() ([]util.URL, []mastodon.Mention, []mastodon.Ta
 	}
 }
 
-func (n *NotificationItem) Filtered() (bool, string) {
-	return false, ""
+func (n *NotificationItem) Filtered(config.FeedType) (bool, string, string, bool) {
+	return false, "", "", true
 }
+
+func (n *NotificationItem) ForceViewFilter() {}
 
 func (n *NotificationItem) Pinned() bool {
 	return false
@@ -370,10 +397,10 @@ func (s *ListItem) Type() MastodonType {
 	return ListsType
 }
 
-func (s *ListItem) ToggleSpoiler() {
+func (s *ListItem) ToggleCW() {
 }
 
-func (s *ListItem) ShowSpoiler() bool {
+func (s *ListItem) ShowCW() bool {
 	return true
 }
 
@@ -385,9 +412,11 @@ func (s *ListItem) URLs() ([]util.URL, []mastodon.Mention, []mastodon.Tag, int) 
 	return nil, nil, nil, 0
 }
 
-func (s *ListItem) Filtered() (bool, string) {
-	return false, ""
+func (s *ListItem) Filtered(config.FeedType) (bool, string, string, bool) {
+	return false, "", "", true
 }
+
+func (l *ListItem) ForceViewFilter() {}
 
 func (n *ListItem) Pinned() bool {
 	return false
@@ -411,10 +440,10 @@ func (t *TagItem) Type() MastodonType {
 	return TagType
 }
 
-func (t *TagItem) ToggleSpoiler() {
+func (t *TagItem) ToggleCW() {
 }
 
-func (t *TagItem) ShowSpoiler() bool {
+func (t *TagItem) ShowCW() bool {
 	return true
 }
 
@@ -426,9 +455,11 @@ func (t *TagItem) URLs() ([]util.URL, []mastodon.Mention, []mastodon.Tag, int) {
 	return nil, nil, nil, 0
 }
 
-func (t *TagItem) Filtered() (bool, string) {
-	return false, ""
+func (t *TagItem) Filtered(config.FeedType) (bool, string, string, bool) {
+	return false, "", "", true
 }
+
+func (t *TagItem) ForceViewFilter() {}
 
 func (t *TagItem) Pinned() bool {
 	return false

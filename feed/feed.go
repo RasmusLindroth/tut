@@ -85,6 +85,10 @@ func (f *Feed) filteredList() []api.Item {
 				continue
 			}
 		}
+		inUse, fType, _, _ := fd.Filtered(f.feedType)
+		if inUse && fType == "hide" {
+			continue
+		}
 		filtered = append(filtered, fd)
 	}
 	r := f.sticky
@@ -684,7 +688,7 @@ func (f *Feed) startStream(rec *api.Receiver, timeline string, err error) {
 		for e := range rec.Ch {
 			switch t := e.(type) {
 			case *mastodon.UpdateEvent:
-				s := api.NewStatusItem(t.Status, f.accountClient.Filters, timeline, false)
+				s := api.NewStatusItem(t.Status, timeline, false)
 				f.itemsMux.Lock()
 				found := false
 				if len(f.streams) > 0 {
@@ -766,7 +770,7 @@ func (f *Feed) startStreamNotification(rec *api.Receiver, timeline string, err e
 					&api.User{
 						Data:     &t.Notification.Account,
 						Relation: rel[0],
-					}, f.accountClient.Filters)
+					})
 				f.itemsMux.Lock()
 				f.items = append([]api.Item{s}, f.items...)
 				nft := DesktopNotificationNone

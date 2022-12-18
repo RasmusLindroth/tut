@@ -34,7 +34,15 @@ func NewControlView(cnf *config.Config) *tview.Flex {
 
 func NewControlButton(tv *TutView, control Control) *tview.Button {
 	btn := tview.NewButton(control.Label)
+	style := tcell.Style{}
+	style = style.Foreground(tv.tut.Config.Style.Text)
+	style = style.Background(tv.tut.Config.Style.Background)
+	btn.SetActivatedStyle(style)
+	btn.SetStyle(style)
 	btn.SetBackgroundColor(tv.tut.Config.Style.Background)
+	btn.SetBackgroundColorActivated(tv.tut.Config.Style.Background)
+	btn.SetLabelColor(tv.tut.Config.Style.Background)
+	btn.SetLabelColorActivated(tv.tut.Config.Style.Background)
 	btn.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
 		if !btn.InRect(event.Position()) {
 			return action, event

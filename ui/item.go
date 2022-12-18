@@ -78,7 +78,7 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 func DrawItem(tv *TutView, item api.Item, main *tview.TextView, controls *tview.Flex, ft config.FeedType) {
 	switch item.Type() {
 	case api.StatusType:
-		drawStatus(tv, item, item.Raw().(*mastodon.Status), main, controls, false, "")
+		drawStatus(tv, item, item.Raw().(*mastodon.Status), main, controls, ft, false, "")
 	case api.StatusHistoryType:
 		s := item.Raw().(*mastodon.StatusHistory)
 		status := mastodon.Status{
@@ -91,7 +91,7 @@ func DrawItem(tv *TutView, item api.Item, main *tview.TextView, controls *tview.
 			MediaAttachments: s.MediaAttachments,
 			Visibility:       mastodon.VisibilityPublic,
 		}
-		drawStatus(tv, item, &status, main, controls, true, "")
+		drawStatus(tv, item, &status, main, controls, ft, true, "")
 	case api.UserType, api.ProfileType:
 		switch ft {
 		case config.FollowRequests:
@@ -115,7 +115,7 @@ func DrawItem(tv *TutView, item api.Item, main *tview.TextView, controls *tview.
 func DrawItemControls(tv *TutView, item api.Item, controls *tview.Flex, ft config.FeedType) {
 	switch item.Type() {
 	case api.StatusType:
-		drawStatus(tv, item, item.Raw().(*mastodon.Status), nil, controls, false, "")
+		drawStatus(tv, item, item.Raw().(*mastodon.Status), nil, controls, ft, false, "")
 	case api.StatusHistoryType:
 		s := item.Raw().(*mastodon.StatusHistory)
 		status := mastodon.Status{
@@ -128,7 +128,7 @@ func DrawItemControls(tv *TutView, item api.Item, controls *tview.Flex, ft confi
 			MediaAttachments: s.MediaAttachments,
 			Visibility:       mastodon.VisibilityPublic,
 		}
-		drawStatus(tv, item, &status, nil, controls, true, "")
+		drawStatus(tv, item, &status, nil, controls, ft, true, "")
 	case api.UserType, api.ProfileType:
 		if ft == config.FollowRequests {
 			drawUser(tv, item.Raw().(*api.User), nil, controls, "", InputUserFollowRequest)

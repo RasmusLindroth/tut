@@ -1,5 +1,5 @@
-github.com/RasmusLindroth/go-mastodon v0.0.16 h1:87lm4+TE6cNguL/gbfHDYqbOd1Jblnpy8J0l1O3/1wo=
-github.com/RasmusLindroth/go-mastodon v0.0.16/go.mod h1:Lr6n8V1U2b+9P89YZKsICkNc+oNeJXkygY7raei9SXE=
+github.com/RasmusLindroth/go-mastodon v0.0.17 h1:PUR4YS9ORe62ZSabvZVwxROZvrcMuNVC/8Y/D/d6dFQ=
+github.com/RasmusLindroth/go-mastodon v0.0.17/go.mod h1:Lr6n8V1U2b+9P89YZKsICkNc+oNeJXkygY7raei9SXE=
 github.com/atotto/clipboard v0.1.4 h1:EH0zSVneZPSuFR11BlR9YppQTVDbh5+16AmcJi4g1z4=
 github.com/atotto/clipboard v0.1.4/go.mod h1:ZY9tmq7sm5xIbd9bOK4onWV4S6X0u6GY7Vn0Yu86PYI=
 github.com/aymerick/douceur v0.2.0 h1:Mv+mAeH1Q+n9Fr+oyamOlAkUNPWPlA8PPGR0QAaYuPk=
@@ -40,6 +40,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/rivo/tview v0.0.0-20221212150847-19d943d59543 h1:qu4/1SXI23subKkH50FN7t6r0tPg7i7jI48M5kZ2qEE=
 github.com/rivo/tview v0.0.0-20221212150847-19d943d59543/go.mod h1:YX2wUZOcJGOIycErz2s9KvDaP0jnWwRCirQMPLPpQ+Y=
+github.com/rivo/tview v0.0.0-20221217182043-ccce554c3803 h1:gaknGRzW4g4I+5sGu4X81BZbROJ0j96ap9xnEbcZhXA=
+github.com/rivo/tview v0.0.0-20221217182043-ccce554c3803/go.mod h1:YX2wUZOcJGOIycErz2s9KvDaP0jnWwRCirQMPLPpQ+Y=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rivo/uniseg v0.4.3 h1:utMvzDsuh3suAEnhH0RdHmoPbU648o6CvXxTx4SBMOw=
 github.com/rivo/uniseg v0.4.3/go.mod h1:FN3SvrM+Zdj16jyLfmOkMNblXMcoc8DfTHruCPUcx88=
@@ -58,6 +60,8 @@ github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 h1:nrZ3ySNYwJ
 github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80/go.mod h1:iFyPdL66DjUD96XmzVL3ZntbzcflLnznH0fr99w5VqE=
 golang.org/x/exp v0.0.0-20221212164502-fae10dda9338 h1:OvjRkcNHnf6/W5FZXSxODbxwD+X7fspczG7Jn/xQVD4=
 golang.org/x/exp v0.0.0-20221212164502-fae10dda9338/go.mod h1:CxIveKay+FTh1D0yPZemJVgC/95VzuuOLq5Qi4xnoYc=
+golang.org/x/exp v0.0.0-20221217163422-3c43f8badb15 h1:5oN1Pz/eDhCpbMbLstvIPa0b/BEQo6g6nwV3pLjfM6w=
+golang.org/x/exp v0.0.0-20221217163422-3c43f8badb15/go.mod h1:CxIveKay+FTh1D0yPZemJVgC/95VzuuOLq5Qi4xnoYc=
 golang.org/x/net v0.4.0 h1:Q5QPcMlvfxFTAPV0+07Xz/MpK9NTXu2VDUuy0FeMfaU=
 golang.org/x/net v0.4.0/go.mod h1:MBQ8lrhLObU/6UmLb4fmbmk5OcyYmqtbGd/9yIeKjEE=
 golang.org/x/sys v0.0.0-20201119102817-f84b799fce68/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
