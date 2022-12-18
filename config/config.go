@@ -163,6 +163,7 @@ type General struct {
 	Timelines           []Timeline
 	StickToTop          bool
 	NotificationsToHide []NotificationToHide
+	ShowBoostedUser     bool
 }
 
 type Style struct {
@@ -854,6 +855,7 @@ func parseGeneral(cfg *ini.File) General {
 	general.ShowHelp = cfg.Section("general").Key("show-help").MustBool(true)
 	general.RedrawUI = cfg.Section("general").Key("redraw-ui").MustBool(true)
 	general.StickToTop = cfg.Section("general").Key("stick-to-top").MustBool(false)
+	general.ShowBoostedUser = cfg.Section("general").Key("show-boosted-user").MustBool(false)
 
 	lp := cfg.Section("general").Key("list-placement").In("left", []string{"left", "right", "top", "bottom"})
 	switch lp {

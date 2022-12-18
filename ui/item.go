@@ -28,6 +28,9 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 			symbol = " ! "
 		}
 		acc := strings.TrimSpace(s.Account.Acct)
+		if cfg.General.ShowBoostedUser && s.Reblog != nil {
+			acc = strings.TrimSpace(s.Reblog.Account.Acct)
+		}
 		if s.Reblog != nil && cfg.General.ShowIcons {
 			acc = fmt.Sprintf("♺ %s", acc)
 		}
