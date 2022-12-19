@@ -193,11 +193,13 @@ type Style struct {
 	StatusBarViewBackground tcell.Color
 	StatusBarViewText       tcell.Color
 
-	ListSelectedBackground tcell.Color
-	ListSelectedText       tcell.Color
+	ListSelectedBackground    tcell.Color
+	ListSelectedText          tcell.Color
+	ListSelectedBoldUnderline int
 
-	ListSelectedInactiveBackground tcell.Color
-	ListSelectedInactiveText       tcell.Color
+	ListSelectedInactiveBackground    tcell.Color
+	ListSelectedInactiveText          tcell.Color
+	ListSelectedInactiveBoldUnderline int
 
 	ControlsText      tcell.Color
 	ControlsHighlight tcell.Color
@@ -217,6 +219,11 @@ type Style struct {
 	IconColor tcell.Color
 
 	CommandText tcell.Color
+
+	DateTimeText tcell.Color
+	BoostText    tcell.Color
+	MediaText    tcell.Color
+	CardText     tcell.Color
 }
 
 type Media struct {
@@ -596,6 +603,8 @@ func parseStyle(cfg *ini.File, cnfPath string, cnfDir string) Style {
 		s = tcfg.Section("").Key("list-selected-text").String()
 		style.ListSelectedText = tcell.GetColor(s)
 
+		style.ListSelectedBoldUnderline = tcfg.Section("").Key("list-selected-boldunderline").MustInt(0)
+
 		s = tcfg.Section("").Key("list-selected-inactive-background").String()
 		if len(s) > 0 {
 			style.ListSelectedInactiveBackground = tcell.GetColor(s)
@@ -685,6 +694,30 @@ func parseStyle(cfg *ini.File, cnfPath string, cnfDir string) Style {
 		} else {
 			style.CommandText = style.StatusBarText
 		}
+		s = tcfg.Section("").Key("datetime-text").String()
+		if len(s) > 0 {
+			style.DateTimeText = tcell.GetColor(s)
+		} else {
+			style.DateTimeText = style.Subtle
+		}
+		s = tcfg.Section("").Key("boost-text").String()
+		if len(s) > 0 {
+			style.BoostText = tcell.GetColor(s)
+		} else {
+			style.BoostText = style.Text
+		}
+		s = tcfg.Section("").Key("media-text").String()
+		if len(s) > 0 {
+			style.MediaText = tcell.GetColor(s)
+		} else {
+			style.MediaText = style.Text
+		}
+		s = tcfg.Section("").Key("card-text").String()
+		if len(s) > 0 {
+			style.CardText = tcell.GetColor(s)
+		} else {
+			style.CardText = style.Text
+		}
 	} else {
 		s := cfg.Section("style").Key("background").String()
 		style.Background = parseColor(s, "#27822", xrdbColors)
@@ -727,6 +760,8 @@ func parseStyle(cfg *ini.File, cnfPath string, cnfDir string) Style {
 
 		s = cfg.Section("style").Key("list-selected-text").String()
 		style.ListSelectedText = parseColor(s, "white", xrdbColors)
+
+		style.ListSelectedBoldUnderline = cfg.Section("style").Key("list-selected-boldunderline").MustInt(0)
 
 		s = cfg.Section("style").Key("list-selected-inactive-background").String()
 		if len(s) > 0 {
@@ -810,6 +845,30 @@ func parseStyle(cfg *ini.File, cnfPath string, cnfDir string) Style {
 			style.CommandText = parseColor(s, "white", xrdbColors)
 		} else {
 			style.CommandText = style.StatusBarText
+		}
+		s = cfg.Section("style").Key("datetime-text").String()
+		if len(s) > 0 {
+			style.DateTimeText = parseColor(s, "#808080", xrdbColors)
+		} else {
+			style.DateTimeText = style.Subtle
+		}
+		s = cfg.Section("style").Key("boost-text").String()
+		if len(s) > 0 {
+			style.BoostText = parseColor(s, "white", xrdbColors)
+		} else {
+			style.BoostText = style.Text
+		}
+		s = cfg.Section("style").Key("media-text").String()
+		if len(s) > 0 {
+			style.MediaText = parseColor(s, "white", xrdbColors)
+		} else {
+			style.MediaText = style.Text
+		}
+		s = cfg.Section("style").Key("card-text").String()
+		if len(s) > 0 {
+			style.CardText = parseColor(s, "white", xrdbColors)
+		} else {
+			style.CardText = style.Text
 		}
 	}
 

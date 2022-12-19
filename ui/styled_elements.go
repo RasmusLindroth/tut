@@ -56,13 +56,19 @@ func NewControlButton(tv *TutView, control Control) *tview.Button {
 	return btn
 }
 
-func NewList(cnf *config.Config) *tview.List {
+func NewList(cnf *config.Config, is_feed bool) *tview.List {
 	l := tview.NewList()
 	l.ShowSecondaryText(false)
 	l.SetHighlightFullLine(true)
 	l.SetBackgroundColor(cnf.Style.Background)
 	l.SetMainTextColor(cnf.Style.Text)
-	l.SetSelectedBackgroundColor(cnf.Style.ListSelectedBackground)
+	if is_feed && cnf.Style.ListSelectedBoldUnderline == 1 {
+		l.SetSelectedBackgroundColor(cnf.Style.Background)
+		s := tcell.Style.Attributes(tcell.Style{}, tcell.AttrBold|tcell.AttrUnderline)
+		l.SetSelectedStyle(s)
+	} else {
+		l.SetSelectedBackgroundColor(cnf.Style.ListSelectedBackground)
+	}
 	l.SetSelectedTextColor(cnf.Style.ListSelectedText)
 	return l
 }

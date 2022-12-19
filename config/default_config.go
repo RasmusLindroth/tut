@@ -391,6 +391,8 @@ background=
 # default=
 text=
 
+
+
 # The color to display subtle elements or subtle text. Like lines and help text.
 # default=
 subtle=
@@ -492,6 +494,18 @@ timeline-name-background=
 # The text color on named timelines
 # default=
 timeline-name-text=
+
+# The text color used for date/time in the timeline view 
+# defaults to the same color as subtle
+datetime-text=
+
+# The text color used for boosts in the timeline view 
+# defaults to the primary text color
+boost-text=
+
+# The text color used for toots with media or cards in the timeline view 
+# defaults to the primary text color
+media-text=
 
 [input]
 # You can edit the keys for tut below.

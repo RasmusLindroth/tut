@@ -47,7 +47,7 @@ func NewPollView(tv *TutView) *PollView {
 		info:       NewTextView(tv.tut.Config),
 		expiration: NewDropDown(tv.tut.Config),
 		controls:   NewControlView(tv.tut.Config),
-		list:       NewList(tv.tut.Config),
+		list:       NewList(tv.tut.Config, false),
 	}
 	p.scrollSleep = NewScrollSleep(p.Next, p.Prev)
 	p.Reset()

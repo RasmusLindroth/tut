@@ -17,7 +17,7 @@ type LinkView struct {
 }
 
 func NewLinkView(tv *TutView) *LinkView {
-	l := NewList(tv.tut.Config)
+	l := NewList(tv.tut.Config, false)
 	c := NewControlView(tv.tut.Config)
 	lv := &LinkView{
 		tutView:  tv,

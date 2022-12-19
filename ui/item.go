@@ -17,10 +17,12 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 	case api.StatusType:
 		s := item.Raw().(*mastodon.Status)
 		symbol := ""
+		textcolor := cfg.Style.Text
 		status := s
 		if s.Reblog != nil {
 			status = s.Reblog
 			symbol += "♺ "
+			textcolor = cfg.Style.BoostText
 		}
 		if item.Pinned() {
 			symbol += "! "
@@ -38,9 +40,13 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 			symbol += "⚑ "
 		}
 		if len(s.MediaAttachments) > 0 {
+			textcolor = cfg.Style.MediaText
 			symbol += "⚭ "
 		}
 		if s.Card != nil {
+			if len(s.MediaAttachments) == 0 {
+				textcolor = cfg.Style.CardText
+			}
 			symbol += "⚯  "
 		}
 		if status.RepliesCount > 0 {
@@ -57,12 +63,12 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 		if symbol != "" {
 			symbol = fmt.Sprintf(cfg.General.SymbolFormat, symbol)
 		}
-		return fmt.Sprintf("%s %s", d, acc), symbol
+		return fmt.Sprintf("[#%06x]%s[#%06x] %s", cfg.Style.DateTimeText.Hex(), d, textcolor.Hex(), acc), symbol
 	case api.StatusHistoryType:
 		s := item.Raw().(*mastodon.StatusHistory)
 		acc := strings.TrimSpace(s.Account.Acct)
 		d := OutputDate(cfg, s.CreatedAt.Local())
-		return fmt.Sprintf("%s %s", d, acc), ""
+		return fmt.Sprintf("[#%06x]%s[#%06x] %s", cfg.Style.DateTimeText.Hex(), d, cfg.Style.Text.Hex(), acc), ""
 	case api.UserType:
 		a := item.Raw().(*api.User)
 		return strings.TrimSpace(a.Data.Acct), ""
@@ -91,7 +97,7 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 			symbol = fmt.Sprintf(cfg.General.SymbolFormat, symbol)
 		}
 		d := OutputDate(cfg, a.Item.CreatedAt.Local())
-		return fmt.Sprintf("%s %s", d, strings.TrimSpace(a.Item.Account.Acct)), symbol
+		return fmt.Sprintf("[#%06x]%s[#%06x] %s", cfg.Style.DateTimeText.Hex(), d, cfg.Style.Text.Hex(), strings.TrimSpace(a.Item.Account.Acct)), symbol
 	case api.ListsType:
 		a := item.Raw().(*mastodon.List)
 		return tview.Escape(a.Title), ""

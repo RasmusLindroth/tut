@@ -28,8 +28,13 @@ func (fl *FeedList) InFocus(style config.Style) {
 func inFocus(l *tview.List, style config.Style) {
 	l.SetBackgroundColor(style.Background)
 	l.SetMainTextColor(style.Text)
-	l.SetSelectedBackgroundColor(style.ListSelectedBackground)
 	l.SetSelectedTextColor(style.ListSelectedText)
+	if style.ListSelectedBoldUnderline == 1 {
+		s := tcell.Style.Attributes(tcell.Style{}, tcell.AttrBold|tcell.AttrUnderline)
+		l.SetSelectedStyle(s)
+	} else {
+		l.SetSelectedBackgroundColor(style.ListSelectedBackground)
+	}
 }
 
 func (fl *FeedList) OutFocus(style config.Style) {
@@ -40,8 +45,13 @@ func (fl *FeedList) OutFocus(style config.Style) {
 func outFocus(l *tview.List, style config.Style) {
 	l.SetBackgroundColor(style.Background)
 	l.SetMainTextColor(style.Text)
-	l.SetSelectedBackgroundColor(style.ListSelectedInactiveBackground)
 	l.SetSelectedTextColor(style.ListSelectedInactiveText)
+	if style.ListSelectedBoldUnderline == 1 {
+		s := tcell.Style.Attributes(tcell.Style{}, tcell.AttrBold)
+		l.SetSelectedStyle(s)
+	} else {
+		l.SetSelectedBackgroundColor(style.ListSelectedInactiveBackground)
+	}
 }
 
 type Feed struct {
@@ -513,8 +523,8 @@ func NewFollowRequests(tv *TutView) *Feed {
 
 func NewFeedList(t *Tut, stickyCount int) *FeedList {
 	fl := &FeedList{
-		Text:        NewList(t.Config),
-		Symbol:      NewList(t.Config),
+		Text:        NewList(t.Config, true),
+		Symbol:      NewList(t.Config, true),
 		stickyCount: stickyCount,
 	}
 	return fl
