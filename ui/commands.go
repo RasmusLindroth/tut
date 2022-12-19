@@ -2,12 +2,15 @@ package ui
 
 import (
 	"fmt"
+	"os"
 	"strconv"
+	"strings"
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
 	"github.com/RasmusLindroth/tut/config"
 	"github.com/RasmusLindroth/tut/util"
+	"golang.org/x/exp/slices"
 )
 
 func (tv *TutView) ComposeCommand() {
@@ -144,6 +147,102 @@ func (tv *TutView) WindowCommand(index string) {
 		return
 	}
 	tv.FocusFeed(i)
+}
+
+func (tv *TutView) SwitchCommand(s string) {
+	ft := config.InvalidFeed
+
+	parts := strings.Split(s, ",")
+	for i, p := range parts {
+		parts[i] = strings.TrimSpace(p)
+	}
+	cmd := parts[0]
+	var subaction string
+	if strings.Contains(parts[0], " ") {
+		p := strings.Split(cmd, " ")
+		cmd = p[0]
+		subaction = strings.Join(p[1:], " ")
+	}
+	showBoosts := true
+	showReplies := true
+	name := ""
+	if len(parts) > 1 {
+		tfStr := []string{"true", "false"}
+		name = parts[1]
+		if slices.Contains(tfStr, name) {
+			name = ""
+		}
+		if len(parts) > 2 && slices.Contains(tfStr, parts[len(parts)-2]) &&
+			slices.Contains(tfStr, parts[len(parts)-1]) {
+			showBoosts = parts[len(parts)-2] == "true"
+			showReplies = parts[len(parts)-1] == "true"
+		} else if len(parts) > 1 && slices.Contains(tfStr, parts[len(parts)-1]) {
+			showBoosts = parts[len(parts)-1] == "true"
+		} else {
+			fmt.Printf("switch is invalid . Check this for errors: switch %s\n", s)
+			os.Exit(1)
+		}
+	}
+	var data string
+	switch cmd {
+	case "home":
+		ft = config.TimelineHome
+	case "direct":
+		ft = config.Conversations
+	case "local":
+		ft = config.TimelineLocal
+	case "federated":
+		ft = config.TimelineFederated
+	case "special":
+		ft = config.TimelineHomeSpecial
+	case "special-all":
+		ft = config.TimelineHomeSpecial
+		showBoosts = true
+		showReplies = true
+	case "special-boosts":
+		ft = config.TimelineHomeSpecial
+		showBoosts = true
+		showReplies = false
+	case "special-replies":
+		ft = config.TimelineHomeSpecial
+		showBoosts = false
+		showReplies = true
+	case "bookmarks", "saved":
+		ft = config.Saved
+	case "favorited":
+		ft = config.Favorited
+	case "notifications":
+		ft = config.Notifications
+	case "lists":
+		ft = config.Lists
+	case "tag":
+		ft = config.Tag
+		data = subaction
+	case "blocking":
+		ft = config.Blocking
+	case "muting":
+		ft = config.Muting
+	case "tags":
+		ft = config.Tags
+	case "mentions":
+		ft = config.Mentions
+	}
+	found := tv.Timeline.FindAndGoTo(ft, data, showBoosts, showReplies)
+	if found {
+		return
+	}
+	nf := CreateFeed(tv, ft, data, showBoosts, showReplies)
+	tv.Timeline.Feeds = append(tv.Timeline.Feeds, &FeedHolder{
+		Feeds: []*Feed{nf},
+		Name:  name,
+	})
+	tv.FocusFeed(len(tv.Timeline.Feeds) - 1)
+	tv.Shared.Top.SetText(tv.Timeline.GetTitle())
+	tv.Timeline.update <- true
+}
+
+func (tv *TutView) CloseWindowCommand() {
+	tv.Timeline.CloseCurrentWindow()
 }
 
 func (tv *TutView) BoostsCommand() {

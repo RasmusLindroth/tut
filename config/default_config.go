@@ -175,9 +175,9 @@ leader-timeout=1000
 # 
 # Available commands: home, direct, local, federated, special-all,
 # special-boosts, special-replies, clear-notifications, compose, edit, history,
-# blocking, bookmarks, refetch, saved, favorited, boosts, favorites, following,
-# followers, muting, newer, preferences, profile, notifications, mentions,
-# lists, stick-to-top, tag, tags, window, list-placement, list-split,
+# blocking, bookmarks, refetch, saved, switch, favorited, boosts, favorites,
+# following, followers, muting, newer, preferences, profile, notifications,
+# mentions, lists, stick-to-top, tag, tags, window, list-placement, list-split,
 # proportions
 # 
 # The ones named special-* are the home timeline with only boosts and/or
@@ -197,6 +197,10 @@ leader-timeout=1000
 # proportions takes the arguments [int] [int], where the first integer is the
 # list and the other content, e.g. proportions 1 3. See list-proportion above
 # for more information.
+# switch let's you go to a timeline if it already exists, if it doesn't it will
+# open the timeline in your current active window. The syntax is almost the same
+# as in timelines= and is displayed under the examples.
+# 
 # 
 # Some examples:
 # leader-action=local,lo
@@ -209,6 +213,14 @@ leader-timeout=1000
 # leader-action=list-placement bottom,b
 # leader-action=list-split column,c
 # leader-action=proportions 1 3,3
+# 
+# Syntax for switch:
+# leader-action=switch feed,[showBoosts],[showReplies],shortcut
+# showBoosts can be either true or false and they are both optional. Here are
+# some examples:
+# 
+# leader-action=switch home,false,true,h
+# leader-action=switch tag tut,tt
 # 
 
 

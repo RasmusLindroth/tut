@@ -166,6 +166,10 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.TagsCommand()
 		case config.LeaderWindow:
 			tv.WindowCommand(subaction)
+		case config.LeaderCloseWindow:
+			tv.CloseWindowCommand()
+		case config.LeaderSwitch:
+			tv.SwitchCommand(subaction)
 		case config.LeaderListPlacement:
 			switch subaction {
 			case "top":

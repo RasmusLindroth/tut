@@ -2,6 +2,7 @@ package feed
 
 import (
 	"context"
+	"errors"
 	"log"
 	"strings"
 	"sync"
@@ -134,6 +135,9 @@ func (f *Feed) Item(index int) (api.Item, error) {
 		}
 	*/
 	filtered := f.filteredList()
+	if len(filtered) == 0 {
+		return nil, errors.New("item out of range")
+	}
 	return filtered[index], nil
 }
 
