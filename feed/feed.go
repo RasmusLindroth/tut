@@ -718,7 +718,7 @@ func (f *Feed) startStream(rec *api.Receiver, timeline string, err error) {
 	}()
 }
 
-func (f *Feed) startStreamNotification(rec *api.Receiver, timeline string, err error) {
+func (f *Feed) startStreamNotification(rec *api.Receiver, timeline string, err error, mentions bool) {
 	if err != nil {
 		log.Fatalln("Couldn't open stream")
 	}
@@ -729,35 +729,35 @@ func (f *Feed) startStreamNotification(rec *api.Receiver, timeline string, err e
 			case *mastodon.NotificationEvent:
 				switch t.Notification.Type {
 				case "follow":
-					if slices.Contains(f.config.General.NotificationsToHide, config.HideFollow) {
+					if slices.Contains(f.config.General.NotificationsToHide, config.HideFollow) || mentions {
 						continue
 					}
 				case "follow_request":
-					if slices.Contains(f.config.General.NotificationsToHide, config.HideFollowRequest) {
+					if slices.Contains(f.config.General.NotificationsToHide, config.HideFollowRequest) || mentions {
 						continue
 					}
 				case "favourite":
-					if slices.Contains(f.config.General.NotificationsToHide, config.HideFavorite) {
+					if slices.Contains(f.config.General.NotificationsToHide, config.HideFavorite) || mentions {
 						continue
 					}
 				case "reblog":
-					if slices.Contains(f.config.General.NotificationsToHide, config.HideBoost) {
+					if slices.Contains(f.config.General.NotificationsToHide, config.HideBoost) || mentions {
 						continue
 					}
 				case "mention":
-					if slices.Contains(f.config.General.NotificationsToHide, config.HideMention) {
+					if slices.Contains(f.config.General.NotificationsToHide, config.HideMention) && !mentions {
 						continue
 					}
 				case "update":
-					if slices.Contains(f.config.General.NotificationsToHide, config.HideEdited) {
+					if slices.Contains(f.config.General.NotificationsToHide, config.HideEdited) || mentions {
 						continue
 					}
 				case "status":
-					if slices.Contains(f.config.General.NotificationsToHide, config.HideStatus) {
+					if slices.Contains(f.config.General.NotificationsToHide, config.HideStatus) || mentions {
 						continue
 					}
 				case "poll":
-					if slices.Contains(f.config.General.NotificationsToHide, config.HidePoll) {
+					if slices.Contains(f.config.General.NotificationsToHide, config.HidePoll) || mentions {
 						continue
 					}
 				}
@@ -901,13 +901,32 @@ func NewNotifications(ac *api.AccountClient, cnf *config.Config, showBoosts bool
 	feed.loadOlder = func() {
 		feed.normalOlderNotification(feed.accountClient.GetNotifications, cnf.General.NotificationsToHide)
 	}
-	feed.startStreamNotification(feed.accountClient.NewHomeStream())
+	rec, tl, err := feed.accountClient.NewHomeStream()
+	feed.startStreamNotification(rec, tl, err, false)
 	feed.close = func() {
 		for _, s := range feed.streams {
 			feed.accountClient.RemoveHomeReceiver(s)
 		}
 	}
+	return feed
+}
 
+func NewNotificationsMentions(ac *api.AccountClient, cnf *config.Config) *Feed {
+	feed := newFeed(ac, config.Notifications, cnf, true, true)
+	hide := []config.NotificationToHide{config.HideStatus, config.HideBoost, config.HideFollow, config.HideFollowRequest, config.HideFavorite, config.HidePoll, config.HideEdited}
+	feed.loadNewer = func() {
+		feed.normalNewerNotification(feed.accountClient.GetNotifications, hide)
+	}
+	feed.loadOlder = func() {
+		feed.normalOlderNotification(feed.accountClient.GetNotifications, hide)
+	}
+	rec, tl, err := feed.accountClient.NewHomeStream()
+	feed.startStreamNotification(rec, tl, err, true)
+	feed.close = func() {
+		for _, s := range feed.streams {
+			feed.accountClient.RemoveHomeReceiver(s)
+		}
+	}
 	return feed
 }
 

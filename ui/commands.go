@@ -95,6 +95,12 @@ func (tv *TutView) NotificationsCommand() {
 	)
 }
 
+func (tv *TutView) MentionsCommand() {
+	tv.Timeline.AddFeed(
+		NewNotificatioMentionsFeed(tv, true, true),
+	)
+}
+
 func (tv *TutView) ListsCommand() {
 	tv.Timeline.AddFeed(
 		NewListsFeed(tv),

@@ -76,6 +76,7 @@ const (
 	LeaderProfile
 	LeaderProportions
 	LeaderNotifications
+	LeaderMentions
 	LeaderLists
 	LeaderRefetch
 	LeaderTag
@@ -109,6 +110,7 @@ const (
 	TimelineHome
 	TimelineHomeSpecial
 	TimelineLocal
+	Mentions
 	Conversations
 	User
 	UserList
@@ -959,6 +961,8 @@ func parseGeneral(cfg *ini.File) General {
 				la.Command = LeaderProfile
 			case "notifications":
 				la.Command = LeaderNotifications
+			case "mentions":
+				la.Command = LeaderMentions
 			case "lists":
 				la.Command = LeaderLists
 			case "stick-to-top":
@@ -1036,6 +1040,8 @@ func parseGeneral(cfg *ini.File) General {
 			tl.FeedType = Favorited
 		case "notifications":
 			tl.FeedType = Notifications
+		case "mentions":
+			tl.FeedType = Mentions
 		case "lists":
 			tl.FeedType = Lists
 		case "tag":

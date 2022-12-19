@@ -47,6 +47,8 @@ func NewTimeline(tv *TutView, update chan bool) *Timeline {
 			nf = NewFavoritedFeed(tv)
 		case config.Notifications:
 			nf = NewNotificationFeed(tv, f.ShowBoosts, f.ShowReplies)
+		case config.Mentions:
+			nf = NewNotificatioMentionsFeed(tv, f.ShowBoosts, f.ShowReplies)
 		case config.Lists:
 			nf = NewListsFeed(tv)
 		case config.Tag:
@@ -150,6 +152,8 @@ func (tl *Timeline) GetTitle() string {
 		ct = "favorited"
 	case config.Notifications:
 		ct = "notifications"
+	case config.Mentions:
+		ct = "mentions"
 	case config.Tag:
 		parts := strings.Split(name, " ")
 		for i, p := range parts {

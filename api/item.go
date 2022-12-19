@@ -149,8 +149,8 @@ func (s *StatusItem) Filtered(tl config.FeedType) (bool, string, string, bool) {
 		used := false
 		for _, w := range f.Where {
 			switch w {
-			case "home", "special":
-				if tl == config.TimelineHome || tl == config.List {
+			case "home":
+				if tl == config.TimelineHome || tl == config.List || tl == config.TimelineHomeSpecial {
 					used = true
 				}
 			case "thread":
@@ -158,28 +158,20 @@ func (s *StatusItem) Filtered(tl config.FeedType) (bool, string, string, bool) {
 					used = true
 				}
 			case "notifications":
-				if tl == config.Notifications {
+				if tl == config.Notifications || tl == config.Mentions {
 					used = true
 				}
-
 			case "account":
 				if tl == config.User {
 					used = true
 				}
 			case "public":
 				where := []config.FeedType{
-					config.Favorites,
-					config.Favorited,
-					config.Boosts,
+					config.TimelineFederated,
+					config.TimelineLocal,
 					config.Tag,
-					config.Notifications,
-					config.TimelineHome,
-					config.TimelineHomeSpecial,
-					config.Conversations,
-					config.User,
-					config.List,
 				}
-				if !slices.Contains(where, tl) {
+				if slices.Contains(where, tl) {
 					used = true
 				}
 			}

@@ -16,7 +16,7 @@ mouse-support=false
 # they should show and the key to activate them.
 # 
 # Available timelines: home, direct, local, federated, special, bookmarks,
-# saved, favorited, notifications, lists, tag
+# saved, favorited, notifications, lists, mentions, tag
 # 
 # The one named special are the home timeline with only boosts and/or replies.
 # 
@@ -176,8 +176,9 @@ leader-timeout=1000
 # Available commands: home, direct, local, federated, special-all,
 # special-boosts, special-replies, clear-notifications, compose, edit, history,
 # blocking, bookmarks, refetch, saved, favorited, boosts, favorites, following,
-# followers, muting, newer, preferences, profile, notifications, lists,
-# stick-to-top, tag, tags, window, list-placement, list-split, proportions
+# followers, muting, newer, preferences, profile, notifications, mentions,
+# lists, stick-to-top, tag, tags, window, list-placement, list-split,
+# proportions
 # 
 # The ones named special-* are the home timeline with only boosts and/or
 # replies. All contains both, -boosts only boosts and -replies only replies.

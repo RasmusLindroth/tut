@@ -180,6 +180,9 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 		case "notifications", "n":
 			c.tutView.NotificationsCommand()
 			c.Back()
+		case "mentions", "m":
+			c.tutView.MentionsCommand()
+			c.Back()
 		case "favorited", "fav":
 			c.tutView.FavoritedCommand()
 			c.Back()
@@ -260,10 +263,10 @@ func (c *CmdBar) Autocomplete(curr string) []string {
 	}
 
 	if len(curr) > 2 && curr[:3] == ":tl" {
-		words = strings.Split(":tl home,:tl notifications,:tl local,:tl federated,:tl direct,:tl favorited,:tl special-all,:tl special-boosts,:tl-special-replies", ",")
+		words = strings.Split(":tl home,:tl notifications,:tl local,:tl federated,:tl direct,:tl mentions,:tl favorited,:tl special-all,:tl special-boosts,:tl-special-replies", ",")
 	}
 	if len(curr) > 8 && curr[:9] == ":timeline" {
-		words = strings.Split(":timeline home,:timeline notifications,:timeline local,:timeline federated,:timeline direct,:timeline favorited,:timeline special-all,:timeline special-boosts,:timeline special-replies", ",")
+		words = strings.Split(":timeline home,:timeline notifications,:timeline local,:timeline federated,:timeline direct,:timeline mentions,:timeline favorited,:timeline special-all,:timeline special-boosts,:timeline special-replies", ",")
 	}
 	if len(curr) > 14 && curr[:15] == ":list-placement" {
 		words = strings.Split(":list-placement top,:list-placement right,:list-placement bottom,:list-placement left", ",")

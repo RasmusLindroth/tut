@@ -209,6 +209,20 @@ func NewNotificationFeed(tv *TutView, showBoosts bool, showReplies bool) *Feed {
 	return fd
 }
 
+func NewNotificatioMentionsFeed(tv *TutView, showBoosts bool, showReplies bool) *Feed {
+	f := feed.NewNotificationsMentions(tv.tut.Client, tv.tut.Config)
+	f.LoadNewer()
+	fd := &Feed{
+		tutView: tv,
+		Data:    f,
+		List:    NewFeedList(tv.tut, f.StickyCount()),
+		Content: NewFeedContent(tv.tut),
+	}
+	go fd.update()
+
+	return fd
+}
+
 func NewThreadFeed(tv *TutView, item api.Item) *Feed {
 	status := util.StatusOrReblog(item.Raw().(*mastodon.Status))
 	f := feed.NewThread(tv.tut.Client, tv.tut.Config, status)
