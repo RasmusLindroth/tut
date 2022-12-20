@@ -168,6 +168,14 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.WindowCommand(subaction)
 		case config.LeaderCloseWindow:
 			tv.CloseWindowCommand()
+		case config.LeaderMoveWindowLeft:
+			tv.MoveWindowLeft()
+		case config.LeaderMoveWindowRight:
+			tv.MoveWindowRight()
+		case config.LeaderMoveWindowHome:
+			tv.MoveWindowHome()
+		case config.LeaderMoveWindowEnd:
+			tv.MoveWindowEnd()
 		case config.LeaderSwitch:
 			tv.SwitchCommand(subaction)
 		case config.LeaderListPlacement:

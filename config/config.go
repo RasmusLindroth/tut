@@ -84,10 +84,14 @@ const (
 	LeaderStickToTop
 	LeaderHistory
 	LeaderUser
+	LeaderLoadNewer
 	LeaderWindow
 	LeaderCloseWindow
 	LeaderSwitch
-	LeaderLoadNewer
+	LeaderMoveWindowLeft
+	LeaderMoveWindowRight
+	LeaderMoveWindowHome
+	LeaderMoveWindowEnd
 )
 
 type FeedType uint
@@ -990,6 +994,14 @@ func parseGeneral(cfg *ini.File) General {
 				la.Subaction = subaction
 			case "close-window":
 				la.Command = LeaderCloseWindow
+			case "move-window-left", "move-window-up":
+				la.Command = LeaderMoveWindowLeft
+			case "move-window-right", "move-window-down":
+				la.Command = LeaderMoveWindowRight
+			case "move-window-home":
+				la.Command = LeaderMoveWindowHome
+			case "move-window-end":
+				la.Command = LeaderMoveWindowEnd
 			case "switch":
 				la.Command = LeaderSwitch
 				sa := ""

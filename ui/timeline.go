@@ -106,6 +106,52 @@ func (tl *Timeline) RemoveCurrent(quit bool) bool {
 	return false
 }
 
+func (tl *Timeline) MoveCurrentWindowLeft() {
+	length := len(tl.Feeds)
+	if length < 2 {
+		return
+	}
+	ni := tl.FeedFocusIndex - 1
+	if ni < 0 {
+		return
+	}
+	tl.Feeds[tl.FeedFocusIndex], tl.Feeds[ni] = tl.Feeds[ni], tl.Feeds[tl.FeedFocusIndex]
+	tl.tutView.FocusFeed(ni)
+}
+
+func (tl *Timeline) MoveCurrentWindowRight() {
+	length := len(tl.Feeds)
+	if length < 2 {
+		return
+	}
+	ni := tl.FeedFocusIndex + 1
+	if ni > length-1 {
+		return
+	}
+	tl.Feeds[tl.FeedFocusIndex], tl.Feeds[ni] = tl.Feeds[ni], tl.Feeds[tl.FeedFocusIndex]
+	tl.tutView.FocusFeed(ni)
+}
+
+func (tl *Timeline) MoveCurrentWindowHome() {
+	length := len(tl.Feeds)
+	if length < 2 {
+		return
+	}
+	ni := 0
+	tl.Feeds[tl.FeedFocusIndex], tl.Feeds[ni] = tl.Feeds[ni], tl.Feeds[tl.FeedFocusIndex]
+	tl.tutView.FocusFeed(ni)
+}
+
+func (tl *Timeline) MoveCurrentWindowEnd() {
+	length := len(tl.Feeds)
+	if length < 2 {
+		return
+	}
+	ni := len(tl.Feeds) - 1
+	tl.Feeds[tl.FeedFocusIndex], tl.Feeds[ni] = tl.Feeds[ni], tl.Feeds[tl.FeedFocusIndex]
+	tl.tutView.FocusFeed(ni)
+}
+
 func (tl *Timeline) CloseCurrentWindow() {
 	if len(tl.Feeds) == 0 {
 		return

@@ -102,6 +102,27 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 	case ":clear-notifications":
 		c.tutView.ClearNotificationsCommand()
 		c.Back()
+	case ":close-window":
+		c.tutView.CloseWindowCommand()
+		c.Back()
+	case ":move-window", ":mv":
+		if len(parts) < 2 {
+			break
+		}
+		switch parts[1] {
+		case "left", "up", "l", "u":
+			c.tutView.MoveWindowLeft()
+			c.Back()
+		case "right", "down", "r", "d":
+			c.tutView.MoveWindowRight()
+			c.Back()
+		case "home", "h":
+			c.tutView.MoveWindowHome()
+			c.Back()
+		case "end", "e":
+			c.tutView.MoveWindowEnd()
+			c.Back()
+		}
 	case ":list-placement":
 		if len(parts) < 2 {
 			break
@@ -257,7 +278,7 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 
 func (c *CmdBar) Autocomplete(curr string) []string {
 	var entries []string
-	words := strings.Split(":blocking,:boosts,:bookmarks,:clear-notifications,:compose,:favorites,:favorited,:follow-tag,:followers,:following,:help,:h,:history,:lists,:list-placement,:list-split,:muting,:newer,:preferences,:profile,:proportions,:refetch,:requests,:saved,:stick-to-top,:tag,:timeline,:tl,:unfollow-tag,:user,:window,:quit,:q", ",")
+	words := strings.Split(":blocking,:boosts,:bookmarks,:clear-notifications,:compose,:favorites,:favorited,:follow-tag,:followers,:following,:help,:h,:history,:move-window,:lists,:list-placement,:list-split,:muting,:newer,:preferences,:profile,:proportions,:refetch,:requests,:saved,:stick-to-top,:tag,:timeline,:tl,:unfollow-tag,:user,:window,:quit,:q", ",")
 	if curr == "" {
 		return entries
 	}
@@ -273,6 +294,13 @@ func (c *CmdBar) Autocomplete(curr string) []string {
 	}
 	if len(curr) > 10 && curr[:11] == ":list-split" {
 		words = strings.Split(":list-split row,:list-split column", ",")
+	}
+
+	if len(curr) > 11 && curr[:12] == ":move-window" {
+		words = strings.Split(":move-window left,:move-window right,:move-window up,:move-window down,:move-window home,:move-window end", ",")
+	}
+	if len(curr) > 2 && curr[:3] == ":mv" {
+		words = strings.Split(":mv left,:mv right,:mv up,:mv down,:mv home,:mv end", ",")
 	}
 
 	for _, word := range words {

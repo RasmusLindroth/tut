@@ -149,6 +149,22 @@ func (tv *TutView) WindowCommand(index string) {
 	tv.FocusFeed(i)
 }
 
+func (tv *TutView) MoveWindowLeft() {
+	tv.Timeline.MoveCurrentWindowLeft()
+}
+
+func (tv *TutView) MoveWindowRight() {
+	tv.Timeline.MoveCurrentWindowRight()
+}
+
+func (tv *TutView) MoveWindowHome() {
+	tv.Timeline.MoveCurrentWindowHome()
+}
+
+func (tv *TutView) MoveWindowEnd() {
+	tv.Timeline.MoveCurrentWindowEnd()
+}
+
 func (tv *TutView) SwitchCommand(s string) {
 	ft := config.InvalidFeed
 
