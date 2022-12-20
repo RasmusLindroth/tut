@@ -1068,7 +1068,8 @@ func parseGeneral(cfg *ini.File) General {
 		}
 		tfStr := []string{"true", "false"}
 		tl.Name = parts[1]
-		if slices.Contains(tfStr, tl.Name) {
+		if slices.Contains(tfStr, tl.Name) || (strings.HasPrefix(parts[1], "\"") && strings.HasSuffix(parts[1], "\"")) ||
+			(strings.HasPrefix(parts[1], "'") && strings.HasSuffix(parts[1], "'")) {
 			tl.Name = ""
 		}
 		tfs := []bool{true, true}
@@ -1076,18 +1077,22 @@ func parseGeneral(cfg *ini.File) General {
 		if len(parts) > 1 {
 			if len(parts) > 2 && slices.Contains(tfStr, parts[len(parts)-2]) &&
 				slices.Contains(tfStr, parts[len(parts)-1]) &&
-				len(parts)-2 > 1 {
+				len(parts)-2 > 0 {
 				tfs[0] = parts[len(parts)-2] == "true"
 				tfs[1] = parts[len(parts)-1] == "true"
 				stop = len(parts) - 2
 			} else if slices.Contains(tfStr, parts[len(parts)-1]) &&
-				len(parts)-1 > 1 {
+				len(parts)-1 > 0 {
 				tfs[0] = parts[len(parts)-1] == "true"
 				stop = len(parts) - 1
 			}
 			if stop > 2 {
 				vals := []string{""}
-				vals = append(vals, parts[2:stop]...)
+				start := 2
+				if tl.Name == "" {
+					start = 1
+				}
+				vals = append(vals, parts[start:stop]...)
 				tl.Key = inputStrOrErr(vals, false)
 			}
 		}
