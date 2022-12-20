@@ -49,6 +49,9 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 			}
 			symbol += "⚯  "
 		}
+		if status.InReplyToID != nil {
+			symbol += "⤶ "
+		}
 		if status.RepliesCount > 0 {
 			symbol += "⤷ "
 		}
