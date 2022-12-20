@@ -40,12 +40,13 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 
 ## Currently supported commands
 * `:q` `:quit` exit
-* `:timeline` home, local, federated, direct, notifications, favorited, special-all, special-boosts, special-replies
-  * `:tl` h, l, f, d, n, fav, sa, sb, sr (shorter form)
+* `:timeline` home, local, federated, direct, notifications, mentions favorited, special-all, special-boosts, special-replies
+  * `:tl` h, l, f, d, n, m, fav, sa, sb, sr (shorter form)
 * `:blocking` lists users that you have blocked
 * `:boosts` lists users that boosted the toot
 * `:bookmarks` lists all your bookmarks
 * `:clear-notifications` clear all notifications
+* `:close-window` closes the current window
 * `:compose` compose a new toot
 * `:edit` edit one of your toots
 * `:favorited` lists toots you've favorited
@@ -58,6 +59,8 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:lists` show a list of your lists
 * `:list-placement` top, right, bottom, left
 * `:list-split` row, column
+* `:move-window` left, right, up, down, home, end
+  * `:mv` l, r, u, d, h, e
 * `:muting` lists users that you have muted
 * `:newer` force load newer toots in current timeline
 * `:preferences` update your profile and some other settings

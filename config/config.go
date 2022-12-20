@@ -76,6 +76,7 @@ const (
 	LeaderProfile
 	LeaderProportions
 	LeaderNotifications
+	LeaderMentions
 	LeaderLists
 	LeaderRefetch
 	LeaderTag
@@ -83,8 +84,14 @@ const (
 	LeaderStickToTop
 	LeaderHistory
 	LeaderUser
-	LeaderWindow
 	LeaderLoadNewer
+	LeaderWindow
+	LeaderCloseWindow
+	LeaderSwitch
+	LeaderMoveWindowLeft
+	LeaderMoveWindowRight
+	LeaderMoveWindowHome
+	LeaderMoveWindowEnd
 )
 
 type FeedType uint
@@ -109,6 +116,7 @@ const (
 	TimelineHome
 	TimelineHomeSpecial
 	TimelineLocal
+	Mentions
 	Conversations
 	User
 	UserList
@@ -897,8 +905,8 @@ func parseGeneral(cfg *ini.File) General {
 		var las []LeaderAction
 		for _, l := range lactions {
 			parts := strings.Split(l, ",")
-			if len(parts) != 2 {
-				fmt.Printf("leader-action must consist of two parts separated by a comma. Your value is: %s\n", strings.Join(parts, ","))
+			if len(parts) < 2 {
+				fmt.Printf("leader-action must consist of atleast two parts separated by a comma. Your value is: %s\n", strings.Join(parts, ","))
 				os.Exit(1)
 			}
 			for i, p := range parts {
@@ -959,6 +967,8 @@ func parseGeneral(cfg *ini.File) General {
 				la.Command = LeaderProfile
 			case "notifications":
 				la.Command = LeaderNotifications
+			case "mentions":
+				la.Command = LeaderMentions
 			case "lists":
 				la.Command = LeaderLists
 			case "stick-to-top":
@@ -982,6 +992,27 @@ func parseGeneral(cfg *ini.File) General {
 			case "window":
 				la.Command = LeaderWindow
 				la.Subaction = subaction
+			case "close-window":
+				la.Command = LeaderCloseWindow
+			case "move-window-left", "move-window-up":
+				la.Command = LeaderMoveWindowLeft
+			case "move-window-right", "move-window-down":
+				la.Command = LeaderMoveWindowRight
+			case "move-window-home":
+				la.Command = LeaderMoveWindowHome
+			case "move-window-end":
+				la.Command = LeaderMoveWindowEnd
+			case "switch":
+				la.Command = LeaderSwitch
+				sa := ""
+				if len(parts) > 2 {
+					sa = strings.Join(parts[2:], ",")
+				}
+				if len(sa) > 0 {
+					la.Subaction = fmt.Sprintf("%s,%s", subaction, sa)
+				} else {
+					la.Subaction = subaction
+				}
 			case "newer":
 				la.Command = LeaderLoadNewer
 			default:
@@ -1036,6 +1067,8 @@ func parseGeneral(cfg *ini.File) General {
 			tl.FeedType = Favorited
 		case "notifications":
 			tl.FeedType = Notifications
+		case "mentions":
+			tl.FeedType = Mentions
 		case "lists":
 			tl.FeedType = Lists
 		case "tag":
@@ -1045,25 +1078,33 @@ func parseGeneral(cfg *ini.File) General {
 			fmt.Printf("timeline %s is invalid\n", parts[0])
 			os.Exit(1)
 		}
-		tl.Name = parts[1]
-		tfs := []bool{true, true}
 		tfStr := []string{"true", "false"}
+		tl.Name = parts[1]
+		if slices.Contains(tfStr, tl.Name) || (strings.HasPrefix(parts[1], "\"") && strings.HasSuffix(parts[1], "\"")) ||
+			(strings.HasPrefix(parts[1], "'") && strings.HasSuffix(parts[1], "'")) {
+			tl.Name = ""
+		}
+		tfs := []bool{true, true}
 		stop := len(parts)
-		if len(parts) > 2 {
-			if slices.Contains(tfStr, parts[len(parts)-2]) &&
+		if len(parts) > 1 {
+			if len(parts) > 2 && slices.Contains(tfStr, parts[len(parts)-2]) &&
 				slices.Contains(tfStr, parts[len(parts)-1]) &&
-				len(parts)-2 > 1 {
+				len(parts)-2 > 0 {
 				tfs[0] = parts[len(parts)-2] == "true"
 				tfs[1] = parts[len(parts)-1] == "true"
 				stop = len(parts) - 2
 			} else if slices.Contains(tfStr, parts[len(parts)-1]) &&
-				len(parts)-1 > 1 {
+				len(parts)-1 > 0 {
 				tfs[0] = parts[len(parts)-1] == "true"
 				stop = len(parts) - 1
 			}
 			if stop > 2 {
 				vals := []string{""}
-				vals = append(vals, parts[2:stop]...)
+				start := 2
+				if tl.Name == "" {
+					start = 1
+				}
+				vals = append(vals, parts[start:stop]...)
 				tl.Key = inputStrOrErr(vals, false)
 			}
 		}

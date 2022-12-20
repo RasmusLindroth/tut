@@ -45,10 +45,12 @@ func outFocus(l *tview.List, style config.Style) {
 }
 
 type Feed struct {
-	tutView *TutView
-	Data    *feed.Feed
-	List    *FeedList
-	Content *FeedContent
+	tutView     *TutView
+	Data        *feed.Feed
+	List        *FeedList
+	Content     *FeedContent
+	ShowBoosts  bool
+	ShowReplies bool
 }
 
 func (f *Feed) ListInFocus() {
@@ -143,10 +145,12 @@ func NewHomeFeed(tv *TutView, showBoosts bool, showReplies bool) *Feed {
 	f := feed.NewTimelineHome(tv.tut.Client, tv.tut.Config, showBoosts, showReplies)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  showBoosts,
+		ShowReplies: showReplies,
 	}
 	go fd.update()
 
@@ -157,10 +161,12 @@ func NewHomeSpecialFeed(tv *TutView, showBoosts bool, showReplies bool) *Feed {
 	f := feed.NewTimelineHomeSpecial(tv.tut.Client, tv.tut.Config, showBoosts, showReplies)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  showBoosts,
+		ShowReplies: showReplies,
 	}
 	go fd.update()
 
@@ -171,10 +177,12 @@ func NewFederatedFeed(tv *TutView, showBoosts bool, showReplies bool) *Feed {
 	f := feed.NewTimelineFederated(tv.tut.Client, tv.tut.Config, showBoosts, showReplies)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  showBoosts,
+		ShowReplies: showReplies,
 	}
 	go fd.update()
 
@@ -185,10 +193,12 @@ func NewLocalFeed(tv *TutView, showBoosts bool, showReplies bool) *Feed {
 	f := feed.NewTimelineLocal(tv.tut.Client, tv.tut.Config, showBoosts, showReplies)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  showBoosts,
+		ShowReplies: showReplies,
 	}
 	go fd.update()
 
@@ -199,10 +209,28 @@ func NewNotificationFeed(tv *TutView, showBoosts bool, showReplies bool) *Feed {
 	f := feed.NewNotifications(tv.tut.Client, tv.tut.Config, showBoosts, showReplies)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  showBoosts,
+		ShowReplies: showReplies,
+	}
+	go fd.update()
+
+	return fd
+}
+
+func NewNotificatioMentionsFeed(tv *TutView, showBoosts bool, showReplies bool) *Feed {
+	f := feed.NewNotificationsMentions(tv.tut.Client, tv.tut.Config)
+	f.LoadNewer()
+	fd := &Feed{
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  showBoosts,
+		ShowReplies: showReplies,
 	}
 	go fd.update()
 
@@ -214,10 +242,12 @@ func NewThreadFeed(tv *TutView, item api.Item) *Feed {
 	f := feed.NewThread(tv.tut.Client, tv.tut.Config, status)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  true,
+		ShowReplies: true,
 	}
 	for i, s := range f.List() {
 		main, symbol := DrawListItem(tv.tut.Config, s)
@@ -236,10 +266,12 @@ func NewHistoryFeed(tv *TutView, item api.Item) *Feed {
 	f := feed.NewHistory(tv.tut.Client, tv.tut.Config, status)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  true,
+		ShowReplies: true,
 	}
 	for _, s := range f.List() {
 		main, symbol := DrawListItem(tv.tut.Config, s)
@@ -255,10 +287,12 @@ func NewConversationsFeed(tv *TutView) *Feed {
 	f := feed.NewConversations(tv.tut.Client, tv.tut.Config)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  true,
+		ShowReplies: true,
 	}
 	go fd.update()
 
@@ -273,10 +307,12 @@ func NewUserFeed(tv *TutView, item api.Item) *Feed {
 	f := feed.NewUserProfile(tv.tut.Client, tv.tut.Config, u)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  true,
+		ShowReplies: true,
 	}
 	go fd.update()
 
@@ -287,10 +323,12 @@ func NewUserSearchFeed(tv *TutView, search string) *Feed {
 	f := feed.NewUserSearch(tv.tut.Client, tv.tut.Config, search)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  true,
+		ShowReplies: true,
 	}
 	for _, s := range f.List() {
 		main, symbol := DrawListItem(tv.tut.Config, s)
@@ -305,10 +343,12 @@ func NewTagFeed(tv *TutView, search string, showBoosts bool, showReplies bool) *
 	f := feed.NewTag(tv.tut.Client, tv.tut.Config, search, showBoosts, showReplies)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  showBoosts,
+		ShowReplies: showReplies,
 	}
 	go fd.update()
 
@@ -319,10 +359,12 @@ func NewTagsFeed(tv *TutView) *Feed {
 	f := feed.NewTags(tv.tut.Client, tv.tut.Config)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  true,
+		ShowReplies: true,
 	}
 	go fd.update()
 
@@ -333,10 +375,12 @@ func NewListsFeed(tv *TutView) *Feed {
 	f := feed.NewListList(tv.tut.Client, tv.tut.Config)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  true,
+		ShowReplies: true,
 	}
 	go fd.update()
 
@@ -347,10 +391,12 @@ func NewListFeed(tv *TutView, l *mastodon.List, showBoosts bool, showReplies boo
 	f := feed.NewList(tv.tut.Client, tv.tut.Config, l, showBoosts, showReplies)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  showBoosts,
+		ShowReplies: showReplies,
 	}
 	go fd.update()
 
@@ -361,10 +407,12 @@ func NewUsersInListFeed(tv *TutView, l *mastodon.List) *Feed {
 	f := feed.NewUsersInList(tv.tut.Client, tv.tut.Config, l)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  true,
+		ShowReplies: true,
 	}
 	go fd.update()
 
@@ -375,10 +423,12 @@ func NewUsersAddListFeed(tv *TutView, l *mastodon.List) *Feed {
 	f := feed.NewUsersAddList(tv.tut.Client, tv.tut.Config, l)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  true,
+		ShowReplies: true,
 	}
 	go fd.update()
 
@@ -389,10 +439,12 @@ func NewFavoritedFeed(tv *TutView) *Feed {
 	f := feed.NewFavorites(tv.tut.Client, tv.tut.Config)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  true,
+		ShowReplies: true,
 	}
 
 	go fd.update()
@@ -403,10 +455,12 @@ func NewBookmarksFeed(tv *TutView) *Feed {
 	f := feed.NewBookmarks(tv.tut.Client, tv.tut.Config)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  true,
+		ShowReplies: true,
 	}
 	go fd.update()
 
@@ -417,10 +471,12 @@ func NewFavoritesStatus(tv *TutView, id mastodon.ID) *Feed {
 	f := feed.NewFavoritesStatus(tv.tut.Client, tv.tut.Config, id)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  true,
+		ShowReplies: true,
 	}
 	go fd.update()
 
@@ -431,10 +487,12 @@ func NewBoosts(tv *TutView, id mastodon.ID) *Feed {
 	f := feed.NewBoosts(tv.tut.Client, tv.tut.Config, id)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  true,
+		ShowReplies: true,
 	}
 	go fd.update()
 
@@ -445,10 +503,12 @@ func NewFollowers(tv *TutView, id mastodon.ID) *Feed {
 	f := feed.NewFollowers(tv.tut.Client, tv.tut.Config, id)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  true,
+		ShowReplies: true,
 	}
 	go fd.update()
 
@@ -459,10 +519,12 @@ func NewFollowing(tv *TutView, id mastodon.ID) *Feed {
 	f := feed.NewFollowing(tv.tut.Client, tv.tut.Config, id)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  true,
+		ShowReplies: true,
 	}
 	go fd.update()
 
@@ -473,10 +535,12 @@ func NewBlocking(tv *TutView) *Feed {
 	f := feed.NewBlocking(tv.tut.Client, tv.tut.Config)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  true,
+		ShowReplies: true,
 	}
 	go fd.update()
 
@@ -487,10 +551,12 @@ func NewMuting(tv *TutView) *Feed {
 	f := feed.NewMuting(tv.tut.Client, tv.tut.Config)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  true,
+		ShowReplies: true,
 	}
 	go fd.update()
 
@@ -501,10 +567,12 @@ func NewFollowRequests(tv *TutView) *Feed {
 	f := feed.NewFollowRequests(tv.tut.Client, tv.tut.Config)
 	f.LoadNewer()
 	fd := &Feed{
-		tutView: tv,
-		Data:    f,
-		List:    NewFeedList(tv.tut, f.StickyCount()),
-		Content: NewFeedContent(tv.tut),
+		tutView:     tv,
+		Data:        f,
+		List:        NewFeedList(tv.tut, f.StickyCount()),
+		Content:     NewFeedContent(tv.tut),
+		ShowBoosts:  true,
+		ShowReplies: true,
 	}
 	go fd.update()
 

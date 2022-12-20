@@ -150,6 +150,8 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.ProfileCommand()
 		case config.LeaderNotifications:
 			tv.NotificationsCommand()
+		case config.LeaderMentions:
+			tv.MentionsCommand()
 		case config.LeaderLoadNewer:
 			tv.LoadNewerCommand()
 		case config.LeaderLists:
@@ -164,6 +166,18 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.TagsCommand()
 		case config.LeaderWindow:
 			tv.WindowCommand(subaction)
+		case config.LeaderCloseWindow:
+			tv.CloseWindowCommand()
+		case config.LeaderMoveWindowLeft:
+			tv.MoveWindowLeft()
+		case config.LeaderMoveWindowRight:
+			tv.MoveWindowRight()
+		case config.LeaderMoveWindowHome:
+			tv.MoveWindowHome()
+		case config.LeaderMoveWindowEnd:
+			tv.MoveWindowEnd()
+		case config.LeaderSwitch:
+			tv.SwitchCommand(subaction)
 		case config.LeaderListPlacement:
 			switch subaction {
 			case "top":

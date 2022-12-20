@@ -23,6 +23,7 @@ type Toot struct {
 	Account            string
 	Spoiler            bool
 	CWText             string
+	SpoilerText        string
 	ShowSpoiler        bool
 	CWlabel            string
 	ContentText        string
@@ -163,6 +164,7 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 	}
 
 	toot.CWText = strippedSpoiler
+	toot.SpoilerText = toot.CWText
 
 	media := []Media{}
 	for _, att := range status.MediaAttachments {

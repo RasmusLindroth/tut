@@ -21,6 +21,38 @@ type Timeline struct {
 	scrollSleep    *scrollSleep
 }
 
+func CreateFeed(tv *TutView, ft config.FeedType, data string, showBoosts, showReplies bool) *Feed {
+	var nf *Feed
+	switch ft {
+	case config.TimelineHome:
+		nf = NewHomeFeed(tv, showBoosts, showReplies)
+	case config.TimelineHomeSpecial:
+		nf = NewHomeSpecialFeed(tv, showBoosts, showReplies)
+	case config.Conversations:
+		nf = NewConversationsFeed(tv)
+	case config.TimelineLocal:
+		nf = NewLocalFeed(tv, showBoosts, showReplies)
+	case config.TimelineFederated:
+		nf = NewFederatedFeed(tv, showBoosts, showReplies)
+	case config.Saved:
+		nf = NewBookmarksFeed(tv)
+	case config.Favorited:
+		nf = NewFavoritedFeed(tv)
+	case config.Notifications:
+		nf = NewNotificationFeed(tv, showBoosts, showReplies)
+	case config.Mentions:
+		nf = NewNotificatioMentionsFeed(tv, showBoosts, showReplies)
+	case config.Lists:
+		nf = NewListsFeed(tv)
+	case config.Tag:
+		nf = NewTagFeed(tv, data, showBoosts, showReplies)
+	default:
+		fmt.Println("Invalid feed")
+		tv.CleanExit(1)
+	}
+	return nf
+}
+
 func NewTimeline(tv *TutView, update chan bool) *Timeline {
 	tl := &Timeline{
 		tutView: tv,
@@ -28,33 +60,8 @@ func NewTimeline(tv *TutView, update chan bool) *Timeline {
 		update:  update,
 	}
 	tl.scrollSleep = NewScrollSleep(tl.NextItemFeed, tl.PrevItemFeed)
-	var nf *Feed
 	for _, f := range tv.tut.Config.General.Timelines {
-		switch f.FeedType {
-		case config.TimelineHome:
-			nf = NewHomeFeed(tv, f.ShowBoosts, f.ShowReplies)
-		case config.TimelineHomeSpecial:
-			nf = NewHomeSpecialFeed(tv, f.ShowBoosts, f.ShowReplies)
-		case config.Conversations:
-			nf = NewConversationsFeed(tv)
-		case config.TimelineLocal:
-			nf = NewLocalFeed(tv, f.ShowBoosts, f.ShowReplies)
-		case config.TimelineFederated:
-			nf = NewFederatedFeed(tv, f.ShowBoosts, f.ShowReplies)
-		case config.Saved:
-			nf = NewBookmarksFeed(tv)
-		case config.Favorited:
-			nf = NewFavoritedFeed(tv)
-		case config.Notifications:
-			nf = NewNotificationFeed(tv, f.ShowBoosts, f.ShowReplies)
-		case config.Lists:
-			nf = NewListsFeed(tv)
-		case config.Tag:
-			nf = NewTagFeed(tv, f.Subaction, f.ShowBoosts, f.ShowReplies)
-		default:
-			fmt.Println("Invalid feed")
-			tl.tutView.CleanExit(1)
-		}
+		nf := CreateFeed(tv, f.FeedType, f.Subaction, f.ShowBoosts, f.ShowReplies)
 		tl.Feeds = append(tl.Feeds, &FeedHolder{
 			Feeds: []*Feed{nf},
 			Name:  f.Name,
@@ -99,6 +106,68 @@ func (tl *Timeline) RemoveCurrent(quit bool) bool {
 	return false
 }
 
+func (tl *Timeline) MoveCurrentWindowLeft() {
+	length := len(tl.Feeds)
+	if length < 2 {
+		return
+	}
+	ni := tl.FeedFocusIndex - 1
+	if ni < 0 {
+		return
+	}
+	tl.Feeds[tl.FeedFocusIndex], tl.Feeds[ni] = tl.Feeds[ni], tl.Feeds[tl.FeedFocusIndex]
+	tl.tutView.FocusFeed(ni)
+}
+
+func (tl *Timeline) MoveCurrentWindowRight() {
+	length := len(tl.Feeds)
+	if length < 2 {
+		return
+	}
+	ni := tl.FeedFocusIndex + 1
+	if ni > length-1 {
+		return
+	}
+	tl.Feeds[tl.FeedFocusIndex], tl.Feeds[ni] = tl.Feeds[ni], tl.Feeds[tl.FeedFocusIndex]
+	tl.tutView.FocusFeed(ni)
+}
+
+func (tl *Timeline) MoveCurrentWindowHome() {
+	length := len(tl.Feeds)
+	if length < 2 {
+		return
+	}
+	ni := 0
+	tl.Feeds[tl.FeedFocusIndex], tl.Feeds[ni] = tl.Feeds[ni], tl.Feeds[tl.FeedFocusIndex]
+	tl.tutView.FocusFeed(ni)
+}
+
+func (tl *Timeline) MoveCurrentWindowEnd() {
+	length := len(tl.Feeds)
+	if length < 2 {
+		return
+	}
+	ni := len(tl.Feeds) - 1
+	tl.Feeds[tl.FeedFocusIndex], tl.Feeds[ni] = tl.Feeds[ni], tl.Feeds[tl.FeedFocusIndex]
+	tl.tutView.FocusFeed(ni)
+}
+
+func (tl *Timeline) CloseCurrentWindow() {
+	if len(tl.Feeds) == 0 {
+		return
+	}
+	feeds := tl.Feeds[tl.FeedFocusIndex]
+	for _, f := range feeds.Feeds {
+		f.Data.Close()
+	}
+	tl.Feeds = append(tl.Feeds[:tl.FeedFocusIndex], tl.Feeds[tl.FeedFocusIndex+1:]...)
+	ni := tl.FeedFocusIndex - 1
+	if ni < 0 {
+		ni = 0
+	}
+	tl.tutView.FocusFeed(ni)
+}
+
 func (tl *Timeline) NextFeed() {
 	f := tl.Feeds[tl.FeedFocusIndex]
 	l := len(f.Feeds)
@@ -120,6 +189,24 @@ func (tl *Timeline) PrevFeed() {
 	f.FeedIndex = ni
 	tl.tutView.Shared.Top.SetText(tl.GetTitle())
 	tl.update <- true
+}
+
+func (tl *Timeline) FindAndGoTo(ft config.FeedType, data string, showBoosts, showReplies bool) bool {
+	for i, fh := range tl.Feeds {
+		for j, f := range fh.Feeds {
+			if f.Data.Type() == ft && f.ShowBoosts == showBoosts && f.ShowReplies == showReplies {
+				if ft == config.Tag && f.Data.Name() != data {
+					continue
+				}
+				tl.tutView.FocusFeed(i)
+				fh.FeedIndex = j
+				tl.tutView.Shared.Top.SetText(tl.GetTitle())
+				tl.update <- true
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (tl *Timeline) DrawContent() {
@@ -150,6 +237,8 @@ func (tl *Timeline) GetTitle() string {
 		ct = "favorited"
 	case config.Notifications:
 		ct = "notifications"
+	case config.Mentions:
+		ct = "mentions"
 	case config.Tag:
 		parts := strings.Split(name, " ")
 		for i, p := range parts {
