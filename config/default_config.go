@@ -219,7 +219,7 @@ leader-timeout=1000
 # showBoosts can be either true or false and they are both optional. Here are
 # some examples:
 # 
-# leader-action=switch home,false,true,h
+# leader-action=switch home,h,false,true
 # leader-action=switch tag tut,tt
 # 
 
