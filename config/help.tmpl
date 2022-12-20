@@ -48,6 +48,9 @@ Here's a list of supported commands.
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:clear-notifications{{ Flags "-" }}{{ Color .Style.Text }}
 	Clear all notifications
 
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:close-window{{ Flags "-" }}{{ Color .Style.Text }}
+    Closes the current window
+
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:compose{{ Flags "-" }}{{ Color .Style.Text }}
 	Compose a new toot
 
@@ -84,6 +87,12 @@ Here's a list of supported commands.
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:list-split{{ Flags "-" }}{{ Color .Style.Text }} row|column
 	Split lists as rows or columns
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:move-window{{ Flags "-" }}{{ Color .Style.Text }} left|right|up|down|home|end
+	Moves window in selected direction
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:mv{{ Flags "-" }}{{ Color .Style.Text }} l|r|u|d|h|e
+	Shorter form of the former command *:move-window*
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:muting{{ Flags "-" }}{{ Color .Style.Text }}
 	Lists users that you have muted
