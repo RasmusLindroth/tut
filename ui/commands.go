@@ -194,7 +194,7 @@ func (tv *TutView) SwitchCommand(s string) {
 			showReplies = parts[len(parts)-1] == "true"
 		} else if len(parts) > 1 && slices.Contains(tfStr, parts[len(parts)-1]) {
 			showBoosts = parts[len(parts)-1] == "true"
-		} else {
+		} else if name == "" {
 			fmt.Printf("switch is invalid . Check this for errors: switch %s\n", s)
 			os.Exit(1)
 		}
