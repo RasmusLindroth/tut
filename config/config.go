@@ -155,7 +155,6 @@ type General struct {
 	DateFormat          string
 	DateRelative        int
 	MaxWidth            int
-	NotificationFeed    bool
 	QuoteReply          bool
 	CharLimit           int
 	ShortHints          bool
@@ -845,7 +844,6 @@ func parseGeneral(cfg *ini.File) General {
 	}
 	general.DateRelative = dateRelative
 
-	general.NotificationFeed = cfg.Section("general").Key("notification-feed").MustBool(true)
 	general.QuoteReply = cfg.Section("general").Key("quote-reply").MustBool(false)
 	general.CharLimit = cfg.Section("general").Key("char-limit").MustInt(500)
 	general.MaxWidth = cfg.Section("general").Key("max-width").MustInt(0)

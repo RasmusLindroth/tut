@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/BurntSushi/toml"
 	"github.com/RasmusLindroth/tut/util"
-	"github.com/pelletier/go-toml/v2"
 )
 
 func GetSecret(s string) string {
@@ -44,16 +44,13 @@ func GetAccounts(filepath string) (*AccountData, error) {
 }
 
 func (ad *AccountData) Save(filepath string) error {
-	marshaled, err := toml.Marshal(ad)
-	if err != nil {
-		return err
-	}
 	f, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-
-	_, err = f.Write(marshaled)
-	return err
+	if err = toml.NewEncoder(f).Encode(ad); err != nil {
+		return err
+	}
+	return nil
 }

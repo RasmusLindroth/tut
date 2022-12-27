@@ -245,15 +245,11 @@ func (tv *TutView) InputMainViewFeed(event *tcell.EventKey) *tcell.EventKey {
 		return nil
 	}
 	if tv.tut.Config.Input.MainPrevWindow.Match(event.Key(), event.Rune()) {
-		if tv.tut.Config.General.NotificationFeed {
-			tv.PrevFeed()
-		}
+		tv.PrevFeed()
 		return nil
 	}
 	if tv.tut.Config.Input.MainNextWindow.Match(event.Key(), event.Rune()) {
-		if tv.tut.Config.General.NotificationFeed {
-			tv.NextFeed()
-		}
+		tv.NextFeed()
 		return nil
 	}
 	if tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
