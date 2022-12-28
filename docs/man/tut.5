@@ -92,23 +92,23 @@ replies.
 .PD 0
 .P
 .PD
-timelines=local,Local,`2',false,true
+timelines=local,Local,\[aq]2\[aq],false,true
 .PP
 notification timeline with the name [N]otifications and it gets focus
 when you press n or N
 .PD 0
 .P
 .PD
-timelines=notifications,[N]otifications,`n',`N'
+timelines=notifications,[N]otifications,\[aq]n\[aq],\[aq]N\[aq]
 .PP
 tag timeline for #linux with the name Linux and it gets focus when you
 press
 .PD 0
 .P
 .PD
-timelines=tag linux,Linux,\[lq]F2\[rq]
+timelines=tag linux,Linux,\[dq]F2\[dq]
 .PP
-If you don\[cq]t set any timelines it will default to this:
+If you don\[aq]t set any timelines it will default to this:
 .PD 0
 .P
 .PD
@@ -116,7 +116,7 @@ timelines=home
 .PD 0
 .P
 .PD
-timelines=notifications,[N]otifications,`n',`N'
+timelines=notifications,[N]otifications,\[aq]n\[aq],\[aq]N\[aq]
 .SS date-format
 .PP
 The date format to be used.
@@ -142,7 +142,7 @@ The value is an integear
 .PD 0
 .P
 .PD
--1 = don\[cq]t use relative dates
+-1 = don\[aq]t use relative dates
 .PD 0
 .P
 .PD
@@ -229,7 +229,7 @@ If you always want to quote original message when replying.
 \f[B]quote-reply\f[R]=\f[I]false\f[R]
 .SS char-limit
 .PP
-If you\[cq]re on an instance with a custom character limit you can set
+If you\[aq]re on an instance with a custom character limit you can set
 it here.
 .PD 0
 .P
@@ -244,7 +244,7 @@ If you want to show icons in the list of toots.
 \f[B]show-icons\f[R]=\f[I]true\f[R]
 .SS short-hints
 .PP
-If you\[cq]ve learnt all the shortcut keys you can remove the help text
+If you\[aq]ve learnt all the shortcut keys you can remove the help text
 and only show the key in tui.
 So it gets less cluttered.
 .PD 0
@@ -299,7 +299,7 @@ of the person that boosted.
 \f[B]terminal-title\f[R]=\f[I]0\f[R]
 .SS redraw-ui
 .PP
-If you don\[cq]t want the whole UI to update, and only the text content
+If you don\[aq]t want the whole UI to update, and only the text content
 you can set this option to true.
 This will lead to some artifacts being left on the screen when emojis
 are present.
@@ -332,7 +332,7 @@ the input after X milliseconds.
 .PP
 You set actions for the leader-key with one or more leader-action.
 It consists of two parts first the action then the shortcut.
-And they\[cq]re separated by a comma.
+And they\[aq]re separated by a comma.
 .PP
 Available commands: blocking, bookmarks, boosts, clear-notifications,
 close-window, compose, direct, edit, favorited, favorites, federated,
@@ -348,10 +348,10 @@ replies.
 All contains both, -boosts only boosts and -replies only replies.
 .PP
 The shortcuts are up to you, but keep them quite short and make sure
-they don\[cq]t collide.
-If you have one shortcut that is \[lq]f\[rq] and an other one that is
-\[lq]fav\[rq], the one with \[lq]f\[rq] will always run and
-\[lq]fav\[rq] will never run.
+they don\[aq]t collide.
+If you have one shortcut that is \[dq]f\[dq] and an other one that is
+\[dq]fav\[dq], the one with \[dq]f\[dq] will always run and
+\[dq]fav\[dq] will never run.
 .PP
 Some special leaders:
 .PD 0
@@ -361,8 +361,8 @@ tag is special as you need to add the tag after, e.g.\ tag linux
 .PD 0
 .P
 .PD
-window is special as it\[cq]s a shortcut for switching between the
-timelines you\[cq]ve set under general and they are zero indexed.
+window is special as it\[aq]s a shortcut for switching between the
+timelines you\[aq]ve set under general and they are zero indexed.
 window 0 = your first timeline, window 1 = your second and so on.
 .PD 0
 .P
@@ -381,8 +381,8 @@ See list-proportion above for more information.
 .PD 0
 .P
 .PD
-switch let\[cq]s you go to a timeline if it already exists, if it
-doesn\[cq]t it will open the timeline in a new window.
+switch let\[aq]s you go to a timeline if it already exists, if it
+doesn\[aq]t it will open the timeline in a new window.
 The syntax is almost the same as in timelines= and is displayed under
 the examples.
 .PP
@@ -464,10 +464,10 @@ Only for terminal based viewers.
 \f[B]image-terminal\f[R]=\f[I]false\f[R]
 .SS image-single
 .PP
-If images should open one by one e.g.\ \[lq]imv image.png\[rq] multiple
+If images should open one by one e.g.\ \[dq]imv image.png\[dq] multiple
 times.
-If set to false all images will open at the same time like this \[lq]imv
-image1.png image2.png image3.png\[rq].
+If set to false all images will open at the same time like this \[dq]imv
+image1.png image2.png image3.png\[dq].
 Not all image viewers support this, so try it first.
 .PD 0
 .P
@@ -477,7 +477,7 @@ Not all image viewers support this, so try it first.
 .PP
 If you want to open the images in reverse order.
 In some image viewers this will display the images in the
-\[lq]right\[rq] order.
+\[dq]right\[dq] order.
 .PD 0
 .P
 .PD
@@ -508,7 +508,7 @@ See image-single.
 .SS video-reverse
 .PP
 If you want your videos in reverse order.
-In some video apps this will play the files in the \[lq]right\[rq]
+In some video apps this will play the files in the \[dq]right\[dq]
 order.
 .PD 0
 .P
@@ -540,7 +540,7 @@ See image-single.
 .SS audio-reverse
 .PP
 If you want to play the audio files in reverse order.
-In some audio apps this will play the files in the \[lq]right\[rq]
+In some audio apps this will play the files in the \[dq]right\[dq]
 order.
 .PD 0
 .P
@@ -719,16 +719,16 @@ This section is [style] in your configuration file
 .PP
 All styles can be represented in their HEX value like #ffffff or with
 their name, so in this case white.
-The only special value is \[lq]default\[rq] which equals to transparent,
+The only special value is \[dq]default\[dq] which equals to transparent,
 so it will be the same color as your terminal.
 .PP
 You can also use xrdb colors like this xrdb:color1 The program will use
 colors prefixed with an * first then look for URxvt or XTerm if it
-can\[cq]t find any color prefixed with an asterisk.
-If you don\[cq]t want tut to guess the prefix you can set the prefix
+can\[aq]t find any color prefixed with an asterisk.
+If you don\[aq]t want tut to guess the prefix you can set the prefix
 yourself.
-If the xrdb color can\[cq]t be found a preset color will be used.
-You\[cq]ll have to set theme=none for this to work.
+If the xrdb color can\[aq]t be found a preset color will be used.
+You\[aq]ll have to set theme=none for this to work.
 .SS xrdb-prefix
 .PP
 The xrdb prefix used for colors in .Xresources.
@@ -740,14 +740,14 @@ The xrdb prefix used for colors in .Xresources.
 .PP
 You can use some themes that comes bundled with tut.
 Check out the themes available on the URL below.
-If a theme is named \[lq]nord.ini\[rq] you just write theme=nord
+If a theme is named \[dq]nord.ini\[dq] you just write theme=nord
 .PP
 https://github.com/RasmusLindroth/tut/tree/master/config/themes
 .PP
 You can also create a theme file in your config directory
 e.g.\ \[ti]/.config/tut/themes/foo.ini and then set theme=foo.
 .PP
-If you want to use your own theme but don\[cq]t want to create a new
+If you want to use your own theme but don\[aq]t want to create a new
 file, set theme=none and then you can create your own theme below.
 .PD 0
 .P
@@ -952,17 +952,17 @@ This section is [input] in your configuration file
 You can edit the keys for tut below.
 .PP
 The syntax is a bit weird, but it works.
-And I\[cq]ll try to explain it as well as I can.
+And I\[aq]ll try to explain it as well as I can.
 .PP
 Example:
 .PD 0
 .P
 .PD
-status-favorite=\[lq][F]avorite\[rq],\[lq]Un[F]avorite\[rq],`f',`F'
+status-favorite=\[dq][F]avorite\[dq],\[dq]Un[F]avorite\[dq],\[aq]f\[aq],\[aq]F\[aq]
 .PD 0
 .P
 .PD
-status-delete=\[lq][D]elete\[rq],`d',`D'
+status-delete=\[dq][D]elete\[dq],\[aq]d\[aq],\[aq]D\[aq]
 .PP
 status-favorite and status-delete differs because favorite can be in two
 states, so you will have to add two key hints.
@@ -977,33 +977,33 @@ Remember the quotation marks.
 .PD 0
 .P
 .PD
-\[lq]\[rq] = empty
+\[dq]\[dq] = empty
 .PD 0
 .P
 .PD
-\[lq][D]elete\[rq] = Delete with a highlighted D
+\[dq][D]elete\[dq] = Delete with a highlighted D
 .PD 0
 .P
 .PD
-\[lq]Un[F]ollow\[rq] = UnFollow with a highlighted F
+\[dq]Un[F]ollow\[dq] = UnFollow with a highlighted F
 .PD 0
 .P
 .PD
-\[lq][Enter]\[rq] = Enter where everything is highlighted
+\[dq][Enter]\[dq] = Enter where everything is highlighted
 .PD 0
 .P
 .PD
-\[lq]Yan[K]\[rq] = YanK with a highlighted K
+\[dq]Yan[K]\[dq] = YanK with a highlighted K
 .PP
 After the hint (or hints) you must set the keys.
 You can do this in two ways, with single quotation marks or double ones.
 .PP
-The single ones are for single chars like `a', `b', `c' and double marks
-are for special keys like \[lq]Enter\[rq].
+The single ones are for single chars like \[aq]a\[aq], \[aq]b\[aq],
+\[aq]c\[aq] and double marks are for special keys like \[dq]Enter\[dq].
 Remember that they are case sensitive.
 .PP
 To find the names of special keys you have to go to the following site
-and look for \[lq]var KeyNames = map[Key]string{\[rq]
+and look for \[dq]var KeyNames = map[Key]string{\[dq]
 .PP
 https://github.com/gdamore/tcell/blob/master/key.go
 .SS global-down
@@ -1012,518 +1012,521 @@ Keys for moving down
 .PD 0
 .P
 .PD
-\f[B]global-down\f[R]=\f[I]\[lq]\[lq],`j',`J',\[rq]Down\[rq]\f[R]
+\f[B]global-down\f[R]=\f[I]\[dq]\[dq],\[aq]j\[aq],\[aq]J\[aq],\[dq]Down\[dq]\f[R]
 .SS global-up
 .PP
 Keys for moving up
 .PD 0
 .P
 .PD
-\f[B]global-up\f[R]=\f[I]\[lq]\[lq],`k',`K',\[rq]Up\[rq]\f[R]
+\f[B]global-up\f[R]=\f[I]\[dq]\[dq],\[aq]k\[aq],\[aq]K\[aq],\[dq]Up\[dq]\f[R]
 .SS global-enter
 .PP
 To select items
 .PD 0
 .P
 .PD
-\f[B]global-enter\f[R]=\f[I]\[lq]\[lq],\[rq]Enter\[rq]\f[R]
+\f[B]global-enter\f[R]=\f[I]\[dq]\[dq],\[dq]Enter\[dq]\f[R]
 .SS global-back
 .PP
 To go back
 .PD 0
 .P
 .PD
-\f[B]global-back\f[R]=\f[I]\[lq][Esc]\[rq],\[lq]Esc\[rq]\f[R]
+\f[B]global-back\f[R]=\f[I]\[dq][Esc]\[dq],\[dq]Esc\[dq]\f[R]
 .SS global-exit
 .PP
 To go back and exit Tut
 .PD 0
 .P
 .PD
-\f[B]global-exit\f[R]=\f[I]\[lq][Q]uit\[rq],`q',`Q'\f[R]
+\f[B]global-exit\f[R]=\f[I]\[dq][Q]uit\[dq],\[aq]q\[aq],\[aq]Q\[aq]\f[R]
 .SS main-home
 .PP
 Move to the top
 .PD 0
 .P
 .PD
-\f[B]main-home\f[R]=\f[I]\[lq]\[lq],`g',\[rq]Home\[rq]\f[R]
+\f[B]main-home\f[R]=\f[I]\[dq]\[dq],\[aq]g\[aq],\[dq]Home\[dq]\f[R]
 .SS main-end
 .PP
 Move to the bottom
 .PD 0
 .P
 .PD
-\f[B]main-end\f[R]=\f[I]\[lq]\[lq],`G',\[rq]End\[rq]\f[R]
+\f[B]main-end\f[R]=\f[I]\[dq]\[dq],\[aq]G\[aq],\[dq]End\[dq]\f[R]
 .SS main-prev-feed
 .PP
 Go to previous feed
 .PD 0
 .P
 .PD
-\f[B]main-prev-feed\f[R]=\f[I]\[lq]\[lq],`h',`H',\[rq]Left\[rq]\f[R]
+\f[B]main-prev-feed\f[R]=\f[I]\[dq]\[dq],\[aq]h\[aq],\[aq]H\[aq],\[dq]Left\[dq]\f[R]
 .SS main-next-feed
 .PP
 Go to next feed
 .PD 0
 .P
 .PD
-\f[B]main-next-feed\f[R]=\f[I]\[lq]\[lq],`l',`L',\[rq]Right\[rq]\f[R]
+\f[B]main-next-feed\f[R]=\f[I]\[dq]\[dq],\[aq]l\[aq],\[aq]L\[aq],\[dq]Right\[dq]\f[R]
 .SS main-prev-window
 .PP
 Focus on the previous feed window
 .PD 0
 .P
 .PD
-\f[B]main-prev-window\f[R]=\f[I]\[lq]\[lq],\[rq]Backtab\[rq]\f[R]
+\f[B]main-prev-window\f[R]=\f[I]\[dq]\[dq],\[dq]Backtab\[dq]\f[R]
 .SS main-next-window
 .PP
 Focus on the next feed window
 .PD 0
 .P
 .PD
-\f[B]main-next-window\f[R]=\f[I]\[lq]\[lq],\[rq]Tab\[rq]\f[R]
+\f[B]main-next-window\f[R]=\f[I]\[dq]\[dq],\[dq]Tab\[dq]\f[R]
 .SS main-notification-focus
 .PP
 Focus on the notification list
 .PD 0
 .P
 .PD
-\f[B]main-notification-focus\f[R]=\f[I]\[lq][N]otifications\[rq],`n',`N'\f[R]
+\f[B]main-notification-focus\f[R]=\f[I]\[dq][N]otifications\[dq],\[aq]n\[aq],\[aq]N\[aq]\f[R]
 .SS main-compose
 .PP
 Compose a new toot
 .PD 0
 .P
 .PD
-\f[B]main-compose\f[R]=\f[I]\[lq]\[lq],`c',`C'\f[R]
+\f[B]main-compose\f[R]=\f[I]\[dq]\[dq],\[aq]c\[aq],\[aq]C\[aq]\f[R]
 .SS status-avatar
 .PP
 Open avatar
 .PD 0
 .P
 .PD
-\f[B]status-avatar\f[R]=\f[I]\[lq][A]vatar\[rq],`a',`A'\f[R]
+\f[B]status-avatar\f[R]=\f[I]\[dq][A]vatar\[dq],\[aq]a\[aq],\[aq]A\[aq]\f[R]
 .SS status-boost
 .PP
 Boost a toot
 .PD 0
 .P
 .PD
-\f[B]status-boost\f[R]=\f[I]\[lq][B]oost\[rq],\[lq]Un[B]oost\[rq],`b',`B'\f[R]
+\f[B]status-boost\f[R]=\f[I]\[dq][B]oost\[dq],\[dq]Un[B]oost\[dq],\[aq]b\[aq],\[aq]B\[aq]\f[R]
 .SS status-edit
 .PP
 Edit a toot
 .PD 0
 .P
 .PD
-\f[B]status-edit\f[R]=\f[I]\[lq][E]dit\[rq],`e',`E'\f[R]
+\f[B]status-edit\f[R]=\f[I]\[dq][E]dit\[dq],\[aq]e\[aq],\[aq]E\[aq]\f[R]
 .SS status-delete
 .PP
 Delete a toot
 .PD 0
 .P
 .PD
-\f[B]status-delete\f[R]=\f[I]\[lq][D]elete\[rq],`d',`D'\f[R]
+\f[B]status-delete\f[R]=\f[I]\[dq][D]elete\[dq],\[aq]d\[aq],\[aq]D\[aq]\f[R]
 .SS status-favorite
 .PP
 Favorite a toot
 .PD 0
 .P
 .PD
-\f[B]status-favorite\f[R]=\f[I]\[lq][F]avorite\[rq],\[lq]Un[F]avorite\[rq],`f',`F'\f[R]
+\f[B]status-favorite\f[R]=\f[I]\[dq][F]avorite\[dq],\[dq]Un[F]avorite\[dq],\[aq]f\[aq],\[aq]F\[aq]\f[R]
 .SS status-media
 .PP
 Open toots media files
 .PD 0
 .P
 .PD
-\f[B]status-media\f[R]=\f[I]\[lq][M]edia\[rq],`m',`M'\f[R]
+\f[B]status-media\f[R]=\f[I]\[dq][M]edia\[dq],\[aq]m\[aq],\[aq]M\[aq]\f[R]
 .SS status-links
 .PP
 Open links
 .PD 0
 .P
 .PD
-\f[B]status-links\f[R]=\f[I]\[lq][O]pen\[rq],`o',`O'\f[R]
+\f[B]status-links\f[R]=\f[I]\[dq][O]pen\[dq],\[aq]o\[aq],\[aq]O\[aq]\f[R]
 .SS status-poll
 .PP
 Open poll
 .PD 0
 .P
 .PD
-\f[B]status-poll\f[R]=\f[I]\[lq][P]oll\[rq],`p',`P'\f[R]
+\f[B]status-poll\f[R]=\f[I]\[dq][P]oll\[dq],\[aq]p\[aq],\[aq]P\[aq]\f[R]
 .SS status-reply
 .PP
 Reply to toot
 .PD 0
 .P
 .PD
-\f[B]status-reply\f[R]=\f[I]\[lq][R]eply\[rq],`r',`R'\f[R]
+\f[B]status-reply\f[R]=\f[I]\[dq][R]eply\[dq],\[aq]r\[aq],\[aq]R\[aq]\f[R]
 .SS status-bookmark
 .PP
 Save/bookmark a toot
 .PD 0
 .P
 .PD
-\f[B]status-bookmark\f[R]=\f[I]\[lq][S]ave\[rq],\[lq]Un[S]ave\[rq],`s',`S'\f[R]
+\f[B]status-bookmark\f[R]=\f[I]\[dq][S]ave\[dq],\[dq]Un[S]ave\[dq],\[aq]s\[aq],\[aq]S\[aq]\f[R]
 .SS status-thread
 .PP
 View thread
 .PD 0
 .P
 .PD
-\f[B]status-thread\f[R]=\f[I]\[lq][T]hread\[rq],`t',`T'\f[R]
+\f[B]status-thread\f[R]=\f[I]\[dq][T]hread\[dq],\[aq]t\[aq],\[aq]T\[aq]\f[R]
 .SS status-user
 .PP
 Open user profile
 .PD 0
 .P
 .PD
-\f[B]status-user\f[R]=\f[I]\[lq][U]ser\[rq],`u',`U'\f[R]
+\f[B]status-user\f[R]=\f[I]\[dq][U]ser\[dq],\[aq]u\[aq],\[aq]U\[aq]\f[R]
 .SS status-view-focus
 .PP
 Open the view mode
 .PD 0
 .P
 .PD
-\f[B]status-view-focus\f[R]=\f[I]\[lq][V]iew\[rq],`v',`V'\f[R]
+\f[B]status-view-focus\f[R]=\f[I]\[dq][V]iew\[dq],\[aq]v\[aq],\[aq]V\[aq]\f[R]
 .SS status-yank
 .PP
 Yank the url of the toot
 .PD 0
 .P
 .PD
-\f[B]status-yank\f[R]=\f[I]\[lq][Y]ank\[rq],`y',`Y'\f[R]
+\f[B]status-yank\f[R]=\f[I]\[dq][Y]ank\[dq],\[aq]y\[aq],\[aq]Y\[aq]\f[R]
 .SS status-toggle-cw
 .PP
 Show the content in a content warning
 .PD 0
 .P
 .PD
-\f[B]status-toggle-cw\f[R]=\f[I]\[lq]Press [Z] to toggle
-cw\[rq],`z',`Z'\f[R]
+\f[B]status-toggle-cw\f[R]=\f[I]\[dq]Press [Z] to toggle
+cw\[dq],\[aq]z\[aq],\[aq]Z\[aq]\f[R]
 .SS status-show-filtered
 .PP
 Show the content of a filtered toot
 .PD 0
 .P
 .PD
-\f[B]status-show-filtered\f[R]=\f[I]\[lq]Press [Z] to view filtered
-toot\[rq],`z',`Z'\f[R]
+\f[B]status-show-filtered\f[R]=\f[I]\[dq]Press [Z] to view filtered
+toot\[dq],\[aq]z\[aq],\[aq]Z\[aq]\f[R]
 .SS user-avatar
 .PP
 View avatar
 .PD 0
 .P
 .PD
-\f[B]user-avatar\f[R]=\f[I]\[lq][A]vatar\[rq],`a',`A'\f[R]
+\f[B]user-avatar\f[R]=\f[I]\[dq][A]vatar\[dq],\[aq]a\[aq],\[aq]A\[aq]\f[R]
 .SS user-block
 .PP
 Block the user
 .PD 0
 .P
 .PD
-\f[B]user-block\f[R]=\f[I]\[lq][B]lock\[rq],\[lq]Un[B]lock\[rq],`b',`B'\f[R]
+\f[B]user-block\f[R]=\f[I]\[dq][B]lock\[dq],\[dq]Un[B]lock\[dq],\[aq]b\[aq],\[aq]B\[aq]\f[R]
 .SS user-follow
 .PP
 Follow user
 .PD 0
 .P
 .PD
-\f[B]user-follow\f[R]=\f[I]\[lq][F]ollow\[rq],\[lq]Un[F]ollow\[rq],`f',`F'\f[R]
+\f[B]user-follow\f[R]=\f[I]\[dq][F]ollow\[dq],\[dq]Un[F]ollow\[dq],\[aq]f\[aq],\[aq]F\[aq]\f[R]
 .SS user-follow-request-decide
 .PP
 Follow user
 .PD 0
 .P
 .PD
-\f[B]user-follow-request-decide\f[R]=\f[I]\[lq]Follow
-[R]equest\[rq],\[lq]Follow [R]equest\[rq],`r',`R'\f[R]
+\f[B]user-follow-request-decide\f[R]=\f[I]\[dq]Follow
+[R]equest\[dq],\[dq]Follow [R]equest\[dq],\[aq]r\[aq],\[aq]R\[aq]\f[R]
 .SS user-mute
 .PP
 Mute user
 .PD 0
 .P
 .PD
-\f[B]user-mute\f[R]=\f[I]\[lq][M]ute\[rq],\[lq]Un[M]ute\[rq],`m',`M'\f[R]
+\f[B]user-mute\f[R]=\f[I]\[dq][M]ute\[dq],\[dq]Un[M]ute\[dq],\[aq]m\[aq],\[aq]M\[aq]\f[R]
 .SS user-links
 .PP
 Open links
 .PD 0
 .P
 .PD
-\f[B]user-links\f[R]=\f[I]\[lq][O]pen\[rq],`o',`O'\f[R]
+\f[B]user-links\f[R]=\f[I]\[dq][O]pen\[dq],\[aq]o\[aq],\[aq]O\[aq]\f[R]
 .SS user-user
 .PP
 View user profile
 .PD 0
 .P
 .PD
-\f[B]user-user\f[R]=\f[I]\[lq][U]ser\[rq],`u',`U'\f[R]
+\f[B]user-user\f[R]=\f[I]\[dq][U]ser\[dq],\[aq]u\[aq],\[aq]U\[aq]\f[R]
 .SS user-view-focus
 .PP
 Open view mode
 .PD 0
 .P
 .PD
-\f[B]user-view-focus\f[R]=\f[I]\[lq][V]iew\[rq],`v',`V'\f[R]
+\f[B]user-view-focus\f[R]=\f[I]\[dq][V]iew\[dq],\[aq]v\[aq],\[aq]V\[aq]\f[R]
 .SS user-yank
 .PP
 Yank the user URL
 .PD 0
 .P
 .PD
-\f[B]user-yank\f[R]=\f[I]\[lq][Y]ank\[rq],`y',`Y'\f[R]
+\f[B]user-yank\f[R]=\f[I]\[dq][Y]ank\[dq],\[aq]y\[aq],\[aq]Y\[aq]\f[R]
 .SS list-open-feed
 .PP
 Open list
 .PD 0
 .P
 .PD
-\f[B]list-open-feed\f[R]=\f[I]\[lq][O]pen\[rq],`o',`O'\f[R]
+\f[B]list-open-feed\f[R]=\f[I]\[dq][O]pen\[dq],\[aq]o\[aq],\[aq]O\[aq]\f[R]
 .SS list-user-list
 .PP
 List all users in a list
 .PD 0
 .P
 .PD
-\f[B]list-user-list\f[R]=\f[I]\[lq][U]sers\[rq],`u',`U'\f[R]
+\f[B]list-user-list\f[R]=\f[I]\[dq][U]sers\[dq],\[aq]u\[aq],\[aq]U\[aq]\f[R]
 .SS list-user-add
 .PP
 Add user to list
 .PD 0
 .P
 .PD
-\f[B]list-user-add\f[R]=\f[I]\[lq][A]dd\[rq],`a',`A'\f[R]
+\f[B]list-user-add\f[R]=\f[I]\[dq][A]dd\[dq],\[aq]a\[aq],\[aq]A\[aq]\f[R]
 .SS list-user-delete
 .PP
 Delete user from list
 .PD 0
 .P
 .PD
-\f[B]list-user-delete\f[R]=\f[I]\[lq][D]elete\[rq],`d',`D'\f[R]
+\f[B]list-user-delete\f[R]=\f[I]\[dq][D]elete\[dq],\[aq]d\[aq],\[aq]D\[aq]\f[R]
 .SS link-open
 .PP
 Open URL
 .PD 0
 .P
 .PD
-\f[B]link-open\f[R]=\f[I]\[lq][O]pen\[rq],`o',`O'\f[R]
+\f[B]link-open\f[R]=\f[I]\[dq][O]pen\[dq],\[aq]o\[aq],\[aq]O\[aq]\f[R]
 .SS link-yank
 .PP
 Yank the URL
 .PD 0
 .P
 .PD
-\f[B]link-yank\f[R]=\f[I]\[lq][Y]ank\[rq],`y',`Y'\f[R]
+\f[B]link-yank\f[R]=\f[I]\[dq][Y]ank\[dq],\[aq]y\[aq],\[aq]Y\[aq]\f[R]
 .SS tag-open-feed
 .PP
 Open tag feed
 .PD 0
 .P
 .PD
-\f[B]tag-open-feed\f[R]=\f[I]\[lq][O]pen\[rq],`o',`O'\f[R]
+\f[B]tag-open-feed\f[R]=\f[I]\[dq][O]pen\[dq],\[aq]o\[aq],\[aq]O\[aq]\f[R]
 .SS tag-follow
 .PP
 Toggle follow on tag
 .PD 0
 .P
 .PD
-\f[B]tag-follow\f[R]=\f[I]\[lq][F]ollow\[rq],\[lq]Un[F]ollow\[rq],`f',`F'\f[R]
+\f[B]tag-follow\f[R]=\f[I]\[dq][F]ollow\[dq],\[dq]Un[F]ollow\[dq],\[aq]f\[aq],\[aq]F\[aq]\f[R]
 .SS compose-edit-cw
 .PP
 Edit content warning text on new toot
 .PD 0
 .P
 .PD
-\f[B]compose-edit-cw\f[R]=\f[I]\[lq][C]W text\[rq],`c',`C'\f[R]
+\f[B]compose-edit-cw\f[R]=\f[I]\[dq][C]W
+text\[dq],\[aq]c\[aq],\[aq]C\[aq]\f[R]
 .SS compose-edit-text
 .PP
 Edit the text on new toot
 .PD 0
 .P
 .PD
-\f[B]compose-edit-text\f[R]=\f[I]\[lq][E]dit text\[rq],`e',`E'\f[R]
+\f[B]compose-edit-text\f[R]=\f[I]\[dq][E]dit
+text\[dq],\[aq]e\[aq],\[aq]E\[aq]\f[R]
 .SS compose-include-quote
 .PP
 Include a quote when replying
 .PD 0
 .P
 .PD
-\f[B]compose-include-quote\f[R]=\f[I]\[lq][I]nclude
-quote\[rq],`i',`I'\f[R]
+\f[B]compose-include-quote\f[R]=\f[I]\[dq][I]nclude
+quote\[dq],\[aq]i\[aq],\[aq]I\[aq]\f[R]
 .SS compose-media-focus
 .PP
 Focus on adding media to toot
 .PD 0
 .P
 .PD
-\f[B]compose-media-focus\f[R]=\f[I]\[lq][M]edia\[rq],`m',`M'\f[R]
+\f[B]compose-media-focus\f[R]=\f[I]\[dq][M]edia\[dq],\[aq]m\[aq],\[aq]M\[aq]\f[R]
 .SS compose-post
 .PP
 Post the new toot
 .PD 0
 .P
 .PD
-\f[B]compose-post\f[R]=\f[I]\[lq][P]ost\[rq],`p',`P'\f[R]
+\f[B]compose-post\f[R]=\f[I]\[dq][P]ost\[dq],\[aq]p\[aq],\[aq]P\[aq]\f[R]
 .SS compose-toggle-content-warning
 .PP
 Toggle content warning on toot
 .PD 0
 .P
 .PD
-\f[B]compose-toggle-content-warning\f[R]=\f[I]\[lq][T]oggle
-CW\[rq],`t',`T'\f[R]
+\f[B]compose-toggle-content-warning\f[R]=\f[I]\[dq][T]oggle
+CW\[dq],\[aq]t\[aq],\[aq]T\[aq]\f[R]
 .SS compose-visibility
 .PP
 Edit the visibility on new toot
 .PD 0
 .P
 .PD
-\f[B]compose-visibility\f[R]=\f[I]\[lq][V]isibility\[rq],`v',`V'\f[R]
+\f[B]compose-visibility\f[R]=\f[I]\[dq][V]isibility\[dq],\[aq]v\[aq],\[aq]V\[aq]\f[R]
 .SS compose-language
 .PP
 Edit the language of a toot
 .PD 0
 .P
 .PD
-\f[B]compose-language\f[R]=\f[I]\[lq][L]ang\[rq],`l',`L'\f[R]
+\f[B]compose-language\f[R]=\f[I]\[dq][L]ang\[dq],\[aq]l\[aq],\[aq]L\[aq]\f[R]
 .SS compose-poll
 .PP
 Switch to creating a poll
 .PD 0
 .P
 .PD
-\f[B]compose-poll\f[R]=\f[I]\[lq]P[O]ll\[rq],`o',`O'\f[R]
+\f[B]compose-poll\f[R]=\f[I]\[dq]P[O]ll\[dq],\[aq]o\[aq],\[aq]O\[aq]\f[R]
 .SS media-delete
 .PP
 Delete media file
 .PD 0
 .P
 .PD
-\f[B]media-delete\f[R]=\f[I]\[lq][D]elete\[rq],`d',`D'\f[R]
+\f[B]media-delete\f[R]=\f[I]\[dq][D]elete\[dq],\[aq]d\[aq],\[aq]D\[aq]\f[R]
 .SS media-edit-desc
 .PP
 Edit the description on media file
 .PD 0
 .P
 .PD
-\f[B]media-edit-desc\f[R]=\f[I]\[lq][E]dit desc\[rq],`e',`E'\f[R]
+\f[B]media-edit-desc\f[R]=\f[I]\[dq][E]dit
+desc\[dq],\[aq]e\[aq],\[aq]E\[aq]\f[R]
 .SS media-add
 .PP
 Add a new media file
 .PD 0
 .P
 .PD
-\f[B]media-add\f[R]=\f[I]\[lq][A]dd\[rq],`a',`A'\f[R]
+\f[B]media-add\f[R]=\f[I]\[dq][A]dd\[dq],\[aq]a\[aq],\[aq]A\[aq]\f[R]
 .SS vote-vote
 .PP
 Vote on poll
 .PD 0
 .P
 .PD
-\f[B]vote-vote\f[R]=\f[I]\[lq][V]ote\[rq],`v',`V'\f[R]
+\f[B]vote-vote\f[R]=\f[I]\[dq][V]ote\[dq],\[aq]v\[aq],\[aq]V\[aq]\f[R]
 .SS vote-select
 .PP
 Select item to vote on
 .PD 0
 .P
 .PD
-\f[B]vote-select\f[R]=\f[I]\[lq][Enter] to select\[rq],\[cq] \[cq],
-\[lq]Enter\[rq]\f[R]
+\f[B]vote-select\f[R]=\f[I]\[dq][Enter] to select\[dq],\[aq] \[aq],
+\[dq]Enter\[dq]\f[R]
 .SS poll-add
 .PP
 Add a new poll option
 .PD 0
 .P
 .PD
-\f[B]poll-add\f[R]=\f[I]\[lq][A]dd\[rq],`a',`A'\f[R]
+\f[B]poll-add\f[R]=\f[I]\[dq][A]dd\[dq],\[aq]a\[aq],\[aq]A\[aq]\f[R]
 .SS poll-edit
 .PP
 Edit a poll option
 .PD 0
 .P
 .PD
-\f[B]poll-edit\f[R]=\f[I]\[lq][E]dit\[rq],`e',`E'\f[R]
+\f[B]poll-edit\f[R]=\f[I]\[dq][E]dit\[dq],\[aq]e\[aq],\[aq]E\[aq]\f[R]
 .SS poll-delete
 .PP
 Delete a poll option
 .PD 0
 .P
 .PD
-\f[B]poll-delete\f[R]=\f[I]\[lq][D]elete\[rq],`d',`D'\f[R]
+\f[B]poll-delete\f[R]=\f[I]\[dq][D]elete\[dq],\[aq]d\[aq],\[aq]D\[aq]\f[R]
 .SS poll-multi-toggle
 .PP
 Toggle voting on multiple options
 .PD 0
 .P
 .PD
-\f[B]poll-multi-toggle\f[R]=\f[I]\[lq]Toggle
-[M]ultiple\[rq],`m',`M'\f[R]
+\f[B]poll-multi-toggle\f[R]=\f[I]\[dq]Toggle
+[M]ultiple\[dq],\[aq]m\[aq],\[aq]M\[aq]\f[R]
 .SS poll-expiration
 .PP
 Change the expiration of poll
 .PD 0
 .P
 .PD
-\f[B]poll-expiration\f[R]=\f[I]\[lq]E[X]pires\[rq],`x',`X'\f[R]
+\f[B]poll-expiration\f[R]=\f[I]\[dq]E[X]pires\[dq],\[aq]x\[aq],\[aq]X\[aq]\f[R]
 .SS preference-name
 .PP
 Change display name
 .PD 0
 .P
 .PD
-\f[B]preference-name\f[R]=\f[I]\[lq][N]ame\[rq],`n',`N'\f[R]
+\f[B]preference-name\f[R]=\f[I]\[dq][N]ame\[dq],\[aq]n\[aq],\[aq]N\[aq]\f[R]
 .SS preference-visibility
 .PP
 Change default visibility of toots
 .PD 0
 .P
 .PD
-\f[B]preference-visibility\f[R]=\f[I]\[lq][V]isibility\[rq],`v',`V'\f[R]
+\f[B]preference-visibility\f[R]=\f[I]\[dq][V]isibility\[dq],\[aq]v\[aq],\[aq]V\[aq]\f[R]
 .SS preference-bio
 .PP
 Change bio in profile
 .PD 0
 .P
 .PD
-\f[B]preference-bio\f[R]=\f[I]\[lq][B]io\[rq],`b',`B'\f[R]
+\f[B]preference-bio\f[R]=\f[I]\[dq][B]io\[dq],\[aq]b\[aq],\[aq]B\[aq]\f[R]
 .SS preference-save
 .PP
 Save your preferences
 .PD 0
 .P
 .PD
-\f[B]preference-save\f[R]=\f[I]\[lq][S]ave\[rq],`s',`S'\f[R]
+\f[B]preference-save\f[R]=\f[I]\[dq][S]ave\[dq],\[aq]s\[aq],\[aq]S\[aq]\f[R]
 .SS preference-fields
 .PP
 Edit profile fields
 .PD 0
 .P
 .PD
-\f[B]preference-fields\f[R]=\f[I]\[lq][F]ields\[rq],`f',`F'\f[R]
+\f[B]preference-fields\f[R]=\f[I]\[dq][F]ields\[dq],\[aq]f\[aq],\[aq]F\[aq]\f[R]
 .SS preference-fields-add
 .PP
 Add new field
 .PD 0
 .P
 .PD
-\f[B]preference-fields-add\f[R]=\f[I]\[lq][A]dd\[rq],`a',`A'\f[R]
+\f[B]preference-fields-add\f[R]=\f[I]\[dq][A]dd\[dq],\[aq]a\[aq],\[aq]A\[aq]\f[R]
 .SS preference-fields-edit
 .PP
 Edit current field
 .PD 0
 .P
 .PD
-\f[B]preference-fields-edit\f[R]=\f[I]\[lq][E]dit\[rq],`e',`E'\f[R]
+\f[B]preference-fields-edit\f[R]=\f[I]\[dq][E]dit\[dq],\[aq]e\[aq],\[aq]E\[aq]\f[R]
 .SS preference-fields-delete
 .PP
 Delete current field
 .PD 0
 .P
 .PD
-\f[B]preference-fields-delete\f[R]=\f[I]\[lq][D]elete\[rq],`d',`D'\f[R]
+\f[B]preference-fields-delete\f[R]=\f[I]\[dq][D]elete\[dq],\[aq]d\[aq],\[aq]D\[aq]\f[R]
 .SH SEE ALSO
 .IP
 .nf

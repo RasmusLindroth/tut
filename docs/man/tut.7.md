@@ -24,8 +24,8 @@ To change the keys look at tut(5) under the *INPUT* section.
 **Esc** = Go back
 
 ## Explanation of the non obvious keys when viewing a toot
-**v** = view. In this mode you can scroll throught the text of the toot if it doesn't fit the screen  
-**o** = open. Gives you a list of all URLs in the toot. Opens them in your default browser, if it's an user or tag they will be opened in tut  
+**v** = view. In this mode you can scroll throught the text of the toot if it doesn\'t fit the screen  
+**o** = open. Gives you a list of all URLs in the toot. Opens them in your default browser, if it\'s an user or tag they will be opened in tut  
 **m** = media. Opens the media with xdg-open
 
 # Commands
@@ -63,7 +63,7 @@ To change the keys look at tut(5) under the *INPUT* section.
 : Edit one of your toots
 
 **:favorited**
-: Lists toots  you've favorited
+: Lists toots  you\'ve favorited
 
 **:favorites**
 : Lists users that favorited the toot
@@ -102,7 +102,7 @@ To change the keys look at tut(5) under the *INPUT* section.
 : Shorter form of former command
 
 **:muting**
-: Lists users that you've muted
+: Lists users that you\'ve muted
 
 **:newer**
 : Force load newer toots in current timeline
@@ -117,7 +117,7 @@ To change the keys look at tut(5) under the *INPUT* section.
 : Sets the proportions of the windows and the content. The first integer is your windows and the other for content, e.g. :proportions 1 3
 
 **:refetch**
-: Refetches the current item that you're viewing. Can be used to update poll results.
+: Refetches the current item that you\'re viewing. Can be used to update poll results.
 
 **:saved**
 : Alias for bookmarks
@@ -129,7 +129,7 @@ To change the keys look at tut(5) under the *INPUT* section.
 : Shows toots tagged with \<tag\>, e.g. :tag linux. You can input multiple tags if you want to show them in the same timeline
 
 **:tags**
-: List of tags that you're following
+: List of tags that you\'re following
 
 **:unfollow-tag** *\<tag\>*
 : Unfollow the hashtag named \<tag\>, e.g. :unfollow-tag tut
