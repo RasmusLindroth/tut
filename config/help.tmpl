@@ -4,21 +4,21 @@ Below are the keys that doesn't have hints in the TUI. All other keys have hints
 That means that you'll have to press {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}F{{ Flags "-" }}{{ Color .Style.Text }} to favorite a toot.
 
     {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}c{{ Flags "-" }}{{ Color .Style.Text }} - Compose a new toot
-    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}j{{ Flags "-" }}{{ Color .Style.Text }} or
-    {{- Color .Style.TextSpecial2 }}{{ Flags "b" }} Down arrow{{ Flags "-" }}{{ Color .Style.Text }} - Navigate down in feed list or toot
-    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}k{{ Flags "-" }}{{ Color .Style.Text }} or
-    {{- Color .Style.TextSpecial2 }}{{ Flags "b" }} Up arrow{{ Flags "-" }}{{ Color .Style.Text }} - Navigate up in feed list or toot
-    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}h{{ Flags "-" }}{{ Color .Style.Text }} or
-    {{- Color .Style.TextSpecial2 }}{{ Flags "b" }} Left arrow{{ Flags "-" }}{{ Color .Style.Text }} - Cycle back between feeds
-    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}l{{ Flags "-" }}{{ Color .Style.Text }} or
-    {{- Color .Style.TextSpecial2 }}{{ Flags "b" }} Right arrow{{ Flags "-" }}{{ Color .Style.Text }} - Cycle forward between feeds
-    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}g{{ Flags "-" }}{{ Color .Style.Text }} or
-    {{- Color .Style.TextSpecial2 }}{{ Flags "b" }} Home{{ Flags "-" }}{{ Color .Style.Text }} - Go to top in feed list or toot
-    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}G{{ Flags "-" }}{{ Color .Style.Text }} or
-    {{- Color .Style.TextSpecial2 }}{{ Flags "b" }} End{{ Flags "-" }}{{ Color .Style.Text }} - Go to bottom in feed list or toot
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}j{{ Flags "-" }}{{ Color .Style.Text }} or {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}Down arrow{{ Flags "-" }}{{ Color .Style.Text }} - Navigate down in feed list or toot
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}k{{ Flags "-" }}{{ Color .Style.Text }} or {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}Up arrow{{ Flags "-" }}{{ Color .Style.Text }} - Navigate up in feed list or toot
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}h{{ Flags "-" }}{{ Color .Style.Text }} or {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}Left arrow{{ Flags "-" }}{{ Color .Style.Text }} - Cycle back in open timelines
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}l{{ Flags "-" }}{{ Color .Style.Text }} or {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}Right arrow{{ Flags "-" }}{{ Color .Style.Text }} - Cycle forward in open timelines
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}g{{ Flags "-" }}{{ Color .Style.Text }} or {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}Home{{ Flags "-" }}{{ Color .Style.Text }} - Go to top in feed list or toot
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}G{{ Flags "-" }}{{ Color .Style.Text }} or {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}End{{ Flags "-" }}{{ Color .Style.Text }} - Go to bottom in feed list or toot
     {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}?{{ Flags "-" }}{{ Color .Style.Text }} - View help
     {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}q{{ Flags "-" }}{{ Color .Style.Text }} - Go back or quit
-    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}ESC{{ Flags "-" }}{{ Color .Style.Text }} - Go back
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}Esc{{ Flags "-" }}{{ Color .Style.Text }} - Go back
+
+Explanation of the non obvious keys when viewing a toot
+
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}v{{ Flags "-" }}{{ Color .Style.Text }} - view. In this mode you can scroll throught the text of the toot if it doesn't fit the screen
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}o{{ Flags "-" }}{{ Color .Style.Text }} - open. Gives you a list of all URLs in the toot. Opens them in your default browser, if it's an user or tag they will be opened in tut
+    {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}m{{ Flags "-" }}{{ Color .Style.Text }} - media. Opens the media with xdg-open
 
 {{ Color .Style.Text }}{{ Flags "b" }}Commands{{ Flags "-" }}
 
@@ -26,110 +26,116 @@ All commands start with {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:{{ Flags 
 
 Here's a list of supported commands.
 
-{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:q{{ Flags "-" }}{{ Color .Style.Text }} or
-{{- Color .Style.TextSpecial2 }}{{ Flags "b" }} :quit{{ Flags "-" }}{{ Color .Style.Text }}
-	Exit the program
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:quit{{ Flags "-" }}{{ Color .Style.Text }}
+    Exit tut
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:q{{ Flags "-" }}{{ Color .Style.Text }}
+    Shorter form of former command
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:timeline{{ Flags "-" }}{{ Color .Style.Text }} home|local|federated|direct|notifications|mentions|favorited|special-all|special-boosts|special-replies
-	Open selected timeline
+    Open selected timeline
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:tl{{ Flags "-" }}{{ Color .Style.Text }} h|l|f|d|n|m|fav|sa|sb|sr
-	Shorter form of the former command *:timeline*
+    Shorter form of former command
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:blocking{{ Flags "-" }}{{ Color .Style.Text }}
-	Lists users that you have blocked
+    Lists users that you have blocked
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:boosts{{ Flags "-" }}{{ Color .Style.Text }}
-	Lists users that boosted the toot
+    Lists users that have boosted the toot
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:bookmarks{{ Flags "-" }}{{ Color .Style.Text }}
-	Lists all your bookmarks
+    List all your bookmarks
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:clear-notifications{{ Flags "-" }}{{ Color .Style.Text }}
-	Clear all notifications
+    Remove all of your notifications
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:close-window{{ Flags "-" }}{{ Color .Style.Text }}
-    Closes the current window
+    Closes the current window, including all the timelines in said window
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:compose{{ Flags "-" }}{{ Color .Style.Text }}
-	Compose a new toot
+    Compose a new toot
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:edit{{ Flags "-" }}{{ Color .Style.Text }}
-	Edit one of your toots
+    Edit one of your toots
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:favorited{{ Flags "-" }}{{ Color .Style.Text }}
-	Lists toots you've favorited
+    Lists toots  you've favorited
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:favorites{{ Flags "-" }}{{ Color .Style.Text }}
-	Lists users that favorited the toot
+    Lists users that favorited the toot
 
-{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:follow-tag{{ Flags "-" }}{{ Color .Style.Text }}
-    Followed by the hashtag to follow e.g. :follow-tag tut
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:follow-tag{{ Flags "-" }}{{ Color .Style.Text }} <tag>
+    Follow a hashtag named <tag>
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:followers{{ Flags "-" }}{{ Color .Style.Text }}
-    List of people the account are following. It only works on profiles.
+    List of people the account are following. It only works on profiles
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:following{{ Flags "-" }}{{ Color .Style.Text }}
-    List of people following the account. It only works on profiles.
+    List of people follwing the account. It only works on profiles
 
-{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:h{{ Flags "-" }}{{ Color .Style.Text }} or
-{{- Color .Style.TextSpecial2 }}{{ Flags "b" }} :help{{ Flags "-" }}{{ Color .Style.Text }}
-	View this help message
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:help{{ Flags "-" }}{{ Color .Style.Text }}
+    Show help for how to use tut
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:h{{ Flags "-" }}{{ Color .Style.Text }}
+    Shorter form of former command
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:history{{ Flags "-" }}{{ Color .Style.Text }}
-	Show edits of a toot
+    Show edits of a toot
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:lists{{ Flags "-" }}{{ Color .Style.Text }}
-	Show a list of your lists
+    Show a list of your lists
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:list-placement{{ Flags "-" }}{{ Color .Style.Text }} top|right|bottom|left
-	Place the lists where you want them
+    Place the list in choosen placement
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:list-split{{ Flags "-" }}{{ Color .Style.Text }} row|column
-	Split lists as rows or columns
+    Split the timelines in window by row or column
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:move-window{{ Flags "-" }}{{ Color .Style.Text }} left|right|up|down|home|end
-	Moves window in selected direction
+    Moves the window in choosen direction
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:mv{{ Flags "-" }}{{ Color .Style.Text }} l|r|u|d|h|e
-	Shorter form of the former command *:move-window*
+    Shorter form of former command
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:muting{{ Flags "-" }}{{ Color .Style.Text }}
-	Lists users that you have muted
+    Lists users that you've muted
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:newer{{ Flags "-" }}{{ Color .Style.Text }}
+    Force load newer toots in current timeline
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:preferences{{ Flags "-" }}{{ Color .Style.Text }}
     Update your profile and some other settings
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:profile{{ Flags "-" }}{{ Color .Style.Text }}
-	Go to your own profile
+    Go to your profile
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:proportions{{ Flags "-" }}{{ Color .Style.Text }} [int] [int]
-    Set proportions for list and content with an int. First list proportion then content proportion
+    Sets the proportions of the windows and the content. The first integer is your windows and the other for content, e.g. :proportions 1 3
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:refetch{{ Flags "-" }}{{ Color .Style.Text }}
-    Refetch the current item
-
-{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:requests{{ Flags "-" }}{{ Color .Style.Text }}
-	See following requests
-
-{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:stick-to-top{{ Flags "-" }}{{ Color .Style.Text }}
-    Toggle the stick-to-top setting.
+    Refetches the current item that you're viewing. Can be used to update poll results.
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:saved{{ Flags "-" }}{{ Color .Style.Text }}
-	Alias for :bookmarks
+    Alias for bookmarks
 
-{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:tag{{ Flags "-" }}{{ Color .Style.Text }} tagname
-	See toots for a tag e.g. :tag linux
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:stick-to-top{{ Flags "-" }}{{ Color .Style.Text }}
+    Toggle the stick-to-top setting that always shows the latest toot in all timelines
 
-{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:tags{{ Flags "-" }}{{ Color .Style.Text }} tagname
-    List of followed tags
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:tag{{ Flags "-" }}{{ Color .Style.Text }} <tag>
+    Shows toots tagged with <tag>, e.g. :tag linux. You can input multiple tags if you want to show them in the same timeline
 
-{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:unfollow-tag{{ Flags "-" }}{{ Color .Style.Text }}
-    Followed by the hashtag to unfollow e.g. :unfollow-tag tut
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:tags{{ Flags "-" }}{{ Color .Style.Text }}
+    List of tags that you're following
 
-{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:user{{ Flags "-" }}{{ Color .Style.Text }} username
-	Go to profile for <username>. E.g. :user rasmus
-    To narrow a search include the instance like this :user rasmus@mastodon.acc.sunet.se
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:unfollow-tag{{ Flags "-" }}{{ Color .Style.Text }} <tag>
+    Unfollow the hashtag named <tag>, e.g. :unfollow-tag tut
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:user{{ Flags "-" }}{{ Color .Style.Text }} <username>
+    Search for users named <username>, e.g. :user rasmus. To narrow a search include the instance like this :user rasmus@mastodon.acc.sunet.se
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:window{{ Flags "-" }}{{ Color .Style.Text }} <int>
+    Switch window by index (zero indexed) e.g. :window 0 for the left/top window
 
 {{ Color .Style.Text }}{{ Flags "b" }}Configuration{{ Flags "-" }}
 
