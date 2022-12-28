@@ -39,59 +39,60 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * [Thanks to](#thanks-to)
 
 ## Currently supported commands
-* `:q` `:quit` exit
-* `:timeline` home, local, federated, direct, notifications, mentions favorited, special-all, special-boosts, special-replies
-  * `:tl` h, l, f, d, n, m, fav, sa, sb, sr (shorter form)
-* `:blocking` lists users that you have blocked
-* `:boosts` lists users that boosted the toot
-* `:bookmarks` lists all your bookmarks
-* `:clear-notifications` clear all notifications
-* `:close-window` closes the current window
-* `:compose` compose a new toot
-* `:edit` edit one of your toots
-* `:favorited` lists toots you've favorited
-* `:favorites` lists users that favorited the toot
-* `:follow-tag` followed by the hashtag to follow e.g. `:follow-tag tut`
-* `:followers` list of people the account are following. It only works on profiles.
-* `:following` list of people following the account. It only works on profiles.
-* `:h` `:help` view help 
-* `:history` show edits of a toot 
-* `:lists` show a list of your lists
-* `:list-placement` top, right, bottom, left
-* `:list-split` row, column
-* `:move-window` left, right, up, down, home, end
-  * `:mv` l, r, u, d, h, e
-* `:muting` lists users that you have muted
-* `:newer` force load newer toots in current timeline
-* `:preferences` update your profile and some other settings
-* `:profile` go to your profile
-* `:proportions` [int] [int], where the first integer is the list and the other content, e.g. `:proportions 1 3`
-* `:refetch` refetches the current item
-* `:requests` see following requests
-* `:saved` alias for bookmarks
-* `:stick-to-top` toggle the stick-to-top setting.
-* `:tag` followed by the hashtag e.g. `:tag linux`
-* `:tags` list of followed tags
-* `:unfollow-tag` followed by the hashtag to unfollow e.g. `:unfollow-tag tut`
-* `:user` followed by a username e.g. `:user rasmus` to narrow a search include 
-* `:window` switch window by index (zero indexed) e.g. `:window 0` for the first window.
+* `:quit` = Exit tut
+* `:q` = Shorter form of former command
+* `:timeline home|local|federated|direct|notifications|mentions|favorited|special-all|special-boosts|special-replies` = Open selected timeline
+* `:tl h|l|f|d|n|m|fav|sa|sb|sr` = Shorter form of former command
+* `:blocking` = Lists users that you have blocked
+* `:boosts` = Lists users that have boosted the toot
+* `:bookmarks` = List all your bookmarks
+* `:clear-notifications` = Remove all of your notifications
+* `:close-window` = Closes the current window, including all the timelines in said window
+* `:compose` = Compose a new toot
+* `:edit` = Edit one of your toots
+* `:favorited` = Lists toots  you&#39;ve favorited
+* `:favorites` = Lists users that favorited the toot
+* `:follow-tag <tag>` = Follow a hashtag named &lt;tag&gt;
+* `:followers` = List of people the account are following. It only works on profiles
+* `:following` = List of people follwing the account. It only works on profiles
+* `:help` = Show help for how to use tut
+* `:h` = Shorter form of former command
+* `:history` = Show edits of a toot
+* `:lists` = Show a list of your lists
+* `:list-placement top|right|bottom|left` = Place the list in choosen placement
+* `:list-split row|column` = Split the timelines in window by row or column
+* `:move-window left|right|up|down|home|end` = Moves the window in choosen direction
+* `:mv l|r|u|d|h|e` = Shorter form of former command
+* `:muting` = Lists users that you&#39;ve muted
+* `:newer` = Force load newer toots in current timeline
+* `:preferences` = Update your profile and some other settings
+* `:profile` = Go to your profile
+* `:proportions [int] [int]` = Sets the proportions of the windows and the content. The first integer is your windows and the other for content, e.g. :proportions 1 3
+* `:refetch` = Refetches the current item that you&#39;re viewing. Can be used to update poll results.
+* `:saved` = Alias for bookmarks
+* `:stick-to-top` = Toggle the stick-to-top setting that always shows the latest toot in all timelines
+* `:tag <tag>` = Shows toots tagged with &lt;tag&gt;, e.g. :tag linux. You can input multiple tags if you want to show them in the same timeline
+* `:tags` = List of tags that you&#39;re following
+* `:unfollow-tag <tag>` = Unfollow the hashtag named &lt;tag&gt;, e.g. :unfollow-tag tut
+* `:user <username>` = Search for users named &lt;username&gt;, e.g. :user rasmus. To narrow a search include the instance like this :user rasmus@mastodon.acc.sunet.se
+* `:window <int>` = Switch window by index (zero indexed) e.g. :window 0 for the left/top window
 
 Keys without description in tut
 * `c` = Compose a new toot
-* `jk` = navigation up and down in feed
-* `hl` = cycle through feeds without closing them as you do with `q` and `ESC`
-* `arrow keys` = navigation. Same as `jk` and `hl`
-* `g` or `Home` = go to top
-* `G` or `End` = go to bottom
-* `?` = view help
-* `q` = go back and quit
-* `ESC` = go back
+* `j` or `Down arrow` = Navigate down in feed list or toot
+* `k` or `Up arrow` = Navigate up in feed list or toot
+* `h` or `Left arrow` = Cycle back in open timelines
+* `l` or `Right arrow` = Cycle forward in open timelines
+* `g` or `Home` = Go to top in feed list or toot
+* `G` or `End` = Go to bottom in feed list or toot
+* `?` = View help
+* `q` = Go back or quit
+* `Esc` = Go back
 
 Explanation of the non obvious keys when viewing a toot
-* `V` = view. In this mode you can scroll throught the text of the toot if it doesn't fit the screen
-* `O` = open. Gives you a list of all URLs in the toot. Opens them in your default browser, if it's
-an user or tag they will be opened in tut.
-* `M` = media. Opens the media with `xdg-open`.
+* `v` = view. In this mode you can scroll throught the text of the toot if it doesn&#39;t fit the screen
+* `o` = open. Gives you a list of all URLs in the toot. Opens them in your default browser, if it&#39;s an user or tag they will be opened in tut
+* `m` = media. Opens the media with xdg-open
 
 ## Configuration
 Tut is configurable, so you can change things like the colors, the default timeline, 
