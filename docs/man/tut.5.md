@@ -8,7 +8,10 @@ tut - configuration for tut(1)
 # DESCRIPTION
 The configuration format for tut.
 
-You find the configuration file in *$XDG_CONFIG_HOME/tut/config.ini* which usually equals to *~/.config/tut/config.ini*.
+You find it in *$XDG_CONFIG_HOME/tut/config.ini* on Linux which usually equals to *~/.config/tut/config.ini*.
+If you don't run Linux it will use the path of the Go funcdtion os.UserConfigDir().
+But if you move the tut folder to *XDG_CONFIG_HOME/tut/* and have set the environment variable *XDG_CONFIG_HOME*
+it will look there instead of the standard place.
 
 # CONFIGURATION
 The configuration file is divided in seven sections named general, media, open-custom, open-pattern, desktop-notification, style and input.

@@ -44,7 +44,10 @@ To see keys and commands you can use inside of tut check tut(7).
 # CONFIGURATION
 Tut is configurable, so you can change things like the colors, the default timeline, what image viewer to use and some more. Check out tut(5) or the configuration file to see all the options.
 
-You find it in *$XDG_CONFIG_HOME/tut/config.ini* which usually equals to *~/.config/tut/config.ini*.
+You find it in *$XDG_CONFIG_HOME/tut/config.ini* on Linux which usually equals to *~/.config/tut/config.ini*.
+If you don't run Linux it will use the path of the Go funcdtion os.UserConfigDir().
+But if you move the tut folder to *XDG_CONFIG_HOME/tut/* and have set the environment variable *XDG_CONFIG_HOME*
+it will look there instead of the standard place.
 
 You can generate an example configuration file with *tut example-config*. It will be updated with potential new features.
 
