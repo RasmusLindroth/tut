@@ -12,6 +12,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/RasmusLindroth/tut/util"
 	"github.com/gdamore/tcell/v2"
 	"github.com/gobwas/glob"
 	"golang.org/x/exp/slices"
@@ -1604,7 +1605,7 @@ func parseConfig(filepath string, cnfPath string, cnfDir string) (Config, error)
 }
 
 func createConfigDir() error {
-	cd, err := os.UserConfigDir()
+	cd, err := util.GetConfigDir()
 	if err != nil {
 		log.Fatalf("couldn't find config dir. Err %v", err)
 	}
@@ -1631,7 +1632,7 @@ func checkConfig(filename string, cnfPath string, cnfDir string) (path string, e
 		}
 		return p, true, err
 	}
-	cd, err := os.UserConfigDir()
+	cd, err := util.GetConfigDir()
 	if err != nil {
 		log.Fatalf("couldn't find config dir. Err %v", err)
 	}
@@ -1682,7 +1683,7 @@ func getThemes(cnfPath string, cnfDir string) (bundled []string, local []string,
 	if cnfDir != "" {
 		dir = filepath.Join(cnfDir, "themes")
 	} else {
-		cd, err := os.UserConfigDir()
+		cd, err := util.GetConfigDir()
 		if err != nil {
 			log.Fatalf("couldn't find config dir. Err %v", err)
 		}
@@ -1710,7 +1711,7 @@ func getTheme(fname string, isLocal bool, cnfDir string) (*ini.File, error) {
 		if cnfDir != "" {
 			dir = filepath.Join(cnfDir, "themes")
 		} else {
-			cd, err := os.UserConfigDir()
+			cd, err := util.GetConfigDir()
 			if err != nil {
 				log.Fatalf("couldn't find config dir. Err %v", err)
 			}

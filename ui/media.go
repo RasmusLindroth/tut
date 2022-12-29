@@ -6,13 +6,19 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/atotto/clipboard"
 )
 
 func downloadFile(url string) (string, error) {
-	f, err := os.CreateTemp("", "tutfile")
+	ext := filepath.Ext(url)
+	fname := "tutfile*"
+	if len(ext) > 0 {
+		fname = fmt.Sprintf("%s%s", fname, ext)
+	}
+	f, err := os.CreateTemp("", fname)
 	if err != nil {
 		return "", err
 	}

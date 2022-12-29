@@ -9,9 +9,30 @@ import (
 	"strings"
 
 	"github.com/RasmusLindroth/go-mastodon"
+	"github.com/adrg/xdg"
 	"github.com/microcosm-cc/bluemonday"
 	"golang.org/x/net/html"
 )
+
+func GetConfigDir() (string, error) {
+	x, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+	y := xdg.ConfigHome
+	if x == y {
+		return x, nil
+	}
+	pathX := filepath.Join(x, "/tut")
+	if _, err := os.Stat(pathX); !os.IsNotExist(err) {
+		return x, nil
+	}
+	pathY := filepath.Join(y, "/tut")
+	if _, err := os.Stat(pathY); !os.IsNotExist(err) {
+		return y, nil
+	}
+	return x, nil
+}
 
 func GetAbsPath(path string) (string, error) {
 	if filepath.IsAbs(path) {
@@ -88,7 +109,7 @@ func CmdToString(cmd string) (string, error) {
 }
 
 func MakeDirs() {
-	cd, err := os.UserConfigDir()
+	cd, err := GetConfigDir()
 	if err != nil {
 		log.Printf("couldn't find $HOME. Error: %v\n", err)
 		os.Exit(1)
@@ -102,7 +123,7 @@ func MakeDirs() {
 }
 
 func CheckConfig(filename string) (path string, exists bool, err error) {
-	cd, err := os.UserConfigDir()
+	cd, err := GetConfigDir()
 	if err != nil {
 		log.Printf("couldn't find $HOME. Error: %v\n", err)
 		os.Exit(1)

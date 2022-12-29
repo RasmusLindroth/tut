@@ -139,9 +139,13 @@ Here's a list of supported commands.
 
 {{ Color .Style.Text }}{{ Flags "b" }}Configuration{{ Flags "-" }}
 
-tut searches for a config file in the following locations:
+tut searches for a config file in the following locations on Linux:
 
     1. $XDG_CONFIG_HOME/tut/config.ini
     2. $HOME/.config/tut/config.ini
 
-For information on the config file format go to <https://tut.anv.nu/config>.
+If you don't run Linux it will use the path of the Go function {{ Flags "b" }}os.UserConfigDir(){{ Flags "-" }}.
+But if you move the tut folder to {{ Flags "b" }}XDG_CONFIG_HOME/tut/{{ Flags "-" }} and have set the environment variable {{ Flags "b" }}XDG_CONFIG_HOME{{ Flags "-" }}
+it will look there instead of the standard place.
+
+For information on the config file format go to <https://tut.anv.nu/config> or use the man page {{ Flags "b" }}tut(5){{ Flags "-" }}.

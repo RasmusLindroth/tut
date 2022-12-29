@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "tut" "5" "2022-12-28" "tut 1.0.30" ""
+.TH "tut" "5" "2022-12-29" "tut 1.0.31" ""
 .hy
 .SH NAME
 .PP
@@ -23,9 +23,13 @@ tut - configuration for tut(1)
 .PP
 The configuration format for tut.
 .PP
-You find the configuration file in
-\f[I]$XDG_CONFIG_HOME/tut/config.ini\f[R] which usually equals to
-\f[I]\[ti]/.config/tut/config.ini\f[R].
+You find it in \f[I]$XDG_CONFIG_HOME/tut/config.ini\f[R] on Linux which
+usually equals to \f[I]\[ti]/.config/tut/config.ini\f[R].
+If you don\[cq]t run Linux it will use the path of the Go funcdtion
+os.UserConfigDir().
+But if you move the tut folder to \f[I]XDG_CONFIG_HOME/tut/\f[R] and
+have set the environment variable \f[I]XDG_CONFIG_HOME\f[R] it will look
+there instead of the standard place.
 .SH CONFIGURATION
 .PP
 The configuration file is divided in seven sections named general,
