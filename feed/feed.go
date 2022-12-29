@@ -694,6 +694,32 @@ func (f *Feed) startStream(rec *api.Receiver, timeline string, err error) {
 	go func() {
 		for e := range rec.Ch {
 			switch t := e.(type) {
+			case *mastodon.ConversationEvent:
+				if t.Conversation.LastStatus == nil {
+					continue
+				}
+				s := api.NewStatusItem(t.Conversation.LastStatus, false)
+				f.itemsMux.Lock()
+				found := false
+				if len(f.streams) > 0 {
+					for _, item := range f.items {
+						switch v := item.Raw().(type) {
+						case *mastodon.Status:
+							if t.Conversation.LastStatus.ID == v.ID {
+								found = true
+								break
+							}
+						}
+					}
+				}
+				if !found {
+					f.items = append([]api.Item{s}, f.items...)
+					f.Updated(DesktopNotificationHolder{
+						Type: DesktopNotificationMention,
+					})
+					f.apiData.MinID = t.Conversation.LastStatus.ID
+				}
+				f.itemsMux.Unlock()
 			case *mastodon.UpdateEvent:
 				s := api.NewStatusItem(t.Status, false)
 				f.itemsMux.Lock()

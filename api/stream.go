@@ -81,7 +81,7 @@ func (s *Stream) RemoveReceiver(r *Receiver) {
 func (s *Stream) listen() {
 	for e := range s.incoming {
 		switch e.(type) {
-		case *mastodon.UpdateEvent, *mastodon.NotificationEvent, *mastodon.DeleteEvent, *mastodon.ErrorEvent:
+		case *mastodon.UpdateEvent, *mastodon.ConversationEvent, *mastodon.NotificationEvent, *mastodon.DeleteEvent, *mastodon.ErrorEvent:
 			for _, r := range s.receivers {
 				go func(rec *Receiver, e mastodon.Event) {
 					rec.mux.Lock()
@@ -139,7 +139,7 @@ func (ac *AccountClient) NewGenericStream(st StreamType, data string) (rec *Rece
 	case FederatedStream:
 		ch, err = ac.WSClient.StreamingWSPublic(context.Background(), false)
 	case DirectStream:
-		ch, err = ac.Client.StreamingDirect(context.Background())
+		ch, err = ac.WSClient.StreamingWSDirect(context.Background())
 	case TagStream:
 		ch, err = ac.WSClient.StreamingWSHashtag(context.Background(), data, false)
 	case ListStream:
