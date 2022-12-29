@@ -15,8 +15,23 @@ import (
 )
 
 func GetConfigDir() (string, error) {
-	cd := xdg.ConfigHome
-	return cd, nil
+	x, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+	y := xdg.ConfigHome
+	if x == y {
+		return x, nil
+	}
+	pathX := filepath.Join(x, "/tut")
+	if _, err := os.Stat(pathX); !os.IsNotExist(err) {
+		return x, nil
+	}
+	pathY := filepath.Join(y, "/tut")
+	if _, err := os.Stat(pathY); !os.IsNotExist(err) {
+		return y, nil
+	}
+	return x, nil
 }
 
 func GetAbsPath(path string) (string, error) {
