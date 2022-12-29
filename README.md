@@ -106,6 +106,8 @@ it will look there instead of the standard place.
 
 You can find an updated configuration file in this repo named `config.example.ini`.
 If there are any new configurations options you can copy them frome that file.
+If you prefer a website you can read about all the options on [tut.anv.nu](https://tut.anv.nu/config) and
+if man pages are your thing use `tut(5)`.
 
 ## Install instructions
 ### Binary releases
