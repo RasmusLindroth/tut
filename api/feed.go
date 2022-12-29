@@ -154,6 +154,9 @@ func (ac *AccountClient) GetConversations(pg *mastodon.Pagination) ([]Item, erro
 		return items, err
 	}
 	for _, c := range conversations {
+		if c.LastStatus == nil {
+			continue
+		}
 		item := NewStatusItem(c.LastStatus, false)
 		items = append(items, item)
 	}

@@ -133,17 +133,17 @@ func (ac *AccountClient) NewGenericStream(st StreamType, data string) (rec *Rece
 	var ch chan mastodon.Event
 	switch st {
 	case HomeStream:
-		ch, err = ac.Client.StreamingUser(context.Background())
+		ch, err = ac.WSClient.StreamingWSUser(context.Background())
 	case LocalStream:
-		ch, err = ac.Client.StreamingPublic(context.Background(), true)
+		ch, err = ac.WSClient.StreamingWSPublic(context.Background(), true)
 	case FederatedStream:
-		ch, err = ac.Client.StreamingPublic(context.Background(), false)
+		ch, err = ac.WSClient.StreamingWSPublic(context.Background(), false)
 	case DirectStream:
 		ch, err = ac.Client.StreamingDirect(context.Background())
 	case TagStream:
-		ch, err = ac.Client.StreamingHashtag(context.Background(), data, false)
+		ch, err = ac.WSClient.StreamingWSHashtag(context.Background(), data, false)
 	case ListStream:
-		ch, err = ac.Client.StreamingList(context.Background(), mastodon.ID(data))
+		ch, err = ac.WSClient.StreamingWSList(context.Background(), mastodon.ID(data))
 	default:
 		panic("invalid StreamType")
 	}
