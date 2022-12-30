@@ -124,7 +124,10 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 
 	toot.AccountDisplayName = tview.Escape(status.Account.DisplayName)
 	toot.Account = tview.Escape(status.Account.Acct)
-	toot.Bookmarked = status.Bookmarked.(bool)
+	toot.Bookmarked = false
+	if status.Bookmarked != nil {
+		toot.Bookmarked = status.Bookmarked.(bool)
+	}
 	toot.Visibility = status.Visibility
 	toot.Spoiler = status.Sensitive
 	toot.Edited = status.CreatedAt.Before(status.EditedAt)
@@ -198,14 +201,25 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 	}
 
 	var info []Control
-	if status.Favourited.(bool) && !isHistory {
+	statusFavorited, statusBoosted, statusBookmarked := false, false, false
+	if status.Favourited != nil {
+		statusFavorited = status.Favourited.(bool)
+	}
+	if status.Reblogged != nil {
+		statusBoosted = status.Reblogged.(bool)
+	}
+	if status.Bookmarked != nil {
+		statusBookmarked = status.Bookmarked.(bool)
+	}
+
+	if statusFavorited && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusFavorite, false))
-	} else if !status.Favourited.(bool) && !isHistory {
+	} else if !statusFavorited && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusFavorite, true))
 	}
-	if status.Reblogged.(bool) && !isHistory {
+	if statusBoosted && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusBoost, false))
-	} else if !status.Reblogged.(bool) && !isHistory {
+	} else if !statusBoosted && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusBoost, true))
 	}
 	if !isHistory {
@@ -229,9 +243,9 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusDelete, true))
 	}
 
-	if !status.Bookmarked.(bool) && !isHistory {
+	if !statusBookmarked && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusBookmark, true))
-	} else if status.Bookmarked.(bool) && !isHistory {
+	} else if statusBookmarked && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusBookmark, false))
 	}
 	if !isHistory {
