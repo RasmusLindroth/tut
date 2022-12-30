@@ -168,10 +168,10 @@ func (ac *AccountClient) GetUsers(search string) ([]Item, error) {
 	var users []*mastodon.Account
 	var err error
 	if strings.HasPrefix(search, "@") && len(strings.Split(search, "@")) == 3 {
-		users, err = ac.Client.AccountsSearch(context.Background(), search, 10, true)
+		users, err = ac.Client.AccountsSearchResolve(context.Background(), search, 10, true)
 	}
 	if len(users) == 0 || err != nil {
-		users, err = ac.Client.AccountsSearch(context.Background(), search, 10, false)
+		users, err = ac.Client.AccountsSearchResolve(context.Background(), search, 10, false)
 	}
 	if err != nil {
 		return items, err

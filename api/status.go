@@ -40,7 +40,7 @@ func toggleHelper(s *mastodon.Status, comp bool, on, off statusToggleFunc) (*mas
 
 func (ac *AccountClient) BoostToggle(s *mastodon.Status) (*mastodon.Status, error) {
 	return toggleHelper(s,
-		util.StatusOrReblog(s).Reblogged,
+		util.StatusOrReblog(s).Reblogged.(bool),
 		ac.Boost, ac.Unboost,
 	)
 }
@@ -55,7 +55,7 @@ func (ac *AccountClient) Unboost(s *mastodon.Status) (*mastodon.Status, error) {
 
 func (ac *AccountClient) FavoriteToogle(s *mastodon.Status) (*mastodon.Status, error) {
 	return toggleHelper(s,
-		util.StatusOrReblog(s).Favourited,
+		util.StatusOrReblog(s).Favourited.(bool),
 		ac.Favorite, ac.Unfavorite,
 	)
 }
@@ -72,7 +72,7 @@ func (ac *AccountClient) Unfavorite(s *mastodon.Status) (*mastodon.Status, error
 
 func (ac *AccountClient) BookmarkToogle(s *mastodon.Status) (*mastodon.Status, error) {
 	return toggleHelper(s,
-		util.StatusOrReblog(s).Bookmarked,
+		util.StatusOrReblog(s).Bookmarked.(bool),
 		ac.Bookmark, ac.Unbookmark,
 	)
 }

@@ -381,9 +381,9 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 	hasSpoiler := sr.Sensitive
 	isMine := sr.Account.ID == tv.tut.Client.Me.ID
 
-	boosted := sr.Reblogged
-	favorited := sr.Favourited
-	bookmarked := sr.Bookmarked
+	boosted := sr.Reblogged.(bool)
+	favorited := sr.Favourited.(bool)
+	bookmarked := sr.Bookmarked.(bool)
 
 	if tv.tut.Config.Input.StatusAvatar.Match(event.Key(), event.Rune()) {
 		if nAcc != nil {

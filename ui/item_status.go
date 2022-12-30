@@ -124,7 +124,7 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 
 	toot.AccountDisplayName = tview.Escape(status.Account.DisplayName)
 	toot.Account = tview.Escape(status.Account.Acct)
-	toot.Bookmarked = status.Bookmarked
+	toot.Bookmarked = status.Bookmarked.(bool)
 	toot.Visibility = status.Visibility
 	toot.Spoiler = status.Sensitive
 	toot.Edited = status.CreatedAt.Before(status.EditedAt)
@@ -198,14 +198,14 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 	}
 
 	var info []Control
-	if status.Favourited && !isHistory {
+	if status.Favourited.(bool) && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusFavorite, false))
-	} else if !status.Favourited && !isHistory {
+	} else if !status.Favourited.(bool) && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusFavorite, true))
 	}
-	if status.Reblogged && !isHistory {
+	if status.Reblogged.(bool) && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusBoost, false))
-	} else if !status.Reblogged && !isHistory {
+	} else if !status.Reblogged.(bool) && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusBoost, true))
 	}
 	if !isHistory {
@@ -229,9 +229,9 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusDelete, true))
 	}
 
-	if !status.Bookmarked && !isHistory {
+	if !status.Bookmarked.(bool) && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusBookmark, true))
-	} else if status.Bookmarked && !isHistory {
+	} else if status.Bookmarked.(bool) && !isHistory {
 		info = append(info, NewControl(tv.tut.Config, tv.tut.Config.Input.StatusBookmark, false))
 	}
 	if !isHistory {
