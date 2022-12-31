@@ -1,5 +1,3 @@
-github.com/RasmusLindroth/go-mastodon v0.0.19 h1:oQMLXoeaMD9uCMBMCblffFRyoohDmFDHmCPyZaIsWFM=
-github.com/RasmusLindroth/go-mastodon v0.0.19/go.mod h1:Lr6n8V1U2b+9P89YZKsICkNc+oNeJXkygY7raei9SXE=
 github.com/RasmusLindroth/go-mastodon v0.0.20 h1:xnFiSV7DfMCF8VOEn6QVbk94bGXxxAiUlw3Grby6ofw=
 github.com/RasmusLindroth/go-mastodon v0.0.20/go.mod h1:Lr6n8V1U2b+9P89YZKsICkNc+oNeJXkygY7raei9SXE=
 github.com/adrg/xdg v0.4.0 h1:RzRqFcjH4nE5C6oTAxhBtoE2IRyjBSa62SCbyPidvls=
@@ -66,8 +64,6 @@ github.com/tadvi/systray v0.0.0-20190226123456-11a2b8fa57af h1:6yITBqGTE2lEeTPG0
 github.com/tadvi/systray v0.0.0-20190226123456-11a2b8fa57af/go.mod h1:4F09kP5F+am0jAwlQLddpoMDM+iewkxxt6nxUQ5nq5o=
 github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 h1:nrZ3ySNYwJbSpD6ce9duiP+QkD3JuLCcWkdaehUS/3Y=
 github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80/go.mod h1:iFyPdL66DjUD96XmzVL3ZntbzcflLnznH0fr99w5VqE=
-golang.org/x/exp v0.0.0-20221229233502-02c3fc3b3eb4 h1:FJ366zx98Mq6JL8dYkXwSHeGwc2wM9NsxFerYtY70rY=
-golang.org/x/exp v0.0.0-20221229233502-02c3fc3b3eb4/go.mod h1:CxIveKay+FTh1D0yPZemJVgC/95VzuuOLq5Qi4xnoYc=
 golang.org/x/exp v0.0.0-20221230185412-738e83a70c30 h1:m9O6OTJ627iFnN2JIWfdqlZCzneRO6EEBsHXI25P8ws=
 golang.org/x/exp v0.0.0-20221230185412-738e83a70c30/go.mod h1:CxIveKay+FTh1D0yPZemJVgC/95VzuuOLq5Qi4xnoYc=
 golang.org/x/net v0.4.0 h1:Q5QPcMlvfxFTAPV0+07Xz/MpK9NTXu2VDUuy0FeMfaU=
