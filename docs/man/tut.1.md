@@ -1,6 +1,6 @@
-% tut(1) tut 1.0.31
+% tut(1) tut 1.0.32
 % Rasmus Lindroth
-% 2022-12-29
+% 2022-12-31
 
 # NAME
 tut - a Mastodon TUI

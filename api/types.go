@@ -8,11 +8,12 @@ type RequestData struct {
 }
 
 type AccountClient struct {
-	Client   *mastodon.Client
-	Streams  map[string]*Stream
-	Me       *mastodon.Account
-	Filters  []*mastodon.Filter
-	WSClient *mastodon.WSClient
+	Client      *mastodon.Client
+	Streams     map[string]*Stream
+	Me          *mastodon.Account
+	WSClient    *mastodon.WSClient
+	InstanceOld *mastodon.Instance
+	Instance    *mastodon.InstanceV2
 }
 
 type User struct {

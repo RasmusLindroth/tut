@@ -38,9 +38,12 @@ type PollView struct {
 	list        *tview.List
 	poll        *mastodon.TootPoll
 	scrollSleep *scrollSleep
+	numOptions  int
+	numChars    int
 }
 
 func NewPollView(tv *TutView) *PollView {
+	options, chars := tv.tut.Client.GetPollOptions()
 	p := &PollView{
 		tutView:    tv,
 		shared:     tv.Shared,
@@ -48,6 +51,8 @@ func NewPollView(tv *TutView) *PollView {
 		expiration: NewDropDown(tv.tut.Config),
 		controls:   NewControlView(tv.tut.Config),
 		list:       NewList(tv.tut.Config),
+		numOptions: options,
+		numChars:   chars,
 	}
 	p.scrollSleep = NewScrollSleep(p.Next, p.Prev)
 	p.Reset()
@@ -157,11 +162,11 @@ func (p *PollView) Next() {
 }
 
 func (p *PollView) Add() {
-	if p.list.GetItemCount() > 3 {
-		p.tutView.ShowError("You can only have a maximum of 4 options.")
+	if p.list.GetItemCount() > p.numOptions-1 {
+		p.tutView.ShowError(fmt.Sprintf("You can only have a maximum of %d options.", p.numOptions))
 		return
 	}
-	text, valid, err := OpenEditorLengthLimit(p.tutView, "", 25)
+	text, valid, err := OpenEditorLengthLimit(p.tutView, "", p.numChars)
 	if err != nil {
 		p.tutView.ShowError(
 			fmt.Sprintf("Couldn't open editor. Error: %v", err),
@@ -182,7 +187,7 @@ func (p *PollView) Edit() {
 		return
 	}
 	text, _ := p.list.GetItemText(p.list.GetCurrentItem())
-	text, valid, err := OpenEditorLengthLimit(p.tutView, text, 25)
+	text, valid, err := OpenEditorLengthLimit(p.tutView, text, p.numChars)
 	if err != nil {
 		p.tutView.ShowError(
 			fmt.Sprintf("Couldn't open editor. Error: %v", err),
