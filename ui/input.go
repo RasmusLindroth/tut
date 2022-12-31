@@ -281,6 +281,10 @@ func (tv *TutView) InputMainViewFeed(event *tcell.EventKey) *tcell.EventKey {
 		}
 		return nil
 	}
+	if tv.tut.Config.Input.MainCompose.Match(event.Key(), event.Rune()) {
+		tv.InitPost(nil, nil)
+		return nil
+	}
 	return tv.InputItem(event)
 }
 
@@ -291,6 +295,10 @@ func (tv *TutView) InputMainViewContent(event *tcell.EventKey) *tcell.EventKey {
 	}
 	if tv.tut.Config.Input.GlobalUp.Match(event.Key(), event.Rune()) {
 		tv.Timeline.ScrollDown()
+		return nil
+	}
+	if tv.tut.Config.Input.MainCompose.Match(event.Key(), event.Rune()) {
+		tv.InitPost(nil, nil)
 		return nil
 	}
 	return tv.InputItem(event)
@@ -320,10 +328,6 @@ func (tv *TutView) InputItem(event *tcell.EventKey) *tcell.EventKey {
 	item, err := tv.GetCurrentItem()
 	if err != nil {
 		return event
-	}
-	if tv.tut.Config.Input.MainCompose.Match(event.Key(), event.Rune()) {
-		tv.InitPost(nil, nil)
-		return nil
 	}
 	switch item.Type() {
 	case api.StatusType:

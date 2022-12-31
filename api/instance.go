@@ -9,7 +9,10 @@ func (ac *AccountClient) GetCharLimit() int {
 	}
 	s := ac.InstanceOld.Configuration.Statuses
 	if val, ok := (*s)["max_characters"]; ok {
-		return val
+		switch v := val.(type) {
+		case int:
+			return v
+		}
 	}
 	return 500
 }
@@ -23,7 +26,10 @@ func (ac *AccountClient) GetLengthURL() int {
 	}
 	s := ac.InstanceOld.Configuration.Statuses
 	if val, ok := (*s)["characters_reserved_per_url"]; ok {
-		return val
+		switch v := val.(type) {
+		case int:
+			return v
+		}
 	}
 	return 23
 }
@@ -39,7 +45,16 @@ func (ac *AccountClient) GetPollOptions() (options, chars int) {
 	opts, okOne := (*s)["max_options"]
 	c, okTwo := (*s)["max_characters_per_option"]
 	if okOne && okTwo {
-		return opts, c
+		a, b := 4, 50
+		switch v := opts.(type) {
+		case int:
+			a = v
+		}
+		switch v := c.(type) {
+		case int:
+			b = v
+		}
+		return a, b
 	}
 	return 4, 50
 }
