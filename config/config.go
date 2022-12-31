@@ -158,7 +158,6 @@ type General struct {
 	MaxWidth            int
 	NotificationFeed    bool
 	QuoteReply          bool
-	CharLimit           int
 	ShortHints          bool
 	ShowFilterPhrase    bool
 	ListPlacement       ListPlacement
@@ -848,7 +847,6 @@ func parseGeneral(cfg *ini.File) General {
 
 	general.NotificationFeed = cfg.Section("general").Key("notification-feed").MustBool(true)
 	general.QuoteReply = cfg.Section("general").Key("quote-reply").MustBool(false)
-	general.CharLimit = cfg.Section("general").Key("char-limit").MustInt(500)
 	general.MaxWidth = cfg.Section("general").Key("max-width").MustInt(0)
 	general.ShortHints = cfg.Section("general").Key("short-hints").MustBool(false)
 	general.ShowFilterPhrase = cfg.Section("general").Key("show-filter-phrase").MustBool(true)

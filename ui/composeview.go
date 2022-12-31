@@ -15,6 +15,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/rivo/uniseg"
+	"mvdan.cc/xurls/v2"
 )
 
 type msgToot struct {
@@ -102,15 +103,33 @@ const (
 	ComposeMedia
 )
 
+func urlsInText(txt string) (count, length int) {
+	x := xurls.Strict()
+	matches := x.FindAllString(txt, -1)
+	count = len(matches)
+	for _, m := range matches {
+		length += len(m)
+	}
+	return
+}
+
 func (cv *ComposeView) msgLength() int {
 	m := cv.msg
 	charCount := uniseg.GraphemeClusterCount(m.Text)
 	spoilerCount := uniseg.GraphemeClusterCount(m.CWText)
 	totalCount := charCount
+	urlLength := cv.tutView.tut.Client.GetLengthURL()
+
+	urls, length := urlsInText(m.Text)
+	if urls > 0 {
+		totalCount = totalCount - length
+		totalCount = totalCount + (urls * urlLength)
+	}
+
 	if m.Sensitive {
 		totalCount += spoilerCount
 	}
-	charsLeft := cv.tutView.tut.Config.General.CharLimit - totalCount
+	charsLeft := cv.tutView.tut.Client.GetCharLimit() - totalCount
 	return charsLeft
 }
 

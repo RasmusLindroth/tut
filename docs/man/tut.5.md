@@ -1,6 +1,6 @@
-% tut(5) tut 1.0.31
+% tut(5) tut 1.0.32
 % Rasmus Lindroth
-% 2022-12-29
+% 2022-12-31
 
 # NAME
 tut - configuration for tut(1)
@@ -115,10 +115,6 @@ Hide notifications of this type. If you have multiple you separate them with a c
 ## quote-reply
 If you always want to quote original message when replying.  
 **quote-reply**=*false*
-
-## char-limit
-If you\'re on an instance with a custom character limit you can set it here.  
-**char-limit**=*500*
 
 ## show-icons
 If you want to show icons in the list of toots.  

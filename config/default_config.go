@@ -112,10 +112,6 @@ notifications-to-hide=
 # default=false
 quote-reply=false
 
-# If you're on an instance with a custom character limit you can set it here.
-# default=500
-char-limit=500
-
 # If you want to show icons in the list of toots.
 # default=true
 show-icons=true

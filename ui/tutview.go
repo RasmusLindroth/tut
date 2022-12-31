@@ -151,12 +151,23 @@ func (tv *TutView) loggedIn(acc auth.Account) {
 		tv.tut.App.Stop()
 		tv.CleanExit(1)
 	}
-	filters, _ := client.GetFilters(context.Background())
 	ac := &api.AccountClient{
-		Me:      me,
-		Client:  client,
-		Streams: make(map[string]*api.Stream),
-		Filters: filters,
+		Me:       me,
+		Client:   client,
+		Streams:  make(map[string]*api.Stream),
+		WSClient: client.NewWSClient(),
+	}
+	inst, err := ac.Client.GetInstanceV2(context.Background())
+	if err != nil {
+		inst, err := ac.Client.GetInstance(context.Background())
+		if err != nil {
+			fmt.Printf("Couldn't get instance. Error %s\n", err)
+			tv.tut.App.Stop()
+			tv.CleanExit(1)
+		}
+		ac.InstanceOld = inst
+	} else {
+		ac.Instance = inst
 	}
 	tv.tut.Client = ac
 
