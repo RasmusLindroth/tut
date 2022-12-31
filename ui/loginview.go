@@ -17,7 +17,7 @@ type LoginView struct {
 
 func NewLoginView(tv *TutView, accs *auth.AccountData) *LoginView {
 	tv.Shared.Top.SetText("select account")
-	list := NewList(tv.tut.Config)
+	list := NewList(tv.tut.Config, false)
 	for _, a := range accs.Accounts {
 		list.AddItem(fmt.Sprintf("%s - %s", a.Name, a.Server), "", 0, nil)
 	}

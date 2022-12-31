@@ -25,7 +25,7 @@ func NewVoteView(tv *TutView) *VoteView {
 		shared:   tv.Shared,
 		textTop:  NewTextView(tv.tut.Config),
 		controls: NewControlView(tv.tut.Config),
-		list:     NewList(tv.tut.Config),
+		list:     NewList(tv.tut.Config, false),
 	}
 	v.scrollSleep = NewScrollSleep(v.Next, v.Prev)
 	v.View = voteViewUI(v)

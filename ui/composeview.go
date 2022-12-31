@@ -510,7 +510,7 @@ func NewMediaList(tv *TutView) *MediaList {
 		tutView: tv,
 		heading: NewTextView(tv.tut.Config),
 		text:    NewTextView(tv.tut.Config),
-		list:    NewList(tv.tut.Config),
+		list:    NewList(tv.tut.Config, false),
 	}
 	ml.scrollSleep = NewScrollSleep(ml.Next, ml.Prev)
 	ml.heading.SetText(fmt.Sprintf("Media files: %d", ml.list.GetItemCount()))

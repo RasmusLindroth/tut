@@ -40,7 +40,7 @@ func NewPreferenceView(tv *TutView) *PreferenceView {
 		shared:      tv.Shared,
 		displayName: NewTextView(tv.tut.Config),
 		bio:         NewTextView(tv.tut.Config),
-		fields:      NewList(tv.tut.Config),
+		fields:      NewList(tv.tut.Config, false),
 		visibility:  NewDropDown(tv.tut.Config),
 		controls:    NewControlView(tv.tut.Config),
 		preferences: &preferences{},
