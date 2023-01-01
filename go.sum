@@ -44,8 +44,8 @@ github.com/pelletier/go-toml/v2 v2.0.6/go.mod h1:eumQOmlWiOPt5WriQQqoM5y18pDHwha
 github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e/go.mod h1:pJLUxLENpZxwdsKMEsNbx1VGcRFpLqf3715MtcvvzbA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/rivo/tview v0.0.0-20221229180733-b86a50a5126c h1:Xa0IDAwI/b4D3AQwFOhvOeYB/H0N8Bhhe3XJWSa2vjg=
-github.com/rivo/tview v0.0.0-20221229180733-b86a50a5126c/go.mod h1:lBUy/T5kyMudFzWUH/C2moN+NlU5qF505vzOyINXuUQ=
+github.com/rivo/tview v0.0.0-20221221172851-9c04916f4eaa h1:f5OVRPQnaO1dvCS5UdaSLsf+3RFG49UlQAUE/Jfstp0=
+github.com/rivo/tview v0.0.0-20221221172851-9c04916f4eaa/go.mod h1:lBUy/T5kyMudFzWUH/C2moN+NlU5qF505vzOyINXuUQ=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rivo/uniseg v0.4.3 h1:utMvzDsuh3suAEnhH0RdHmoPbU648o6CvXxTx4SBMOw=
 github.com/rivo/uniseg v0.4.3/go.mod h1:FN3SvrM+Zdj16jyLfmOkMNblXMcoc8DfTHruCPUcx88=
