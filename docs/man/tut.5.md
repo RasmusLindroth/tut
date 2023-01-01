@@ -1,6 +1,6 @@
-% tut(5) tut 1.0.33
+% tut(5) tut 1.0.34
 % Rasmus Lindroth
-% 2022-12-31
+% 2023-01-01
 
 # NAME
 tut - configuration for tut(1)
