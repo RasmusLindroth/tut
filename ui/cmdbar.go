@@ -19,7 +19,7 @@ func NewCmdBar(tv *TutView) *CmdBar {
 		View:    NewInputField(tv.tut.Config),
 	}
 	c.View.SetAutocompleteFunc(c.Autocomplete)
-	c.View.SetAutocompletedFunc(c.Autocompleted)
+	//c.View.SetAutocompletedFunc(c.Autocompleted)
 	c.View.SetDoneFunc(c.DoneFunc)
 
 	return c
@@ -315,6 +315,7 @@ func (c *CmdBar) Autocomplete(curr string) []string {
 	return entries
 }
 
+/*
 func (c *CmdBar) Autocompleted(text string, index, source int) bool {
 	if source != tview.AutocompletedNavigate {
 		c.View.SetText(text)
@@ -322,3 +323,4 @@ func (c *CmdBar) Autocompleted(text string, index, source int) bool {
 
 	return source == tview.AutocompletedEnter || source == tview.AutocompletedClick
 }
+*/
