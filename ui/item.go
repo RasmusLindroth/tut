@@ -20,12 +20,31 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 		status := s
 		if s.Reblog != nil {
 			status = s.Reblog
-		}
-		if status.RepliesCount > 0 {
-			symbol = " ⤶ "
+			symbol += "♺ "
 		}
 		if item.Pinned() {
-			symbol = " ! "
+			symbol += "! "
+		}
+		if s.Bookmarked {
+			symbol += "☜  "
+		}
+		if s.Favourited {
+			symbol += "★ "
+		}
+		if s.Poll != nil {
+			symbol += "= "
+		}
+		if s.Sensitive || s.SpoilerText != "" {
+			symbol += "⚑ "
+		}
+		if len(s.MediaAttachments) > 0 {
+			symbol += "⚭ "
+		}
+		if s.Card != nil {
+			symbol += "⚯  "
+		}
+		if status.RepliesCount > 0 {
+			symbol += "⤷ "
 		}
 		acc := strings.TrimSpace(s.Account.Acct)
 		if cfg.General.ShowBoostedUser && s.Reblog != nil {
@@ -35,6 +54,9 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 			acc = fmt.Sprintf("♺ %s", acc)
 		}
 		d := OutputDate(cfg, s.CreatedAt.Local())
+		if symbol != "" {
+			symbol = fmt.Sprintf(cfg.General.SymbolFormat, symbol)
+		}
 		return fmt.Sprintf("%s %s", d, acc), symbol
 	case api.StatusHistoryType:
 		s := item.Raw().(*mastodon.StatusHistory)
@@ -51,19 +73,22 @@ func DrawListItem(cfg *config.Config, item api.Item) (string, string) {
 		symbol := ""
 		switch a.Item.Type {
 		case "follow", "follow_request":
-			symbol += " + "
+			symbol += "+ "
 		case "favourite":
-			symbol = " ★ "
+			symbol = "★ "
 		case "reblog":
-			symbol = " ♺ "
+			symbol = "♺ "
 		case "mention":
-			symbol = " ⤶ "
+			symbol = "⤶ "
 		case "update":
-			symbol = " ☢ "
+			symbol = "☢ "
 		case "poll":
-			symbol = " = "
+			symbol = "= "
 		case "status":
-			symbol = " ⤶ "
+			symbol = "⤶ "
+		}
+		if symbol != "" {
+			symbol = fmt.Sprintf(cfg.General.SymbolFormat, symbol)
 		}
 		d := OutputDate(cfg, a.Item.CreatedAt.Local())
 		return fmt.Sprintf("%s %s", d, strings.TrimSpace(a.Item.Account.Acct)), symbol
