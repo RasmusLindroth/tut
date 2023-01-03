@@ -103,25 +103,25 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 	case ":clear-notifications":
 		c.tutView.ClearNotificationsCommand()
 		c.Back()
-	case ":close-window":
-		c.tutView.CloseWindowCommand()
+	case ":close-pane":
+		c.tutView.ClosePaneCommand()
 		c.Back()
-	case ":move-window", ":mv":
+	case ":move-pane", ":mp":
 		if len(parts) < 2 {
 			break
 		}
 		switch parts[1] {
 		case "left", "up", "l", "u":
-			c.tutView.MoveWindowLeft()
+			c.tutView.MovePaneLeft()
 			c.Back()
 		case "right", "down", "r", "d":
-			c.tutView.MoveWindowRight()
+			c.tutView.MovePaneRight()
 			c.Back()
 		case "home", "h":
-			c.tutView.MoveWindowHome()
+			c.tutView.MovePaneHome()
 			c.Back()
 		case "end", "e":
-			c.tutView.MoveWindowEnd()
+			c.tutView.MovePaneEnd()
 			c.Back()
 		}
 	case ":list-placement":
@@ -222,11 +222,11 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 	case ":tags":
 		c.tutView.TagsCommand()
 		c.Back()
-	case ":window":
+	case ":pane":
 		if len(parts) < 2 {
 			break
 		}
-		c.tutView.WindowCommand(parts[1])
+		c.tutView.PaneCommand(parts[1])
 		c.Back()
 	case ":user":
 		if len(parts) < 2 {
@@ -237,10 +237,10 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 			break
 		}
 		c.tutView.Timeline.AddFeed(
-			NewUserSearchFeed(c.tutView, &config.Timeline{
+			NewUserSearchFeed(c.tutView, config.NewTimeline(config.Timeline{
 				FeedType:  config.UserList,
 				Subaction: user,
-			}),
+			})),
 		)
 		c.Back()
 	case ":refetch":
@@ -282,7 +282,7 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 
 func (c *CmdBar) Autocomplete(curr string) []string {
 	var entries []string
-	words := strings.Split(":blocking,:boosts,:bookmarks,:clear-notifications,:compose,:favorites,:favorited,:follow-tag,:followers,:following,:help,:h,:history,:move-window,:lists,:list-placement,:list-split,:muting,:newer,:preferences,:profile,:proportions,:refetch,:requests,:saved,:stick-to-top,:tag,:timeline,:tl,:unfollow-tag,:user,:window,:quit,:q", ",")
+	words := strings.Split(":blocking,:boosts,:bookmarks,:clear-notifications,:compose,:favorites,:favorited,:follow-tag,:followers,:following,:help,:h,:history,:move-pane,:lists,:list-placement,:list-split,:muting,:newer,:preferences,:profile,:proportions,:refetch,:requests,:saved,:stick-to-top,:tag,:timeline,:tl,:unfollow-tag,:user,:pane,:quit,:q", ",")
 	if curr == "" {
 		return entries
 	}
@@ -300,8 +300,8 @@ func (c *CmdBar) Autocomplete(curr string) []string {
 		words = strings.Split(":list-split row,:list-split column", ",")
 	}
 
-	if len(curr) > 11 && curr[:12] == ":move-window" {
-		words = strings.Split(":move-window left,:move-window right,:move-window up,:move-window down,:move-window home,:move-window end", ",")
+	if len(curr) > 11 && curr[:12] == ":move-pane" {
+		words = strings.Split(":move-pane left,:move-pane right,:move-pane up,:move-pane down,:move-pane home,:move-pane end", ",")
 	}
 	if len(curr) > 2 && curr[:3] == ":mv" {
 		words = strings.Split(":mv left,:mv right,:mv up,:mv down,:mv home,:mv end", ",")

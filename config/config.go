@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"text/template"
 
 	"github.com/RasmusLindroth/tut/util"
@@ -86,13 +87,13 @@ const (
 	LeaderHistory
 	LeaderUser
 	LeaderLoadNewer
-	LeaderWindow
-	LeaderCloseWindow
+	LeaderPane
+	LeaderClosePane
 	LeaderSwitch
-	LeaderMoveWindowLeft
-	LeaderMoveWindowRight
-	LeaderMoveWindowHome
-	LeaderMoveWindowEnd
+	LeaderMovePaneLeft
+	LeaderMovePaneRight
+	LeaderMovePaneHome
+	LeaderMovePaneEnd
 )
 
 type FeedType uint
@@ -140,12 +141,27 @@ const (
 	HideEdited        NotificationToHide = "update"
 )
 
+var timelineID uint = 0
+var timelineIDMux sync.Mutex
+
+func newTimelineID() uint {
+	timelineIDMux.Lock()
+	defer timelineIDMux.Unlock()
+	timelineID = timelineID + 1
+	return timelineID
+}
+
+func NewTimeline(tl Timeline) *Timeline {
+	tl.ID = newTimelineID()
+	return &tl
+}
+
 type Timeline struct {
+	ID          uint
 	FeedType    FeedType
 	Subaction   string
 	Name        string
 	Key         Key
-	Hidden      bool
 	HideBoosts  bool
 	HideReplies bool
 }
@@ -478,13 +494,13 @@ type Input struct {
 	GlobalBack  Key
 	GlobalExit  Key
 
-	MainHome       Key
-	MainEnd        Key
-	MainPrevFeed   Key
-	MainNextFeed   Key
-	MainPrevWindow Key
-	MainNextWindow Key
-	MainCompose    Key
+	MainHome     Key
+	MainEnd      Key
+	MainPrevFeed Key
+	MainNextFeed Key
+	MainPrevPane Key
+	MainNextPane Key
+	MainCompose  Key
 
 	StatusAvatar       Key
 	StatusBoost        Key
@@ -982,19 +998,19 @@ func parseGeneral(cfg GeneralTOML) General {
 				case "proportions":
 					la.Command = LeaderProportions
 					la.Subaction = ldata
-				case "window":
-					la.Command = LeaderWindow
+				case "pane":
+					la.Command = LeaderPane
 					la.Subaction = ldata
-				case "close-window":
-					la.Command = LeaderCloseWindow
-				case "move-window-left", "move-window-up":
-					la.Command = LeaderMoveWindowLeft
-				case "move-window-right", "move-window-down":
-					la.Command = LeaderMoveWindowRight
-				case "move-window-home":
-					la.Command = LeaderMoveWindowHome
-				case "move-window-end":
-					la.Command = LeaderMoveWindowEnd
+				case "close-pane":
+					la.Command = LeaderClosePane
+				case "move-pane-left", "move-pane-up":
+					la.Command = LeaderMovePaneLeft
+				case "move-pane-right", "move-pane-down":
+					la.Command = LeaderMovePaneRight
+				case "move-pane-home":
+					la.Command = LeaderMovePaneHome
+				case "move-pane-end":
+					la.Command = LeaderMovePaneEnd
 				case "newer":
 					la.Command = LeaderLoadNewer
 				default:
@@ -1012,7 +1028,7 @@ func parseGeneral(cfg GeneralTOML) General {
 	timelines := cfg.Timelines
 	if cfg.Timelines != nil {
 		for _, l := range *timelines {
-			tl := Timeline{}
+			tl := NewTimeline(Timeline{})
 			if l.Type == nil {
 				fmt.Println("timelines must have a type")
 				os.Exit(1)
@@ -1066,22 +1082,22 @@ func parseGeneral(cfg GeneralTOML) General {
 					os.Exit(1)
 				}
 			}
-			tls = append(tls, &tl)
+			tls = append(tls, tl)
 		}
 	}
 	if len(tls) == 0 {
 		tls = append(tls,
-			&Timeline{
+			NewTimeline(Timeline{
 				FeedType: TimelineHome,
 				Name:     "Home",
-			},
+			}),
 		)
 		tls = append(tls,
-			&Timeline{
+			NewTimeline(Timeline{
 				FeedType: Notifications,
 				Name:     "[N]otifications",
 				Key:      inputStrOrErr([]string{"", "'n'", "'N'"}, false),
-			},
+			}),
 		)
 	}
 	general.Timelines = tls
@@ -1309,8 +1325,8 @@ func parseInput(cfg InputTOML) Input {
 	ic.MainEnd = inputOrDef("main-end", cfg.MainEnd, def.MainEnd, false)
 	ic.MainPrevFeed = inputOrDef("main-prev-feed", cfg.MainPrevFeed, def.MainPrevFeed, false)
 	ic.MainNextFeed = inputOrDef("main-next-feed", cfg.MainNextFeed, def.MainNextFeed, false)
-	ic.MainNextWindow = inputOrDef("main-next-window", cfg.MainNextWindow, def.MainNextWindow, false)
-	ic.MainPrevWindow = inputOrDef("main-prev-window", cfg.MainPrevWindow, def.MainPrevWindow, false)
+	ic.MainNextPane = inputOrDef("main-next-pane", cfg.MainNextPane, def.MainNextPane, false)
+	ic.MainPrevPane = inputOrDef("main-prev-pane", cfg.MainPrevPane, def.MainPrevPane, false)
 	ic.MainCompose = inputOrDef("main-compose", cfg.MainCompose, def.MainCompose, false)
 
 	ic.StatusAvatar = inputOrDef("status-avatar", cfg.StatusAvatar, def.StatusAvatar, false)

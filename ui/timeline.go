@@ -106,7 +106,7 @@ func (tl *Timeline) RemoveCurrent(quit bool) bool {
 	return false
 }
 
-func (tl *Timeline) MoveCurrentWindowLeft() {
+func (tl *Timeline) MoveCurrentPaneLeft() {
 	length := len(tl.Feeds)
 	if length < 2 {
 		return
@@ -119,7 +119,7 @@ func (tl *Timeline) MoveCurrentWindowLeft() {
 	tl.tutView.FocusFeed(ni)
 }
 
-func (tl *Timeline) MoveCurrentWindowRight() {
+func (tl *Timeline) MoveCurrentPaneRight() {
 	length := len(tl.Feeds)
 	if length < 2 {
 		return
@@ -132,7 +132,7 @@ func (tl *Timeline) MoveCurrentWindowRight() {
 	tl.tutView.FocusFeed(ni)
 }
 
-func (tl *Timeline) MoveCurrentWindowHome() {
+func (tl *Timeline) MoveCurrentPaneHome() {
 	length := len(tl.Feeds)
 	if length < 2 {
 		return
@@ -142,7 +142,7 @@ func (tl *Timeline) MoveCurrentWindowHome() {
 	tl.tutView.FocusFeed(ni)
 }
 
-func (tl *Timeline) MoveCurrentWindowEnd() {
+func (tl *Timeline) MoveCurrentPaneEnd() {
 	length := len(tl.Feeds)
 	if length < 2 {
 		return
@@ -152,7 +152,7 @@ func (tl *Timeline) MoveCurrentWindowEnd() {
 	tl.tutView.FocusFeed(ni)
 }
 
-func (tl *Timeline) CloseCurrentWindow() {
+func (tl *Timeline) CloseCurrentPane() {
 	if len(tl.Feeds) == 0 {
 		return
 	}

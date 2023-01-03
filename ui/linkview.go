@@ -111,21 +111,20 @@ func (lv *LinkView) Open() {
 			return
 		}
 		lv.tutView.Timeline.AddFeed(
-			NewUserFeed(lv.tutView, u, &config.Timeline{
+			NewUserFeed(lv.tutView, u, config.NewTimeline(config.Timeline{
 				FeedType: config.User,
 			}),
-		)
+			))
 		lv.tutView.FocusMainNoHistory()
 		return
 	}
 	tIndex := index - len(mentions) - len(urls)
 	if tIndex < len(tags) {
 		lv.tutView.Timeline.AddFeed(
-			NewTagFeed(lv.tutView, &config.Timeline{
+			NewTagFeed(lv.tutView, config.NewTimeline(config.Timeline{
 				FeedType:  config.Tag,
 				Subaction: tags[tIndex].Name,
-			}),
-		)
+			})))
 		lv.tutView.FocusMainNoHistory()
 		return
 	}

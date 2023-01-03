@@ -46,7 +46,6 @@ type TimelineTOML struct {
 	Shortcut    *string   `toml:"shortcut"`
 	HideBoosts  *bool     `toml:"hide-boosts"`
 	HideReplies *bool     `toml:"hide-replies"`
-	Hidden      *bool     `toml:"hidden"`
 }
 
 type LeaderActionTOML struct {
@@ -167,13 +166,13 @@ type InputTOML struct {
 	GlobalBack  *KeyHintTOML `toml:"global-back"`
 	GlobalExit  *KeyHintTOML `toml:"global-exit"`
 
-	MainHome       *KeyHintTOML `toml:"main-home"`
-	MainEnd        *KeyHintTOML `toml:"main-end"`
-	MainPrevFeed   *KeyHintTOML `toml:"main-prev-feed"`
-	MainNextFeed   *KeyHintTOML `toml:"main-next-feed"`
-	MainPrevWindow *KeyHintTOML `toml:"main-prev-window"`
-	MainNextWindow *KeyHintTOML `toml:"main-next-window"`
-	MainCompose    *KeyHintTOML `toml:"main-compose"`
+	MainHome     *KeyHintTOML `toml:"main-home"`
+	MainEnd      *KeyHintTOML `toml:"main-end"`
+	MainPrevFeed *KeyHintTOML `toml:"main-prev-feed"`
+	MainNextFeed *KeyHintTOML `toml:"main-next-feed"`
+	MainPrevPane *KeyHintTOML `toml:"main-prev-pane"`
+	MainNextPane *KeyHintTOML `toml:"main-next-pane"`
+	MainCompose  *KeyHintTOML `toml:"main-compose"`
 
 	StatusAvatar       *KeyHintTOML `toml:"status-avatar"`
 	StatusBoost        *KeyHintTOML `toml:"status-boost"`

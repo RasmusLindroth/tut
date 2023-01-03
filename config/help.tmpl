@@ -92,7 +92,7 @@ Here's a list of supported commands.
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:list-split{{ Flags "-" }}{{ Color .Style.Text }} row|column
     Split the timelines in window by row or column
 
-{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:move-window{{ Flags "-" }}{{ Color .Style.Text }} left|right|up|down|home|end
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:move-pane{{ Flags "-" }}{{ Color .Style.Text }} left|right|up|down|home|end
     Moves the window in choosen direction
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:mv{{ Flags "-" }}{{ Color .Style.Text }} l|r|u|d|h|e
@@ -134,8 +134,8 @@ Here's a list of supported commands.
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:user{{ Flags "-" }}{{ Color .Style.Text }} <username>
     Search for users named <username>, e.g. :user rasmus. To narrow a search include the instance like this :user rasmus@mastodon.acc.sunet.se
 
-{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:window{{ Flags "-" }}{{ Color .Style.Text }} <int>
-    Switch window by index (zero indexed) e.g. :window 0 for the left/top window
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:pane{{ Flags "-" }}{{ Color .Style.Text }} <int>
+    Switch window by index (zero indexed) e.g. :pane 0 for the left/top window
 
 {{ Color .Style.Text }}{{ Flags "b" }}Configuration{{ Flags "-" }}
 

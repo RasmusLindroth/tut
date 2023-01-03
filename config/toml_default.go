@@ -47,13 +47,11 @@ var ConfigDefault = ConfigTOML{
 				Type:        sp("home"),
 				HideBoosts:  bf,
 				HideReplies: bf,
-				Hidden:      bf,
 			},
 			{
-				Name:   sp("Notifications"),
-				Type:   sp("notifications"),
-				Keys:   &[]string{"n", "N"},
-				Hidden: bf,
+				Name: sp("Notifications"),
+				Type: sp("notifications"),
+				Keys: &[]string{"n", "N"},
 			},
 		},
 	},
@@ -167,11 +165,11 @@ var ConfigDefault = ConfigTOML{
 			Keys:        &[]string{"l", "L"},
 			SpecialKeys: &[]string{"Right"},
 		},
-		MainPrevWindow: &KeyHintTOML{
+		MainPrevPane: &KeyHintTOML{
 			Hint:        sp(""),
 			SpecialKeys: &[]string{"Backtab"},
 		},
-		MainNextWindow: &KeyHintTOML{
+		MainNextPane: &KeyHintTOML{
 			Hint:        sp(""),
 			SpecialKeys: &[]string{"Tab"},
 		},

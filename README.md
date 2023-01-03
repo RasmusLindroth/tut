@@ -61,7 +61,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:lists` = Show a list of your lists
 * `:list-placement top|right|bottom|left` = Place the list in choosen placement
 * `:list-split row|column` = Split the timelines in window by row or column
-* `:move-window left|right|up|down|home|end` = Moves the window in choosen direction
+* `:move-pane left|right|up|down|home|end` = Moves the window in choosen direction
 * `:mv l|r|u|d|h|e` = Shorter form of former command
 * `:muting` = Lists users that you&#39;ve muted
 * `:newer` = Force load newer toots in current timeline
@@ -75,7 +75,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:tags` = List of tags that you&#39;re following
 * `:unfollow-tag <tag>` = Unfollow the hashtag named &lt;tag&gt;, e.g. :unfollow-tag tut
 * `:user <username>` = Search for users named &lt;username&gt;, e.g. :user rasmus. To narrow a search include the instance like this :user rasmus@mastodon.acc.sunet.se
-* `:window <int>` = Switch window by index (zero indexed) e.g. :window 0 for the left/top window
+* `:pane <int>` = Switch window by index (zero indexed) e.g. :pane 0 for the left/top window
 
 Keys without description in tut
 * `c` = Compose a new toot
