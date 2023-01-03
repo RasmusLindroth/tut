@@ -54,6 +54,8 @@ func (tv *TutView) Input(event *tcell.EventKey) *tcell.EventKey {
 		return tv.InputHelp(event)
 	case PreferenceFocus:
 		return tv.InputPreference(event)
+	case EditorFocus:
+		return tv.InputEditorView(event)
 	default:
 		return event
 	}
@@ -1106,6 +1108,20 @@ func (tv *TutView) InputCmdView(event *tcell.EventKey) *tcell.EventKey {
 		tv.Shared.Bottom.Cmd.Back()
 		tv.Shared.Bottom.Cmd.View.Autocomplete()
 		return nil
+	}
+	return event
+}
+
+func (tv *TutView) InputEditorView(event *tcell.EventKey) *tcell.EventKey {
+	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), rune(-1)) {
+		tv.EditorView.ExitTextAreaInput()
+		return nil
+	}
+	switch key := event.Key(); key {
+	case tcell.KeyCtrlQ:
+		return nil
+	case tcell.KeyCtrlC:
+		return tcell.NewEventKey(tcell.KeyCtrlQ, rune(0), tcell.ModNone)
 	}
 	return event
 }

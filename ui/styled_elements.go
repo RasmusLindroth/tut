@@ -26,6 +26,19 @@ func NewTextView(cnf *config.Config) *tview.TextView {
 	return tw
 }
 
+func NewTextArea(cnf *config.Config) *tview.TextArea {
+	ta := tview.NewTextArea()
+	ta.SetBackgroundColor(cnf.Style.Background)
+	ta.SetWordWrap(true)
+	ta.SetTextStyle(tcell.StyleDefault.
+		Background(cnf.Style.Background).
+		Foreground(cnf.Style.Text),
+	)
+	//tw.SetTextColor(cnf.Style.Text)
+	//tw.SetDynamicColors(true)
+	return ta
+}
+
 func NewControlView(cnf *config.Config) *tview.Flex {
 	f := tview.NewFlex().SetDirection(tview.FlexColumn)
 	f.SetBackgroundColor(cnf.Style.Background)

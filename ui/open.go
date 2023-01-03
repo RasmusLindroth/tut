@@ -77,9 +77,15 @@ func OpenEditorLengthLimit(tv *TutView, s string, limit int) (string, bool, erro
 }
 
 func OpenEditor(tv *TutView, content string) (string, error) {
-	editor, exists := os.LookupEnv("EDITOR")
-	if !exists || editor == "" {
-		editor = "vi"
+	var editor string
+	var exists bool
+	if tv.tut.Config.General.Editor == strings.TrimSpace("$EDITOR") {
+		editor, exists = os.LookupEnv("EDITOR")
+		if !exists || editor == "" {
+			editor = "vi"
+		}
+	} else {
+		editor = strings.TrimSpace(tv.tut.Config.General.Editor)
 	}
 	args := []string{}
 	parts := strings.Split(editor, " ")

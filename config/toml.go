@@ -11,6 +11,7 @@ type ConfigTOML struct {
 }
 
 type GeneralTOML struct {
+	Editor              *string             `toml:"editor"`
 	Confirmation        *bool               `toml:"confirmation"`
 	MouseSupport        *bool               `toml:"mouse-support"`
 	DateFormat          *string             `toml:"date-format"`

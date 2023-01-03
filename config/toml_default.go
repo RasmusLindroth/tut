@@ -19,6 +19,7 @@ func ip64(i int64) *int64 {
 
 var ConfigDefault = ConfigTOML{
 	General: GeneralTOML{
+		Editor:              sp("USE_TUT_INTERNAL"),
 		Confirmation:        bt,
 		MouseSupport:        bf,
 		DateFormat:          sp("2006-01-02 15:04"),

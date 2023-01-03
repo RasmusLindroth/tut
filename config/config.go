@@ -167,6 +167,8 @@ type Timeline struct {
 }
 
 type General struct {
+	Editor              string
+	UseInternalEditor   bool
 	Confirmation        bool
 	MouseSupport        bool
 	DateTodayFormat     string
@@ -848,8 +850,12 @@ func parseGeneral(cfg GeneralTOML) General {
 	general := General{}
 
 	def := ConfigDefault.General
+	general.Editor = NilDefaultString(cfg.Editor, def.Editor)
+	if general.Editor == "USE_TUT_INTERNAL" {
+		general.UseInternalEditor = true
+	}
 	general.Confirmation = NilDefaultBool(cfg.Confirmation, def.Confirmation)
-	general.Confirmation = NilDefaultBool(cfg.MouseSupport, def.MouseSupport)
+	general.MouseSupport = NilDefaultBool(cfg.MouseSupport, def.MouseSupport)
 
 	dateFormat := NilDefaultString(cfg.DateFormat, def.DateFormat)
 	if dateFormat == "" {
