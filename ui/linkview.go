@@ -37,10 +37,7 @@ func linkViewUI(lv *LinkView) *tview.Flex {
 		NewControl(lv.tutView.tut.Config, lv.tutView.tut.Config.Input.LinkYank, true),
 	}
 	for _, cust := range lv.tutView.tut.Config.OpenCustom.OpenCustoms {
-		key := config.Key{
-			Hint: [][]string{{"", fmt.Sprintf("%d", cust.Index), cust.Name}},
-		}
-		items = append(items, NewControl(lv.tutView.tut.Config, key, true))
+		items = append(items, NewControl(lv.tutView.tut.Config, cust.Key, true))
 	}
 	lv.controls.Clear()
 	for i, item := range items {
@@ -114,7 +111,9 @@ func (lv *LinkView) Open() {
 			return
 		}
 		lv.tutView.Timeline.AddFeed(
-			NewUserFeed(lv.tutView, u),
+			NewUserFeed(lv.tutView, u, &config.Timeline{
+				FeedType: config.User,
+			}),
 		)
 		lv.tutView.FocusMainNoHistory()
 		return
@@ -122,7 +121,10 @@ func (lv *LinkView) Open() {
 	tIndex := index - len(mentions) - len(urls)
 	if tIndex < len(tags) {
 		lv.tutView.Timeline.AddFeed(
-			NewTagFeed(lv.tutView, tags[tIndex].Name, true, true),
+			NewTagFeed(lv.tutView, &config.Timeline{
+				FeedType:  config.Tag,
+				Subaction: tags[tIndex].Name,
+			}),
 		)
 		lv.tutView.FocusMainNoHistory()
 		return
@@ -162,17 +164,10 @@ func (lv *LinkView) Yank() {
 	copyToClipboard(url)
 }
 
-func (lv *LinkView) OpenCustom(index int) {
+func (lv *LinkView) OpenCustom(c config.Custom) {
 	url := lv.getURL()
 	if url == "" {
 		return
 	}
-	customs := lv.tutView.tut.Config.OpenCustom.OpenCustoms
-	for _, c := range customs {
-		if c.Index != index {
-			continue
-		}
-		openCustom(lv.tutView, c.Program, c.Args, c.Terminal, url)
-		return
-	}
+	openCustom(lv.tutView, c.Program, c.Args, c.Terminal, url)
 }

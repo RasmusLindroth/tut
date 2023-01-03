@@ -19,7 +19,7 @@ func NewCmdBar(tv *TutView) *CmdBar {
 		View:    NewInputField(tv.tut.Config),
 	}
 	c.View.SetAutocompleteFunc(c.Autocomplete)
-	//c.View.SetAutocompletedFunc(c.Autocompleted)
+	c.View.SetAutocompletedFunc(c.Autocompleted)
 	c.View.SetDoneFunc(c.DoneFunc)
 
 	return c
@@ -185,13 +185,13 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 			c.tutView.FederatedCommand()
 			c.Back()
 		case "special-all", "sa":
-			c.tutView.SpecialCommand(true, true)
+			c.tutView.SpecialCommand(false, false)
 			c.Back()
 		case "special-boosts", "sb":
-			c.tutView.SpecialCommand(true, false)
+			c.tutView.SpecialCommand(false, true)
 			c.Back()
 		case "special-replies", "sr":
-			c.tutView.SpecialCommand(false, true)
+			c.tutView.SpecialCommand(true, false)
 			c.Back()
 		case "direct", "d":
 			c.tutView.DirectCommand()
@@ -237,7 +237,10 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 			break
 		}
 		c.tutView.Timeline.AddFeed(
-			NewUserSearchFeed(c.tutView, user),
+			NewUserSearchFeed(c.tutView, &config.Timeline{
+				FeedType:  config.UserList,
+				Subaction: user,
+			}),
 		)
 		c.Back()
 	case ":refetch":
@@ -285,7 +288,7 @@ func (c *CmdBar) Autocomplete(curr string) []string {
 	}
 
 	if len(curr) > 2 && curr[:3] == ":tl" {
-		words = strings.Split(":tl home,:tl notifications,:tl local,:tl federated,:tl direct,:tl mentions,:tl favorited,:tl special-all,:tl special-boosts,:tl-special-replies", ",")
+		words = strings.Split(":tl home,:tl notifications,:tl local,:tl federated,:tl direct,:tl mentions,:tl favorited,:tl special-all,:tl special-boosts,:tl special-replies", ",")
 	}
 	if len(curr) > 8 && curr[:9] == ":timeline" {
 		words = strings.Split(":timeline home,:timeline notifications,:timeline local,:timeline federated,:timeline direct,:timeline mentions,:timeline favorited,:timeline special-all,:timeline special-boosts,:timeline special-replies", ",")
@@ -315,12 +318,9 @@ func (c *CmdBar) Autocomplete(curr string) []string {
 	return entries
 }
 
-/*
 func (c *CmdBar) Autocompleted(text string, index, source int) bool {
 	if source != tview.AutocompletedNavigate {
 		c.View.SetText(text)
 	}
-
-	return source == tview.AutocompletedEnter || source == tview.AutocompletedClick
+	return false
 }
-*/

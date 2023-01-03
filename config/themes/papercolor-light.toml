@@ -1,0 +1,22 @@
+# This is an adaption of NLKNguyen (https://github.com/NLKNguyen)'s
+# PaperColor Light theme for tut (https://github.com/RasmusLindroth/tut).
+#
+# @author: stoerdebegga <stoerdebegga@mailbox.org>
+# @source: https://codeberg.org/stoerdebegga/papercolor-light-contrib
+# @source99: https://github.com/stoerdebegga/papercolor-light-contrib
+#
+background="#EEEEEE"
+text="#4D4D4C"
+subtle="#4271AE"
+warning-text="#D7005F"
+text-special-one="#969694"
+text-special-two="#D7005F"
+top-bar-background="#4271AE"
+top-bar-text="#EEEEEE"
+status-bar-background="#4271AE"
+status-bar-text="#EEEEEE"
+status-bar-view-background="#718C00"
+status-bar-view-text="#f5f5f5"
+command-text="#4D4D4C"
+list-selected-background="#D7005F"
+list-selected-text="#f5f5f5"

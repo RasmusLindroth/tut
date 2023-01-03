@@ -21,31 +21,31 @@ type Timeline struct {
 	scrollSleep    *scrollSleep
 }
 
-func CreateFeed(tv *TutView, ft config.FeedType, data string, showBoosts, showReplies bool) *Feed {
+func CreateFeed(tv *TutView, f *config.Timeline) *Feed {
 	var nf *Feed
-	switch ft {
+	switch f.FeedType {
 	case config.TimelineHome:
-		nf = NewHomeFeed(tv, showBoosts, showReplies)
+		nf = NewHomeFeed(tv, f)
 	case config.TimelineHomeSpecial:
-		nf = NewHomeSpecialFeed(tv, showBoosts, showReplies)
+		nf = NewHomeSpecialFeed(tv, f)
 	case config.Conversations:
-		nf = NewConversationsFeed(tv)
+		nf = NewConversationsFeed(tv, f)
 	case config.TimelineLocal:
-		nf = NewLocalFeed(tv, showBoosts, showReplies)
+		nf = NewLocalFeed(tv, f)
 	case config.TimelineFederated:
-		nf = NewFederatedFeed(tv, showBoosts, showReplies)
+		nf = NewFederatedFeed(tv, f)
 	case config.Saved:
-		nf = NewBookmarksFeed(tv)
+		nf = NewBookmarksFeed(tv, f)
 	case config.Favorited:
-		nf = NewFavoritedFeed(tv)
+		nf = NewFavoritedFeed(tv, f)
 	case config.Notifications:
-		nf = NewNotificationFeed(tv, showBoosts, showReplies)
+		nf = NewNotificationFeed(tv, f)
 	case config.Mentions:
-		nf = NewNotificatioMentionsFeed(tv, showBoosts, showReplies)
+		nf = NewNotificatioMentionsFeed(tv, f)
 	case config.Lists:
-		nf = NewListsFeed(tv)
+		nf = NewListsFeed(tv, f)
 	case config.Tag:
-		nf = NewTagFeed(tv, data, showBoosts, showReplies)
+		nf = NewTagFeed(tv, f)
 	default:
 		fmt.Println("Invalid feed")
 		tv.CleanExit(1)
@@ -61,7 +61,7 @@ func NewTimeline(tv *TutView, update chan bool) *Timeline {
 	}
 	tl.scrollSleep = NewScrollSleep(tl.NextItemFeed, tl.PrevItemFeed)
 	for _, f := range tv.tut.Config.General.Timelines {
-		nf := CreateFeed(tv, f.FeedType, f.Subaction, f.ShowBoosts, f.ShowReplies)
+		nf := CreateFeed(tv, f)
 		tl.Feeds = append(tl.Feeds, &FeedHolder{
 			Feeds: []*Feed{nf},
 			Name:  f.Name,
@@ -191,10 +191,10 @@ func (tl *Timeline) PrevFeed() {
 	tl.update <- true
 }
 
-func (tl *Timeline) FindAndGoTo(ft config.FeedType, data string, showBoosts, showReplies bool) bool {
+func (tl *Timeline) FindAndGoTo(ft config.FeedType, data string, hideBoosts, hideReplies bool) bool {
 	for i, fh := range tl.Feeds {
 		for j, f := range fh.Feeds {
-			if f.Data.Type() == ft && f.ShowBoosts == showBoosts && f.ShowReplies == showReplies {
+			if f.Data.Type() == ft && f.Timeline.HideBoosts == hideBoosts && f.Timeline.HideReplies == hideReplies {
 				if ft == config.Tag && f.Data.Name() != data {
 					continue
 				}

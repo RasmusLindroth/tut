@@ -15,7 +15,7 @@ import (
 	"github.com/RasmusLindroth/tut/util"
 	"github.com/gdamore/tcell/v2"
 	"github.com/gobwas/glob"
-	"golang.org/x/exp/slices"
+	"github.com/pelletier/go-toml/v2"
 	"gopkg.in/ini.v1"
 )
 
@@ -145,8 +145,9 @@ type Timeline struct {
 	Subaction   string
 	Name        string
 	Key         Key
-	ShowBoosts  bool
-	ShowReplies bool
+	Hidden      bool
+	HideBoosts  bool
+	HideReplies bool
 }
 
 type General struct {
@@ -156,7 +157,6 @@ type General struct {
 	DateFormat          string
 	DateRelative        int
 	MaxWidth            int
-	NotificationFeed    bool
 	QuoteReply          bool
 	ShortHints          bool
 	ShowFilterPhrase    bool
@@ -171,8 +171,7 @@ type General struct {
 	LeaderKey           rune
 	LeaderTimeout       int64
 	LeaderActions       []LeaderAction
-	TimelineName        bool
-	Timelines           []Timeline
+	Timelines           []*Timeline
 	StickToTop          bool
 	NotificationsToHide []NotificationToHide
 	ShowBoostedUser     bool
@@ -247,8 +246,6 @@ type Media struct {
 }
 
 type Pattern struct {
-	Pattern  string
-	Open     string
 	Compiled glob.Glob
 	Program  string
 	Args     []string
@@ -265,6 +262,7 @@ type Custom struct {
 	Program  string
 	Args     []string
 	Terminal bool
+	Key      Key
 }
 type OpenCustom struct {
 	OpenCustoms []Custom
@@ -314,7 +312,35 @@ type Templates struct {
 	Help *template.Template
 }
 
-var keyMatch = regexp.MustCompile("^\"(.*?)\\[(.*?)\\](.*?)\"$")
+func NilDefaultBool(x *bool, def *bool) bool {
+	if x == nil {
+		return *def
+	}
+	return *x
+}
+
+func NilDefaultString(x *string, def *string) string {
+	if x == nil {
+		return *def
+	}
+	return *x
+}
+
+func NilDefaultInt(x *int, def *int) int {
+	if x == nil {
+		return *def
+	}
+	return *x
+}
+
+func NilDefaultInt64(x *int64, def *int64) int64 {
+	if x == nil {
+		return *def
+	}
+	return *x
+}
+
+var keyMatch = regexp.MustCompile(`^(.*?)\[(.*?)\](.*?)$`)
 
 func newHint(s string) []string {
 	matches := keyMatch.FindAllStringSubmatch(s, -1)
@@ -325,6 +351,46 @@ func newHint(s string) []string {
 		return []string{"", "", ""}
 	}
 	return []string{matches[0][1], matches[0][2], matches[0][3]}
+}
+
+func NewKeyT(hint string, hintAlt string, keys []string, special []string) (Key, error) {
+	k := Key{}
+	if len(hint) > 0 && len(hintAlt) > 0 {
+		k.Hint = [][]string{newHint(hint), newHint(hintAlt)}
+	} else if len(hint) > 0 {
+		k.Hint = [][]string{newHint(hint), newHint(hintAlt)}
+	}
+	var runes []rune
+	var keysTcell []tcell.Key
+	for _, r := range keys {
+		if len(r) > 1 {
+			return k, fmt.Errorf("key %s can only be one char", r)
+		}
+		if len(r) == 0 {
+			continue
+		}
+		runes = append(runes, rune(r[0]))
+	}
+	for _, s := range special {
+		found := false
+		var fk tcell.Key
+		for tk, tv := range tcell.KeyNames {
+			if tv == s {
+				found = true
+				fk = tk
+				break
+			}
+		}
+		if found {
+			keysTcell = append(keysTcell, fk)
+		} else {
+			return k, fmt.Errorf("no key named %s", s)
+		}
+	}
+	k.Runes = runes
+	k.Keys = keysTcell
+
+	return k, nil
 }
 
 func NewKey(s []string, double bool) (Key, error) {
@@ -507,10 +573,142 @@ func parseColor(input string, def string, xrdb map[string]string) tcell.Color {
 	return tcell.GetColor(input)
 }
 
-func parseStyle(cfg *ini.File, cnfPath string, cnfDir string) Style {
+func parseTheme(cfg StyleTOML, xrdbColors map[string]string) Style {
+	var style Style
+	def := ConfigDefault.Style
+	s := NilDefaultString(cfg.Background, def.Background)
+	style.Background = parseColor(s, "#27822", xrdbColors)
+
+	s = NilDefaultString(cfg.Text, def.Text)
+	style.Text = parseColor(s, "#f8f8f2", xrdbColors)
+
+	s = NilDefaultString(cfg.Subtle, def.Subtle)
+	style.Subtle = parseColor(s, "#808080", xrdbColors)
+
+	s = NilDefaultString(cfg.WarningText, def.WarningText)
+	style.WarningText = parseColor(s, "#f92672", xrdbColors)
+
+	s = NilDefaultString(cfg.TextSpecial1, def.TextSpecial1)
+	style.TextSpecial1 = parseColor(s, "#ae81ff", xrdbColors)
+
+	s = NilDefaultString(cfg.TextSpecial2, def.TextSpecial2)
+	style.TextSpecial2 = parseColor(s, "#a6e22e", xrdbColors)
+
+	s = NilDefaultString(cfg.TopBarBackground, def.TopBarBackground)
+	style.TopBarBackground = parseColor(s, "#f92672", xrdbColors)
+
+	s = NilDefaultString(cfg.TopBarText, def.TopBarText)
+	style.TopBarText = parseColor(s, "white", xrdbColors)
+
+	s = NilDefaultString(cfg.StatusBarBackground, def.StatusBarBackground)
+	style.StatusBarBackground = parseColor(s, "#f92672", xrdbColors)
+
+	s = NilDefaultString(cfg.StatusBarText, def.StatusBarText)
+	style.StatusBarText = parseColor(s, "white", xrdbColors)
+
+	s = NilDefaultString(cfg.StatusBarViewBackground, def.StatusBarViewBackground)
+	style.StatusBarViewBackground = parseColor(s, "#ae81ff", xrdbColors)
+
+	s = NilDefaultString(cfg.StatusBarViewText, def.StatusBarViewText)
+	style.StatusBarViewText = parseColor(s, "white", xrdbColors)
+
+	s = NilDefaultString(cfg.ListSelectedBackground, def.ListSelectedBackground)
+	style.ListSelectedBackground = parseColor(s, "#f92672", xrdbColors)
+
+	s = NilDefaultString(cfg.ListSelectedText, def.ListSelectedText)
+	style.ListSelectedText = parseColor(s, "white", xrdbColors)
+
+	s = NilDefaultString(cfg.ListSelectedInactiveBackground, sp(""))
+	if len(s) > 0 {
+		style.ListSelectedInactiveBackground = parseColor(s, "#ae81ff", xrdbColors)
+	} else {
+		style.ListSelectedInactiveBackground = style.StatusBarViewBackground
+	}
+	s = NilDefaultString(cfg.ListSelectedInactiveText, def.ListSelectedInactiveText)
+	if len(s) > 0 {
+		style.ListSelectedInactiveText = parseColor(s, "#f8f8f2", xrdbColors)
+	} else {
+		style.ListSelectedInactiveText = style.StatusBarViewText
+	}
+
+	s = NilDefaultString(cfg.ControlsText, sp(""))
+	if len(s) > 0 {
+		style.ControlsText = parseColor(s, "#f8f8f2", xrdbColors)
+	} else {
+		style.ControlsText = style.Text
+	}
+	s = NilDefaultString(cfg.ControlsHighlight, sp(""))
+	if len(s) > 0 {
+		style.ControlsHighlight = parseColor(s, "#a6e22e", xrdbColors)
+	} else {
+		style.ControlsHighlight = style.TextSpecial2
+	}
+
+	s = NilDefaultString(cfg.AutocompleteBackground, sp(""))
+	if len(s) > 0 {
+		style.AutocompleteBackground = parseColor(s, "#272822", xrdbColors)
+	} else {
+		style.AutocompleteBackground = style.Background
+	}
+	s = NilDefaultString(cfg.AutocompleteText, sp(""))
+	if len(s) > 0 {
+		style.AutocompleteText = parseColor(s, "#f8f8f2", xrdbColors)
+	} else {
+		style.AutocompleteText = style.Text
+	}
+	s = NilDefaultString(cfg.AutocompleteSelectedBackground, sp(""))
+	if len(s) > 0 {
+		style.AutocompleteSelectedBackground = parseColor(s, "#ae81ff", xrdbColors)
+	} else {
+		style.AutocompleteSelectedBackground = style.StatusBarViewBackground
+	}
+	s = NilDefaultString(cfg.AutocompleteSelectedText, sp(""))
+	if len(s) > 0 {
+		style.AutocompleteSelectedText = parseColor(s, "#f8f8f2", xrdbColors)
+	} else {
+		style.AutocompleteSelectedText = style.StatusBarViewText
+	}
+
+	s = NilDefaultString(cfg.ButtonColorOne, sp(""))
+	if len(s) > 0 {
+		style.ButtonColorOne = parseColor(s, "#ae81ff", xrdbColors)
+	} else {
+		style.ButtonColorOne = style.StatusBarViewBackground
+	}
+	s = NilDefaultString(cfg.ButtonColorTwo, sp(""))
+	if len(s) > 0 {
+		style.ButtonColorTwo = parseColor(s, "#272822", xrdbColors)
+	} else {
+		style.ButtonColorTwo = style.Background
+	}
+
+	s = NilDefaultString(cfg.TimelineNameBackground, sp(""))
+	if len(s) > 0 {
+		style.TimelineNameBackground = parseColor(s, "#272822", xrdbColors)
+	} else {
+		style.TimelineNameBackground = style.Background
+	}
+	s = NilDefaultString(cfg.TimelineNameText, sp(""))
+	if len(s) > 0 {
+		style.TimelineNameText = parseColor(s, "gray", xrdbColors)
+	} else {
+		style.TimelineNameText = style.Subtle
+	}
+
+	s = NilDefaultString(cfg.CommandText, sp(""))
+	if len(s) > 0 {
+		style.CommandText = parseColor(s, "white", xrdbColors)
+	} else {
+		style.CommandText = style.StatusBarText
+	}
+	return style
+}
+
+func parseStyle(cfg StyleTOML, cnfPath string, cnfDir string) Style {
 	var xrdbColors map[string]string
 	xrdbMap, _ := GetXrdbColors()
-	prefix := cfg.Section("style").Key("xrdb-prefix").String()
+	def := ConfigDefault.Style
+	prefix := NilDefaultString(cfg.XrdbPrefix, def.XrdbPrefix)
 	if prefix == "" {
 		prefix = "guess"
 	}
@@ -530,7 +728,7 @@ func parseStyle(cfg *ini.File, cnfPath string, cnfDir string) Style {
 	}
 
 	style := Style{}
-	theme := cfg.Section("style").Key("theme").String()
+	theme := NilDefaultString(cfg.Theme, def.Theme)
 	if theme != "none" && theme != "" {
 		bundled, local, err := getThemes(cnfPath, cnfDir)
 		if err != nil {
@@ -539,7 +737,7 @@ func parseStyle(cfg *ini.File, cnfPath string, cnfDir string) Style {
 		found := false
 		isLocal := false
 		for _, t := range local {
-			if filepath.Base(t) == fmt.Sprintf("%s.ini", theme) {
+			if filepath.Base(t) == fmt.Sprintf("%s.toml", theme) {
 				found = true
 				isLocal = true
 				break
@@ -547,7 +745,7 @@ func parseStyle(cfg *ini.File, cnfPath string, cnfDir string) Style {
 		}
 		if !found {
 			for _, t := range bundled {
-				if filepath.Base(t) == fmt.Sprintf("%s.ini", theme) {
+				if filepath.Base(t) == fmt.Sprintf("%s.toml", theme) {
 					found = true
 					break
 				}
@@ -560,303 +758,108 @@ func parseStyle(cfg *ini.File, cnfPath string, cnfDir string) Style {
 		if err != nil {
 			log.Fatalf("Couldn't load theme. Error: %s\n", err)
 		}
-		s := tcfg.Section("").Key("background").String()
-		style.Background = parseColor(s, "default", xrdbColors)
+		style = parseTheme(tcfg, xrdbColors)
 
-		s = tcfg.Section("").Key("text").String()
-		style.Text = tcell.GetColor(s)
-
-		s = tcfg.Section("").Key("subtle").String()
-		style.Subtle = tcell.GetColor(s)
-
-		s = tcfg.Section("").Key("warning-text").String()
-		style.WarningText = tcell.GetColor(s)
-
-		s = tcfg.Section("").Key("text-special-one").String()
-		style.TextSpecial1 = tcell.GetColor(s)
-
-		s = tcfg.Section("").Key("text-special-two").String()
-		style.TextSpecial2 = tcell.GetColor(s)
-
-		s = tcfg.Section("").Key("top-bar-background").String()
-		style.TopBarBackground = tcell.GetColor(s)
-
-		s = tcfg.Section("").Key("top-bar-text").String()
-		style.TopBarText = tcell.GetColor(s)
-
-		s = tcfg.Section("").Key("status-bar-background").String()
-		style.StatusBarBackground = tcell.GetColor(s)
-
-		s = tcfg.Section("").Key("status-bar-text").String()
-		style.StatusBarText = tcell.GetColor(s)
-
-		s = tcfg.Section("").Key("status-bar-view-background").String()
-		style.StatusBarViewBackground = tcell.GetColor(s)
-
-		s = tcfg.Section("").Key("status-bar-view-text").String()
-		style.StatusBarViewText = tcell.GetColor(s)
-
-		s = tcfg.Section("").Key("list-selected-background").String()
-		style.ListSelectedBackground = tcell.GetColor(s)
-
-		s = tcfg.Section("").Key("list-selected-text").String()
-		style.ListSelectedText = tcell.GetColor(s)
-
-		s = tcfg.Section("").Key("list-selected-inactive-background").String()
-		if len(s) > 0 {
-			style.ListSelectedInactiveBackground = tcell.GetColor(s)
-		} else {
-			style.ListSelectedInactiveBackground = style.StatusBarViewBackground
-		}
-		s = tcfg.Section("").Key("list-selected-inactive-text").String()
-		if len(s) > 0 {
-			style.ListSelectedInactiveText = tcell.GetColor(s)
-		} else {
-			style.ListSelectedInactiveText = style.StatusBarViewText
-		}
-
-		s = tcfg.Section("").Key("controls-highlight").String()
-		if len(s) > 0 {
-			style.ControlsHighlight = tcell.GetColor(s)
-		} else {
-			style.ControlsHighlight = style.TextSpecial2
-		}
-
-		s = tcfg.Section("").Key("controls-text").String()
-		if len(s) > 0 {
-			style.ControlsText = tcell.GetColor(s)
-		} else {
-			style.ControlsText = style.Text
-		}
-		s = tcfg.Section("").Key("controls-highlight").String()
-		if len(s) > 0 {
-			style.ControlsHighlight = tcell.GetColor(s)
-		} else {
-			style.ControlsHighlight = style.TextSpecial2
-		}
-
-		s = tcfg.Section("").Key("autocomplete-background").String()
-		if len(s) > 0 {
-			style.AutocompleteBackground = tcell.GetColor(s)
-		} else {
-			style.AutocompleteBackground = style.Background
-		}
-		s = tcfg.Section("").Key("autocomplete-text").String()
-		if len(s) > 0 {
-			style.AutocompleteText = tcell.GetColor(s)
-		} else {
-			style.AutocompleteText = style.Text
-		}
-		s = tcfg.Section("").Key("autocomplete-selected-background").String()
-		if len(s) > 0 {
-			style.AutocompleteSelectedBackground = tcell.GetColor(s)
-		} else {
-			style.AutocompleteSelectedBackground = style.StatusBarViewBackground
-		}
-		s = tcfg.Section("").Key("autocomplete-selected-text").String()
-		if len(s) > 0 {
-			style.AutocompleteSelectedText = tcell.GetColor(s)
-		} else {
-			style.AutocompleteSelectedText = style.StatusBarViewText
-		}
-
-		s = tcfg.Section("").Key("button-color-one").String()
-		if len(s) > 0 {
-			style.ButtonColorOne = tcell.GetColor(s)
-		} else {
-			style.ButtonColorOne = style.StatusBarViewBackground
-		}
-		s = tcfg.Section("").Key("button-color-two").String()
-		if len(s) > 0 {
-			style.ButtonColorTwo = tcell.GetColor(s)
-		} else {
-			style.ButtonColorTwo = style.Background
-		}
-
-		s = tcfg.Section("").Key("timeline-name-background").String()
-		if len(s) > 0 {
-			style.TimelineNameBackground = tcell.GetColor(s)
-		} else {
-			style.TimelineNameBackground = style.Background
-		}
-		s = tcfg.Section("").Key("timeline-name-text").String()
-		if len(s) > 0 {
-			style.TimelineNameText = tcell.GetColor(s)
-		} else {
-			style.TimelineNameText = style.Subtle
-		}
-		s = tcfg.Section("").Key("command-text").String()
-		if len(s) > 0 {
-			style.CommandText = tcell.GetColor(s)
-		} else {
-			style.CommandText = style.StatusBarText
-		}
 	} else {
-		s := cfg.Section("style").Key("background").String()
-		style.Background = parseColor(s, "#27822", xrdbColors)
-
-		s = cfg.Section("style").Key("text").String()
-		style.Text = parseColor(s, "#f8f8f2", xrdbColors)
-
-		s = cfg.Section("style").Key("subtle").String()
-		style.Subtle = parseColor(s, "#808080", xrdbColors)
-
-		s = cfg.Section("style").Key("warning-text").String()
-		style.WarningText = parseColor(s, "#f92672", xrdbColors)
-
-		s = cfg.Section("style").Key("text-special-one").String()
-		style.TextSpecial1 = parseColor(s, "#ae81ff", xrdbColors)
-
-		s = cfg.Section("style").Key("text-special-two").String()
-		style.TextSpecial2 = parseColor(s, "#a6e22e", xrdbColors)
-
-		s = cfg.Section("style").Key("top-bar-background").String()
-		style.TopBarBackground = parseColor(s, "#f92672", xrdbColors)
-
-		s = cfg.Section("style").Key("top-bar-text").String()
-		style.TopBarText = parseColor(s, "white", xrdbColors)
-
-		s = cfg.Section("style").Key("status-bar-background").String()
-		style.StatusBarBackground = parseColor(s, "#f92672", xrdbColors)
-
-		s = cfg.Section("style").Key("status-bar-text").String()
-		style.StatusBarText = parseColor(s, "white", xrdbColors)
-
-		s = cfg.Section("style").Key("status-bar-view-background").String()
-		style.StatusBarViewBackground = parseColor(s, "#ae81ff", xrdbColors)
-
-		s = cfg.Section("style").Key("status-bar-view-text").String()
-		style.StatusBarViewText = parseColor(s, "white", xrdbColors)
-
-		s = cfg.Section("style").Key("list-selected-background").String()
-		style.ListSelectedBackground = parseColor(s, "#f92672", xrdbColors)
-
-		s = cfg.Section("style").Key("list-selected-text").String()
-		style.ListSelectedText = parseColor(s, "white", xrdbColors)
-
-		s = cfg.Section("style").Key("list-selected-inactive-background").String()
-		if len(s) > 0 {
-			style.ListSelectedInactiveBackground = parseColor(s, "#ae81ff", xrdbColors)
-		} else {
-			style.ListSelectedInactiveBackground = style.StatusBarViewBackground
-		}
-		s = cfg.Section("style").Key("list-selected-inactive-text").String()
-		if len(s) > 0 {
-			style.ListSelectedInactiveText = parseColor(s, "#f8f8f2", xrdbColors)
-		} else {
-			style.ListSelectedInactiveText = style.StatusBarViewText
-		}
-
-		s = cfg.Section("style").Key("controls-text").String()
-		if len(s) > 0 {
-			style.ControlsText = parseColor(s, "#f8f8f2", xrdbColors)
-		} else {
-			style.ControlsText = style.Text
-		}
-		s = cfg.Section("style").Key("controls-highlight").String()
-		if len(s) > 0 {
-			style.ControlsHighlight = parseColor(s, "#a6e22e", xrdbColors)
-		} else {
-			style.ControlsHighlight = style.TextSpecial2
-		}
-
-		s = cfg.Section("style").Key("autocomplete-background").String()
-		if len(s) > 0 {
-			style.AutocompleteBackground = parseColor(s, "#272822", xrdbColors)
-		} else {
-			style.AutocompleteBackground = style.Background
-		}
-		s = cfg.Section("style").Key("autocomplete-text").String()
-		if len(s) > 0 {
-			style.AutocompleteText = parseColor(s, "#f8f8f2", xrdbColors)
-		} else {
-			style.AutocompleteText = style.Text
-		}
-		s = cfg.Section("style").Key("autocomplete-selected-background").String()
-		if len(s) > 0 {
-			style.AutocompleteSelectedBackground = parseColor(s, "#ae81ff", xrdbColors)
-		} else {
-			style.AutocompleteSelectedBackground = style.StatusBarViewBackground
-		}
-		s = cfg.Section("style").Key("autocomplete-selected-text").String()
-		if len(s) > 0 {
-			style.AutocompleteSelectedText = parseColor(s, "#f8f8f2", xrdbColors)
-		} else {
-			style.AutocompleteSelectedText = style.StatusBarViewText
-		}
-
-		s = cfg.Section("style").Key("button-color-one").String()
-		if len(s) > 0 {
-			style.ButtonColorOne = parseColor(s, "#ae81ff", xrdbColors)
-		} else {
-			style.ButtonColorOne = style.StatusBarViewBackground
-		}
-		s = cfg.Section("style").Key("button-color-two").String()
-		if len(s) > 0 {
-			style.ButtonColorTwo = parseColor(s, "#272822", xrdbColors)
-		} else {
-			style.ButtonColorTwo = style.Background
-		}
-
-		s = cfg.Section("style").Key("timeline-name-background").String()
-		if len(s) > 0 {
-			style.TimelineNameBackground = parseColor(s, "#272822", xrdbColors)
-		} else {
-			style.TimelineNameBackground = style.Background
-		}
-		s = cfg.Section("style").Key("timeline-name-text").String()
-		if len(s) > 0 {
-			style.TimelineNameText = parseColor(s, "gray", xrdbColors)
-		} else {
-			style.TimelineNameText = style.Subtle
-		}
-
-		s = cfg.Section("style").Key("command-text").String()
-		if len(s) > 0 {
-			style.CommandText = parseColor(s, "white", xrdbColors)
-		} else {
-			style.CommandText = style.StatusBarText
-		}
+		style = parseTheme(cfg, xrdbColors)
 	}
 
 	return style
 }
 
-func parseGeneral(cfg *ini.File) General {
+func getViewer(v *ViewerTOML, def *ViewerTOML) (program, args string, terminal, single, reverse bool) {
+	program = *def.Program
+	args = *def.Args
+	terminal = *def.Terminal
+	single = *def.Single
+	reverse = *def.Reverse
+	if v == nil {
+		return
+	}
+	if v.Program != nil {
+		program = *v.Program
+	}
+	if v.Args != nil {
+		args = *v.Args
+	}
+	if v.Terminal != nil {
+		terminal = *v.Terminal
+	}
+	if v.Single != nil {
+		single = *v.Single
+	}
+	if v.Reverse != nil {
+		reverse = *v.Reverse
+	}
+	return
+}
+
+func parseMedia(cfg MediaTOML) Media {
+	media := Media{}
+	var program, args string
+	var terminal, single, reverse bool
+
+	program, args, terminal, single, reverse = getViewer(cfg.Image, ConfigDefault.Media.Image)
+	media.ImageViewer = program
+	media.ImageArgs = strings.Fields(args)
+	media.ImageTerminal = terminal
+	media.ImageSingle = single
+	media.ImageReverse = reverse
+
+	program, args, terminal, single, reverse = getViewer(cfg.Video, ConfigDefault.Media.Video)
+	media.VideoViewer = program
+	media.VideoArgs = strings.Fields(args)
+	media.VideoTerminal = terminal
+	media.VideoSingle = single
+	media.VideoReverse = reverse
+
+	program, args, terminal, single, reverse = getViewer(cfg.Audio, ConfigDefault.Media.Audio)
+	media.AudioViewer = program
+	media.AudioArgs = strings.Fields(args)
+	media.AudioTerminal = terminal
+	media.AudioSingle = single
+	media.AudioReverse = reverse
+
+	program, args, terminal, _, _ = getViewer(cfg.Link, ConfigDefault.Media.Link)
+	media.LinkViewer = program
+	media.LinkArgs = strings.Fields(args)
+	media.LinkTerminal = terminal
+
+	return media
+}
+
+func parseGeneral(cfg GeneralTOML) General {
 	general := General{}
 
-	general.Confirmation = cfg.Section("general").Key("confirmation").MustBool(true)
-	general.MouseSupport = cfg.Section("general").Key("mouse-support").MustBool(false)
-	dateFormat := cfg.Section("general").Key("date-format").String()
+	def := ConfigDefault.General
+	general.Confirmation = NilDefaultBool(cfg.Confirmation, def.Confirmation)
+	general.Confirmation = NilDefaultBool(cfg.MouseSupport, def.MouseSupport)
+
+	dateFormat := NilDefaultString(cfg.DateFormat, def.DateFormat)
 	if dateFormat == "" {
 		dateFormat = "2006-01-02 15:04"
 	}
 	general.DateFormat = dateFormat
 
-	dateTodayFormat := cfg.Section("general").Key("date-today-format").String()
+	dateTodayFormat := NilDefaultString(cfg.DateTodayFormat, def.DateTodayFormat)
 	if dateTodayFormat == "" {
 		dateTodayFormat = "15:04"
 	}
 	general.DateTodayFormat = dateTodayFormat
 
-	dateRelative, err := cfg.Section("general").Key("date-relative").Int()
-	if err != nil {
-		dateRelative = -1
-	}
-	general.DateRelative = dateRelative
+	general.DateRelative = NilDefaultInt(cfg.DateRelative, def.DateRelative)
 
-	general.NotificationFeed = cfg.Section("general").Key("notification-feed").MustBool(true)
-	general.QuoteReply = cfg.Section("general").Key("quote-reply").MustBool(false)
-	general.MaxWidth = cfg.Section("general").Key("max-width").MustInt(0)
-	general.ShortHints = cfg.Section("general").Key("short-hints").MustBool(false)
-	general.ShowFilterPhrase = cfg.Section("general").Key("show-filter-phrase").MustBool(true)
-	general.ShowIcons = cfg.Section("general").Key("show-icons").MustBool(true)
-	general.ShowHelp = cfg.Section("general").Key("show-help").MustBool(true)
-	general.RedrawUI = cfg.Section("general").Key("redraw-ui").MustBool(true)
-	general.StickToTop = cfg.Section("general").Key("stick-to-top").MustBool(false)
-	general.ShowBoostedUser = cfg.Section("general").Key("show-boosted-user").MustBool(false)
+	general.QuoteReply = NilDefaultBool(cfg.QuoteReply, def.QuoteReply)
+	general.MaxWidth = NilDefaultInt(cfg.MaxWidth, def.MaxWidth)
+	general.ShortHints = NilDefaultBool(cfg.ShortHints, def.ShortHints)
+	general.ShowFilterPhrase = NilDefaultBool(cfg.ShowFilterPhrase, def.ShowFilterPhrase)
+	general.ShowIcons = NilDefaultBool(cfg.ShowIcons, def.ShowIcons)
+	general.ShowHelp = NilDefaultBool(cfg.ShowHelp, def.ShowHelp)
+	general.RedrawUI = NilDefaultBool(cfg.RedrawUI, def.RedrawUI)
+	general.StickToTop = NilDefaultBool(cfg.StickToTop, def.StickToTop)
+	general.ShowBoostedUser = NilDefaultBool(cfg.ShowBoostedUser, def.ShowBoostedUser)
 
-	lp := cfg.Section("general").Key("list-placement").In("left", []string{"left", "right", "top", "bottom"})
+	lp := NilDefaultString(cfg.ListPlacement, def.ListPlacement)
 	switch lp {
 	case "left":
 		general.ListPlacement = ListPlacementLeft
@@ -866,8 +869,10 @@ func parseGeneral(cfg *ini.File) General {
 		general.ListPlacement = ListPlacementTop
 	case "bottom":
 		general.ListPlacement = ListPlacementBottom
+	default:
+		general.ListPlacement = ListPlacementLeft
 	}
-	ls := cfg.Section("general").Key("list-split").In("row", []string{"row", "column"})
+	ls := NilDefaultString(cfg.ListSplit, def.ListSplit)
 	switch ls {
 	case "row":
 		general.ListSplit = ListRow
@@ -875,18 +880,18 @@ func parseGeneral(cfg *ini.File) General {
 		general.ListSplit = ListColumn
 	}
 
-	listProp := cfg.Section("general").Key("list-proportion").MustInt(1)
+	listProp := NilDefaultInt(cfg.ListProportion, def.ListProportion)
 	if listProp < 1 {
 		listProp = 1
 	}
-	contentProp := cfg.Section("general").Key("content-proportion").MustInt(2)
+	contentProp := NilDefaultInt(cfg.ContentProportion, def.ContentProportion)
 	if contentProp < 1 {
 		contentProp = 1
 	}
 	general.ListProportion = listProp
 	general.ContentProportion = contentProp
 
-	leaderString := cfg.Section("general").Key("leader-key").MustString("")
+	leaderString := NilDefaultString(cfg.LeaderKey, def.LeaderKey)
 	leaderRunes := []rune(leaderString)
 	if len(leaderRunes) > 1 {
 		leaderRunes = []rune(strings.TrimSpace(leaderString))
@@ -898,241 +903,190 @@ func parseGeneral(cfg *ini.File) General {
 	if len(leaderRunes) == 1 {
 		general.LeaderKey = leaderRunes[0]
 	}
+	general.LeaderTimeout = NilDefaultInt64(cfg.LeaderTimeout, def.LeaderTimeout)
 	if general.LeaderKey != rune(0) {
-		general.LeaderTimeout = cfg.Section("general").Key("leader-timeout").MustInt64(1000)
-		lactions := cfg.Section("general").Key("leader-action").ValueWithShadows()
 		var las []LeaderAction
-		for _, l := range lactions {
-			parts := strings.Split(l, ",")
-			if len(parts) < 2 {
-				fmt.Printf("leader-action must consist of atleast two parts separated by a comma. Your value is: %s\n", strings.Join(parts, ","))
-				os.Exit(1)
-			}
-			for i, p := range parts {
-				parts[i] = strings.TrimSpace(p)
-			}
-			cmd := parts[0]
-			var subaction string
-			if strings.Contains(parts[0], " ") {
-				p := strings.Split(cmd, " ")
-				cmd = p[0]
-				subaction = strings.Join(p[1:], " ")
-			}
-			la := LeaderAction{}
-			switch cmd {
-			case "home":
-				la.Command = LeaderHome
-			case "direct":
-				la.Command = LeaderDirect
-			case "local":
-				la.Command = LeaderLocal
-			case "federated":
-				la.Command = LeaderFederated
-			case "special-all":
-				la.Command = LeaderSpecialAll
-			case "special-boosts":
-				la.Command = LeaderSpecialBoosts
-			case "special-replies":
-				la.Command = LeaderSpecialReplies
-			case "clear-notifications":
-				la.Command = LeaderClearNotifications
-			case "compose":
-				la.Command = LeaderCompose
-			case "edit":
-				la.Command = LeaderEdit
-			case "blocking":
-				la.Command = LeaderBlocking
-			case "bookmarks":
-				la.Command = LeaderBookmarks
-			case "saved":
-				la.Command = LeaderSaved
-			case "favorited":
-				la.Command = LeaderFavorited
-			case "history":
-				la.Command = LeaderHistory
-			case "boosts":
-				la.Command = LeaderBoosts
-			case "favorites":
-				la.Command = LeaderFavorites
-			case "following":
-				la.Command = LeaderFollowing
-			case "followers":
-				la.Command = LeaderFollowers
-			case "muting":
-				la.Command = LeaderMuting
-			case "preferences":
-				la.Command = LeaderPreferences
-			case "profile":
-				la.Command = LeaderProfile
-			case "notifications":
-				la.Command = LeaderNotifications
-			case "mentions":
-				la.Command = LeaderMentions
-			case "lists":
-				la.Command = LeaderLists
-			case "stick-to-top":
-				la.Command = LeaderStickToTop
-			case "refetch":
-				la.Command = LeaderRefetch
-			case "tag":
-				la.Command = LeaderTag
-				la.Subaction = subaction
-			case "tags":
-				la.Command = LeaderTags
-			case "list-placement":
-				la.Command = LeaderListPlacement
-				la.Subaction = subaction
-			case "list-split":
-				la.Command = LeaderListSplit
-				la.Subaction = subaction
-			case "proportions":
-				la.Command = LeaderProportions
-				la.Subaction = subaction
-			case "window":
-				la.Command = LeaderWindow
-				la.Subaction = subaction
-			case "close-window":
-				la.Command = LeaderCloseWindow
-			case "move-window-left", "move-window-up":
-				la.Command = LeaderMoveWindowLeft
-			case "move-window-right", "move-window-down":
-				la.Command = LeaderMoveWindowRight
-			case "move-window-home":
-				la.Command = LeaderMoveWindowHome
-			case "move-window-end":
-				la.Command = LeaderMoveWindowEnd
-			case "switch":
-				la.Command = LeaderSwitch
-				sa := ""
-				if len(parts) > 2 {
-					sa = strings.Join(parts[2:], ",")
+		if cfg.LeaderActions != nil {
+			lactions := *cfg.LeaderActions
+			for _, l := range lactions {
+				la := LeaderAction{}
+				ltype := NilDefaultString(l.Type, sp(""))
+				ldata := NilDefaultString(l.Data, sp(""))
+				lshortcut := NilDefaultString(l.Shortcut, sp(""))
+				switch ltype {
+				case "home":
+					la.Command = LeaderHome
+				case "direct":
+					la.Command = LeaderDirect
+				case "local":
+					la.Command = LeaderLocal
+				case "federated":
+					la.Command = LeaderFederated
+				case "special-all":
+					la.Command = LeaderSpecialAll
+				case "special-boosts":
+					la.Command = LeaderSpecialBoosts
+				case "special-replies":
+					la.Command = LeaderSpecialReplies
+				case "clear-notifications":
+					la.Command = LeaderClearNotifications
+				case "compose":
+					la.Command = LeaderCompose
+				case "edit":
+					la.Command = LeaderEdit
+				case "blocking":
+					la.Command = LeaderBlocking
+				case "bookmarks":
+					la.Command = LeaderBookmarks
+				case "saved":
+					la.Command = LeaderSaved
+				case "favorited":
+					la.Command = LeaderFavorited
+				case "history":
+					la.Command = LeaderHistory
+				case "boosts":
+					la.Command = LeaderBoosts
+				case "favorites":
+					la.Command = LeaderFavorites
+				case "following":
+					la.Command = LeaderFollowing
+				case "followers":
+					la.Command = LeaderFollowers
+				case "muting":
+					la.Command = LeaderMuting
+				case "preferences":
+					la.Command = LeaderPreferences
+				case "profile":
+					la.Command = LeaderProfile
+				case "notifications":
+					la.Command = LeaderNotifications
+				case "mentions":
+					la.Command = LeaderMentions
+				case "lists":
+					la.Command = LeaderLists
+				case "stick-to-top":
+					la.Command = LeaderStickToTop
+				case "refetch":
+					la.Command = LeaderRefetch
+				case "tag":
+					la.Command = LeaderTag
+					la.Subaction = ldata
+				case "tags":
+					la.Command = LeaderTags
+				case "list-placement":
+					la.Command = LeaderListPlacement
+					la.Subaction = ldata
+				case "list-split":
+					la.Command = LeaderListSplit
+					la.Subaction = ldata
+				case "proportions":
+					la.Command = LeaderProportions
+					la.Subaction = ldata
+				case "window":
+					la.Command = LeaderWindow
+					la.Subaction = ldata
+				case "close-window":
+					la.Command = LeaderCloseWindow
+				case "move-window-left", "move-window-up":
+					la.Command = LeaderMoveWindowLeft
+				case "move-window-right", "move-window-down":
+					la.Command = LeaderMoveWindowRight
+				case "move-window-home":
+					la.Command = LeaderMoveWindowHome
+				case "move-window-end":
+					la.Command = LeaderMoveWindowEnd
+				case "newer":
+					la.Command = LeaderLoadNewer
+				default:
+					fmt.Printf("leader-action %s is invalid\n", ltype)
+					os.Exit(1)
 				}
-				if len(sa) > 0 {
-					la.Subaction = fmt.Sprintf("%s,%s", subaction, sa)
-				} else {
-					la.Subaction = subaction
-				}
-			case "newer":
-				la.Command = LeaderLoadNewer
-			default:
-				fmt.Printf("leader-action %s is invalid\n", parts[0])
-				os.Exit(1)
+				la.Shortcut = lshortcut
+				las = append(las, la)
 			}
-			la.Shortcut = parts[1]
-			las = append(las, la)
 		}
 		general.LeaderActions = las
 	}
 
-	general.TimelineName = cfg.Section("general").Key("timeline-show-name").MustBool(true)
-	var tls []Timeline
-	timelines := cfg.Section("general").Key("timelines").ValueWithShadows()
-	for _, l := range timelines {
-		parts := strings.Split(l, ",")
-		for i, p := range parts {
-			parts[i] = strings.TrimSpace(p)
-		}
-		if len(parts) == 0 {
-			fmt.Printf("timelines must consist of atleast one part seperated by a comma. Your value is: %s\n", strings.Join(parts, ","))
-			os.Exit(1)
-		}
-		if len(parts) == 1 {
-			parts = append(parts, "")
-		}
-		cmd := parts[0]
-		var subaction string
-		if strings.Contains(parts[0], " ") {
-			p := strings.Split(cmd, " ")
-			cmd = p[0]
-			subaction = strings.Join(p[1:], " ")
-		}
-		tl := Timeline{}
-		switch cmd {
-		case "home":
-			tl.FeedType = TimelineHome
-		case "special":
-			tl.FeedType = TimelineHomeSpecial
-		case "direct":
-			tl.FeedType = Conversations
-		case "local":
-			tl.FeedType = TimelineLocal
-		case "federated":
-			tl.FeedType = TimelineFederated
-		case "bookmarks":
-			tl.FeedType = Saved
-		case "saved":
-			tl.FeedType = Saved
-		case "favorited":
-			tl.FeedType = Favorited
-		case "notifications":
-			tl.FeedType = Notifications
-		case "mentions":
-			tl.FeedType = Mentions
-		case "lists":
-			tl.FeedType = Lists
-		case "tag":
-			tl.FeedType = Tag
-			tl.Subaction = subaction
-		default:
-			fmt.Printf("timeline %s is invalid\n", parts[0])
-			os.Exit(1)
-		}
-		tfStr := []string{"true", "false"}
-		tl.Name = parts[1]
-		if slices.Contains(tfStr, tl.Name) || (strings.HasPrefix(parts[1], "\"") && strings.HasSuffix(parts[1], "\"")) ||
-			(strings.HasPrefix(parts[1], "'") && strings.HasSuffix(parts[1], "'")) {
-			tl.Name = ""
-		}
-		tfs := []bool{true, true}
-		stop := len(parts)
-		if len(parts) > 1 {
-			if len(parts) > 2 && slices.Contains(tfStr, parts[len(parts)-2]) &&
-				slices.Contains(tfStr, parts[len(parts)-1]) &&
-				len(parts)-2 > 0 {
-				tfs[0] = parts[len(parts)-2] == "true"
-				tfs[1] = parts[len(parts)-1] == "true"
-				stop = len(parts) - 2
-			} else if slices.Contains(tfStr, parts[len(parts)-1]) &&
-				len(parts)-1 > 0 {
-				tfs[0] = parts[len(parts)-1] == "true"
-				stop = len(parts) - 1
+	var tls []*Timeline
+	timelines := cfg.Timelines
+	if cfg.Timelines != nil {
+		for _, l := range *timelines {
+			tl := Timeline{}
+			if l.Type == nil {
+				fmt.Println("timelines must have a type")
+				os.Exit(1)
 			}
-			if stop > 2 {
-				vals := []string{""}
-				start := 2
-				if tl.Name == "" {
-					start = 1
+			switch *l.Type {
+			case "home":
+				tl.FeedType = TimelineHome
+			case "special":
+				tl.FeedType = TimelineHomeSpecial
+			case "direct":
+				tl.FeedType = Conversations
+			case "local":
+				tl.FeedType = TimelineLocal
+			case "federated":
+				tl.FeedType = TimelineFederated
+			case "bookmarks":
+				tl.FeedType = Saved
+			case "saved":
+				tl.FeedType = Saved
+			case "favorited":
+				tl.FeedType = Favorited
+			case "notifications":
+				tl.FeedType = Notifications
+			case "mentions":
+				tl.FeedType = Mentions
+			case "lists":
+				tl.FeedType = Lists
+			case "tag":
+				tl.FeedType = Tag
+				tl.Subaction = NilDefaultString(l.Data, sp(""))
+			default:
+				fmt.Printf("timeline %s is invalid\n", *l.Type)
+				os.Exit(1)
+			}
+			tl.Name = NilDefaultString(l.Name, sp(""))
+			tl.HideBoosts = NilDefaultBool(l.HideBoosts, bf)
+			tl.HideReplies = NilDefaultBool(l.HideReplies, bf)
+			if l.Keys != nil {
+				var keys []string
+				var special []string
+				if l.Keys != nil {
+					keys = *l.Keys
 				}
-				vals = append(vals, parts[start:stop]...)
-				tl.Key = inputStrOrErr(vals, false)
+				if l.SpecialKeys != nil {
+					special = *l.SpecialKeys
+				}
+				var err error
+				tl.Key, err = NewKeyT("", "", keys, special)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
 			}
+			tls = append(tls, &tl)
 		}
-		tl.ShowBoosts = tfs[0]
-		tl.ShowReplies = tfs[1]
-		tls = append(tls, tl)
 	}
 	if len(tls) == 0 {
 		tls = append(tls,
-			Timeline{
-				FeedType:    TimelineHome,
-				Name:        "",
-				ShowBoosts:  true,
-				ShowReplies: true,
+			&Timeline{
+				FeedType: TimelineHome,
+				Name:     "Home",
 			},
 		)
 		tls = append(tls,
-			Timeline{
-				FeedType:    Notifications,
-				Name:        "[N]otifications",
-				Key:         inputStrOrErr([]string{"", "'n'", "'N'"}, false),
-				ShowBoosts:  true,
-				ShowReplies: true,
+			&Timeline{
+				FeedType: Notifications,
+				Name:     "[N]otifications",
+				Key:      inputStrOrErr([]string{"", "'n'", "'N'"}, false),
 			},
 		)
 	}
 	general.Timelines = tls
 
-	general.TerminalTitle = cfg.Section("general").Key("terminal-title").MustInt(0)
+	general.TerminalTitle = NilDefaultInt(cfg.TerminalTitle, def.TerminalTitle)
 	/*
 		0 = No terminal title
 		1 = Show title in terminal and top bar
@@ -1143,180 +1097,109 @@ func parseGeneral(cfg *ini.File) General {
 	}
 
 	nths := []NotificationToHide{}
-	nth := cfg.Section("general").Key("notifications-to-hide").MustString("")
-	parts := strings.Split(nth, ",")
-	for _, p := range parts {
-		s := strings.TrimSpace(p)
-		switch s {
-		case "mention":
-			nths = append(nths, HideMention)
-		case "status":
-			nths = append(nths, HideStatus)
-		case "boost":
-			nths = append(nths, HideBoost)
-		case "follow":
-			nths = append(nths, HideFollow)
-		case "follow_request":
-			nths = append(nths, HideFollowRequest)
-		case "favorite":
-			nths = append(nths, HideFavorite)
-		case "poll":
-			nths = append(nths, HidePoll)
-		case "edit":
-			nths = append(nths, HideEdited)
-		default:
-			if len(s) > 0 {
-				log.Fatalf("%s in notifications-to-hide is invalid\n", s)
+	nth := cfg.NotificationsToHide
+	if nth != nil {
+		for _, n := range *nth {
+			switch n {
+			case "mention":
+				nths = append(nths, HideMention)
+			case "status":
+				nths = append(nths, HideStatus)
+			case "boost":
+				nths = append(nths, HideBoost)
+			case "follow":
+				nths = append(nths, HideFollow)
+			case "follow_request":
+				nths = append(nths, HideFollowRequest)
+			case "favorite":
+				nths = append(nths, HideFavorite)
+			case "poll":
+				nths = append(nths, HidePoll)
+			case "edit":
+				nths = append(nths, HideEdited)
+			default:
+				log.Fatalf("%s in notifications-to-hide is invalid\n", n)
 				os.Exit(1)
 			}
+			general.NotificationsToHide = nths
 		}
-		general.NotificationsToHide = nths
 	}
-
 	return general
 }
 
-func parseMedia(cfg *ini.File) Media {
-	media := Media{}
-	imageViewerComponents := strings.Fields(cfg.Section("media").Key("image-viewer").String())
-	if len(imageViewerComponents) == 0 {
-		media.ImageViewer = "xdg-open"
-		media.ImageArgs = []string{}
-	} else {
-		media.ImageViewer = imageViewerComponents[0]
-		media.ImageArgs = imageViewerComponents[1:]
-	}
-	media.ImageTerminal = cfg.Section("media").Key("image-terminal").MustBool(false)
-	media.ImageSingle = cfg.Section("media").Key("image-single").MustBool(true)
-	media.ImageReverse = cfg.Section("media").Key("image-reverse").MustBool(false)
-
-	videoViewerComponents := strings.Fields(cfg.Section("media").Key("video-viewer").String())
-	if len(videoViewerComponents) == 0 {
-		media.VideoViewer = "xdg-open"
-		media.VideoArgs = []string{}
-	} else {
-		media.VideoViewer = videoViewerComponents[0]
-		media.VideoArgs = videoViewerComponents[1:]
-	}
-	media.VideoTerminal = cfg.Section("media").Key("video-terminal").MustBool(false)
-	media.VideoSingle = cfg.Section("media").Key("video-single").MustBool(true)
-	media.VideoReverse = cfg.Section("media").Key("video-reverse").MustBool(false)
-
-	audioViewerComponents := strings.Fields(cfg.Section("media").Key("audio-viewer").String())
-	if len(audioViewerComponents) == 0 {
-		media.AudioViewer = "xdg-open"
-		media.AudioArgs = []string{}
-	} else {
-		media.AudioViewer = audioViewerComponents[0]
-		media.AudioArgs = audioViewerComponents[1:]
-	}
-	media.AudioTerminal = cfg.Section("media").Key("audio-terminal").MustBool(false)
-	media.AudioSingle = cfg.Section("media").Key("audio-single").MustBool(true)
-	media.AudioReverse = cfg.Section("media").Key("audio-reverse").MustBool(false)
-
-	linkViewerComponents := strings.Fields(cfg.Section("media").Key("link-viewer").String())
-	if len(linkViewerComponents) == 0 {
-		media.LinkViewer = "xdg-open"
-		media.LinkArgs = []string{}
-	} else {
-		media.LinkViewer = linkViewerComponents[0]
-		media.LinkArgs = linkViewerComponents[1:]
-	}
-	media.LinkTerminal = cfg.Section("media").Key("link-terminal").MustBool(false)
-
-	return media
-}
-
-func parseOpenPattern(cfg *ini.File) OpenPattern {
+func parseOpenPattern(cfg OpenPatternTOML) OpenPattern {
 	om := OpenPattern{}
-
-	keys := cfg.Section("open-pattern").KeyStrings()
-	pairs := make(map[string]Pattern)
-	for _, s := range keys {
-		parts := strings.Split(s, "-")
-		if len(parts) < 2 {
-			panic(fmt.Sprintf("Invalid key %s in config. Must end in -pattern, -use or -terminal", s))
-		}
-		last := parts[len(parts)-1]
-		if last != "pattern" && last != "use" && last != "terminal" {
-			panic(fmt.Sprintf("Invalid key %s in config. Must end in -pattern, -use or -terminal", s))
-		}
-
-		name := strings.Join(parts[:len(parts)-1], "-")
-		if _, ok := pairs[name]; !ok {
-			pairs[name] = Pattern{}
-		}
-		if last == "pattern" {
-			tmp := pairs[name]
-			tmp.Pattern = cfg.Section("open-pattern").Key(s).MustString("")
-			pairs[name] = tmp
-		}
-		if last == "use" {
-			tmp := pairs[name]
-			tmp.Open = cfg.Section("open-pattern").Key(s).MustString("")
-			pairs[name] = tmp
-		}
-		if last == "terminal" {
-			tmp := pairs[name]
-			tmp.Terminal = cfg.Section("open-pattern").Key(s).MustBool(false)
-			pairs[name] = tmp
-		}
+	if cfg.Patterns == nil {
+		return om
 	}
-
-	for key := range pairs {
-		if pairs[key].Pattern == "" {
-			panic(fmt.Sprintf("Invalid value for key %s in config. Can't be empty", key+"-pattern"))
+	for _, p := range *cfg.Patterns {
+		pattern := Pattern{
+			Program:  NilDefaultString(p.Program, sp("")),
+			Terminal: NilDefaultBool(p.Terminal, bf),
 		}
-		if pairs[key].Open == "" {
-			panic(fmt.Sprintf("Invalid value for key %s in config. Can't be empty", key+"-use"))
+		if p.Args != nil {
+			pattern.Args = strings.Fields(*p.Args)
 		}
-
-		compiled, err := glob.Compile(pairs[key].Pattern)
+		pg := NilDefaultString(p.Matching, sp(""))
+		compiled, err := glob.Compile(pg)
 		if err != nil {
-			panic(fmt.Sprintf("Couldn't compile pattern for key %s in config. Error: %v", key+"-pattern", err))
+			panic(fmt.Sprintf("Couldn't compile pattern %s in config. Error: %v", pg, err))
 		}
-		tmp := pairs[key]
-		tmp.Compiled = compiled
-		comp := strings.Fields(tmp.Open)
-		tmp.Program = comp[0]
-		tmp.Args = comp[1:]
-		om.Patterns = append(om.Patterns, tmp)
+		pattern.Compiled = compiled
+		om.Patterns = append(om.Patterns, pattern)
 	}
 
 	return om
 }
 
-func parseCustom(cfg *ini.File) OpenCustom {
+func parseCustom(cfg OpenCustomTOML) OpenCustom {
 	oc := OpenCustom{}
-
-	for i := 1; i < 6; i++ {
-		name := cfg.Section("open-custom").Key(fmt.Sprintf("c%d-name", i)).MustString("")
-		use := cfg.Section("open-custom").Key(fmt.Sprintf("c%d-use", i)).MustString("")
-		terminal := cfg.Section("open-custom").Key(fmt.Sprintf("c%d-terminal", i)).MustBool(false)
+	if cfg.Programs == nil {
+		return oc
+	}
+	for _, x := range *cfg.Programs {
+		keys, special := []string{}, []string{}
+		if x.Keys != nil {
+			keys = *x.Keys
+		}
+		if x.SpecialKeys != nil {
+			special = *x.SpecialKeys
+		}
+		key, err := NewKeyT(
+			NilDefaultString(x.Hint, sp("")),
+			"", keys, special,
+		)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		use := NilDefaultString(x.Program, sp(""))
+		terminal := NilDefaultBool(x.Terminal, bf)
 		if use == "" {
 			continue
 		}
-		comp := strings.Fields(use)
-		c := Custom{}
-		c.Index = i
-		c.Name = name
-		c.Program = comp[0]
-		c.Args = comp[1:]
-		c.Terminal = terminal
+		args := strings.Fields(NilDefaultString(x.Args, sp("")))
+		c := Custom{
+			Program:  use,
+			Args:     args,
+			Terminal: terminal,
+			Key:      key,
+		}
 		oc.OpenCustoms = append(oc.OpenCustoms, c)
 	}
 	return oc
 }
 
-func parseNotifications(cfg *ini.File) Notification {
+func parseNotifications(cfg NotificationsTOML) Notification {
 	nc := Notification{}
-	nc.NotificationFollower = cfg.Section("desktop-notification").Key("followers").MustBool(false)
-	nc.NotificationFavorite = cfg.Section("desktop-notification").Key("favorite").MustBool(false)
-	nc.NotificationMention = cfg.Section("desktop-notification").Key("mention").MustBool(false)
-	nc.NotificationUpdate = cfg.Section("desktop-notification").Key("update").MustBool(false)
-	nc.NotificationBoost = cfg.Section("desktop-notification").Key("boost").MustBool(false)
-	nc.NotificationPoll = cfg.Section("desktop-notification").Key("poll").MustBool(false)
-	nc.NotificationPost = cfg.Section("desktop-notification").Key("posts").MustBool(false)
+	def := ConfigDefault.NotificationConfig
+	nc.NotificationFollower = NilDefaultBool(cfg.Followers, def.Followers)
+	nc.NotificationFavorite = NilDefaultBool(cfg.Favorite, def.Favorite)
+	nc.NotificationMention = NilDefaultBool(cfg.Mention, def.Mention)
+	nc.NotificationUpdate = NilDefaultBool(cfg.Update, def.Update)
+	nc.NotificationBoost = NilDefaultBool(cfg.Boost, def.Followers)
+	nc.NotificationPoll = NilDefaultBool(cfg.Poll, def.Poll)
+	nc.NotificationPost = NilDefaultBool(cfg.Posts, def.Posts)
 	return nc
 }
 
@@ -1380,18 +1263,6 @@ func parseTemplates(cfg *ini.File, cnfPath string, cnfDir string) Templates {
 	}
 }
 
-func inputOrErr(cfg *ini.File, key string, double bool, def Key) Key {
-	if !cfg.Section("input").HasKey(key) {
-		return def
-	}
-	vals := cfg.Section("input").Key(key).Strings(",")
-	k, err := NewKey(vals, double)
-	if err != nil {
-		fmt.Printf("error parsing config for key %s. Error: %v\n", key, err)
-		os.Exit(1)
-	}
-	return k
-}
 func inputStrOrErr(vals []string, double bool) Key {
 	k, err := NewKey(vals, double)
 	if err != nil {
@@ -1401,183 +1272,114 @@ func inputStrOrErr(vals []string, double bool) Key {
 	return k
 }
 
-func parseInput(cfg *ini.File) Input {
-	ic := Input{
-		GlobalDown:  inputStrOrErr([]string{"\"\"", "'j'", "'J'", "\"Down\""}, false),
-		GlobalUp:    inputStrOrErr([]string{"\"\"", "'k'", "'k'", "\"Up\""}, false),
-		GlobalEnter: inputStrOrErr([]string{"\"\"", "\"Enter\""}, false),
-		GlobalBack:  inputStrOrErr([]string{"\"[Esc]\"", "\"Esc\""}, false),
-		GlobalExit:  inputStrOrErr([]string{"\"[Q]uit\"", "'q'", "'Q'"}, false),
-
-		MainHome:       inputStrOrErr([]string{"\"\"", "'g'", "\"Home\""}, false),
-		MainEnd:        inputStrOrErr([]string{"\"\"", "'G'", "\"End\""}, false),
-		MainPrevFeed:   inputStrOrErr([]string{"\"\"", "'h'", "'H'", "\"Left\""}, false),
-		MainNextFeed:   inputStrOrErr([]string{"\"\"", "'l'", "'L'", "\"Right\""}, false),
-		MainPrevWindow: inputStrOrErr([]string{"\"\"", "\"Backtab\""}, false),
-		MainNextWindow: inputStrOrErr([]string{"\"\"", "\"Tab\""}, false),
-		MainCompose:    inputStrOrErr([]string{"\"\"", "'c'", "'C'"}, false),
-
-		StatusAvatar:       inputStrOrErr([]string{"\"[A]vatar\"", "'a'", "'A'"}, false),
-		StatusBoost:        inputStrOrErr([]string{"\"[B]oost\"", "\"Un[B]oost\"", "'b'", "'B'"}, true),
-		StatusDelete:       inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
-		StatusEdit:         inputStrOrErr([]string{"\"[E]dit\"", "'e'", "'E'"}, false),
-		StatusFavorite:     inputStrOrErr([]string{"\"[F]avorite\"", "\"Un[F]avorite\"", "'f'", "'F'"}, true),
-		StatusMedia:        inputStrOrErr([]string{"\"[M]edia\"", "'m'", "'M'"}, false),
-		StatusLinks:        inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
-		StatusPoll:         inputStrOrErr([]string{"\"[P]oll\"", "'p'", "'P'"}, false),
-		StatusReply:        inputStrOrErr([]string{"\"[R]eply\"", "'r'", "'R'"}, false),
-		StatusBookmark:     inputStrOrErr([]string{"\"[S]ave\"", "\"Un[S]ave\"", "'s'", "'S'"}, true),
-		StatusThread:       inputStrOrErr([]string{"\"[T]hread\"", "'t'", "'T'"}, false),
-		StatusUser:         inputStrOrErr([]string{"\"[U]ser\"", "'u'", "'U'"}, false),
-		StatusViewFocus:    inputStrOrErr([]string{"\"[V]iew\"", "'v'", "'V'"}, false),
-		StatusYank:         inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
-		StatusToggleCW:     inputStrOrErr([]string{"\"Press [Z] to toggle CW\"", "'z'", "'Z'"}, false),
-		StatusShowFiltered: inputStrOrErr([]string{"\"Press [Z] to view filtered toot\"", "'z'", "'Z'"}, false),
-
-		UserAvatar:              inputStrOrErr([]string{"\"[A]vatar\"", "'a'", "'A'"}, false),
-		UserBlock:               inputStrOrErr([]string{"\"[B]lock\"", "\"Un[B]lock\"", "'b'", "'B'"}, true),
-		UserFollow:              inputStrOrErr([]string{"\"[F]ollow\"", "\"Un[F]ollow\"", "'f'", "'F'"}, true),
-		UserFollowRequestDecide: inputStrOrErr([]string{"\"Follow [R]equest\"", "\"Follow [R]equest\"", "'r'", "'R'"}, true),
-		UserMute:                inputStrOrErr([]string{"\"[M]ute\"", "\"Un[M]ute\"", "'m'", "'M'"}, true),
-		UserLinks:               inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
-		UserUser:                inputStrOrErr([]string{"\"[U]ser\"", "'u'", "'U'"}, false),
-		UserViewFocus:           inputStrOrErr([]string{"\"[V]iew\"", "'v'", "'V'"}, false),
-		UserYank:                inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
-
-		ListOpenFeed:   inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
-		ListUserList:   inputStrOrErr([]string{"\"[U]sers\"", "'u'", "'U'"}, false),
-		ListUserAdd:    inputStrOrErr([]string{"\"[A]dd\"", "'a'", "'A'"}, false),
-		ListUserDelete: inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
-
-		TagOpenFeed: inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
-		TagFollow:   inputStrOrErr([]string{"\"[F]ollow\"", "\"Un[F]ollow\"", "'f'", "'F'"}, true),
-
-		LinkOpen: inputStrOrErr([]string{"\"[O]pen\"", "'o'", "'O'"}, false),
-		LinkYank: inputStrOrErr([]string{"\"[Y]ank\"", "'y'", "'Y'"}, false),
-
-		ComposeEditCW:               inputStrOrErr([]string{"\"[C]W Text\"", "'c'", "'C'"}, false),
-		ComposeEditText:             inputStrOrErr([]string{"\"[E]dit text\"", "'e'", "'E'"}, false),
-		ComposeIncludeQuote:         inputStrOrErr([]string{"\"[I]nclude quote\"", "'i'", "'I'"}, false),
-		ComposeMediaFocus:           inputStrOrErr([]string{"\"[M]edia\"", "'m'", "'M'"}, false),
-		ComposePost:                 inputStrOrErr([]string{"\"[P]ost\"", "'p'", "'P'"}, false),
-		ComposeToggleContentWarning: inputStrOrErr([]string{"\"[T]oggle CW\"", "'t'", "'T'"}, false),
-		ComposeVisibility:           inputStrOrErr([]string{"\"[V]isibility\"", "'v'", "'V'"}, false),
-		ComposeLanguage:             inputStrOrErr([]string{"\"[L]ang\"", "'l'", "'L'"}, false),
-		ComposePoll:                 inputStrOrErr([]string{"\"P[O]ll\"", "'o'", "'O'"}, false),
-
-		MediaDelete:   inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
-		MediaEditDesc: inputStrOrErr([]string{"\"[E]dit desc\"", "'e'", "'E'"}, false),
-		MediaAdd:      inputStrOrErr([]string{"\"[A]dd\"", "'a'", "'A'"}, false),
-
-		VoteVote:   inputStrOrErr([]string{"\"[V]ote\"", "'v'", "'V'"}, false),
-		VoteSelect: inputStrOrErr([]string{"\"[Enter] to select\"", "' '", "\"Enter\""}, false),
-
-		PollAdd:         inputStrOrErr([]string{"\"[A]dd\"", "'a'", "'A'"}, false),
-		PollEdit:        inputStrOrErr([]string{"\"[E]dit\"", "'e'", "'E'"}, false),
-		PollDelete:      inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
-		PollMultiToggle: inputStrOrErr([]string{"\"Toggle [M]ultiple\"", "'m'", "'M'"}, false),
-		PollExpiration:  inputStrOrErr([]string{"\"E[X]pires\"", "'x'", "'X'"}, false),
-
-		PreferenceName:         inputStrOrErr([]string{"\"[N]ame\"", "'n'", "'N'"}, false),
-		PreferenceBio:          inputStrOrErr([]string{"\"[B]io\"", "'b'", "'B'"}, false),
-		PreferenceVisibility:   inputStrOrErr([]string{"\"[V]isibility\"", "'v'", "'V'"}, false),
-		PreferenceSave:         inputStrOrErr([]string{"\"[S]ave\"", "'s'", "'S'"}, false),
-		PreferenceFields:       inputStrOrErr([]string{"\"[F]ields\"", "'f'", "'F'"}, false),
-		PreferenceFieldsAdd:    inputStrOrErr([]string{"\"[A]dd\"", "'a'", "'A'"}, false),
-		PreferenceFieldsEdit:   inputStrOrErr([]string{"\"[E]dit\"", "'e'", "'E'"}, false),
-		PreferenceFieldsDelete: inputStrOrErr([]string{"\"[D]elete\"", "'d'", "'D'"}, false),
+func inputOrDef(keyName string, user *KeyHintTOML, def *KeyHintTOML, double bool) Key {
+	values := *def
+	if user != nil {
+		values = *user
 	}
-	ic.GlobalDown = inputOrErr(cfg, "global-down", false, ic.GlobalDown)
-	ic.GlobalUp = inputOrErr(cfg, "global-up", false, ic.GlobalUp)
-	ic.GlobalEnter = inputOrErr(cfg, "global-enter", false, ic.GlobalEnter)
-	ic.GlobalBack = inputOrErr(cfg, "global-back", false, ic.GlobalBack)
-	ic.GlobalExit = inputOrErr(cfg, "global-exit", false, ic.GlobalExit)
-
-	ic.MainHome = inputOrErr(cfg, "main-home", false, ic.MainHome)
-	ic.MainEnd = inputOrErr(cfg, "main-end", false, ic.MainEnd)
-	ic.MainPrevFeed = inputOrErr(cfg, "main-prev-feed", false, ic.MainPrevFeed)
-	ic.MainNextFeed = inputOrErr(cfg, "main-next-feed", false, ic.MainNextFeed)
-	ic.MainCompose = inputOrErr(cfg, "main-compose", false, ic.MainCompose)
-
-	ic.StatusAvatar = inputOrErr(cfg, "status-avatar", false, ic.StatusAvatar)
-	ic.StatusBoost = inputOrErr(cfg, "status-boost", true, ic.StatusBoost)
-	ic.StatusDelete = inputOrErr(cfg, "status-delete", false, ic.StatusDelete)
-	ic.StatusEdit = inputOrErr(cfg, "status-edit", false, ic.StatusEdit)
-	ic.StatusFavorite = inputOrErr(cfg, "status-favorite", true, ic.StatusFavorite)
-	ic.StatusMedia = inputOrErr(cfg, "status-media", false, ic.StatusMedia)
-	ic.StatusLinks = inputOrErr(cfg, "status-links", false, ic.StatusLinks)
-	ic.StatusPoll = inputOrErr(cfg, "status-poll", false, ic.StatusPoll)
-	ic.StatusReply = inputOrErr(cfg, "status-reply", false, ic.StatusReply)
-	ic.StatusBookmark = inputOrErr(cfg, "status-bookmark", true, ic.StatusBookmark)
-	ic.StatusThread = inputOrErr(cfg, "status-thread", false, ic.StatusThread)
-	ic.StatusUser = inputOrErr(cfg, "status-user", false, ic.StatusUser)
-	ic.StatusViewFocus = inputOrErr(cfg, "status-view-focus", false, ic.StatusViewFocus)
-	ic.StatusYank = inputOrErr(cfg, "status-yank", false, ic.StatusYank)
-	ic.StatusToggleCW = inputOrErr(cfg, "status-toggle-spoiler", false, ic.StatusToggleCW)
-	ts := cfg.Section("input").Key("status-toggle-spoiler").MustString("")
-	if ts != "" {
-		ic.StatusToggleCW = inputOrErr(cfg, "status-toggle-spoiler", false, ic.StatusToggleCW)
-	} else {
-		ic.StatusToggleCW = inputOrErr(cfg, "status-toggle-cw", false, ic.StatusToggleCW)
+	keys, special := []string{}, []string{}
+	if values.Keys != nil {
+		keys = *values.Keys
 	}
-
-	ic.UserAvatar = inputOrErr(cfg, "user-avatar", false, ic.UserAvatar)
-	ic.UserBlock = inputOrErr(cfg, "user-block", true, ic.UserBlock)
-	ic.UserFollow = inputOrErr(cfg, "user-follow", true, ic.UserFollow)
-	ic.UserFollowRequestDecide = inputOrErr(cfg, "user-follow-request-decide", true, ic.UserFollowRequestDecide)
-	ic.UserMute = inputOrErr(cfg, "user-mute", true, ic.UserMute)
-	ic.UserLinks = inputOrErr(cfg, "user-links", false, ic.UserLinks)
-	ic.UserUser = inputOrErr(cfg, "user-user", false, ic.UserUser)
-	ic.UserViewFocus = inputOrErr(cfg, "user-view-focus", false, ic.UserViewFocus)
-	ic.UserYank = inputOrErr(cfg, "user-yank", false, ic.UserYank)
-
-	ic.ListOpenFeed = inputOrErr(cfg, "list-open-feed", false, ic.ListOpenFeed)
-	ic.ListUserList = inputOrErr(cfg, "list-user-list", false, ic.ListUserList)
-	ic.ListUserAdd = inputOrErr(cfg, "list-user-add", false, ic.ListUserAdd)
-	ic.ListUserDelete = inputOrErr(cfg, "list-user-delete", false, ic.ListUserDelete)
-
-	ic.TagOpenFeed = inputOrErr(cfg, "tag-open-feed", false, ic.TagOpenFeed)
-	ic.TagFollow = inputOrErr(cfg, "tag-follow", true, ic.TagFollow)
-
-	ic.LinkOpen = inputOrErr(cfg, "link-open", false, ic.LinkOpen)
-	ic.LinkYank = inputOrErr(cfg, "link-yank", false, ic.LinkYank)
-
-	es := cfg.Section("input").Key("compose-edit-spoiler").MustString("")
-	if es != "" {
-		ic.ComposeEditCW = inputOrErr(cfg, "compose-edit-spoiler", false, ic.ComposeEditCW)
-	} else {
-		ic.ComposeEditCW = inputOrErr(cfg, "compose-edit-cw", false, ic.ComposeEditCW)
+	if values.SpecialKeys != nil {
+		special = *values.SpecialKeys
 	}
-	ic.ComposeEditText = inputOrErr(cfg, "compose-edit-text", false, ic.ComposeEditText)
-	ic.ComposeIncludeQuote = inputOrErr(cfg, "compose-include-quote", false, ic.ComposeIncludeQuote)
-	ic.ComposeMediaFocus = inputOrErr(cfg, "compose-media-focus", false, ic.ComposeMediaFocus)
-	ic.ComposePost = inputOrErr(cfg, "compose-post", false, ic.ComposePost)
-	ic.ComposeToggleContentWarning = inputOrErr(cfg, "compose-toggle-content-warning", false, ic.ComposeToggleContentWarning)
-	ic.ComposeVisibility = inputOrErr(cfg, "compose-visibility", false, ic.ComposeVisibility)
-	ic.ComposeLanguage = inputOrErr(cfg, "compose-language", false, ic.ComposeLanguage)
-	ic.ComposePoll = inputOrErr(cfg, "compose-poll", false, ic.ComposePoll)
+	key, err := NewKeyT(
+		NilDefaultString(values.Hint, sp("")),
+		NilDefaultString(values.HintAlt, sp("")),
+		keys, special,
+	)
+	if err != nil {
+		fmt.Printf("error parsing config for key %s. Error: %v\n", keyName, err)
+		os.Exit(1)
+	}
+	return key
+}
 
-	ic.MediaDelete = inputOrErr(cfg, "media-delete", false, ic.MediaDelete)
-	ic.MediaEditDesc = inputOrErr(cfg, "media-edit-desc", false, ic.MediaEditDesc)
-	ic.MediaAdd = inputOrErr(cfg, "media-add", false, ic.MediaAdd)
+func parseInput(cfg InputTOML) Input {
+	def := ConfigDefault.Input
+	ic := Input{}
+	ic.GlobalDown = inputOrDef("global-down", cfg.GlobalDown, def.GlobalDown, false)
+	ic.GlobalUp = inputOrDef("global-up", cfg.GlobalUp, def.GlobalUp, false)
+	ic.GlobalEnter = inputOrDef("global-enter", cfg.GlobalEnter, def.GlobalEnter, false)
+	ic.GlobalBack = inputOrDef("global-back", cfg.GlobalBack, def.GlobalBack, false)
+	ic.GlobalExit = inputOrDef("global-exit", cfg.GlobalExit, def.GlobalExit, false)
 
-	ic.VoteVote = inputOrErr(cfg, "vote-vote", false, ic.VoteVote)
-	ic.VoteSelect = inputOrErr(cfg, "vote-select", false, ic.VoteSelect)
+	ic.MainHome = inputOrDef("main-home", cfg.MainHome, def.MainHome, false)
+	ic.MainEnd = inputOrDef("main-end", cfg.MainEnd, def.MainEnd, false)
+	ic.MainPrevFeed = inputOrDef("main-prev-feed", cfg.MainPrevFeed, def.MainPrevFeed, false)
+	ic.MainNextFeed = inputOrDef("main-next-feed", cfg.MainNextFeed, def.MainNextFeed, false)
+	ic.MainNextWindow = inputOrDef("main-next-window", cfg.MainNextWindow, def.MainNextWindow, false)
+	ic.MainPrevWindow = inputOrDef("main-prev-window", cfg.MainPrevWindow, def.MainPrevWindow, false)
+	ic.MainCompose = inputOrDef("main-compose", cfg.MainCompose, def.MainCompose, false)
 
-	ic.PollAdd = inputOrErr(cfg, "poll-add", false, ic.PollAdd)
-	ic.PollEdit = inputOrErr(cfg, "poll-edit", false, ic.PollEdit)
-	ic.PollDelete = inputOrErr(cfg, "poll-delete", false, ic.PollDelete)
-	ic.PollMultiToggle = inputOrErr(cfg, "poll-multi-toggle", false, ic.PollMultiToggle)
-	ic.PollExpiration = inputOrErr(cfg, "poll-expiration", false, ic.PollExpiration)
+	ic.StatusAvatar = inputOrDef("status-avatar", cfg.StatusAvatar, def.StatusAvatar, false)
+	ic.StatusBoost = inputOrDef("status-boost", cfg.StatusBoost, def.StatusBoost, true)
+	ic.StatusDelete = inputOrDef("status-delete", cfg.StatusDelete, def.StatusDelete, false)
+	ic.StatusEdit = inputOrDef("status-edit", cfg.StatusEdit, def.StatusEdit, false)
+	ic.StatusFavorite = inputOrDef("status-favorite", cfg.StatusFavorite, def.StatusFavorite, true)
+	ic.StatusMedia = inputOrDef("status-media", cfg.StatusMedia, def.StatusMedia, false)
+	ic.StatusLinks = inputOrDef("status-links", cfg.StatusLinks, def.StatusLinks, false)
+	ic.StatusPoll = inputOrDef("status-poll", cfg.StatusPoll, def.StatusPoll, false)
+	ic.StatusReply = inputOrDef("status-reply", cfg.StatusReply, def.StatusReply, false)
+	ic.StatusBookmark = inputOrDef("status-bookmark", cfg.StatusBookmark, def.StatusBookmark, true)
+	ic.StatusThread = inputOrDef("status-thread", cfg.StatusThread, def.StatusThread, false)
+	ic.StatusUser = inputOrDef("status-user", cfg.StatusUser, def.StatusUser, false)
+	ic.StatusViewFocus = inputOrDef("status-view-focus", cfg.StatusViewFocus, def.StatusViewFocus, false)
+	ic.StatusYank = inputOrDef("status-yank", cfg.StatusYank, def.StatusYank, false)
+	ic.StatusToggleCW = inputOrDef("status-toggle-cw", cfg.StatusToggleCW, def.StatusToggleCW, false)
 
-	ic.PreferenceName = inputOrErr(cfg, "preference-name", false, ic.PreferenceName)
-	ic.PreferenceVisibility = inputOrErr(cfg, "preference-visibility", false, ic.PreferenceVisibility)
-	ic.PreferenceBio = inputOrErr(cfg, "preference-bio", false, ic.PreferenceBio)
-	ic.PreferenceSave = inputOrErr(cfg, "preference-save", false, ic.PreferenceSave)
-	ic.PreferenceFields = inputOrErr(cfg, "preference-fields", false, ic.PreferenceFields)
-	ic.PreferenceFieldsAdd = inputOrErr(cfg, "preference-fields-add", false, ic.PreferenceFieldsAdd)
-	ic.PreferenceFieldsEdit = inputOrErr(cfg, "preference-fields-edit", false, ic.PreferenceFieldsEdit)
-	ic.PreferenceFieldsDelete = inputOrErr(cfg, "preference-fields-delete", false, ic.PreferenceFieldsDelete)
+	ic.UserAvatar = inputOrDef("user-avatar", cfg.UserAvatar, def.UserAvatar, false)
+	ic.UserBlock = inputOrDef("user-block", cfg.UserBlock, def.UserBlock, true)
+	ic.UserFollow = inputOrDef("user-follow", cfg.UserFollow, def.UserFollow, true)
+	ic.UserFollowRequestDecide = inputOrDef("user-follow-request-decide", cfg.UserFollowRequestDecide, def.UserFollowRequestDecide, true)
+	ic.UserMute = inputOrDef("user-mute", cfg.UserMute, def.UserMute, true)
+	ic.UserLinks = inputOrDef("user-links", cfg.UserLinks, def.UserLinks, false)
+	ic.UserUser = inputOrDef("user-user", cfg.UserUser, def.UserUser, false)
+	ic.UserViewFocus = inputOrDef("user-view-focus", cfg.UserViewFocus, def.UserViewFocus, false)
+	ic.UserYank = inputOrDef("user-yank", cfg.UserYank, def.UserYank, false)
+
+	ic.ListOpenFeed = inputOrDef("list-open-feed", cfg.ListOpenFeed, def.ListOpenFeed, false)
+	ic.ListUserList = inputOrDef("list-user-list", cfg.ListUserList, def.ListUserList, false)
+	ic.ListUserAdd = inputOrDef("list-user-add", cfg.ListUserAdd, def.ListUserAdd, false)
+	ic.ListUserDelete = inputOrDef("list-user-delete", cfg.ListUserDelete, def.ListUserDelete, false)
+
+	ic.TagOpenFeed = inputOrDef("tag-open-feed", cfg.TagOpenFeed, def.TagOpenFeed, false)
+	ic.TagFollow = inputOrDef("tag-follow", cfg.TagFollow, def.TagFollow, true)
+	ic.LinkOpen = inputOrDef("link-open", cfg.LinkOpen, def.LinkOpen, false)
+	ic.LinkYank = inputOrDef("link-yank", cfg.LinkYank, def.LinkYank, false)
+
+	ic.ComposeEditCW = inputOrDef("compose-edit-cw", cfg.ComposeEditCW, def.ComposeEditCW, false)
+	ic.ComposeEditText = inputOrDef("compose-edit-text", cfg.ComposeEditText, def.ComposeEditText, false)
+	ic.ComposeIncludeQuote = inputOrDef("compose-include-quote", cfg.ComposeIncludeQuote, def.ComposeIncludeQuote, false)
+	ic.ComposeMediaFocus = inputOrDef("compose-media-focus", cfg.ComposeMediaFocus, def.ComposeMediaFocus, false)
+	ic.ComposePost = inputOrDef("compose-post", cfg.ComposePost, def.ComposePost, false)
+	ic.ComposeToggleContentWarning = inputOrDef("compose-toggle-content-warning", cfg.ComposeToggleContentWarning, def.ComposeToggleContentWarning, false)
+	ic.ComposeVisibility = inputOrDef("compose-visibility", cfg.ComposeVisibility, def.ComposeVisibility, false)
+	ic.ComposeLanguage = inputOrDef("compose-language", cfg.ComposeLanguage, def.ComposeLanguage, false)
+	ic.ComposePoll = inputOrDef("compose-poll", cfg.ComposePoll, def.ComposePoll, false)
+
+	ic.MediaDelete = inputOrDef("media-delete", cfg.MediaDelete, def.MediaDelete, false)
+	ic.MediaEditDesc = inputOrDef("media-edit-desc", cfg.MediaEditDesc, def.MediaEditDesc, false)
+	ic.MediaAdd = inputOrDef("media-add", cfg.MediaAdd, def.MediaAdd, false)
+
+	ic.VoteVote = inputOrDef("vote-vote", cfg.VoteVote, def.VoteVote, false)
+	ic.VoteSelect = inputOrDef("vote-select", cfg.VoteSelect, def.VoteSelect, false)
+
+	ic.PollAdd = inputOrDef("poll-add", cfg.PollAdd, def.PollAdd, false)
+	ic.PollEdit = inputOrDef("poll-edit", cfg.PollEdit, def.PollEdit, false)
+	ic.PollDelete = inputOrDef("poll-delete", cfg.PollDelete, def.PollDelete, false)
+	ic.PollMultiToggle = inputOrDef("poll-multi-toggle", cfg.PollMultiToggle, def.PollMultiToggle, false)
+	ic.PollExpiration = inputOrDef("poll-expiration", cfg.PollExpiration, def.PollExpiration, false)
+
+	ic.PreferenceName = inputOrDef("preference-name", cfg.PreferenceName, def.PreferenceName, false)
+	ic.PreferenceVisibility = inputOrDef("preference-visibility", cfg.PreferenceVisibility, def.PreferenceVisibility, false)
+	ic.PreferenceBio = inputOrDef("preference-bio", cfg.PreferenceBio, def.PreferenceBio, false)
+	ic.PreferenceSave = inputOrDef("preference-save", cfg.PreferenceSave, def.PreferenceSave, false)
+	ic.PreferenceFields = inputOrDef("preference-fields", cfg.PreferenceFields, def.PreferenceFields, false)
+	ic.PreferenceFieldsAdd = inputOrDef("preference-fields-add", cfg.PreferenceFieldsAdd, def.PreferenceFieldsAdd, false)
+	ic.PreferenceFieldsEdit = inputOrDef("preference-fields-edit", cfg.PreferenceFieldsEdit, def.PreferenceFieldsEdit, false)
+	ic.PreferenceFieldsDelete = inputOrDef("preference-fields-delete", cfg.PreferenceFieldsDelete, def.PreferenceFieldsDelete, false)
 	return ic
 }
 
@@ -1590,14 +1392,24 @@ func parseConfig(filepath string, cnfPath string, cnfDir string) (Config, error)
 	if err != nil {
 		return conf, err
 	}
-	conf.General = parseGeneral(cfg)
-	conf.Media = parseMedia(cfg)
-	conf.Style = parseStyle(cfg, cnfPath, cnfDir)
-	conf.OpenPattern = parseOpenPattern(cfg)
-	conf.OpenCustom = parseCustom(cfg)
-	conf.NotificationConfig = parseNotifications(cfg)
+	f, err := os.Open(strings.TrimSuffix(filepath, "ini") + "toml")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	var a ConfigTOML
+	toml.NewDecoder(f).Decode(&a)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	f.Close()
+	conf.General = parseGeneral(a.General)
+	conf.Media = parseMedia(a.Media)
+	conf.Style = parseStyle(a.Style, cnfPath, cnfDir)
+	conf.OpenPattern = parseOpenPattern(a.OpenPattern)
+	conf.OpenCustom = parseCustom(a.OpenCustom)
+	conf.NotificationConfig = parseNotifications(a.NotificationConfig)
 	conf.Templates = parseTemplates(cfg, cnfPath, cnfDir)
-	conf.Input = parseInput(cfg)
+	conf.Input = parseInput(a.Input)
 
 	return conf, nil
 }
@@ -1701,7 +1513,7 @@ func getThemes(cnfPath string, cnfDir string) (bundled []string, local []string,
 	return bundled, local, nil
 }
 
-func getTheme(fname string, isLocal bool, cnfDir string) (*ini.File, error) {
+func getTheme(fname string, isLocal bool, cnfDir string) (StyleTOML, error) {
 	var f io.Reader
 	var err error
 	if isLocal {
@@ -1716,44 +1528,22 @@ func getTheme(fname string, isLocal bool, cnfDir string) (*ini.File, error) {
 			dir = filepath.Join(cd, "/tut/themes")
 		}
 		f, err = os.Open(
-			filepath.Join(dir, fmt.Sprintf("%s.ini", strings.TrimSpace(fname))),
+			filepath.Join(dir, fmt.Sprintf("%s.toml", strings.TrimSpace(fname))),
 		)
 	} else {
-		f, err = themesFS.Open(fmt.Sprintf("themes/%s.ini", strings.TrimSpace(fname)))
+		f, err = themesFS.Open(fmt.Sprintf("themes/%s.toml", strings.TrimSpace(fname)))
 	}
 	if err != nil {
-		return nil, err
+		return StyleTOML{}, err
 	}
-	content, err := io.ReadAll(f)
+	var style StyleTOML
+	toml.NewDecoder(f).Decode(&style)
 	if err != nil {
-		return nil, err
+		return style, err
 	}
-	cfg, err := ini.LoadSources(ini.LoadOptions{
-		SpaceBeforeInlineComment: true,
-	}, content)
-	if err != nil {
-		return nil, err
+	switch x := f.(type) {
+	case *os.File:
+		x.Close()
 	}
-	keys := []string{
-		"background",
-		"text",
-		"subtle",
-		"warning-text",
-		"text-special-one",
-		"text-special-two",
-		"top-bar-background",
-		"top-bar-text",
-		"status-bar-background",
-		"status-bar-text",
-		"status-bar-view-background",
-		"status-bar-view-text",
-		"list-selected-background",
-		"list-selected-text",
-	}
-	for _, k := range keys {
-		if !cfg.Section("").HasKey(k) {
-			return nil, fmt.Errorf("theme %s is missing %s", fname, k)
-		}
-	}
-	return cfg, nil
+	return style, nil
 }
