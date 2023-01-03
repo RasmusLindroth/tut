@@ -153,7 +153,7 @@ func (tl *Timeline) MoveCurrentPaneEnd() {
 }
 
 func (tl *Timeline) CloseCurrentPane() {
-	if len(tl.Feeds) == 0 {
+	if len(tl.Feeds) < 2 {
 		return
 	}
 	feeds := tl.Feeds[tl.FeedFocusIndex]

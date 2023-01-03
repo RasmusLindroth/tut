@@ -282,7 +282,7 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 
 func (c *CmdBar) Autocomplete(curr string) []string {
 	var entries []string
-	words := strings.Split(":blocking,:boosts,:bookmarks,:clear-notifications,:compose,:favorites,:favorited,:follow-tag,:followers,:following,:help,:h,:history,:move-pane,:lists,:list-placement,:list-split,:muting,:newer,:preferences,:profile,:proportions,:refetch,:requests,:saved,:stick-to-top,:tag,:timeline,:tl,:unfollow-tag,:user,:pane,:quit,:q", ",")
+	words := strings.Split(":blocking,:boosts,:bookmarks,:clear-notifications,:close-pane,:compose,:favorites,:favorited,:follow-tag,:followers,:following,:help,:h,:history,:move-pane,:lists,:list-placement,:list-split,:muting,:newer,:preferences,:profile,:proportions,:refetch,:requests,:saved,:stick-to-top,:tag,:timeline,:tl,:unfollow-tag,:user,:pane,:quit,:q", ",")
 	if curr == "" {
 		return entries
 	}
