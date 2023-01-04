@@ -52,15 +52,13 @@ func openCustom(tv *TutView, program string, args []string, terminal bool, url s
 	}
 }
 
-func OpenEditorLengthLimit(tv *TutView, s string, limit int) (string, bool, error) {
+func OpenEditorLengthLimit(tv *TutView, s string, limit int) (string, error) {
 	text, err := OpenEditor(tv, s)
 	if err != nil {
-		return text, false, err
+		return text, err
 	}
 	s = strings.TrimSpace(text)
-	if len(s) == 0 {
-		return "", false, nil
-	}
+
 	if utf8.RuneCountInString(s) > limit {
 		ns := ""
 		i := 0
@@ -73,7 +71,7 @@ func OpenEditorLengthLimit(tv *TutView, s string, limit int) (string, bool, erro
 		}
 		s = ns
 	}
-	return s, true, nil
+	return s, nil
 }
 
 func OpenEditor(tv *TutView, content string) (string, error) {

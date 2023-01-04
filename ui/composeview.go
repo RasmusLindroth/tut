@@ -736,17 +736,26 @@ func (m *MediaList) EditDesc() {
 	var desc string
 	var err error
 	if m.tutView.tut.Config.General.UseInternalEditor {
-		desc = m.tutView.EditorView.Init("", 0)
+		m.tutView.EditorView.Init(file.Description, 0, true, func(input string) {
+			m.editDesc(input, nil)
+		})
+		return
 	} else {
 		desc, err = OpenEditor(m.tutView, file.Description)
-		if err != nil {
-			m.tutView.ShowError(
-				fmt.Sprintf("Couldn't edit description. Error: %v\n", err),
-			)
-			return
-		}
+		m.editDesc(desc, err)
 	}
-	file.Description = desc
+}
+
+func (m *MediaList) editDesc(text string, err error) {
+	index := m.list.GetCurrentItem()
+	file := m.Files[index]
+	if err != nil {
+		m.tutView.ShowError(
+			fmt.Sprintf("Couldn't edit description. Error: %v\n", err),
+		)
+		return
+	}
+	file.Description = text
 	m.Files[index] = file
 	m.Draw()
 }

@@ -1350,6 +1350,7 @@ func parseInput(cfg InputTOML) Input {
 	ic.StatusViewFocus = inputOrDef("status-view-focus", cfg.StatusViewFocus, def.StatusViewFocus, false)
 	ic.StatusYank = inputOrDef("status-yank", cfg.StatusYank, def.StatusYank, false)
 	ic.StatusToggleCW = inputOrDef("status-toggle-cw", cfg.StatusToggleCW, def.StatusToggleCW, false)
+	ic.StatusShowFiltered = inputOrDef("status-show-filtered", cfg.StatusShowFiltered, def.StatusShowFiltered, false)
 
 	ic.UserAvatar = inputOrDef("user-avatar", cfg.UserAvatar, def.UserAvatar, false)
 	ic.UserBlock = inputOrDef("user-block", cfg.UserBlock, def.UserBlock, true)

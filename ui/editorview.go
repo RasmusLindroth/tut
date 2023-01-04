@@ -12,9 +12,10 @@ type EditorView struct {
 	editor    *tview.TextArea
 	controls  *tview.Flex
 	limit     int
-	setInput  chan string
+	prevPage  string
 	prevFocus tview.Primitive
 	prevInput func(event *tcell.EventKey) *tcell.EventKey
+	exitFunc  func(string)
 }
 
 func NewEditorView(tv *TutView) *EditorView {
@@ -39,35 +40,25 @@ func editorViewUI(e *EditorView) *tview.Flex {
 	return r
 }
 
-func (e *EditorView) Init(text string, textLimit int) string {
+func (e *EditorView) Init(text string, textLimit int, setReturn bool, exit func(string)) {
 	e.editor.SetText(text, true)
-	e.limit = 0
-	e.setInput = make(chan string, 1)
+	e.limit = textLimit
+	e.exitFunc = exit
+	if setReturn {
+		e.prevPage, _ = e.tutView.View.GetFrontPage()
+		e.prevFocus = e.tutView.tut.App.GetFocus()
+		e.prevInput = e.tutView.tut.App.GetInputCapture()
+	}
+	e.tutView.View.HidePage(e.prevPage)
 	e.tutView.View.ShowPage("editor")
-	e.tutView.View.SendToFront("editor")
-	e.prevFocus = e.tutView.tut.App.GetFocus()
-	e.prevInput = e.tutView.tut.App.GetInputCapture()
 	e.tutView.tut.App.SetInputCapture(e.tutView.InputEditorView)
 	e.tutView.tut.App.SetFocus(e.editor)
-	var val string
-	var gotIt bool
-	for !gotIt {
-		select {
-		case v := <-e.setInput:
-			val = v
-			gotIt = true
-		default:
-			continue
-		}
-	}
-	return val
 }
 
 func (e *EditorView) ExitTextAreaInput() {
-	content := e.editor.GetText()
 	e.tutView.View.HidePage("editor")
+	e.tutView.View.ShowPage(e.prevPage)
 	e.tutView.tut.App.SetInputCapture(e.prevInput)
 	e.tutView.tut.App.SetFocus(e.prevFocus)
-	e.setInput <- content
-	close(e.setInput)
+	e.exitFunc(e.editor.GetText())
 }

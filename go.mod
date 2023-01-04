@@ -12,7 +12,7 @@ require (
 	github.com/icza/gox v0.0.0-20221026131554-a08a8cdc726a
 	github.com/microcosm-cc/bluemonday v1.0.21
 	github.com/pelletier/go-toml/v2 v2.0.6
-	github.com/rivo/tview v0.0.0-20230101141202-1dc4a83affeb
+	github.com/rivo/tview v0.0.0-20230104153304-892d1a2eb0da
 	github.com/rivo/uniseg v0.4.3
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/exp v0.0.0-20221230185412-738e83a70c30
@@ -33,7 +33,7 @@ require (
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/tadvi/systray v0.0.0-20190226123456-11a2b8fa57af // indirect
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 // indirect
-	golang.org/x/sys v0.3.0 // indirect
-	golang.org/x/term v0.3.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
+	golang.org/x/sys v0.4.0 // indirect
+	golang.org/x/term v0.4.0 // indirect
+	golang.org/x/text v0.6.0 // indirect
 )
