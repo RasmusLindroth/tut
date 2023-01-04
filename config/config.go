@@ -53,43 +53,29 @@ type LeaderCommand uint
 
 const (
 	LeaderNone LeaderCommand = iota
-	LeaderHome
-	LeaderDirect
-	LeaderLocal
-	LeaderFederated
-	LeaderSpecialAll
-	LeaderSpecialBoosts
-	LeaderSpecialReplies
 	LeaderClearNotifications
 	LeaderCompose
 	LeaderEdit
 	LeaderBlocking
-	LeaderBookmarks
-	LeaderSaved
 	LeaderFavorited
 	LeaderBoosts
 	LeaderFavorites
 	LeaderFollowing
 	LeaderFollowers
+	LeaderTags
 	LeaderListPlacement
 	LeaderListSplit
 	LeaderMuting
 	LeaderPreferences
 	LeaderProfile
 	LeaderProportions
-	LeaderNotifications
 	LeaderMentions
-	LeaderLists
 	LeaderRefetch
-	LeaderTag
-	LeaderTags
 	LeaderStickToTop
 	LeaderHistory
-	LeaderUser
 	LeaderLoadNewer
 	LeaderPane
 	LeaderClosePane
-	LeaderSwitch
 	LeaderMovePaneLeft
 	LeaderMovePaneRight
 	LeaderMovePaneHome
@@ -156,14 +142,33 @@ func NewTimeline(tl Timeline) *Timeline {
 	return &tl
 }
 
+type OnTimelineFocus uint
+
+const (
+	TimelineFocusPane OnTimelineFocus = iota
+	TimelineFocusTimeline
+)
+
+type OnTimelineCreationClosed uint
+
+const (
+	TimelineCreationClosedNewPane OnTimelineCreationClosed = iota
+	TimelineCreationClosedCurrentPane
+)
+
 type Timeline struct {
 	ID          uint
 	FeedType    FeedType
 	Subaction   string
 	Name        string
 	Key         Key
+	Shortcut    string
 	HideBoosts  bool
 	HideReplies bool
+
+	Closed           bool
+	OnFocus          OnTimelineFocus
+	OnCreationClosed OnTimelineCreationClosed
 }
 
 type General struct {
@@ -941,20 +946,6 @@ func parseGeneral(cfg GeneralTOML) General {
 				ldata := NilDefaultString(l.Data, sp(""))
 				lshortcut := NilDefaultString(l.Shortcut, sp(""))
 				switch ltype {
-				case "home":
-					la.Command = LeaderHome
-				case "direct":
-					la.Command = LeaderDirect
-				case "local":
-					la.Command = LeaderLocal
-				case "federated":
-					la.Command = LeaderFederated
-				case "special-all":
-					la.Command = LeaderSpecialAll
-				case "special-boosts":
-					la.Command = LeaderSpecialBoosts
-				case "special-replies":
-					la.Command = LeaderSpecialReplies
 				case "clear-notifications":
 					la.Command = LeaderClearNotifications
 				case "compose":
@@ -963,10 +954,6 @@ func parseGeneral(cfg GeneralTOML) General {
 					la.Command = LeaderEdit
 				case "blocking":
 					la.Command = LeaderBlocking
-				case "bookmarks":
-					la.Command = LeaderBookmarks
-				case "saved":
-					la.Command = LeaderSaved
 				case "favorited":
 					la.Command = LeaderFavorited
 				case "history":
@@ -985,19 +972,12 @@ func parseGeneral(cfg GeneralTOML) General {
 					la.Command = LeaderPreferences
 				case "profile":
 					la.Command = LeaderProfile
-				case "notifications":
-					la.Command = LeaderNotifications
 				case "mentions":
 					la.Command = LeaderMentions
-				case "lists":
-					la.Command = LeaderLists
 				case "stick-to-top":
 					la.Command = LeaderStickToTop
 				case "refetch":
 					la.Command = LeaderRefetch
-				case "tag":
-					la.Command = LeaderTag
-					la.Subaction = ldata
 				case "tags":
 					la.Command = LeaderTags
 				case "list-placement":
@@ -1077,6 +1057,32 @@ func parseGeneral(cfg GeneralTOML) General {
 			tl.Name = NilDefaultString(l.Name, sp(""))
 			tl.HideBoosts = NilDefaultBool(l.HideBoosts, bf)
 			tl.HideReplies = NilDefaultBool(l.HideReplies, bf)
+			tl.Closed = NilDefaultBool(l.Closed, bf)
+			tl.Shortcut = NilDefaultString(l.Shortcut, sp(""))
+			onFocus := NilDefaultString(l.OnFocus, sp(""))
+			if onFocus != "" {
+				switch onFocus {
+				case "focus-pane":
+					tl.OnFocus = TimelineFocusPane
+				case "focus-self":
+					tl.OnFocus = TimelineFocusTimeline
+				default:
+					fmt.Printf("on-focus: %s in timelines is invalid\n", onFocus)
+					os.Exit(1)
+				}
+			}
+			onCreation := NilDefaultString(l.OnCreationClosed, sp(""))
+			if onCreation != "" {
+				switch onCreation {
+				case "current-pane":
+					tl.OnCreationClosed = TimelineCreationClosedCurrentPane
+				case "new-pane":
+					tl.OnCreationClosed = TimelineCreationClosedNewPane
+				default:
+					fmt.Printf("on-creation-closed: %s in timelines is invalid\n", onCreation)
+					os.Exit(1)
+				}
+			}
 			if l.Keys != nil {
 				var keys []string
 				var special []string

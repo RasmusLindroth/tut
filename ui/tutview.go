@@ -197,7 +197,7 @@ func (tv *TutView) loggedIn(acc auth.Account) {
 	tv.SetPage(MainFocus)
 }
 
-func (tv *TutView) FocusFeed(index int) {
+func (tv *TutView) FocusFeed(index int, ct *config.Timeline) {
 	if index < 0 || index >= len(tv.Timeline.Feeds) {
 		return
 	}
@@ -213,6 +213,12 @@ func (tv *TutView) FocusFeed(index int) {
 			}
 		}
 	}
+	for i, tl := range tv.Timeline.Feeds[index].Feeds {
+		if ct == tl.Timeline {
+			tv.Timeline.Feeds[index].FeedIndex = i
+			break
+		}
+	}
 	tv.Shared.Top.SetText(tv.Timeline.GetTitle())
 	tv.Timeline.update <- true
 }
@@ -222,7 +228,7 @@ func (tv *TutView) NextFeed() {
 	if index >= len(tv.Timeline.Feeds) {
 		index = 0
 	}
-	tv.FocusFeed(index)
+	tv.FocusFeed(index, nil)
 }
 
 func (tv *TutView) PrevFeed() {
@@ -230,5 +236,5 @@ func (tv *TutView) PrevFeed() {
 	if index < 0 {
 		index = len(tv.Timeline.Feeds) - 1
 	}
-	tv.FocusFeed(index)
+	tv.FocusFeed(index, nil)
 }

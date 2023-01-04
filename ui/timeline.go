@@ -61,6 +61,9 @@ func NewTimeline(tv *TutView, update chan bool) *Timeline {
 	}
 	tl.scrollSleep = NewScrollSleep(tl.NextItemFeed, tl.PrevItemFeed)
 	for _, f := range tv.tut.Config.General.Timelines {
+		if f.Closed {
+			continue
+		}
 		nf := CreateFeed(tv, f)
 		tl.Feeds = append(tl.Feeds, &FeedHolder{
 			Feeds: []*Feed{nf},
@@ -116,7 +119,7 @@ func (tl *Timeline) MoveCurrentPaneLeft() {
 		return
 	}
 	tl.Feeds[tl.FeedFocusIndex], tl.Feeds[ni] = tl.Feeds[ni], tl.Feeds[tl.FeedFocusIndex]
-	tl.tutView.FocusFeed(ni)
+	tl.tutView.FocusFeed(ni, nil)
 }
 
 func (tl *Timeline) MoveCurrentPaneRight() {
@@ -129,7 +132,7 @@ func (tl *Timeline) MoveCurrentPaneRight() {
 		return
 	}
 	tl.Feeds[tl.FeedFocusIndex], tl.Feeds[ni] = tl.Feeds[ni], tl.Feeds[tl.FeedFocusIndex]
-	tl.tutView.FocusFeed(ni)
+	tl.tutView.FocusFeed(ni, nil)
 }
 
 func (tl *Timeline) MoveCurrentPaneHome() {
@@ -139,7 +142,7 @@ func (tl *Timeline) MoveCurrentPaneHome() {
 	}
 	ni := 0
 	tl.Feeds[tl.FeedFocusIndex], tl.Feeds[ni] = tl.Feeds[ni], tl.Feeds[tl.FeedFocusIndex]
-	tl.tutView.FocusFeed(ni)
+	tl.tutView.FocusFeed(ni, nil)
 }
 
 func (tl *Timeline) MoveCurrentPaneEnd() {
@@ -149,7 +152,7 @@ func (tl *Timeline) MoveCurrentPaneEnd() {
 	}
 	ni := len(tl.Feeds) - 1
 	tl.Feeds[tl.FeedFocusIndex], tl.Feeds[ni] = tl.Feeds[ni], tl.Feeds[tl.FeedFocusIndex]
-	tl.tutView.FocusFeed(ni)
+	tl.tutView.FocusFeed(ni, nil)
 }
 
 func (tl *Timeline) CloseCurrentPane() {
@@ -165,7 +168,7 @@ func (tl *Timeline) CloseCurrentPane() {
 	if ni < 0 {
 		ni = 0
 	}
-	tl.tutView.FocusFeed(ni)
+	tl.tutView.FocusFeed(ni, nil)
 }
 
 func (tl *Timeline) NextFeed() {
@@ -198,7 +201,7 @@ func (tl *Timeline) FindAndGoTo(ft config.FeedType, data string, hideBoosts, hid
 				if ft == config.Tag && f.Data.Name() != data {
 					continue
 				}
-				tl.tutView.FocusFeed(i)
+				tl.tutView.FocusFeed(i, nil)
 				fh.FeedIndex = j
 				tl.tutView.Shared.Top.SetText(tl.GetTitle())
 				tl.update <- true

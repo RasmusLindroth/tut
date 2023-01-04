@@ -47,6 +47,10 @@ type TimelineTOML struct {
 	Shortcut    *string   `toml:"shortcut"`
 	HideBoosts  *bool     `toml:"hide-boosts"`
 	HideReplies *bool     `toml:"hide-replies"`
+
+	Closed           *bool   `toml:"closed"`
+	OnCreationClosed *string `toml:"on-creation-closed"`
+	OnFocus          *string `toml:"on-focus"`
 }
 
 type LeaderActionTOML struct {
