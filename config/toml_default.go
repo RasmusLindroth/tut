@@ -19,7 +19,7 @@ func ip64(i int64) *int64 {
 
 var ConfigDefault = ConfigTOML{
 	General: GeneralTOML{
-		Editor:              sp("USE_TUT_INTERNAL"),
+		Editor:              sp("TUT_USE_INTERNAL"),
 		Confirmation:        bt,
 		MouseSupport:        bf,
 		DateFormat:          sp("2006-01-02 15:04"),
@@ -89,28 +89,28 @@ var ConfigDefault = ConfigTOML{
 	},
 	Media: MediaTOML{
 		Image: &ViewerTOML{
-			Program:  sp("xdg-open"),
+			Program:  sp("TUT_OS_DEFAULT"),
 			Args:     sp(""),
 			Terminal: bf,
 			Single:   bt,
 			Reverse:  bf,
 		},
 		Video: &ViewerTOML{
-			Program:  sp("xdg-open"),
+			Program:  sp("TUT_OS_DEFAULT"),
 			Args:     sp(""),
 			Terminal: bf,
 			Single:   bt,
 			Reverse:  bf,
 		},
 		Audio: &ViewerTOML{
-			Program:  sp("xdg-open"),
+			Program:  sp("TUT_OS_DEFAULT"),
 			Args:     sp(""),
 			Terminal: bf,
 			Single:   bt,
 			Reverse:  bf,
 		},
 		Link: &ViewerTOML{
-			Program:  sp("xdg-open"),
+			Program:  sp("TUT_OS_DEFAULT"),
 			Args:     sp(""),
 			Terminal: bf,
 			Single:   bt,

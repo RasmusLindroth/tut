@@ -809,6 +809,11 @@ func getViewer(v *ViewerTOML, def *ViewerTOML) (program, args string, terminal, 
 	if v.Reverse != nil {
 		reverse = *v.Reverse
 	}
+	if *v.Program == "TUT_OS_DEFAULT" {
+		var argsSlice []string
+		program, argsSlice = util.GetDefaultForOS()
+		args = strings.Join(argsSlice, " ")
+	}
 	return
 }
 
@@ -851,7 +856,7 @@ func parseGeneral(cfg GeneralTOML) General {
 
 	def := ConfigDefault.General
 	general.Editor = NilDefaultString(cfg.Editor, def.Editor)
-	if general.Editor == "USE_TUT_INTERNAL" {
+	if general.Editor == "TUT_USE_INTERNAL" {
 		general.UseInternalEditor = true
 	}
 	general.Confirmation = NilDefaultBool(cfg.Confirmation, def.Confirmation)
