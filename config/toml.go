@@ -171,13 +171,15 @@ type InputTOML struct {
 	GlobalBack  *KeyHintTOML `toml:"global-back"`
 	GlobalExit  *KeyHintTOML `toml:"global-exit"`
 
-	MainHome     *KeyHintTOML `toml:"main-home"`
-	MainEnd      *KeyHintTOML `toml:"main-end"`
-	MainPrevFeed *KeyHintTOML `toml:"main-prev-feed"`
-	MainNextFeed *KeyHintTOML `toml:"main-next-feed"`
-	MainPrevPane *KeyHintTOML `toml:"main-prev-pane"`
-	MainNextPane *KeyHintTOML `toml:"main-next-pane"`
-	MainCompose  *KeyHintTOML `toml:"main-compose"`
+	MainHome        *KeyHintTOML `toml:"main-home"`
+	MainEnd         *KeyHintTOML `toml:"main-end"`
+	MainPrevFeed    *KeyHintTOML `toml:"main-prev-feed"`
+	MainNextFeed    *KeyHintTOML `toml:"main-next-feed"`
+	MainPrevPane    *KeyHintTOML `toml:"main-prev-pane"`
+	MainNextPane    *KeyHintTOML `toml:"main-next-pane"`
+	MainCompose     *KeyHintTOML `toml:"main-compose"`
+	MainNextAccount *KeyHintTOML `toml:"main-next-account"`
+	MainPrevAccount *KeyHintTOML `toml:"main-prev-account"`
 
 	StatusAvatar       *KeyHintTOML `toml:"status-avatar"`
 	StatusBoost        *KeyHintTOML `toml:"status-boost"`
@@ -248,4 +250,6 @@ type InputTOML struct {
 	PreferenceFieldsAdd    *KeyHintTOML `toml:"preference-fields-add"`
 	PreferenceFieldsEdit   *KeyHintTOML `toml:"preference-fields-edit"`
 	PreferenceFieldsDelete *KeyHintTOML `toml:"preference-fields-delete"`
+
+	EditorExit *KeyHintTOML `toml:"editor-exit"`
 }

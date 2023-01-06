@@ -29,6 +29,16 @@ func (tv *TutView) Input(event *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	}
+
+	if tv.tut.Config.Input.MainNextAccount.Match(event.Key(), event.Rune()) {
+		tv.NextAcct()
+		return nil
+	}
+	if tv.tut.Config.Input.MainPrevAccount.Match(event.Key(), event.Rune()) {
+		tv.NextAcct()
+		return nil
+	}
+
 	switch tv.PageFocus {
 	case LoginFocus:
 		return tv.InputLoginView(event)

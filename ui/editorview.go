@@ -30,6 +30,9 @@ func NewEditorView(tv *TutView) *EditorView {
 		controls: NewControlView(tv.tut.Config),
 		info:     NewTextView(tv.tut.Config),
 	}
+	item := NewControl(tv.tut.Config, tv.tut.Config.Input.EditorExit, true)
+	e.controls.AddItem(
+		NewControlButton(tv, item), item.Len, 0, false)
 	e.View = editorViewUI(e)
 	return e
 }

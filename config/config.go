@@ -501,13 +501,15 @@ type Input struct {
 	GlobalBack  Key
 	GlobalExit  Key
 
-	MainHome     Key
-	MainEnd      Key
-	MainPrevFeed Key
-	MainNextFeed Key
-	MainPrevPane Key
-	MainNextPane Key
-	MainCompose  Key
+	MainHome        Key
+	MainEnd         Key
+	MainPrevFeed    Key
+	MainNextFeed    Key
+	MainPrevPane    Key
+	MainNextPane    Key
+	MainCompose     Key
+	MainNextAccount Key
+	MainPrevAccount Key
 
 	StatusAvatar       Key
 	StatusBoost        Key
@@ -578,6 +580,8 @@ type Input struct {
 	PreferenceFieldsAdd    Key
 	PreferenceFieldsEdit   Key
 	PreferenceFieldsDelete Key
+
+	EditorExit Key
 }
 
 func parseColor(input string, def string, xrdb map[string]string) tcell.Color {
@@ -1345,6 +1349,8 @@ func parseInput(cfg InputTOML) Input {
 	ic.MainNextPane = inputOrDef("main-next-pane", cfg.MainNextPane, def.MainNextPane, false)
 	ic.MainPrevPane = inputOrDef("main-prev-pane", cfg.MainPrevPane, def.MainPrevPane, false)
 	ic.MainCompose = inputOrDef("main-compose", cfg.MainCompose, def.MainCompose, false)
+	ic.MainNextAccount = inputOrDef("main-next-account", cfg.MainNextAccount, def.MainNextAccount, false)
+	ic.MainPrevAccount = inputOrDef("main-prev-account", cfg.MainPrevAccount, def.MainPrevAccount, false)
 
 	ic.StatusAvatar = inputOrDef("status-avatar", cfg.StatusAvatar, def.StatusAvatar, false)
 	ic.StatusBoost = inputOrDef("status-boost", cfg.StatusBoost, def.StatusBoost, true)
@@ -1414,6 +1420,8 @@ func parseInput(cfg InputTOML) Input {
 	ic.PreferenceFieldsAdd = inputOrDef("preference-fields-add", cfg.PreferenceFieldsAdd, def.PreferenceFieldsAdd, false)
 	ic.PreferenceFieldsEdit = inputOrDef("preference-fields-edit", cfg.PreferenceFieldsEdit, def.PreferenceFieldsEdit, false)
 	ic.PreferenceFieldsDelete = inputOrDef("preference-fields-delete", cfg.PreferenceFieldsDelete, def.PreferenceFieldsDelete, false)
+
+	ic.EditorExit = inputOrDef("editor-exit", cfg.EditorExit, def.EditorExit, false)
 	return ic
 }
 

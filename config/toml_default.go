@@ -178,6 +178,14 @@ var ConfigDefault = ConfigTOML{
 			Hint: sp(""),
 			Keys: &[]string{"c", "C"},
 		},
+		MainNextAccount: &KeyHintTOML{
+			Hint:        sp(""),
+			SpecialKeys: &[]string{"Ctrl-N"},
+		},
+		MainPrevAccount: &KeyHintTOML{
+			Hint:        sp(""),
+			SpecialKeys: &[]string{"Ctrl-P"},
+		},
 		StatusAvatar: &KeyHintTOML{
 			Hint: sp("[A]vatar"),
 			Keys: &[]string{"a", "A"},
@@ -426,6 +434,10 @@ var ConfigDefault = ConfigTOML{
 		PreferenceFieldsDelete: &KeyHintTOML{
 			Hint: sp("[D]elete"),
 			Keys: &[]string{"d", "D"},
+		},
+		EditorExit: &KeyHintTOML{
+			Hint:        sp("[Esc] when done"),
+			SpecialKeys: &[]string{"Esc"},
 		},
 	},
 }
