@@ -100,6 +100,15 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 	case ":newer":
 		c.tutView.LoadNewerCommand()
 		c.Back()
+	case ":login":
+		c.tutView.LoginCommand()
+		c.Back()
+	case ":next-acc":
+		c.tutView.NextAcct()
+		c.Back()
+	case ":prev-acc":
+		c.tutView.PrevAcct()
+		c.Back()
 	case ":clear-notifications":
 		c.tutView.ClearNotificationsCommand()
 		c.Back()

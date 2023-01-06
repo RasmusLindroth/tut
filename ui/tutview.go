@@ -35,6 +35,22 @@ type Tut struct {
 	Config *config.Config
 }
 
+var App *tview.Application
+var Config *config.Config
+var Accounts *auth.AccountData
+var TutViews *TutViewsHolder
+
+type TutViewsHolder struct {
+	Views   []*TutView
+	Current int
+}
+
+func SetVars(config *config.Config, app *tview.Application, accounts *auth.AccountData) {
+	Config = config
+	App = app
+	Accounts = accounts
+}
+
 type TutView struct {
 	tut           *Tut
 	Timeline      *Timeline
@@ -96,9 +112,17 @@ func (l *Leader) Content() string {
 	return l.content
 }
 
-func NewTutView(t *Tut, accs *auth.AccountData, selectedUser string) *TutView {
+func NewTutView(selectedUser string) {
+	if TutViews == nil {
+		TutViews = &TutViewsHolder{}
+	}
+	accs := Accounts
 	tv := &TutView{
-		tut:  t,
+		tut: &Tut{
+			Client: &api.AccountClient{},
+			App:    App,
+			Config: Config,
+		},
 		View: tview.NewPages(),
 	}
 	tv.Leader = NewLeader(tv)
@@ -132,7 +156,52 @@ func NewTutView(t *Tut, accs *auth.AccountData, selectedUser string) *TutView {
 	} else {
 		tv.loggedIn(accs.Accounts[0])
 	}
-	return tv
+	TutViews.Views = append(TutViews.Views, tv)
+	TutViews.SetFocusedTutView(len(TutViews.Views) - 1)
+}
+
+func (tvh *TutViewsHolder) SetFocusedTutView(index int) {
+	if index < 0 && index >= len(tvh.Views) {
+		return
+	}
+	tvh.Current = index
+	curr := tvh.Views[tvh.Current]
+	App.SetRoot(curr.View, true)
+	App.SetInputCapture(curr.Input)
+	if Config.General.MouseSupport {
+		App.SetMouseCapture(curr.MouseInput)
+	}
+	if curr.MainView != nil {
+		curr.MainView.ForceUpdate()
+	}
+}
+
+func (tvh *TutViewsHolder) Next() {
+	if len(tvh.Views) < 2 {
+		return
+	}
+	next := tvh.Current + 1
+	if next >= len(tvh.Views) {
+		next = 0
+	}
+	tvh.SetFocusedTutView(next)
+}
+
+func (tvh *TutViewsHolder) Prev() {
+	if len(tvh.Views) < 2 {
+		return
+	}
+	prev := tvh.Current - 1
+	if prev < 0 {
+		prev = len(tvh.Views) - 1
+	}
+	tvh.SetFocusedTutView(prev)
+}
+
+func DoneAdding() {
+	if len(TutViews.Views) > 0 {
+		TutViews.SetFocusedTutView(0)
+	}
 }
 
 func (tv *TutView) loggedIn(acc auth.Account) {

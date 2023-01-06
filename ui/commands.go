@@ -310,6 +310,17 @@ func (tv *TutView) LoadNewerCommand() {
 	f.LoadNewer(true)
 }
 
+func (tv *TutView) LoginCommand() {
+	NewTutView("")
+}
+
+func (tv *TutView) NextAcct() {
+	TutViews.Next()
+}
+func (tv *TutView) PrevAcct() {
+	TutViews.Prev()
+}
+
 func (tv *TutView) ClearNotificationsCommand() {
 	err := tv.tut.Client.ClearNotifications()
 	if err != nil {

@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"log"
+
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
 )
@@ -81,6 +83,7 @@ func (tv *TutView) SetPage(f PageFocusAt) {
 	}
 	switch f {
 	case LoginFocus:
+		log.Fatalln(tv.tut.Client.Me.Acct)
 		tv.PageFocus = LoginFocus
 		tv.View.SwitchToPage("login")
 		tv.Shared.Bottom.StatusBar.SetMode(UserMode)

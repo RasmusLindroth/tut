@@ -140,3 +140,28 @@ func NewHorizontalLine(cnf *config.Config) *tview.Box {
 	})
 	return horizontalLine
 }
+
+func NewAccButton(tv *TutView, cnf *config.Config, name string, index int, isActive bool) *tview.Button {
+	btn := tview.NewButton(name)
+	style := tcell.Style{}
+	if !isActive {
+		style = style.Foreground(cnf.Style.Text)
+		style = style.Background(cnf.Style.Background)
+	} else {
+		style = style.Foreground(cnf.Style.ListSelectedText)
+		style = style.Background(cnf.Style.ListSelectedBackground)
+	}
+	btn.SetActivatedStyle(style)
+	btn.SetStyle(style)
+	btn.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
+		if !btn.InRect(event.Position()) {
+			return action, event
+		}
+		if action != tview.MouseLeftClick {
+			return action, event
+		}
+		TutViews.SetFocusedTutView(index)
+		return action, nil
+	})
+	return btn
+}

@@ -1170,6 +1170,12 @@ func (tv *TutView) MouseInput(event *tcell.EventMouse, action tview.MouseAction)
 		return event, action
 	}
 
+	/* Switch accounts */
+	x, y := event.Position()
+	if tv.MainView.accView.InRect(x, y) {
+		return event, action
+	}
+
 	switch tv.PageFocus {
 	case ViewFocus, MainFocus:
 		return tv.MouseInputMainView(event, action)
