@@ -625,25 +625,25 @@ func parseTheme(cfg StyleTOML, xrdbColors map[string]string) Style {
 	style.TopBarBackground = parseColor(s, "#f92672", xrdbColors)
 
 	s = NilDefaultString(cfg.TopBarText, def.TopBarText)
-	style.TopBarText = parseColor(s, "white", xrdbColors)
+	style.TopBarText = parseColor(s, "#f8f8f2", xrdbColors)
 
 	s = NilDefaultString(cfg.StatusBarBackground, def.StatusBarBackground)
 	style.StatusBarBackground = parseColor(s, "#f92672", xrdbColors)
 
 	s = NilDefaultString(cfg.StatusBarText, def.StatusBarText)
-	style.StatusBarText = parseColor(s, "white", xrdbColors)
+	style.StatusBarText = parseColor(s, "#f8f8f3", xrdbColors)
 
 	s = NilDefaultString(cfg.StatusBarViewBackground, def.StatusBarViewBackground)
 	style.StatusBarViewBackground = parseColor(s, "#ae81ff", xrdbColors)
 
 	s = NilDefaultString(cfg.StatusBarViewText, def.StatusBarViewText)
-	style.StatusBarViewText = parseColor(s, "white", xrdbColors)
+	style.StatusBarViewText = parseColor(s, "#f8f8f2", xrdbColors)
 
 	s = NilDefaultString(cfg.ListSelectedBackground, def.ListSelectedBackground)
 	style.ListSelectedBackground = parseColor(s, "#f92672", xrdbColors)
 
 	s = NilDefaultString(cfg.ListSelectedText, def.ListSelectedText)
-	style.ListSelectedText = parseColor(s, "white", xrdbColors)
+	style.ListSelectedText = parseColor(s, "#f8f8f2", xrdbColors)
 
 	s = NilDefaultString(cfg.ListSelectedInactiveBackground, sp(""))
 	if len(s) > 0 {
@@ -717,14 +717,14 @@ func parseTheme(cfg StyleTOML, xrdbColors map[string]string) Style {
 	}
 	s = NilDefaultString(cfg.TimelineNameText, sp(""))
 	if len(s) > 0 {
-		style.TimelineNameText = parseColor(s, "gray", xrdbColors)
+		style.TimelineNameText = parseColor(s, "#808080", xrdbColors)
 	} else {
 		style.TimelineNameText = style.Subtle
 	}
 
 	s = NilDefaultString(cfg.CommandText, sp(""))
 	if len(s) > 0 {
-		style.CommandText = parseColor(s, "white", xrdbColors)
+		style.CommandText = parseColor(s, "#f8f8f2", xrdbColors)
 	} else {
 		style.CommandText = style.StatusBarText
 	}
@@ -1466,7 +1466,7 @@ func createConfigDir() error {
 }
 
 func checkConfig(filename string, cnfPath string, cnfDir string) (path string, exists bool, err error) {
-	if cnfPath != "" && filename == "config.ini" {
+	if cnfPath != "" && filename == "config.toml" {
 		_, err = os.Stat(cnfPath)
 		if os.IsNotExist(err) {
 			return cnfPath, false, nil
