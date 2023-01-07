@@ -21,6 +21,10 @@ Under each section there is the name of the configuration option. The last line 
 # GENERAL
 This section is \[general\] in your configuration file
 
+## editor
+What editor to use. TUT_USE_INTERNAL will use the editor that comes with tut. If you want you can set this to $EDITOR to use your environment variable or vim if you want to specify the program directly.  
+**editor**=*"TUT_USE_INTERNAL"*
+
 ## confirmation
 You need to press yes in a confirmation dialog before favoriting, boosting, etc.  
 

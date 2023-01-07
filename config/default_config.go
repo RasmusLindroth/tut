@@ -3,6 +3,12 @@ package config
 var conftext = `# Configuration file for tut
 
 [general]
+# What editor to use. TUT_USE_INTERNAL will use the editor that comes with tut.
+# If you want you can set this to $EDITOR to use your environment variable or
+# vim if you want to specify the program directly.
+# default="TUT_USE_INTERNAL"
+editor="TUT_USE_INTERNAL"
+
 # You need to press yes in a confirmation dialog before favoriting, boosting,
 # etc.
 # valid: true, false
