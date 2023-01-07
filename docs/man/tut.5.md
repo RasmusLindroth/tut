@@ -138,20 +138,22 @@ Number of milliseconds before the leader command resets. So if you tap the leade
 # GENERAL.TIMELINES
 This section is \[\[general.timelines\]\] in your configuration file. You can have multiple of them.
 
+Timelines adds panes of feeds. You can customize the number of feeds, what they should show and the key to activate them.  
+
 Example:
 
-[[general.timelines]]  
+\[\[general.timelines\]\]  
 name=\"home\"  
 type=\"home\"  
 hide-boosts=false  
 hide-replies=false  
   
-[[general.timelines]]  
-name = \"Notifications\"  
-type = \"notifications\"  
-keys = [\"n\", \"N\"]  
-closed = true  
-on-creation-closed = \"new-pane\"  
+\[\[general.timelines\]\]  
+name=\"Notifications\"  
+type=\"notifications\"  
+keys=\[\"n\", \"N\"\]  
+closed=true  
+on-creation-closed=\"new-pane\"  
 on-focus=\"focus-self\"  
 
 ## name
@@ -166,7 +168,7 @@ valid: home, direct, local, federated, bookmarks, saved, favorited, notification
 **type**=*""*
 
 ## data
-Used for the tag type, so here you set the tag.  
+Used for the tag type, so here you set the tag. If you have multiple you seperate them with a space.  
 **data**=*""*
 
 ## keys
@@ -209,6 +211,33 @@ valid: focus-pane, focus-self
 
 # GENERAL.LEADER-ACTIONS
 This section is \[\[general.leader-actions\]\] in your configuration file. You can have multiple of them.
+
+You set actions leader-key with one or more leader-actions.  
+  
+The shortcuts are up to you, but keep them quite short and make sure they don\'t collide. If you have one shortcut that is \"f\" and an other one that is \"fav\", the one with \"f\" will always run and \"fav\" will never run.   
+  
+Some special actions that requires data to be set:  
+pane is special as it\'s a shortcut for switching between the panes you\'ve set under general and they are zero indexed. pane 0 = your first timeline, pane 1 = your second and so on.  
+list-placement as it takes the argument top, right, bottom or left  
+list-split as it takes the argument column or row  
+proportions takes the arguments \[int\] \[int\], where the first integer is the list and the other content, e.g. proportions 1 3. See list-proportion above for more information.  
+
+Example:
+
+\[\[general.leader-actions\]\]  
+type=\"close-pane\"  
+shortcut=\"q\"  
+  
+\[\[general.leader-actions\]\]  
+type=\"list-split\"  
+data=\"row\"  
+shortcut=\"r\"  
+  
+\[\[general.leader-actions\]\]  
+type=\"list-split\"  
+data=\"column\"  
+shortcut=\"c\"  
+  
 
 ## type
 The action you want to run.  
@@ -529,20 +558,20 @@ This section is \[input\] in your configuration file
 
 In this section you set the keys to be used in tut.  
 		  
-The hint option lets you set which part of the hint that will be highlighted in tut. E.g. [F]avorite results in a highlighted F and the rest of the text is displayed normaly.  
-Some of the options can be in two states, like favorites, so there you can set the hint-alt option to something like Un[F]avorite.  
+The hint option lets you set which part of the hint that will be highlighted in tut. E.g. \[F\]avorite results in a highlighted F and the rest of the text is displayed normaly.  
+Some of the options can be in two states, like favorites, so there you can set the hint-alt option to something like Un\[F\]avorite.  
   
 Examples:  
-\"[D]elete\" = Delete with a highlighted D  
-\"Un[F]ollow\" = UnFollow with a highlighted F  
-\"[Enter]\" = Enter where everything is highlighted  
-\"Yan[K]\" = YanK with a highlighted K  
+\"\[D\]elete\" = Delete with a highlighted D  
+\"Un\[F\]ollow\" = UnFollow with a highlighted F  
+\"\[Enter\]\" = Enter where everything is highlighted  
+\"Yan\[K\]\" = YanK with a highlighted K  
   
 The keys option lets you define what key that should be pressed. This is limited to on character only and they are case sensetive.  
 Example:  
-keys=[\"j\",\"J\"]  
+keys=\[\"j\",\"J\"\]  
   
-You can also set special-keys and they\'re for keys like Escape and Enter. To find the names of special keys you have to go to the following site and look for \"var KeyNames = map[Key]string{\"  
+You can also set special-keys and they\'re for keys like Escape and Enter. To find the names of special keys you have to go to the following site and look for \"var KeyNames = map\[Key\]string{\"  
   
 https://github.com/gdamore/tcell/blob/master/key.go  
 

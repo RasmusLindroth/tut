@@ -113,7 +113,7 @@ To change the keys look at tut(5) under the *INPUT* section.
 **:profile**
 : Go to your profile
 
-**:proportions** *[int] [int]*
+**:proportions** *\[int\] \[int\]*
 : Sets the proportions of the windows and the content. The first integer is your windows and the other for content, e.g. :proportions 1 3
 
 **:refetch**

@@ -123,6 +123,9 @@ leader-key=""
 leader-timeout=1000
 
 # [[general.timelines]]
+# Timelines adds panes of feeds. You can customize the number of feeds, what
+# they should show and the key to activate them.
+
 # Example:
 # [[general.timelines]]
 # name="home"
@@ -131,11 +134,11 @@ leader-timeout=1000
 # hide-replies=false
 # 
 # [[general.timelines]]
-# name = "Notifications"
-# type = "notifications"
-# keys = ["n", "N"]
-# closed = true
-# on-creation-closed = "new-pane"
+# name="Notifications"
+# type="notifications"
+# keys=["n", "N"]
+# closed=true
+# on-creation-closed="new-pane"
 # on-focus="focus-self"
 
 # The name to display above the timeline
@@ -148,7 +151,8 @@ leader-timeout=1000
 # default=""
 # type=""
 
-# Used for the tag type, so here you set the tag.
+# Used for the tag type, so here you set the tag. If you have multiple you
+# seperate them with a space.
 # default=""
 # data=""
 
@@ -192,6 +196,38 @@ leader-timeout=1000
 # on-focus="focus-pane"
 
 # [[general.leader-actions]]
+# You set actions leader-key with one or more leader-actions.
+# 
+# The shortcuts are up to you, but keep them quite short and make sure they
+# don't collide. If you have one shortcut that is "f" and an other one that is
+# "fav", the one with "f" will always run and "fav" will never run. 
+# 
+# Some special actions that requires data to be set:
+# pane is special as it's a shortcut for switching between the panes you've set
+# under general and they are zero indexed. pane 0 = your first timeline, pane 1
+# = your second and so on.
+# list-placement as it takes the argument top, right, bottom or left
+# list-split as it takes the argument column or row
+# proportions takes the arguments [int] [int], where the first integer is the
+# list and the other content, e.g. proportions 1 3. See list-proportion above
+# for more information.
+
+# Example:
+# [[general.leader-actions]]
+# type="close-pane"
+# shortcut="q"
+# 
+# [[general.leader-actions]]
+# type="list-split"
+# data="row"
+# shortcut="r"
+# 
+# [[general.leader-actions]]
+# type="list-split"
+# data="column"
+# shortcut="c"
+# 
+
 # The action you want to run.
 # valid: blocking, boosts, clear-notifications, close-pane, compose, edit, favorited,
 # favorites, followers, following, history, list-placement, list-split, lists,

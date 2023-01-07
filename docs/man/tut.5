@@ -255,9 +255,13 @@ the input after X milliseconds.
 This section is [[general.timelines]] in your configuration file.
 You can have multiple of them.
 .PP
+Timelines adds panes of feeds.
+You can customize the number of feeds, what they should show and the key
+to activate them.
+.PP
 Example:
 .PP
-[general.timelines]
+[[general.timelines]]
 .PD 0
 .P
 .PD
@@ -275,27 +279,27 @@ hide-boosts=false
 .PD
 hide-replies=false
 .PP
-[general.timelines]
+[[general.timelines]]
 .PD 0
 .P
 .PD
-name = \[dq]Notifications\[dq]
+name=\[dq]Notifications\[dq]
 .PD 0
 .P
 .PD
-type = \[dq]notifications\[dq]
+type=\[dq]notifications\[dq]
 .PD 0
 .P
 .PD
-keys = [\[dq]n\[dq], \[dq]N\[dq]]
+keys=[\[dq]n\[dq], \[dq]N\[dq]]
 .PD 0
 .P
 .PD
-closed = true
+closed=true
 .PD 0
 .P
 .PD
-on-creation-closed = \[dq]new-pane\[dq]
+on-creation-closed=\[dq]new-pane\[dq]
 .PD 0
 .P
 .PD
@@ -318,6 +322,7 @@ notifications, lists, mentions, tag
 .SS data
 .PP
 Used for the tag type, so here you set the tag.
+If you have multiple you seperate them with a space.
 .PD 0
 .P
 .PD
@@ -388,6 +393,76 @@ valid: focus-pane, focus-self
 .PP
 This section is [[general.leader-actions]] in your configuration file.
 You can have multiple of them.
+.PP
+You set actions leader-key with one or more leader-actions.
+.PP
+The shortcuts are up to you, but keep them quite short and make sure
+they don\[aq]t collide.
+If you have one shortcut that is \[dq]f\[dq] and an other one that is
+\[dq]fav\[dq], the one with \[dq]f\[dq] will always run and
+\[dq]fav\[dq] will never run.
+.PP
+Some special actions that requires data to be set:
+.PD 0
+.P
+.PD
+pane is special as it\[aq]s a shortcut for switching between the panes
+you\[aq]ve set under general and they are zero indexed.
+pane 0 = your first timeline, pane 1 = your second and so on.
+.PD 0
+.P
+.PD
+list-placement as it takes the argument top, right, bottom or left
+.PD 0
+.P
+.PD
+list-split as it takes the argument column or row
+.PD 0
+.P
+.PD
+proportions takes the arguments [int] [int], where the first integer is
+the list and the other content, e.g.\ proportions 1 3.
+See list-proportion above for more information.
+.PP
+Example:
+.PP
+[[general.leader-actions]]
+.PD 0
+.P
+.PD
+type=\[dq]close-pane\[dq]
+.PD 0
+.P
+.PD
+shortcut=\[dq]q\[dq]
+.PP
+[[general.leader-actions]]
+.PD 0
+.P
+.PD
+type=\[dq]list-split\[dq]
+.PD 0
+.P
+.PD
+data=\[dq]row\[dq]
+.PD 0
+.P
+.PD
+shortcut=\[dq]r\[dq]
+.PP
+[[general.leader-actions]]
+.PD 0
+.P
+.PD
+type=\[dq]list-split\[dq]
+.PD 0
+.P
+.PD
+data=\[dq]column\[dq]
+.PD 0
+.P
+.PD
+shortcut=\[dq]c\[dq]
 .SS type
 .PP
 The action you want to run.
