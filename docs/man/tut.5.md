@@ -143,9 +143,10 @@ valid: true, false
 ## terminal-title
 0 = No terminal title  
 1 = Show title in terminal and top bar  
-2 = Only show terminal title, and no top bar in tut.  
+2 = Only show terminal title, and no top bar in tut  
+3 = No terminal title and no top bar in tut.  
 
-valid: 0, 1, 2
+valid: 0, 1, 2, 4
 
 **terminal-title**=*0*
 

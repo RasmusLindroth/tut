@@ -1081,7 +1081,7 @@ func parseGeneral(cfg GeneralTOML) General {
 		1 = Show title in terminal and top bar
 		2 = Only show terminal title, and no top bar
 	*/
-	if general.TerminalTitle < 0 || general.TerminalTitle > 2 {
+	if general.TerminalTitle < 0 || general.TerminalTitle > 3 {
 		general.TerminalTitle = 0
 	}
 

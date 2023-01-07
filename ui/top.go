@@ -48,7 +48,7 @@ func (t *Top) SetText(s string) {
 
 func (t *Top) setText(s string) {
 	t.View.SetText(s)
-	if t.TutView.tut.Config.General.TerminalTitle > 0 {
+	if t.TutView.tut.Config.General.TerminalTitle > 0 && t.TutView.tut.Config.General.TerminalTitle != 3 {
 		util.SetTerminalTitle(s)
 	}
 }
