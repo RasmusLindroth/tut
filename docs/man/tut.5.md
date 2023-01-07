@@ -734,8 +734,8 @@ Go to next feed
 ## keys
 **keys**=*["l","L"]*
 
-## specialkeys
-**specialkeys**=*["Right"]*
+## special-keys
+**special-keys**=*["Right"]*
 
 # INPUT.MAIN-PREV-PANE
 This section is \[input.main-prev-pane\] in your configuration file

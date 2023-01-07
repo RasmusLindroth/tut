@@ -650,7 +650,7 @@ special-keys=["Left"]
 keys=["l","L"]
 
 # default=["Right"]
-specialkeys=["Right"]
+special-keys=["Right"]
 
 [input.main-prev-pane]
 # Focus on the previous feed pane

@@ -2,7 +2,6 @@ package config
 
 import (
 	"embed"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -412,64 +411,6 @@ func NewKeyT(hint string, hintAlt string, keys []string, special []string) (Key,
 	}
 	k.Runes = runes
 	k.Keys = keysTcell
-
-	return k, nil
-}
-
-func NewKey(s []string, double bool) (Key, error) {
-	var k Key
-	if len(s) < 2 {
-		return k, errors.New("key must have a minimum length of 2")
-	}
-	var start int
-	if double {
-		start = 1
-		k = Key{
-			Hint: [][]string{newHint(s[0]), newHint(s[1])},
-		}
-	} else {
-		start = 0
-		k = Key{
-			Hint: [][]string{newHint(s[0])},
-		}
-	}
-	var runes []rune
-	var keys []tcell.Key
-	for _, v := range s[start+1:] {
-		value := []rune(strings.TrimSpace(v))
-		if len(value) < 3 {
-			return k, errors.New("key value must have a minimum length of 3")
-		}
-		if value[0] == '\'' {
-			if len(value) != 3 {
-				return k, fmt.Errorf("rune %s must only contain one char", string(value))
-			}
-			runes = append(runes, value[1])
-		} else if value[0] == '"' {
-			if value[len(value)-1] != '"' {
-				return k, fmt.Errorf("key %s must end with \"", string(value))
-			}
-			keyName := string(value[1 : len(value)-1])
-			found := false
-			var fk tcell.Key
-			for tk, tv := range tcell.KeyNames {
-				if tv == keyName {
-					found = true
-					fk = tk
-					break
-				}
-			}
-			if found {
-				keys = append(keys, fk)
-			} else {
-				return k, fmt.Errorf("no key named %s", keyName)
-			}
-		} else {
-			return k, fmt.Errorf("input %s is in the wrong format", string(value))
-		}
-	}
-	k.Runes = runes
-	k.Keys = keys
 
 	return k, nil
 }
@@ -1106,18 +1047,29 @@ func parseGeneral(cfg GeneralTOML) General {
 			tls = append(tls, tl)
 		}
 	}
-	if len(tls) == 0 {
+	shown := 0
+	for _, tl := range tls {
+		if !tl.Closed {
+			shown += 1
+		}
+	}
+	if len(tls) == 0 || shown == 0 {
 		tls = append(tls,
 			NewTimeline(Timeline{
 				FeedType: TimelineHome,
 				Name:     "Home",
 			}),
 		)
+		kn, err := NewKeyT("", "", []string{"n", "N"}, []string{})
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 		tls = append(tls,
 			NewTimeline(Timeline{
 				FeedType: Notifications,
 				Name:     "[N]otifications",
-				Key:      inputStrOrErr([]string{"", "'n'", "'N'"}, false),
+				Key:      kn,
 			}),
 		)
 	}
@@ -1298,15 +1250,6 @@ func parseTemplates(cfg *ini.File, cnfPath string, cnfDir string) Templates {
 		User: userTmpl,
 		Help: helpTmpl,
 	}
-}
-
-func inputStrOrErr(vals []string, double bool) Key {
-	k, err := NewKey(vals, double)
-	if err != nil {
-		fmt.Printf("error parsing config. Error: %v\n", err)
-		os.Exit(1)
-	}
-	return k
 }
 
 func inputOrDef(keyName string, user *KeyHintTOML, def *KeyHintTOML, double bool) Key {
