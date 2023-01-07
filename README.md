@@ -285,5 +285,4 @@ AccessToken = '!CMD!gopass show -o -f misc/tut-token'
 * [gen2brain/beeep](https://github.com/gen2brain/beeep) - notifications
 * [gobwas/glob](https://github.com/gobwas/glob) - glob in patterns
 * [pelletier/go-toml](https://github.com/pelletier/go-toml) - toml parser
-* [go-ini/ini](https://github.com/go-ini/ini) - ini parser
 * [icza/gox](https://github.com/icza/gox) - diff between two `time.Time`

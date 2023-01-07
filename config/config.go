@@ -16,7 +16,6 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/gobwas/glob"
 	"github.com/pelletier/go-toml/v2"
-	"gopkg.in/ini.v1"
 )
 
 //go:embed toot.tmpl
@@ -375,7 +374,7 @@ func newHint(s string) []string {
 	return []string{matches[0][1], matches[0][2], matches[0][3]}
 }
 
-func NewKeyT(hint string, hintAlt string, keys []string, special []string) (Key, error) {
+func NewKey(hint string, hintAlt string, keys []string, special []string) (Key, error) {
 	k := Key{}
 	if len(hint) > 0 && len(hintAlt) > 0 {
 		k.Hint = [][]string{newHint(hint), newHint(hintAlt)}
@@ -1038,7 +1037,7 @@ func parseGeneral(cfg GeneralTOML) General {
 					special = *l.SpecialKeys
 				}
 				var err error
-				tl.Key, err = NewKeyT("", "", keys, special)
+				tl.Key, err = NewKey("", "", keys, special)
 				if err != nil {
 					fmt.Println(err)
 					os.Exit(1)
@@ -1060,7 +1059,7 @@ func parseGeneral(cfg GeneralTOML) General {
 				Name:     "Home",
 			}),
 		)
-		kn, err := NewKeyT("", "", []string{"n", "N"}, []string{})
+		kn, err := NewKey("", "", []string{"n", "N"}, []string{})
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -1154,7 +1153,7 @@ func parseCustom(cfg OpenCustomTOML) OpenCustom {
 		if x.SpecialKeys != nil {
 			special = *x.SpecialKeys
 		}
-		key, err := NewKeyT(
+		key, err := NewKey(
 			NilDefaultString(x.Hint, sp("")),
 			"", keys, special,
 		)
@@ -1192,7 +1191,7 @@ func parseNotifications(cfg NotificationsTOML) Notification {
 	return nc
 }
 
-func parseTemplates(cfg *ini.File, cnfPath string, cnfDir string) Templates {
+func parseTemplates(cfg ConfigTOML, cnfPath string, cnfDir string) Templates {
 	var tootTmpl *template.Template
 	tootTmplPath, exists, err := checkConfig("toot.tmpl", cnfPath, cnfDir)
 	if err != nil {
@@ -1264,7 +1263,7 @@ func inputOrDef(keyName string, user *KeyHintTOML, def *KeyHintTOML, double bool
 	if values.SpecialKeys != nil {
 		special = *values.SpecialKeys
 	}
-	key, err := NewKeyT(
+	key, err := NewKey(
 		NilDefaultString(values.Hint, sp("")),
 		NilDefaultString(values.HintAlt, sp("")),
 		keys, special,
@@ -1369,32 +1368,26 @@ func parseInput(cfg InputTOML) Input {
 }
 
 func parseConfig(filepath string, cnfPath string, cnfDir string) (Config, error) {
-	cfg, err := ini.LoadSources(ini.LoadOptions{
-		SpaceBeforeInlineComment: true,
-		AllowShadows:             true,
-	}, filepath)
 	conf := Config{}
-	if err != nil {
-		return conf, err
-	}
 	f, err := os.Open(filepath)
 	if err != nil {
 		log.Fatalln(err)
+		return conf, err
 	}
-	var a ConfigTOML
-	toml.NewDecoder(f).Decode(&a)
+	var cnf ConfigTOML
+	toml.NewDecoder(f).Decode(&cnf)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	f.Close()
-	conf.General = parseGeneral(a.General)
-	conf.Media = parseMedia(a.Media)
-	conf.Style = parseStyle(a.Style, cnfPath, cnfDir)
-	conf.OpenPattern = parseOpenPattern(a.OpenPattern)
-	conf.OpenCustom = parseCustom(a.OpenCustom)
-	conf.NotificationConfig = parseNotifications(a.NotificationConfig)
-	conf.Templates = parseTemplates(cfg, cnfPath, cnfDir)
-	conf.Input = parseInput(a.Input)
+	conf.General = parseGeneral(cnf.General)
+	conf.Media = parseMedia(cnf.Media)
+	conf.Style = parseStyle(cnf.Style, cnfPath, cnfDir)
+	conf.OpenPattern = parseOpenPattern(cnf.OpenPattern)
+	conf.OpenCustom = parseCustom(cnf.OpenCustom)
+	conf.NotificationConfig = parseNotifications(cnf.NotificationConfig)
+	conf.Templates = parseTemplates(cnf, cnfPath, cnfDir)
+	conf.Input = parseInput(cnf.Input)
 
 	return conf, nil
 }
