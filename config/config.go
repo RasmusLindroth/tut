@@ -1434,7 +1434,7 @@ func parseConfig(filepath string, cnfPath string, cnfDir string) (Config, error)
 	if err != nil {
 		return conf, err
 	}
-	f, err := os.Open(strings.TrimSuffix(filepath, "ini") + "toml")
+	f, err := os.Open(filepath)
 	if err != nil {
 		log.Fatalln(err)
 	}
