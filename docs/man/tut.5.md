@@ -172,8 +172,8 @@ Example:
 [[general.timelines]]  
 name=\"home\"  
 type=\"home\"  
-show-boosts=true  
-show-replies=true  
+hide-boosts=false  
+hide-replies=false  
   
 [[general.timelines]]  
 name = \"Notifications\"  
