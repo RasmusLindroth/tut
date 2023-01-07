@@ -59,9 +59,10 @@ func (mv *MainView) mainViewUI(tv *TutView) *tview.Flex {
 	if tv.tut.Config.General.ListSplit == config.ListColumn {
 		feeds := tview.NewFlex()
 		for _, fh := range tv.Timeline.Feeds {
-			if len(fh.Name) > 0 {
+			fTitle := fh.GetTitle()
+			if len(fTitle) > 0 {
 				txt := NewTextView(tv.tut.Config)
-				txt.SetText(tview.Escape(fh.Name))
+				txt.SetText(tview.Escape(fTitle))
 				txt.SetBackgroundColor(tv.tut.Config.Style.TimelineNameBackground)
 				txt.SetTextColor(tv.tut.Config.Style.TimelineNameText)
 				feeds.AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
@@ -76,9 +77,10 @@ func (mv *MainView) mainViewUI(tv *TutView) *tview.Flex {
 	} else {
 		feeds := tview.NewFlex().SetDirection(tview.FlexRow)
 		for _, fh := range tv.Timeline.Feeds {
-			if len(fh.Name) > 0 {
+			fTitle := fh.GetTitle()
+			if len(fTitle) > 0 {
 				txt := NewTextView(tv.tut.Config)
-				txt.SetText(tview.Escape(fh.Name))
+				txt.SetText(tview.Escape(fTitle))
 				txt.SetBackgroundColor(tv.tut.Config.Style.TimelineNameBackground)
 				txt.SetTextColor(tv.tut.Config.Style.TimelineNameText)
 				feeds.AddItem(txt, 1, 0, false)

@@ -8,7 +8,6 @@ import (
 )
 
 type FeedHolder struct {
-	Name      string
 	Feeds     []*Feed
 	FeedIndex int
 }
@@ -19,6 +18,22 @@ type Timeline struct {
 	FeedFocusIndex int
 	update         chan bool
 	scrollSleep    *scrollSleep
+}
+
+func (fh *FeedHolder) GetTitle() string {
+	if fh.FeedIndex >= len(fh.Feeds) {
+		return ""
+	}
+	current := fh.Feeds[fh.FeedIndex]
+	if len(current.Timeline.Name) > 0 {
+		return current.Timeline.Name
+	}
+	for _, f := range fh.Feeds {
+		if len(f.Timeline.Name) > 0 {
+			return f.Timeline.Name
+		}
+	}
+	return ""
 }
 
 func CreateFeed(tv *TutView, f *config.Timeline) *Feed {
@@ -67,7 +82,6 @@ func NewTimeline(tv *TutView, update chan bool) *Timeline {
 		nf := CreateFeed(tv, f)
 		tl.Feeds = append(tl.Feeds, &FeedHolder{
 			Feeds: []*Feed{nf},
-			Name:  f.Name,
 		})
 	}
 	for i := 1; i < len(tl.Feeds); i++ {

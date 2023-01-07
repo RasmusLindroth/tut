@@ -239,7 +239,6 @@ func (tv *TutView) matchedTimeline(tl *config.Timeline) {
 	case config.TimelineCreationClosedNewPane:
 		tv.Timeline.Feeds = append(tv.Timeline.Feeds, &FeedHolder{
 			Feeds: []*Feed{nf},
-			Name:  tl.Name,
 		})
 		tv.FocusFeed(len(tv.Timeline.Feeds)-1, nil)
 		tv.Shared.Top.SetText(tv.Timeline.GetTitle())
