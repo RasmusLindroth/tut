@@ -1,4 +1,4 @@
-% tut(5) tut 1.0.35
+% tut(5) tut 2.0.0
 % Rasmus Lindroth
 % 2023-01-07
 
