@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "tut" "5" "2023-01-01" "tut 1.0.34" ""
+.TH "tut" "5" "2023-01-07" "tut 1.0.35" ""
 .hy
 .SH NAME
 .PP
@@ -42,101 +42,35 @@ The last line under each options shows the default value.
 This section is [general] in your configuration file
 .SS confirmation
 .PP
-Shows a confirmation view before actions such as favorite, delete toot,
-boost etc.
-.PD 0
-.P
-.PD
+You need to press yes in a confirmation dialog before favoriting,
+boosting, etc.
+.PP
+valid: true, false
+.PP
 \f[B]confirmation\f[R]=\f[I]true\f[R]
 .SS mouse-support
 .PP
-Enable support for using the mouse in tut to select items.
-.PD 0
-.P
-.PD
+Enable mouse support in tut.
+.PP
+valid: true, false
+.PP
 \f[B]mouse-support\f[R]=\f[I]false\f[R]
-.SS timelines
-.PP
-Timelines adds windows of feeds.
-You can customize the number of feeds, what they should show and the key
-to activate them.
-.PP
-Available timelines: home, direct, local, federated, special, bookmarks,
-saved, favorited, notifications, lists, mentions, tag
-.PP
-The one named special are the home timeline with only boosts and/or
-replies.
-.PP
-Tag is special as you need to add the tag after, see the example below.
-.PP
-The syntax is:
-.PD 0
-.P
-.PD
-timelines=feed,name,[keys\&...],[showBoosts],[showReplies]
-.PP
-Tha values in brackets are optional.
-You can see the syntax for keys under the input section.
-.PP
-showBoosts and showReplies must be formated as bools.
-So either true or false.
-They always defaults to true.
-.PP
-Some examples:
-.PP
-home timeline with the name Home
-.PD 0
-.P
-.PD
-timelines=home,Home
-.PP
-local timeline with the name Local and it gets focus when you press 2.
-It will also hide boosts in the timeline, but show toots that are
-replies.
-.PD 0
-.P
-.PD
-timelines=local,Local,\[aq]2\[aq],false,true
-.PP
-notification timeline with the name [N]otifications and it gets focus
-when you press n or N
-.PD 0
-.P
-.PD
-timelines=notifications,[N]otifications,\[aq]n\[aq],\[aq]N\[aq]
-.PP
-tag timeline for #linux with the name Linux and it gets focus when you
-press
-.PD 0
-.P
-.PD
-timelines=tag linux,Linux,\[dq]F2\[dq]
-.PP
-If you don\[aq]t set any timelines it will default to this:
-.PD 0
-.P
-.PD
-timelines=home
-.PD 0
-.P
-.PD
-timelines=notifications,[N]otifications,\[aq]n\[aq],\[aq]N\[aq]
 .SS date-format
 .PP
 The date format to be used.
-See https://godoc.org/time#Time.Format
+See https://pkg.go.dev/time#pkg-constants
 .PD 0
 .P
 .PD
-\f[B]date-format\f[R]=\f[I]2006-01-02 15:04\f[R]
-.SS date-today-format
+\f[B]date-format\f[R]=\f[I]\[lq]2006-01-02 15:04\[rq]\f[R]
+.SS date-tody-format
 .PP
 Format for dates the same day.
 See date-format for more info.
 .PD 0
 .P
 .PD
-\f[B]date-today-format\f[R]=\f[I]15:04\f[R]
+\f[B]date-tody-format\f[R]=\f[I]\[lq]15:04\[rq]\f[R]
 .SS date-relative
 .PP
 This displays relative dates instead for statuses that are one day or
@@ -156,8 +90,8 @@ The value is an integear
 .PD
 1 - \[if] = number of days to use relative dates
 .PP
-Example: date-relative=28 will display a relative date for toots that
-are between 1-28 days old.
+Value: 28 will display a relative date for toots that are between 1-28
+days old.
 Otherwhise it will use the short or long format.
 .PD 0
 .P
@@ -165,118 +99,99 @@ Otherwhise it will use the short or long format.
 \f[B]date-relative\f[R]=\f[I]-1\f[R]
 .SS max-width
 .PP
-The max width of text before it wraps when displaying toots.
-.PD 0
-.P
-.PD
-0 = no restriction.
+The max with of text before it wraps when displaying a toot.
 .PD 0
 .P
 .PD
 \f[B]max-width\f[R]=\f[I]0\f[R]
 .SS list-placement
 .PP
-Where do you want the list of toots to be placed?
-.PD 0
-.P
-.PD
-Valid values: left, right, top, bottom.
-.PD 0
-.P
-.PD
-\f[B]list-placement\f[R]=\f[I]left\f[R]
+The placement of your panes.
+.PP
+valid: left, right, top, bottom
+.PP
+\f[B]list-placement\f[R]=\f[I]\[lq]left\[rq]\f[R]
 .SS list-split
 .PP
-If you have notification-feed set to true you can display it under the
-main list of toots (row) or place it to the right of the main list of
-toots (column).
-.PD 0
-.P
-.PD
-\f[B]list-split\f[R]=\f[I]row\f[R]
+How should panes be split?
+.PP
+valid: row, column
+.PP
+\f[B]list-split\f[R]=\f[I]\[lq]row\[rq]\f[R]
 .SS list-proportion
 .PP
-You can change the proportions of the list view in relation to the
-content view list-proportion=1 and content-proportoin=3 will result in
-the content taking up 3 times more space.
-.PD 0
-.P
-.PD
-Must be n > 0
+The proportion of panes vs.\ content.
+1 on this and 3 on content below results in content taking up 3 times
+more space.
 .PD 0
 .P
 .PD
 \f[B]list-proportion\f[R]=\f[I]1\f[R]
 .SS content-proportion
 .PP
-See list-proportion
+See previous.
 .PD 0
 .P
 .PD
 \f[B]content-proportion\f[R]=\f[I]2\f[R]
 .SS notifications-to-hide
 .PP
-Hide notifications of this type.
-If you have multiple you separate them with a comma.
-Valid types: mention, status, boost, follow, follow_request, favorite,
-poll, edit.
-.PD 0
-.P
-.PD
-\f[B]notifications-to-hide\f[R]=
+Hide notifications of this type in your notification timelines.
+.PP
+valid: mention, status, boost, follow, follow_request, favorite, poll,
+edit
+.PP
+\f[B]notifications-to-hide\f[R]=\f[I][]\f[R]
 .SS quote-reply
 .PP
-If you always want to quote original message when replying.
-.PD 0
-.P
-.PD
+Always include a quote of the message you\[aq]re replying to.
+.PP
+valid: true, false
+.PP
 \f[B]quote-reply\f[R]=\f[I]false\f[R]
 .SS show-icons
 .PP
-If you want to show icons in the list of toots.
-.PD 0
-.P
-.PD
+If you want to show icons in timelines.
+.PP
+valid: true, false
+.PP
 \f[B]show-icons\f[R]=\f[I]true\f[R]
 .SS short-hints
 .PP
-If you\[aq]ve learnt all the shortcut keys you can remove the help text
-and only show the key in tui.
-So it gets less cluttered.
-.PD 0
-.P
-.PD
+If you only want to you the letter of keys instead of the full hint.
+.PP
+valid: true, false
+.PP
 \f[B]short-hints\f[R]=\f[I]false\f[R]
 .SS show-filter-phrase
 .PP
 If you want to display the filter that filtered a toot.
-.PD 0
-.P
-.PD
+.PP
+valid: true, false
+.PP
 \f[B]show-filter-phrase\f[R]=\f[I]true\f[R]
 .SS show-help
 .PP
-If you want to show a message in the cmdbar on how to access the help
-text.
-.PD 0
-.P
-.PD
+Display a message in the commandbar on how to access the help text.
+.PP
+valid: true, false
+.PP
 \f[B]show-help\f[R]=\f[I]true\f[R]
 .SS stick-to-top
 .PP
-If you always want tut to jump to the newest post.
+Always jump to the newest post.
 May ruin your reading experience.
-.PD 0
-.P
-.PD
+.PP
+valid: true, false
+.PP
 \f[B]stick-to-top\f[R]=\f[I]false\f[R]
 .SS show-boosted-user
 .PP
-If you want to display the username of the person being boosted instead
-of the person that boosted.
-.PD 0
-.P
-.PD
+Display the username of the person being boosted insted of the person
+that boosted.
+.PP
+valid: true, false
+.PP
 \f[B]show-boosted-user\f[R]=\f[I]false\f[R]
 .SS terminal-title
 .PP
@@ -289,32 +204,29 @@ of the person that boosted.
 .P
 .PD
 2 = Only show terminal title, and no top bar in tut.
-.PD 0
-.P
-.PD
+.PP
+valid: 0, 1, 2
+.PP
 \f[B]terminal-title\f[R]=\f[I]0\f[R]
 .SS redraw-ui
 .PP
-If you don\[aq]t want the whole UI to update, and only the text content
-you can set this option to true.
+If you don\[aq]t want the whole UI to update, and only update the text
+content you can disable this.
 This will lead to some artifacts being left on the screen when emojis
 are present.
-But it will keep the UI from flashing on every single toot in some
-terminals.
-.PD 0
-.P
-.PD
+.PP
+valid: true, false
+.PP
 \f[B]redraw-ui\f[R]=\f[I]true\f[R]
 .SS leader-key
 .PP
 The leader is used as a shortcut to run commands as you can do in Vim.
-By default this is disabled and you enable it by setting a leader-key.
-It can only consist of one char and I like to use comma as leader key.
-So to set it you write leader-key=,
+By default this is disabled and you enable it by setting a key here.
+It can only consist of one char, so set it to something like a comma.
 .PD 0
 .P
 .PD
-\f[B]leader-key\f[R]=
+\f[B]leader-key\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS leader-timeout
 .PP
 Number of milliseconds before the leader command resets.
@@ -324,391 +236,474 @@ the input after X milliseconds.
 .P
 .PD
 \f[B]leader-timeout\f[R]=\f[I]1000\f[R]
-.SS leader-action
+.SH GENERAL.TIMELINES
 .PP
-You set actions for the leader-key with one or more leader-action.
-It consists of two parts first the action then the shortcut.
-And they\[aq]re separated by a comma.
+This section is [[general.timelines]] in your configuration file.
+You can have multiple of them.
 .PP
-Available commands: blocking, bookmarks, boosts, clear-notifications,
-close-window, compose, direct, edit, favorited, favorites, federated,
-followers, following, history, home, list-placement, list-split, lists,
-local, mentions, move-window-left, move-window-right, move-window-up,
-move-window-down, move-window-home, move-window-end, muting, newer,
-notifications, preferences, profile, proportions, refetch, saved,
-special-all, special-boosts, special-replies, stick-to-top, switch, tag,
-tags, window
+Example:
 .PP
-The ones named special-* are the home timeline with only boosts and/or
-replies.
-All contains both, -boosts only boosts and -replies only replies.
+[general.timelines]
+.PD 0
+.P
+.PD
+name=\[dq]home\[dq]
+.PD 0
+.P
+.PD
+type=\[dq]home\[dq]
+.PD 0
+.P
+.PD
+show-boosts=true
+.PD 0
+.P
+.PD
+show-replies=true
 .PP
-The shortcuts are up to you, but keep them quite short and make sure
-they don\[aq]t collide.
-If you have one shortcut that is \[dq]f\[dq] and an other one that is
-\[dq]fav\[dq], the one with \[dq]f\[dq] will always run and
-\[dq]fav\[dq] will never run.
+[general.timelines]
+.PD 0
+.P
+.PD
+name = \[dq]Notifications\[dq]
+.PD 0
+.P
+.PD
+type = \[dq]notifications\[dq]
+.PD 0
+.P
+.PD
+keys = [\[dq]n\[dq], \[dq]N\[dq]]
+.PD 0
+.P
+.PD
+closed = true
+.PD 0
+.P
+.PD
+on-creation-closed = \[dq]new-pane\[dq]
+.PD 0
+.P
+.PD
+on-focus=\[dq]focus-self\[dq]
+.SS name
 .PP
-Some special leaders:
+The name to display above the timeline
 .PD 0
 .P
 .PD
-tag is special as you need to add the tag after, e.g.\ tag linux
-.PD 0
-.P
-.PD
-window is special as it\[aq]s a shortcut for switching between the
-timelines you\[aq]ve set under general and they are zero indexed.
-window 0 = your first timeline, window 1 = your second and so on.
-.PD 0
-.P
-.PD
-list-placement as it takes the argument top, right, bottom or left
-.PD 0
-.P
-.PD
-list-split as it takes the argument column or row
-.PD 0
-.P
-.PD
-proportions takes the arguments [int] [int], where the first integer is
-the list and the other content, e.g.\ proportions 1 3.
-See list-proportion above for more information.
-.PD 0
-.P
-.PD
-switch let\[aq]s you go to a timeline if it already exists, if it
-doesn\[aq]t it will open the timeline in a new window.
-The syntax is almost the same as in timelines= and is displayed under
-the examples.
+\f[B]name\f[R]=\f[I]\[lq]\[lq]\f[R]
+.SS type
 .PP
-Some examples:
-.PD 0
-.P
-.PD
-leader-action=local,lo
-.PD 0
-.P
-.PD
-leader-action=lists,li
-.PD 0
-.P
-.PD
-leader-action=federated,fed
-.PD 0
-.P
-.PD
-leader-action=direct,d
-.PD 0
-.P
-.PD
-leader-action=history,h
-.PD 0
-.P
-.PD
-leader-action=tag linux,tl
-.PD 0
-.P
-.PD
-leader-action=window 0,h
-.PD 0
-.P
-.PD
-leader-action=list-placement bottom,b
-.PD 0
-.P
-.PD
-leader-action=list-split column,c
-.PD 0
-.P
-.PD
-leader-action=proportions 1 3,3
+The type of the timeline
 .PP
-Syntax for switch:
-.PD 0
-.P
-.PD
-leader-action=switch feed,shortcut,name,[showBoosts],[showReplies]
-.PD 0
-.P
-.PD
-showBoosts can be either true or false and they are both optional.
-Here are some examples:
+valid: home, direct, local, federated, bookmarks, saved, favorited,
+notifications, lists, mentions, tag
 .PP
-leader-action=switch home,h,false,true
+\f[B]type\f[R]=\f[I]\[lq]\[lq]\f[R]
+.SS data
+.PP
+Used for the tag type, so here you set the tag.
 .PD 0
 .P
 .PD
-leader-action=switch tag tut,tt
+\f[B]data\f[R]=\f[I]\[lq]\[lq]\f[R]
+.SS keys
+.PP
+A list of keys to give this timeline focus.
+See under the input section to learn more about keys.
+.PD 0
+.P
+.PD
+\f[B]keys\f[R]=\f[I][]\f[R]
+.SS special-keys
+.PP
+A list of special-keys to give this timeline focus.
+See under the input section to learn more about special-keys.
+.PD 0
+.P
+.PD
+\f[B]special-keys\f[R]=\f[I][]\f[R]
+.SS shortcut
+.PP
+A shortcut to give this timeline focus with your leader-key + this
+shortcut.
+.PD 0
+.P
+.PD
+\f[B]shortcut\f[R]=\f[I]\[lq]\[lq]\f[R]
+.SS hide-boosts
+.PP
+Hide boosts in this timeline.
+.PP
+valid: true, false
+.PP
+\f[B]hide-boosts\f[R]=\f[I]\[lq]false\[rq]\f[R]
+.SS hide-replies
+.PP
+Hide replies in this timeline.
+.PP
+valid: true, false
+.PP
+\f[B]hide-replies\f[R]=\f[I]\[lq]false\[rq]\f[R]
+.SS closed
+.PP
+Don\[aq]t open this timeline when you start tut.
+Use your keys or shortcut to open it.
+.PP
+valid: true, false
+.PP
+\f[B]closed\f[R]=\f[I]\[lq]false\[rq]\f[R]
+.SS on-creation-closed
+.PP
+Don\[aq]t open this timeline when you start tut.
+Use your keys or shortcut to open it.
+.PP
+valid: new-pane, current-pane
+.PP
+\f[B]on-creation-closed\f[R]=\f[I]\[lq]new-pane\[rq]\f[R]
+.SS on-focus
+.PP
+Don\[aq]t open this timeline when you start tut.
+Use your keys or shortcut to open it.
+.PP
+valid: focus-pane, focus-self
+.PP
+\f[B]on-focus\f[R]=\f[I]\[lq]focus-pane\[rq]\f[R]
+.SH GENERAL.LEADER-ACTIONS
+.PP
+This section is [[general.leader-actions]] in your configuration file.
+You can have multiple of them.
+.SS type
+.PP
+The action you want to run.
+.PP
+valid: blocking, boosts, clear-notifications, close-pane, compose, edit,
+favorited, favorites, followers, following, history, list-placement,
+list-split, lists, move-pane-left, move-pane-right, move-pane-up,
+move-pane-down, move-pane-home, move-pane-end, muting, newer, pane,
+preferences, profile, proportions, refetch, stick-to-top, tags
+.PP
+\f[B]type\f[R]=\f[I]\[lq]\[lq]\f[R]
+.SS data
+.PP
+Data to pass to the action.
+.PD 0
+.P
+.PD
+\f[B]data\f[R]=\f[I]\[lq]\[lq]\f[R]
+.SS shortcut
+.PP
+A shortcut to run this action with your leader-key + this shortcut.
+.PD 0
+.P
+.PD
+\f[B]shortcut\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SH MEDIA
 .PP
 This section is [media] in your configuration file
-.SS image-viewer
+.SH MEDIA.IMAGE
 .PP
-Your image viewer.
-.PD 0
-.P
-.PD
-\f[B]image-viewer\f[R]=\f[I]xdg-open\f[R]
-.SS image-terminal
+This section is [media.image] in your configuration file
+.SS program
 .PP
-Open the image viewer in the same terminal as toot.
-Only for terminal based viewers.
+The program to open images.
+TUT_OS_DEFAULT equals xdg-open on Linux, open on MacOS and start on
+Windows.
 .PD 0
 .P
 .PD
-\f[B]image-terminal\f[R]=\f[I]false\f[R]
-.SS image-single
+\f[B]program\f[R]=\f[I]\[lq]TUT_OS_DEFAULT\[rq]\f[R]
+.SS args
 .PP
-If images should open one by one e.g.\ \[dq]imv image.png\[dq] multiple
-times.
-If set to false all images will open at the same time like this \[dq]imv
-image1.png image2.png image3.png\[dq].
-Not all image viewers support this, so try it first.
+Arguments to pass to the program.
 .PD 0
 .P
 .PD
-\f[B]image-single\f[R]=\f[I]true\f[R]
-.SS image-reverse
+\f[B]args\f[R]=\f[I]\[lq]\[lq]\f[R]
+.SS terminal
 .PP
-If you want to open the images in reverse order.
-In some image viewers this will display the images in the
-\[dq]right\[dq] order.
-.PD 0
-.P
-.PD
-\f[B]image-reverse\f[R]=\f[I]false\f[R]
-.SS video-viewer
+If the program runs in the terminal set this to true.
 .PP
-Your video viewer.
-.PD 0
-.P
-.PD
-\f[B]video-viewer\f[R]=\f[I]xdg-open\f[R]
-.SS video-terminal
+valid: true, false
 .PP
-Open the video viewer in the same terminal as toot.
-Only for terminal based viewers.
-.PD 0
-.P
-.PD
-\f[B]video-terminal\f[R]=\f[I]false\f[R]
-.SS video-single
+\f[B]terminal\f[R]=\f[I]false\f[R]
+.SS single
 .PP
-If videos should open one by one.
-See image-single.
-.PD 0
-.P
-.PD
-\f[B]video-single\f[R]=\f[I]true\f[R]
-.SS video-reverse
+If the program should be called multiple times when there is multiple
+files.
+If set to false all files will be passed as an argument, but not all
+programs support this.
 .PP
-If you want your videos in reverse order.
-In some video apps this will play the files in the \[dq]right\[dq]
-order.
-.PD 0
-.P
-.PD
-\f[B]video-reverse\f[R]=\f[I]false\f[R]
-.SS audio-viewer
+valid: true, false
 .PP
-Your audio viewer.
-.PD 0
-.P
-.PD
-\f[B]audio-viewer\f[R]=\f[I]xdg-open\f[R]
-.SS audio-terminal
+\f[B]single\f[R]=\f[I]true\f[R]
+.SS reverse
 .PP
-Open the audio viewer in the same terminal as toot.
-Only for terminal based viewers.
-.PD 0
-.P
-.PD
-\f[B]audio-terminal\f[R]=\f[I]false\f[R]
-.SS audio-single
+If the files should be passed in reverse order.
+This will make some programs display the files in the correct order.
 .PP
-If audio should open one by one.
-See image-single.
-.PD 0
-.P
-.PD
-\f[B]audio-single\f[R]=\f[I]true\f[R]
-.SS audio-reverse
+valid: true, false
 .PP
-If you want to play the audio files in reverse order.
-In some audio apps this will play the files in the \[dq]right\[dq]
-order.
-.PD 0
-.P
-.PD
-\f[B]audio-reverse\f[R]=\f[I]false\f[R]
-.SS link-viewer
+\f[B]reverse\f[R]=\f[I]false\f[R]
+.SH MEDIA.VIDEO
 .PP
-Your web browser.
-.PD 0
-.P
-.PD
-\f[B]link-viewer\f[R]=\f[I]xdg-open\f[R]
-.SS link-terminal
+This section is [media.video] in your configuration file
+.SS program
 .PP
-Open the browser in the same terminal as toot.
-Only for terminal based browsers.
+The program to open videos.
+TUT_OS_DEFAULT equals xdg-open on Linux, open on MacOS and start on
+Windows.
 .PD 0
 .P
 .PD
-\f[B]link-terminal\f[R]=\f[I]false\f[R]
-.SH OPEN-CUSTOM
+\f[B]program\f[R]=\f[I]\[lq]TUT_OS_DEFAULT\[rq]\f[R]
+.SS args
 .PP
-This section is [open-custom] in your configuration file
+Arguments to pass to the program.
+.PD 0
+.P
+.PD
+\f[B]args\f[R]=\f[I]\[lq]\[lq]\f[R]
+.SS terminal
 .PP
-This sections allows you to set up to five custom programs to open URLs
-with.
-If the url points to an image, you can set c1-name to img and c1-use to
-imv.
-If the program runs in a terminal and you want to run it in the same
-terminal as tut.
-Set cX-terminal to true.
-The name will show up in the UI, so keep it short so all five fits.
+If the program runs in the terminal set this to true.
 .PP
-c1-name=name
-.PD 0
-.P
-.PD
-c1-use=program
-.PD 0
-.P
-.PD
-c1-terminal=false
+valid: true, false
 .PP
-c2-name=name
-.PD 0
-.P
-.PD
-c2-use=program
-.PD 0
-.P
-.PD
-c2-terminal=false
+\f[B]terminal\f[R]=\f[I]false\f[R]
+.SS single
 .PP
-c3-name=name
-.PD 0
-.P
-.PD
-c3-use=program
-.PD 0
-.P
-.PD
-c3-terminal=false
+If the program should be called multiple times when there is multiple
+files.
+If set to false all files will be passed as an argument, but not all
+programs support this.
 .PP
-c4-name=name
-.PD 0
-.P
-.PD
-c4-use=program
-.PD 0
-.P
-.PD
-c4-terminal=false
+valid: true, false
 .PP
-c5-name=name
+\f[B]single\f[R]=\f[I]true\f[R]
+.SS reverse
+.PP
+If the files should be passed in reverse order.
+This will make some programs display the files in the correct order.
+.PP
+valid: true, false
+.PP
+\f[B]reverse\f[R]=\f[I]false\f[R]
+.SH MEDIA.AUDIO
+.PP
+This section is [media.audio] in your configuration file
+.SS program
+.PP
+The program to open audio.
+TUT_OS_DEFAULT equals xdg-open on Linux, open on MacOS and start on
+Windows.
 .PD 0
 .P
 .PD
-c5-use=program
+\f[B]program\f[R]=\f[I]\[lq]TUT_OS_DEFAULT\[rq]\f[R]
+.SS args
+.PP
+Arguments to pass to the program.
 .PD 0
 .P
 .PD
-c5-terminal=false
-.SH OPEN-PATTERN
+\f[B]args\f[R]=\f[I]\[lq]\[lq]\f[R]
+.SS terminal
 .PP
-This section is [open-pattern] in your configuration file
+If the program runs in the terminal set this to true.
 .PP
-Here you can set your own glob patterns for opening matching URLs in the
-program you want them to open up in.
-You could for example open Youtube videos in your video player instead
-of your default browser.
+valid: true, false
 .PP
-You must name the keys foo-pattern, foo-use and foo-terminal, where use
-is the program that will open up the URL.
-To see the syntax for glob pattern you can follow this URL
-https://github.com/gobwas/glob#syntax.
-foo-terminal is if the program runs in the terminal and should open in
-the same terminal as tut itself.
+\f[B]terminal\f[R]=\f[I]false\f[R]
+.SS single
 .PP
-Example for youtube.com and youtu.be to open up in mpv instead of the
-browser.
+If the program should be called multiple times when there is multiple
+files.
+If set to false all files will be passed as an argument, but not all
+programs support this.
 .PP
-y1-pattern=*youtube.com/watch*
+valid: true, false
+.PP
+\f[B]single\f[R]=\f[I]true\f[R]
+.SS reverse
+.PP
+If the files should be passed in reverse order.
+This will make some programs display the files in the correct order.
+.PP
+valid: true, false
+.PP
+\f[B]reverse\f[R]=\f[I]false\f[R]
+.SH MEDIA.LINK
+.PP
+This section is [media.link] in your configuration file
+.SS program
+.PP
+The program to open links.
+TUT_OS_DEFAULT equals xdg-open on Linux, open on MacOS and start on
+Windows.
 .PD 0
 .P
 .PD
-y1-use=mpv
-.PD 0
-.P
-.PD
-y1-terminal=false
+\f[B]program\f[R]=\f[I]\[lq]TUT_OS_DEFAULT\[rq]\f[R]
+.SS args
 .PP
-y2-pattern=*youtu.be/*
+Arguments to pass to the program.
 .PD 0
 .P
 .PD
-y2-use=mpv
-.PD 0
-.P
-.PD
-y2-terminal=false
+\f[B]args\f[R]=\f[I]\[lq]\[lq]\f[R]
+.SS terminal
+.PP
+If the program runs in the terminal set this to true.
+.PP
+valid: true, false
+.PP
+\f[B]terminal\f[R]=\f[I]false\f[R]
 .SH DESKTOP-NOTIFICATION
 .PP
 This section is [desktop-notification] in your configuration file
 .SS followers
 .PP
-Notification when someone follows you.
-.PD 0
-.P
-.PD
+Enable notifications when someone follows you.
+.PP
+valid: true, false
+.PP
 \f[B]followers\f[R]=\f[I]false\f[R]
 .SS favorite
 .PP
-Notification when someone favorites one of your toots.
-.PD 0
-.P
-.PD
+Enable notifications when one of your toots gets favorited.
+.PP
+valid: true, false
+.PP
 \f[B]favorite\f[R]=\f[I]false\f[R]
 .SS mention
 .PP
-Notification when someone mentions you.
-.PD 0
-.P
-.PD
+Enable notifications when someone mentions you.
+.PP
+valid: true, false
+.PP
 \f[B]mention\f[R]=\f[I]false\f[R]
 .SS update
 .PP
-Notification when someone edits their toot.
-.PD 0
-.P
-.PD
+Enable notifications when a post you have interacted with gets edited.
+.PP
+valid: true, false
+.PP
 \f[B]update\f[R]=\f[I]false\f[R]
 .SS boost
 .PP
-Notification when someone boosts one of your toots.
-.PD 0
-.P
-.PD
+Enable notifications when one of your toots gets boosted.
+.PP
+valid: true, false
+.PP
 \f[B]boost\f[R]=\f[I]false\f[R]
 .SS poll
 .PP
-Notification of poll results.
-.PD 0
-.P
-.PD
+Enable notifications when a poll ends.
+.PP
+valid: true, false
+.PP
 \f[B]poll\f[R]=\f[I]false\f[R]
 .SS posts
 .PP
-Notification when there is new posts in current timeline.
+Enable notifications for new posts.
+.PP
+valid: true, false
+.PP
+\f[B]posts\f[R]=\f[I]false\f[R]
+.SH OPEN-CUSTOM
+.PP
+This section is [open-custom] in your configuration file
+.SH OPEN-CUSTOM.PROGRAMS
+.PP
+This section is [[open-custom.programs]] in your configuration file.
+You can have multiple of them.
+.SS program
+.PP
+The program to open the file with.
 .PD 0
 .P
 .PD
-\f[B]posts\f[R]=\f[I]false\f[R]
+\f[B]program\f[R]=\f[I]\[lq]\[lq]\f[R]
+.SS args
+.PP
+Arguments to pass to the program.
+.PD 0
+.P
+.PD
+\f[B]args\f[R]=\f[I]\[lq]\[lq]\f[R]
+.SS terminal
+.PP
+If the program runs in the terminal set this to true.
+.PP
+valid: true, false
+.PP
+\f[B]terminal\f[R]=\f[I]false\f[R]
+.SS hint
+.PP
+What should the key hint in tut be for this program.
+See under the input section to learn more about hint.
+.PD 0
+.P
+.PD
+\f[B]hint\f[R]=\f[I]\[lq]\[lq]\f[R]
+.SS keys
+.PP
+A list of keys to to open files with this program.
+See under the input section to learn more about keys.
+.PD 0
+.P
+.PD
+\f[B]keys\f[R]=\f[I][]\f[R]
+.SS special-keys
+.PP
+A list of special-keys to open files with this program.
+See under the input section to learn more about special-keys.
+.PD 0
+.P
+.PD
+\f[B]special-keys\f[R]=\f[I][]\f[R]
+.SH OPEN-PATTERN
+.PP
+This section is [open-pattern] in your configuration file
+.SH OPEN-PATTERN.PROGRAMS
+.PP
+This section is [[open-pattern.programs]] in your configuration file.
+You can have multiple of them.
+.SS matching
+.PP
+Here you can set your own glob patterns for opening matching URLs in the
+program you want them to open up in.
+You could for example open Youtube videos in your video player instead
+of your default browser.
+To see the syntax for glob pattern you can follow this URL
+https://github.com/gobwas/glob#syntax.
+.PD 0
+.P
+.PD
+\f[B]matching\f[R]=\f[I]\[lq]\[lq]\f[R]
+.SS program
+.PP
+The program to open the file with.
+.PD 0
+.P
+.PD
+\f[B]program\f[R]=\f[I]\[lq]\[lq]\f[R]
+.SS args
+.PP
+Arguments to pass to the program.
+.PD 0
+.P
+.PD
+\f[B]args\f[R]=\f[I]\[lq]\[lq]\f[R]
+.SS terminal
+.PP
+If the program runs in the terminal set this to true.
+.PP
+valid: true, false
+.PP
+\f[B]terminal\f[R]=\f[I]false\f[R]
 .SH STYLE
 .PP
 This section is [style] in your configuration file
@@ -717,26 +712,22 @@ All styles can be represented in their HEX value like #ffffff or with
 their name, so in this case white.
 The only special value is \[dq]default\[dq] which equals to transparent,
 so it will be the same color as your terminal.
-.PP
+.PD 0
+.P
+.PD
 You can also use xrdb colors like this xrdb:color1 The program will use
 colors prefixed with an * first then look for URxvt or XTerm if it
 can\[aq]t find any color prefixed with an asterisk.
 If you don\[aq]t want tut to guess the prefix you can set the prefix
 yourself.
 If the xrdb color can\[aq]t be found a preset color will be used.
-You\[aq]ll have to set theme=none for this to work.
-.SS xrdb-prefix
-.PP
-The xrdb prefix used for colors in .Xresources.
-.PD 0
-.P
-.PD
-\f[B]xrdb-prefix\f[R]=\f[I]guess\f[R]
+You\[aq]ll have to set theme=\[dq]none\[dq] for this to work.
 .SS theme
 .PP
+The theme to use.
 You can use some themes that comes bundled with tut.
 Check out the themes available on the URL below.
-If a theme is named \[dq]nord.ini\[dq] you just write theme=nord
+If a theme is named nord.ini you just write theme=\[dq]nord\[dq].
 .PP
 https://github.com/RasmusLindroth/tut/tree/master/config/themes
 .PP
@@ -744,25 +735,31 @@ You can also create a theme file in your config directory
 e.g.\ \[ti]/.config/tut/themes/foo.ini and then set theme=foo.
 .PP
 If you want to use your own theme but don\[aq]t want to create a new
-file, set theme=none and then you can create your own theme below.
+file, set theme=\[dq]none\[dq] and then you can create your own theme
+below.
+.PP
+\f[B]theme\f[R]=\f[I]\[lq]default\[rq]\f[R]
+.SS xrdb-prefix
+.PP
+The xrdb prefix used for colors in .Xresources.
 .PD 0
 .P
 .PD
-\f[B]theme\f[R]=\f[I]default\f[R]
+\f[B]xrdb-prefix\f[R]=\f[I]\[lq]guess\[rq]\f[R]
 .SS background
 .PP
 The background color used on most elements.
 .PD 0
 .P
 .PD
-\f[B]background\f[R]=
+\f[B]background\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS text
 .PP
 The text color used on most of the text.
 .PD 0
 .P
 .PD
-\f[B]text\f[R]=
+\f[B]text\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS subtle
 .PP
 The color to display subtle elements or subtle text.
@@ -770,147 +767,147 @@ Like lines and help text.
 .PD 0
 .P
 .PD
-\f[B]subtle\f[R]=
+\f[B]subtle\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS warning-text
 .PP
 The color for errors or warnings
 .PD 0
 .P
 .PD
-\f[B]warning-text\f[R]=
+\f[B]warning-text\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS text-special-one
 .PP
 This color is used to display username.
 .PD 0
 .P
 .PD
-\f[B]text-special-one\f[R]=
+\f[B]text-special-one\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS text-special-two
 .PP
 This color is used to display username and key hints.
 .PD 0
 .P
 .PD
-\f[B]text-special-two\f[R]=
+\f[B]text-special-two\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS top-bar-background
 .PP
 The color of the bar at the top
 .PD 0
 .P
 .PD
-\f[B]top-bar-background\f[R]=
+\f[B]top-bar-background\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS top-bar-text
 .PP
 The color of the text in the bar at the top.
 .PD 0
 .P
 .PD
-\f[B]top-bar-text\f[R]=
+\f[B]top-bar-text\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS status-bar-background
 .PP
 The color of the bar at the bottom
 .PD 0
 .P
 .PD
-\f[B]status-bar-background\f[R]=
+\f[B]status-bar-background\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS status-bar-text
 .PP
 The color of the text in the bar at the bottom.
 .PD 0
 .P
 .PD
-\f[B]status-bar-text\f[R]=
+\f[B]status-bar-text\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS status-bar-view-background
 .PP
 The color of the bar at the bottom in view mode.
 .PD 0
 .P
 .PD
-\f[B]status-bar-view-background\f[R]=
+\f[B]status-bar-view-background\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS status-bar-view-text
 .PP
 The color of the text in the bar at the bottom in view mode.
 .PD 0
 .P
 .PD
-\f[B]status-bar-view-text\f[R]=
+\f[B]status-bar-view-text\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS command-text
 .PP
 The color of the text in the command bar at the bottom.
 .PD 0
 .P
 .PD
-\f[B]command-text\f[R]=
+\f[B]command-text\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS list-selected-background
 .PP
 Background of selected list items.
 .PD 0
 .P
 .PD
-\f[B]list-selected-background\f[R]=
+\f[B]list-selected-background\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS list-selected-text
 .PP
 The text color of selected list items.
 .PD 0
 .P
 .PD
-\f[B]list-selected-text\f[R]=
+\f[B]list-selected-text\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS list-selected-inactive-background
 .PP
 The background color of selected list items that are out of focus.
 .PD 0
 .P
 .PD
-\f[B]list-selected-inactive-background\f[R]=
+\f[B]list-selected-inactive-background\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS list-selected-inactive-text
 .PP
 The text color of selected list items that are out of focus.
 .PD 0
 .P
 .PD
-\f[B]list-selected-inactive-text\f[R]=
+\f[B]list-selected-inactive-text\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS controls-text
 .PP
 The main color of the text for key hints
 .PD 0
 .P
 .PD
-\f[B]controls-text\f[R]=
+\f[B]controls-text\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS controls-highlight
 .PP
 The highlight color of for key hints
 .PD 0
 .P
 .PD
-\f[B]controls-highlight\f[R]=
+\f[B]controls-highlight\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS autocomplete-background
 .PP
 The background color in dropdowns and autocompletions
 .PD 0
 .P
 .PD
-\f[B]autocomplete-background\f[R]=
+\f[B]autocomplete-background\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS autocomplete-text
 .PP
 The text color in dropdowns at autocompletions
 .PD 0
 .P
 .PD
-\f[B]autocomplete-text\f[R]=
+\f[B]autocomplete-text\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS autocomplete-selected-background
 .PP
 The background color for selected value in dropdowns and autocompletions
 .PD 0
 .P
 .PD
-\f[B]autocomplete-selected-background\f[R]=
+\f[B]autocomplete-selected-background\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS autocomplete-selected-text
 .PP
 The text color for selected value in dropdowns and autocompletions
 .PD 0
 .P
 .PD
-\f[B]autocomplete-selected-text\f[R]=
+\f[B]autocomplete-selected-text\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS button-color-one
 .PP
 The background color on selected button and the text color of unselected
@@ -918,7 +915,7 @@ buttons
 .PD 0
 .P
 .PD
-\f[B]button-color-one\f[R]=
+\f[B]button-color-one\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS button-color-two
 .PP
 The text color on selected button and the background color of unselected
@@ -926,54 +923,39 @@ buttons
 .PD 0
 .P
 .PD
-\f[B]button-color-two\f[R]=
+\f[B]button-color-two\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS timeline-name-background
 .PP
 The background on named timelines.
 .PD 0
 .P
 .PD
-\f[B]timeline-name-background\f[R]=
+\f[B]timeline-name-background\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS timeline-name-text
 .PP
 The text color on named timelines
 .PD 0
 .P
 .PD
-\f[B]timeline-name-text\f[R]=
+\f[B]timeline-name-text\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SH INPUT
 .PP
 This section is [input] in your configuration file
 .PP
-You can edit the keys for tut below.
+In this section you set the keys to be used in tut.
 .PP
-The syntax is a bit weird, but it works.
-And I\[aq]ll try to explain it as well as I can.
-.PP
-Example:
+The hint option lets you set which part of the hint that will be
+highlighted in tut.
+E.g.
+[F]avorite results in a highlighted F and the rest of the text is
+displayed normaly.
 .PD 0
 .P
 .PD
-status-favorite=\[dq][F]avorite\[dq],\[dq]Un[F]avorite\[dq],\[aq]f\[aq],\[aq]F\[aq]
-.PD 0
-.P
-.PD
-status-delete=\[dq][D]elete\[dq],\[aq]d\[aq],\[aq]D\[aq]
+Some of the options can be in two states, like favorites, so there you
+can set the hint-alt option to something like Un[F]avorite.
 .PP
-status-favorite and status-delete differs because favorite can be in two
-states, so you will have to add two key hints.
-.PD 0
-.P
-.PD
-Most keys will only have on key hint.
-Look at the default value for reference.
-.PP
-Key hints must be in some of the following formats.
-Remember the quotation marks.
-.PD 0
-.P
-.PD
-\[dq]\[dq] = empty
+Examples:
 .PD 0
 .P
 .PD
@@ -991,538 +973,852 @@ Remember the quotation marks.
 .PD
 \[dq]Yan[K]\[dq] = YanK with a highlighted K
 .PP
-After the hint (or hints) you must set the keys.
-You can do this in two ways, with single quotation marks or double ones.
+The keys option lets you define what key that should be pressed.
+This is limited to on character only and they are case sensetive.
+.PD 0
+.P
+.PD
+Example:
+.PD 0
+.P
+.PD
+keys=[\[dq]j\[dq],\[dq]J\[dq]]
 .PP
-The single ones are for single chars like \[aq]a\[aq], \[aq]b\[aq],
-\[aq]c\[aq] and double marks are for special keys like \[dq]Enter\[dq].
-Remember that they are case sensitive.
-.PP
+You can also set special-keys and they\[aq]re for keys like Escape and
+Enter.
 To find the names of special keys you have to go to the following site
 and look for \[dq]var KeyNames = map[Key]string{\[dq]
 .PP
 https://github.com/gdamore/tcell/blob/master/key.go
-.SS global-down
+.SH INPUT.GLOBAL-DOWN
+.PP
+This section is [input.global-down] in your configuration file
 .PP
 Keys for moving down
-.PD 0
-.P
-.PD
-\f[B]global-down\f[R]=\f[I]\[dq]\[dq],\[aq]j\[aq],\[aq]J\[aq],\[dq]Down\[dq]\f[R]
-.SS global-up
+.SS keys
 .PP
-Keys for moving up
-.PD 0
-.P
-.PD
-\f[B]global-up\f[R]=\f[I]\[dq]\[dq],\[aq]k\[aq],\[aq]K\[aq],\[dq]Up\[dq]\f[R]
-.SS global-enter
+\f[B]keys\f[R]=\f[I][\[lq]j\[rq],\[lq]J\[rq]]\f[R]
+.SS special-keys
+.PP
+\f[B]special-keys\f[R]=\f[I][\[lq]Down\[rq]]\f[R]
+.SH INPUT.GLOBAL-UP
+.PP
+This section is [input.global-up] in your configuration file
+.PP
+Keys for moving down
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]k\[rq],\[lq]K\[rq]]\f[R]
+.SS special-keys
+.PP
+\f[B]special-keys\f[R]=\f[I][\[lq]Up\[rq]]\f[R]
+.SH INPUT.GLOBAL-ENTER
+.PP
+This section is [input.global-enter] in your configuration file
 .PP
 To select items
-.PD 0
-.P
-.PD
-\f[B]global-enter\f[R]=\f[I]\[dq]\[dq],\[dq]Enter\[dq]\f[R]
-.SS global-back
+.SS special-keys
+.PP
+\f[B]special-keys\f[R]=\f[I][\[lq]Enter\[rq]]\f[R]
+.SH INPUT.GLOBAL-BACK
+.PP
+This section is [input.global-back] in your configuration file
 .PP
 To go back
-.PD 0
-.P
-.PD
-\f[B]global-back\f[R]=\f[I]\[dq][Esc]\[dq],\[dq]Esc\[dq]\f[R]
-.SS global-exit
+.SS hint
 .PP
-To go back and exit Tut
-.PD 0
-.P
-.PD
-\f[B]global-exit\f[R]=\f[I]\[dq][Q]uit\[dq],\[aq]q\[aq],\[aq]Q\[aq]\f[R]
-.SS main-home
+\f[B]hint\f[R]=\f[I]\[lq][Esc]\[rq]\f[R]
+.SS special-keys
+.PP
+\f[B]special-keys\f[R]=\f[I][\[lq]Esc\[rq]]\f[R]
+.SH INPUT.GLOBAL-EXIT
+.PP
+This section is [input.global-exit] in your configuration file
+.PP
+To go back or exit
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][Q]uit\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]q\[rq],\[lq]Q\[rq]]\f[R]
+.SH INPUT.MAIN-HOME
+.PP
+This section is [input.main-home] in your configuration file
 .PP
 Move to the top
-.PD 0
-.P
-.PD
-\f[B]main-home\f[R]=\f[I]\[dq]\[dq],\[aq]g\[aq],\[dq]Home\[dq]\f[R]
-.SS main-end
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]g\[rq]]\f[R]
+.SS special-keys
+.PP
+\f[B]special-keys\f[R]=\f[I][\[lq]Home\[rq]]\f[R]
+.SH INPUT.MAIN-END
+.PP
+This section is [input.main-end] in your configuration file
 .PP
 Move to the bottom
-.PD 0
-.P
-.PD
-\f[B]main-end\f[R]=\f[I]\[dq]\[dq],\[aq]G\[aq],\[dq]End\[dq]\f[R]
-.SS main-prev-feed
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]G\[rq]]\f[R]
+.SS special-keys
+.PP
+\f[B]special-keys\f[R]=\f[I][\[lq]End\[rq]]\f[R]
+.SH INPUT.MAIN-PREV-FEED
+.PP
+This section is [input.main-prev-feed] in your configuration file
 .PP
 Go to previous feed
-.PD 0
-.P
-.PD
-\f[B]main-prev-feed\f[R]=\f[I]\[dq]\[dq],\[aq]h\[aq],\[aq]H\[aq],\[dq]Left\[dq]\f[R]
-.SS main-next-feed
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]h\[rq],\[lq]H\[rq]]\f[R]
+.SS special-keys
+.PP
+\f[B]special-keys\f[R]=\f[I][\[lq]Left\[rq]]\f[R]
+.SH INPUT.MAIN-NEXT-FEED
+.PP
+This section is [input.main-next-feed] in your configuration file
 .PP
 Go to next feed
-.PD 0
-.P
-.PD
-\f[B]main-next-feed\f[R]=\f[I]\[dq]\[dq],\[aq]l\[aq],\[aq]L\[aq],\[dq]Right\[dq]\f[R]
-.SS main-prev-window
+.SS keys
 .PP
-Focus on the previous feed window
-.PD 0
-.P
-.PD
-\f[B]main-prev-window\f[R]=\f[I]\[dq]\[dq],\[dq]Backtab\[dq]\f[R]
-.SS main-next-window
+\f[B]keys\f[R]=\f[I][\[lq]l\[rq],\[lq]L\[rq]]\f[R]
+.SS specialkeys
 .PP
-Focus on the next feed window
-.PD 0
-.P
-.PD
-\f[B]main-next-window\f[R]=\f[I]\[dq]\[dq],\[dq]Tab\[dq]\f[R]
-.SS main-notification-focus
+\f[B]specialkeys\f[R]=\f[I][\[lq]Right\[rq]]\f[R]
+.SH INPUT.MAIN-PREV-PANE
 .PP
-Focus on the notification list
-.PD 0
-.P
-.PD
-\f[B]main-notification-focus\f[R]=\f[I]\[dq][N]otifications\[dq],\[aq]n\[aq],\[aq]N\[aq]\f[R]
-.SS main-compose
+This section is [input.main-prev-pane] in your configuration file
+.PP
+Focus on the previous feed pane
+.SS special-keys
+.PP
+\f[B]special-keys\f[R]=\f[I][\[lq]Backtab\[rq]]\f[R]
+.SH INPUT.MAIN-NEXT-PANE
+.PP
+This section is [input.main-next-pane] in your configuration file
+.PP
+Focus on the next feed pane
+.SS special-keys
+.PP
+\f[B]special-keys\f[R]=\f[I][\[lq]Tab\[rq]]\f[R]
+.SH INPUT.MAIN-NEXT-ACCOUNT
+.PP
+This section is [input.main-next-account] in your configuration file
+.PP
+Focus on the next account
+.SS special-keys
+.PP
+\f[B]special-keys\f[R]=\f[I][\[lq]Ctrl-N\[rq]]\f[R]
+.SH INPUT.MAIN-PREV-ACCOUNT
+.PP
+This section is [input.main-prev-account] in your configuration file
+.PP
+Focus on the previous account
+.SS special-keys
+.PP
+\f[B]special-keys\f[R]=\f[I][\[lq]Ctrl-P\[rq]]\f[R]
+.SH INPUT.MAIN-COMPOSE
+.PP
+This section is [input.main-compose] in your configuration file
 .PP
 Compose a new toot
-.PD 0
-.P
-.PD
-\f[B]main-compose\f[R]=\f[I]\[dq]\[dq],\[aq]c\[aq],\[aq]C\[aq]\f[R]
-.SS status-avatar
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]c\[rq],\[lq]C\[rq]]\f[R]
+.SH INPUT.STATUS-AVATAR
+.PP
+This section is [input.status-avatar] in your configuration file
 .PP
 Open avatar
-.PD 0
-.P
-.PD
-\f[B]status-avatar\f[R]=\f[I]\[dq][A]vatar\[dq],\[aq]a\[aq],\[aq]A\[aq]\f[R]
-.SS status-boost
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][A]vatar\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]a\[rq],\[lq]A\[rq]]\f[R]
+.SH INPUT.STATUS-BOOST
+.PP
+This section is [input.status-boost] in your configuration file
 .PP
 Boost a toot
-.PD 0
-.P
-.PD
-\f[B]status-boost\f[R]=\f[I]\[dq][B]oost\[dq],\[dq]Un[B]oost\[dq],\[aq]b\[aq],\[aq]B\[aq]\f[R]
-.SS status-edit
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][B]oost\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]b\[rq],\[lq]B\[rq]]\f[R]
+.SH INPUT.STATUS-EDIT
+.PP
+This section is [input.status-edit] in your configuration file
 .PP
 Edit a toot
-.PD 0
-.P
-.PD
-\f[B]status-edit\f[R]=\f[I]\[dq][E]dit\[dq],\[aq]e\[aq],\[aq]E\[aq]\f[R]
-.SS status-delete
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][E]dit\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]e\[rq],\[lq]E\[rq]]\f[R]
+.SH INPUT.STATUS-DELETE
+.PP
+This section is [input.status-delete] in your configuration file
 .PP
 Delete a toot
-.PD 0
-.P
-.PD
-\f[B]status-delete\f[R]=\f[I]\[dq][D]elete\[dq],\[aq]d\[aq],\[aq]D\[aq]\f[R]
-.SS status-favorite
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][D]elete\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]d\[rq],\[lq]D\[rq]]\f[R]
+.SH INPUT.STATUS-FAVORITE
+.PP
+This section is [input.status-favorite] in your configuration file
 .PP
 Favorite a toot
-.PD 0
-.P
-.PD
-\f[B]status-favorite\f[R]=\f[I]\[dq][F]avorite\[dq],\[dq]Un[F]avorite\[dq],\[aq]f\[aq],\[aq]F\[aq]\f[R]
-.SS status-media
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][F]avorite\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]f\[rq],\[lq]F\[rq]]\f[R]
+.SH INPUT.STATUS-MEDIA
+.PP
+This section is [input.status-media] in your configuration file
 .PP
 Open toots media files
-.PD 0
-.P
-.PD
-\f[B]status-media\f[R]=\f[I]\[dq][M]edia\[dq],\[aq]m\[aq],\[aq]M\[aq]\f[R]
-.SS status-links
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][M]edia\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]m\[rq],\[lq]M\[rq]]\f[R]
+.SH INPUT.STATUS-LINKS
+.PP
+This section is [input.status-links] in your configuration file
 .PP
 Open links
-.PD 0
-.P
-.PD
-\f[B]status-links\f[R]=\f[I]\[dq][O]pen\[dq],\[aq]o\[aq],\[aq]O\[aq]\f[R]
-.SS status-poll
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][O]pen\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]o\[rq],\[lq]O\[rq]]\f[R]
+.SH INPUT.STATUS-POLL
+.PP
+This section is [input.status-poll] in your configuration file
 .PP
 Open poll
-.PD 0
-.P
-.PD
-\f[B]status-poll\f[R]=\f[I]\[dq][P]oll\[dq],\[aq]p\[aq],\[aq]P\[aq]\f[R]
-.SS status-reply
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][P]oll\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]p\[rq],\[lq]P\[rq]]\f[R]
+.SH INPUT.STATUS-REPLY
+.PP
+This section is [input.status-reply] in your configuration file
 .PP
 Reply to toot
-.PD 0
-.P
-.PD
-\f[B]status-reply\f[R]=\f[I]\[dq][R]eply\[dq],\[aq]r\[aq],\[aq]R\[aq]\f[R]
-.SS status-bookmark
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][R]eply\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]r\[rq],\[lq]R\[rq]]\f[R]
+.SH INPUT.STATUS-BOOKMARK
+.PP
+This section is [input.status-bookmark] in your configuration file
 .PP
 Save/bookmark a toot
-.PD 0
-.P
-.PD
-\f[B]status-bookmark\f[R]=\f[I]\[dq][S]ave\[dq],\[dq]Un[S]ave\[dq],\[aq]s\[aq],\[aq]S\[aq]\f[R]
-.SS status-thread
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][S]ave\[rq]\f[R]
+.SS hint-alt
+.PP
+\f[B]hint-alt\f[R]=\f[I]\[lq]Un[S]ave\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]s\[rq],\[lq]S\[rq]]\f[R]
+.SH INPUT.STATUS-THREAD
+.PP
+This section is [input.status-thread] in your configuration file
 .PP
 View thread
-.PD 0
-.P
-.PD
-\f[B]status-thread\f[R]=\f[I]\[dq][T]hread\[dq],\[aq]t\[aq],\[aq]T\[aq]\f[R]
-.SS status-user
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][T]hread\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]t\[rq],\[lq]T\[rq]]\f[R]
+.SH INPUT.STATUS-USER
+.PP
+This section is [input.status-user] in your configuration file
 .PP
 Open user profile
-.PD 0
-.P
-.PD
-\f[B]status-user\f[R]=\f[I]\[dq][U]ser\[dq],\[aq]u\[aq],\[aq]U\[aq]\f[R]
-.SS status-view-focus
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][U]ser\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]u\[rq],\[lq]U\[rq]]\f[R]
+.SH INPUT.STATUS-VIEW-FOCUS
+.PP
+This section is [input.status-view-focus] in your configuration file
 .PP
 Open the view mode
-.PD 0
-.P
-.PD
-\f[B]status-view-focus\f[R]=\f[I]\[dq][V]iew\[dq],\[aq]v\[aq],\[aq]V\[aq]\f[R]
-.SS status-yank
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][V]iew\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]v\[rq],\[lq]V\[rq]]\f[R]
+.SH INPUT.STATUS-YANK
+.PP
+This section is [input.status-yank] in your configuration file
 .PP
 Yank the url of the toot
-.PD 0
-.P
-.PD
-\f[B]status-yank\f[R]=\f[I]\[dq][Y]ank\[dq],\[aq]y\[aq],\[aq]Y\[aq]\f[R]
-.SS status-toggle-cw
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][Y]ank\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]y\[rq],\[lq]Y\[rq]]\f[R]
+.SH INPUT.STATUS-TOGGLE-CW
+.PP
+This section is [input.status-toggle-cw] in your configuration file
 .PP
 Show the content in a content warning
-.PD 0
-.P
-.PD
-\f[B]status-toggle-cw\f[R]=\f[I]\[dq]Press [Z] to toggle
-cw\[dq],\[aq]z\[aq],\[aq]Z\[aq]\f[R]
-.SS status-show-filtered
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq]Press [Z] to toggle cw\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]z\[rq],\[lq]Z\[rq]]\f[R]
+.SH INPUT.STATUS-SHOW-FILTERED
+.PP
+This section is [input.status-show-filtered] in your configuration file
 .PP
 Show the content of a filtered toot
-.PD 0
-.P
-.PD
-\f[B]status-show-filtered\f[R]=\f[I]\[dq]Press [Z] to view filtered
-toot\[dq],\[aq]z\[aq],\[aq]Z\[aq]\f[R]
-.SS user-avatar
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq]Press [Z] to view filtered toot\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]z\[rq],\[lq]Z\[rq]]\f[R]
+.SH INPUT.USER-AVATAR
+.PP
+This section is [input.user-avatar] in your configuration file
 .PP
 View avatar
-.PD 0
-.P
-.PD
-\f[B]user-avatar\f[R]=\f[I]\[dq][A]vatar\[dq],\[aq]a\[aq],\[aq]A\[aq]\f[R]
-.SS user-block
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][A]vatar\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]a\[rq],\[lq]A\[rq]]\f[R]
+.SH INPUT.USER-BLOCK
+.PP
+This section is [input.user-block] in your configuration file
 .PP
 Block the user
-.PD 0
-.P
-.PD
-\f[B]user-block\f[R]=\f[I]\[dq][B]lock\[dq],\[dq]Un[B]lock\[dq],\[aq]b\[aq],\[aq]B\[aq]\f[R]
-.SS user-follow
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][B]lock\[rq]\f[R]
+.SS hint-alt
+.PP
+\f[B]hint-alt\f[R]=\f[I]\[lq]Un[B]lock\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]b\[rq],\[lq]B\[rq]]\f[R]
+.SH INPUT.USER-FOLLOW
+.PP
+This section is [input.user-follow] in your configuration file
 .PP
 Follow user
-.PD 0
-.P
-.PD
-\f[B]user-follow\f[R]=\f[I]\[dq][F]ollow\[dq],\[dq]Un[F]ollow\[dq],\[aq]f\[aq],\[aq]F\[aq]\f[R]
-.SS user-follow-request-decide
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][F]ollow\[rq]\f[R]
+.SS hint-alt
+.PP
+\f[B]hint-alt\f[R]=\f[I]\[lq]Un[F]ollow\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]f\[rq],\[lq]F\[rq]]\f[R]
+.SH INPUT.USER-FOLLOW-REQUEST-DECIDE
+.PP
+This section is [input.user-follow-request-decide] in your configuration
+file
 .PP
 Follow user
-.PD 0
-.P
-.PD
-\f[B]user-follow-request-decide\f[R]=\f[I]\[dq]Follow
-[R]equest\[dq],\[dq]Follow [R]equest\[dq],\[aq]r\[aq],\[aq]R\[aq]\f[R]
-.SS user-mute
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq]Follow [R]equest\[rq]\f[R]
+.SS hint-alt
+.PP
+\f[B]hint-alt\f[R]=\f[I]\[lq]Follow [R]equest\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]r\[rq],\[lq]R\[rq]]\f[R]
+.SH INPUT.USER-MUTE
+.PP
+This section is [input.user-mute] in your configuration file
 .PP
 Mute user
-.PD 0
-.P
-.PD
-\f[B]user-mute\f[R]=\f[I]\[dq][M]ute\[dq],\[dq]Un[M]ute\[dq],\[aq]m\[aq],\[aq]M\[aq]\f[R]
-.SS user-links
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][M]ute\[rq]\f[R]
+.SS hint-alt
+.PP
+\f[B]hint-alt\f[R]=\f[I]\[lq]Un[M]ute\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]m\[rq],\[lq]M\[rq]]\f[R]
+.SH INPUT.USER-LINKS
+.PP
+This section is [input.user-links] in your configuration file
 .PP
 Open links
-.PD 0
-.P
-.PD
-\f[B]user-links\f[R]=\f[I]\[dq][O]pen\[dq],\[aq]o\[aq],\[aq]O\[aq]\f[R]
-.SS user-user
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][O]pen\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]o\[rq],\[lq]O\[rq]]\f[R]
+.SH INPUT.USER-USER
+.PP
+This section is [input.user-user] in your configuration file
 .PP
 View user profile
-.PD 0
-.P
-.PD
-\f[B]user-user\f[R]=\f[I]\[dq][U]ser\[dq],\[aq]u\[aq],\[aq]U\[aq]\f[R]
-.SS user-view-focus
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][U]ser\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]u\[rq],\[lq]U\[rq]]\f[R]
+.SH INPUT.USER-VIEW-FOCUS
+.PP
+This section is [input.user-view-focus] in your configuration file
 .PP
 Open view mode
-.PD 0
-.P
-.PD
-\f[B]user-view-focus\f[R]=\f[I]\[dq][V]iew\[dq],\[aq]v\[aq],\[aq]V\[aq]\f[R]
-.SS user-yank
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][V]iew\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]v\[rq],\[lq]V\[rq]]\f[R]
+.SH INPUT.USER-YANK
+.PP
+This section is [input.user-yank] in your configuration file
 .PP
 Yank the user URL
-.PD 0
-.P
-.PD
-\f[B]user-yank\f[R]=\f[I]\[dq][Y]ank\[dq],\[aq]y\[aq],\[aq]Y\[aq]\f[R]
-.SS list-open-feed
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][Y]ank\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]y\[rq],\[lq]Y\[rq]]\f[R]
+.SH INPUT.LIST-OPEN-FEED
+.PP
+This section is [input.list-open-feed] in your configuration file
 .PP
 Open list
-.PD 0
-.P
-.PD
-\f[B]list-open-feed\f[R]=\f[I]\[dq][O]pen\[dq],\[aq]o\[aq],\[aq]O\[aq]\f[R]
-.SS list-user-list
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][O]pen\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]o\[rq],\[lq]O\[rq]]\f[R]
+.SH INPUT.LIST-USER-LIST
+.PP
+This section is [input.list-user-list] in your configuration file
 .PP
 List all users in a list
-.PD 0
-.P
-.PD
-\f[B]list-user-list\f[R]=\f[I]\[dq][U]sers\[dq],\[aq]u\[aq],\[aq]U\[aq]\f[R]
-.SS list-user-add
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][U]sers\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]u\[rq],\[lq]U\[rq]]\f[R]
+.SH INPUT.LIST-USER-ADD
+.PP
+This section is [input.list-user-add] in your configuration file
 .PP
 Add user to list
-.PD 0
-.P
-.PD
-\f[B]list-user-add\f[R]=\f[I]\[dq][A]dd\[dq],\[aq]a\[aq],\[aq]A\[aq]\f[R]
-.SS list-user-delete
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][A]dd\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]a\[rq],\[lq]A\[rq]]\f[R]
+.SH INPUT.LIST-USER-DELETE
+.PP
+This section is [input.list-user-delete] in your configuration file
 .PP
 Delete user from list
-.PD 0
-.P
-.PD
-\f[B]list-user-delete\f[R]=\f[I]\[dq][D]elete\[dq],\[aq]d\[aq],\[aq]D\[aq]\f[R]
-.SS link-open
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][D]elete\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]d\[rq],\[lq]D\[rq]]\f[R]
+.SH INPUT.LINK-OPEN
+.PP
+This section is [input.link-open] in your configuration file
 .PP
 Open URL
-.PD 0
-.P
-.PD
-\f[B]link-open\f[R]=\f[I]\[dq][O]pen\[dq],\[aq]o\[aq],\[aq]O\[aq]\f[R]
-.SS link-yank
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][O]pen\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]o\[rq],\[lq]O\[rq]]\f[R]
+.SH INPUT.LINK-YANK
+.PP
+This section is [input.link-yank] in your configuration file
 .PP
 Yank the URL
-.PD 0
-.P
-.PD
-\f[B]link-yank\f[R]=\f[I]\[dq][Y]ank\[dq],\[aq]y\[aq],\[aq]Y\[aq]\f[R]
-.SS tag-open-feed
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][Y]ank\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]y\[rq],\[lq]Y\[rq]]\f[R]
+.SH INPUT.TAG-OPEN-FEED
+.PP
+This section is [input.tag-open-feed] in your configuration file
 .PP
 Open tag feed
-.PD 0
-.P
-.PD
-\f[B]tag-open-feed\f[R]=\f[I]\[dq][O]pen\[dq],\[aq]o\[aq],\[aq]O\[aq]\f[R]
-.SS tag-follow
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][O]pen\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]o\[rq],\[lq]O\[rq]]\f[R]
+.SH INPUT.TAG-FOLLOW
+.PP
+This section is [input.tag-follow] in your configuration file
 .PP
 Toggle follow on tag
-.PD 0
-.P
-.PD
-\f[B]tag-follow\f[R]=\f[I]\[dq][F]ollow\[dq],\[dq]Un[F]ollow\[dq],\[aq]f\[aq],\[aq]F\[aq]\f[R]
-.SS compose-edit-cw
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][F]ollow\[rq]\f[R]
+.SS hint-alt
+.PP
+\f[B]hint-alt\f[R]=\f[I]\[lq]Un[F]ollow\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]f\[rq],\[lq]F\[rq]]\f[R]
+.SH INPUT.COMPOSE-EDIT-CW
+.PP
+This section is [input.compose-edit-cw] in your configuration file
 .PP
 Edit content warning text on new toot
-.PD 0
-.P
-.PD
-\f[B]compose-edit-cw\f[R]=\f[I]\[dq][C]W
-text\[dq],\[aq]c\[aq],\[aq]C\[aq]\f[R]
-.SS compose-edit-text
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][C]W text\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]c\[rq],\[lq]C\[rq]]\f[R]
+.SH INPUT.COMPOSE-EDIT-TEXT
+.PP
+This section is [input.compose-edit-text] in your configuration file
 .PP
 Edit the text on new toot
-.PD 0
-.P
-.PD
-\f[B]compose-edit-text\f[R]=\f[I]\[dq][E]dit
-text\[dq],\[aq]e\[aq],\[aq]E\[aq]\f[R]
-.SS compose-include-quote
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][E]dit text\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]e\[rq],\[lq]E\[rq]]\f[R]
+.SH INPUT.COMPOSE-INCLUDE-QUOTE
+.PP
+This section is [input.compose-include-quote] in your configuration file
 .PP
 Include a quote when replying
-.PD 0
-.P
-.PD
-\f[B]compose-include-quote\f[R]=\f[I]\[dq][I]nclude
-quote\[dq],\[aq]i\[aq],\[aq]I\[aq]\f[R]
-.SS compose-media-focus
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][I]nclude quote\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]i\[rq],\[lq]I\[rq]]\f[R]
+.SH INPUT.COMPOSE-MEDIA-FOCUS
+.PP
+This section is [input.compose-media-focus] in your configuration file
 .PP
 Focus on adding media to toot
-.PD 0
-.P
-.PD
-\f[B]compose-media-focus\f[R]=\f[I]\[dq][M]edia\[dq],\[aq]m\[aq],\[aq]M\[aq]\f[R]
-.SS compose-post
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][M]edia\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]m\[rq],\[lq]M\[rq]]\f[R]
+.SH INPUT.COMPOSE-POST
+.PP
+This section is [input.compose-post] in your configuration file
 .PP
 Post the new toot
-.PD 0
-.P
-.PD
-\f[B]compose-post\f[R]=\f[I]\[dq][P]ost\[dq],\[aq]p\[aq],\[aq]P\[aq]\f[R]
-.SS compose-toggle-content-warning
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][P]ost\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]p\[rq],\[lq]P\[rq]]\f[R]
+.SH INPUT.COMPOSE-TOGGLE-CONTENT-WARNING
+.PP
+This section is [input.compose-toggle-content-warning] in your
+configuration file
 .PP
 Toggle content warning on toot
-.PD 0
-.P
-.PD
-\f[B]compose-toggle-content-warning\f[R]=\f[I]\[dq][T]oggle
-CW\[dq],\[aq]t\[aq],\[aq]T\[aq]\f[R]
-.SS compose-visibility
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][T]oggle CW\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]t\[rq],\[lq]T\[rq]]\f[R]
+.SH INPUT.COMPOSE-VISIBILITY
+.PP
+This section is [input.compose-visibility] in your configuration file
 .PP
 Edit the visibility on new toot
-.PD 0
-.P
-.PD
-\f[B]compose-visibility\f[R]=\f[I]\[dq][V]isibility\[dq],\[aq]v\[aq],\[aq]V\[aq]\f[R]
-.SS compose-language
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][V]isibility\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]v\[rq],\[lq]V\[rq]]\f[R]
+.SH INPUT.COMPOSE-LANGUAGE
+.PP
+This section is [input.compose-language] in your configuration file
 .PP
 Edit the language of a toot
-.PD 0
-.P
-.PD
-\f[B]compose-language\f[R]=\f[I]\[dq][L]ang\[dq],\[aq]l\[aq],\[aq]L\[aq]\f[R]
-.SS compose-poll
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][L]ang\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]l\[rq],\[lq]L\[rq]]\f[R]
+.SH INPUT.COMPOSE-POLL
+.PP
+This section is [input.compose-poll] in your configuration file
 .PP
 Switch to creating a poll
-.PD 0
-.P
-.PD
-\f[B]compose-poll\f[R]=\f[I]\[dq]P[O]ll\[dq],\[aq]o\[aq],\[aq]O\[aq]\f[R]
-.SS media-delete
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq]P[O]ll\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]o\[rq],\[lq]O\[rq]]\f[R]
+.SH INPUT.MEDIA-DELETE
+.PP
+This section is [input.media-delete] in your configuration file
 .PP
 Delete media file
-.PD 0
-.P
-.PD
-\f[B]media-delete\f[R]=\f[I]\[dq][D]elete\[dq],\[aq]d\[aq],\[aq]D\[aq]\f[R]
-.SS media-edit-desc
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][D]elete\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]d\[rq],\[lq]D\[rq]]\f[R]
+.SH INPUT.MEDIA-EDIT-DESC
+.PP
+This section is [input.media-edit-desc] in your configuration file
 .PP
 Edit the description on media file
-.PD 0
-.P
-.PD
-\f[B]media-edit-desc\f[R]=\f[I]\[dq][E]dit
-desc\[dq],\[aq]e\[aq],\[aq]E\[aq]\f[R]
-.SS media-add
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][E]dit desc\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]e\[rq],\[lq]E\[rq]]\f[R]
+.SH INPUT.MEDIA-ADD
+.PP
+This section is [input.media-add] in your configuration file
 .PP
 Add a new media file
-.PD 0
-.P
-.PD
-\f[B]media-add\f[R]=\f[I]\[dq][A]dd\[dq],\[aq]a\[aq],\[aq]A\[aq]\f[R]
-.SS vote-vote
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][A]dd\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]a\[rq],\[lq]A\[rq]]\f[R]
+.SH INPUT.VOTE-VOTE
+.PP
+This section is [input.vote-vote] in your configuration file
 .PP
 Vote on poll
-.PD 0
-.P
-.PD
-\f[B]vote-vote\f[R]=\f[I]\[dq][V]ote\[dq],\[aq]v\[aq],\[aq]V\[aq]\f[R]
-.SS vote-select
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][V]ote\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]v\[rq],\[lq]V\[rq]]\f[R]
+.SH INPUT.VOTE-SELECT
+.PP
+This section is [input.vote-select] in your configuration file
 .PP
 Select item to vote on
-.PD 0
-.P
-.PD
-\f[B]vote-select\f[R]=\f[I]\[dq][Enter] to select\[dq],\[aq] \[aq],
-\[dq]Enter\[dq]\f[R]
-.SS poll-add
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][Enter] to select\[rq]\f[R]
+.SS special-keys
+.PP
+\f[B]special-keys\f[R]=\f[I][\[lq]Enter\[rq]]\f[R]
+.SH INPUT.POLL-ADD
+.PP
+This section is [input.poll-add] in your configuration file
 .PP
 Add a new poll option
-.PD 0
-.P
-.PD
-\f[B]poll-add\f[R]=\f[I]\[dq][A]dd\[dq],\[aq]a\[aq],\[aq]A\[aq]\f[R]
-.SS poll-edit
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][A]dd\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]a\[rq],\[lq]A\[rq]]\f[R]
+.SH INPUT.POLL-EDIT
+.PP
+This section is [input.poll-edit] in your configuration file
 .PP
 Edit a poll option
-.PD 0
-.P
-.PD
-\f[B]poll-edit\f[R]=\f[I]\[dq][E]dit\[dq],\[aq]e\[aq],\[aq]E\[aq]\f[R]
-.SS poll-delete
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][E]dit\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]e\[rq],\[lq]E\[rq]]\f[R]
+.SH INPUT.POLL-DELETE
+.PP
+This section is [input.poll-delete] in your configuration file
 .PP
 Delete a poll option
-.PD 0
-.P
-.PD
-\f[B]poll-delete\f[R]=\f[I]\[dq][D]elete\[dq],\[aq]d\[aq],\[aq]D\[aq]\f[R]
-.SS poll-multi-toggle
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][D]elete\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]d\[rq],\[lq]D\[rq]]\f[R]
+.SH INPUT.POLL-MULTI-TOGGLE
+.PP
+This section is [input.poll-multi-toggle] in your configuration file
 .PP
 Toggle voting on multiple options
-.PD 0
-.P
-.PD
-\f[B]poll-multi-toggle\f[R]=\f[I]\[dq]Toggle
-[M]ultiple\[dq],\[aq]m\[aq],\[aq]M\[aq]\f[R]
-.SS poll-expiration
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq]Toggle [M]ultiple\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]m\[rq],\[lq]M\[rq]]\f[R]
+.SH INPUT.POLL-EXPIRATION
+.PP
+This section is [input.poll-expiration] in your configuration file
 .PP
 Change the expiration of poll
-.PD 0
-.P
-.PD
-\f[B]poll-expiration\f[R]=\f[I]\[dq]E[X]pires\[dq],\[aq]x\[aq],\[aq]X\[aq]\f[R]
-.SS preference-name
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq]E[X]pires\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]x\[rq],\[lq]X\[rq]]\f[R]
+.SH INPUT.PREFERENCE-NAME
+.PP
+This section is [input.preference-name] in your configuration file
 .PP
 Change display name
-.PD 0
-.P
-.PD
-\f[B]preference-name\f[R]=\f[I]\[dq][N]ame\[dq],\[aq]n\[aq],\[aq]N\[aq]\f[R]
-.SS preference-visibility
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][N]ame\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]n\[rq],\[lq]N\[rq]]\f[R]
+.SH INPUT.PREFERENCE-VISIBILITY
+.PP
+This section is [input.preference-visibility] in your configuration file
 .PP
 Change default visibility of toots
-.PD 0
-.P
-.PD
-\f[B]preference-visibility\f[R]=\f[I]\[dq][V]isibility\[dq],\[aq]v\[aq],\[aq]V\[aq]\f[R]
-.SS preference-bio
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][V]isibility\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]v\[rq],\[lq]V\[rq]]\f[R]
+.SH INPUT.PREFERENCE-BIO
+.PP
+This section is [input.preference-bio] in your configuration file
 .PP
 Change bio in profile
-.PD 0
-.P
-.PD
-\f[B]preference-bio\f[R]=\f[I]\[dq][B]io\[dq],\[aq]b\[aq],\[aq]B\[aq]\f[R]
-.SS preference-save
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][B]io\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]b\[rq],\[lq]B\[rq]]\f[R]
+.SH INPUT.PREFERENCE-SAVE
+.PP
+This section is [input.preference-save] in your configuration file
 .PP
 Save your preferences
-.PD 0
-.P
-.PD
-\f[B]preference-save\f[R]=\f[I]\[dq][S]ave\[dq],\[aq]s\[aq],\[aq]S\[aq]\f[R]
-.SS preference-fields
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][S]ave\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]s\[rq],\[lq]S\[rq]]\f[R]
+.SH INPUT.PREFERENCE-FIELDS
+.PP
+This section is [input.preference-fields] in your configuration file
 .PP
 Edit profile fields
-.PD 0
-.P
-.PD
-\f[B]preference-fields\f[R]=\f[I]\[dq][F]ields\[dq],\[aq]f\[aq],\[aq]F\[aq]\f[R]
-.SS preference-fields-add
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][F]ields\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]f\[rq],\[lq]F\[rq]]\f[R]
+.SH INPUT.PREFERENCE-FIELDS-ADD
+.PP
+This section is [input.preference-fields-add] in your configuration file
 .PP
 Add new field
-.PD 0
-.P
-.PD
-\f[B]preference-fields-add\f[R]=\f[I]\[dq][A]dd\[dq],\[aq]a\[aq],\[aq]A\[aq]\f[R]
-.SS preference-fields-edit
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][A]dd\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]a\[rq],\[lq]A\[rq]]\f[R]
+.SH INPUT.PREFERENCE-FIELDS-EDIT
+.PP
+This section is [input.preference-fields-edit] in your configuration
+file
 .PP
 Edit current field
-.PD 0
-.P
-.PD
-\f[B]preference-fields-edit\f[R]=\f[I]\[dq][E]dit\[dq],\[aq]e\[aq],\[aq]E\[aq]\f[R]
-.SS preference-fields-delete
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][E]dit\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]e\[rq],\[lq]E\[rq]]\f[R]
+.SH INPUT.PREFERENCE-FIELDS-DELETE
+.PP
+This section is [input.preference-fields-delete] in your configuration
+file
 .PP
 Delete current field
-.PD 0
-.P
-.PD
-\f[B]preference-fields-delete\f[R]=\f[I]\[dq][D]elete\[dq],\[aq]d\[aq],\[aq]D\[aq]\f[R]
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][D]elete\[rq]\f[R]
+.SS keys
+.PP
+\f[B]keys\f[R]=\f[I][\[lq]d\[rq],\[lq]D\[rq]]\f[R]
+.SH INPUT.EDITOR-EXIT
+.PP
+This section is [input.editor-exit] in your configuration file
+.PP
+Exit the editor
+.SS hint
+.PP
+\f[B]hint\f[R]=\f[I]\[lq][Esc] when done\[rq]\f[R]
+.SS special-keys
+.PP
+\f[B]special-keys\f[R]=\f[I][\[lq]Esc\[rq]]\f[R]
 .SH SEE ALSO
 .IP
 .nf

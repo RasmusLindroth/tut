@@ -1,6 +1,6 @@
-% tut(5) tut 1.0.34
+% tut(5) tut 1.0.35
 % Rasmus Lindroth
-% 2023-01-01
+% 2023-01-07
 
 # NAME
 tut - configuration for tut(1)
@@ -22,57 +22,26 @@ Under each section there is the name of the configuration option. The last line 
 This section is \[general\] in your configuration file
 
 ## confirmation
-Shows a confirmation view before actions such as favorite, delete toot, boost etc.  
+You need to press yes in a confirmation dialog before favoriting, boosting, etc.  
+
+valid: true, false
+
 **confirmation**=*true*
 
 ## mouse-support
-Enable support for using the mouse in tut to select items.  
+Enable mouse support in tut.  
+
+valid: true, false
+
 **mouse-support**=*false*
 
-## timelines
-Timelines adds windows of feeds. You can customize the number of feeds, what they should show and the key to activate them.  
-  
-Available timelines: home, direct, local, federated, special, bookmarks, saved, favorited, notifications, lists, mentions, tag  
-  
-The one named special are the home timeline with only boosts and/or replies.  
-  
-Tag is special as you need to add the tag after, see the example below.  
-  
-The syntax is:  
-timelines=feed,[name],[keys...],[showBoosts],[showReplies]  
-  
-Tha values in brackets are optional. You can see the syntax for keys under the [input] section.  
-  
-showBoosts and showReplies must be formated as bools. So either true or false. They always defaults to true.  
-  
-Some examples:  
-  
-home timeline with the name Home  
-timelines=home,Home  
-  
-local timeline with the name Local and it gets focus when you press 2. It will also hide boosts in the timeline, but show toots that are replies.  
-timelines=local,Local,\'2\',false,true  
-  
-notification timeline with the name [N]otifications and it gets focus when you press n or N  
-timelines=notifications,[N]otifications,\'n\',\'N\'  
-  
-tag timeline for \#linux with the name Linux and it gets focus when you press  
-timelines=tag linux,Linux,\"F2\"  
-  
-  
-If you don\'t set any timelines it will default to this:  
-timelines=home  
-timelines=notifications,[N]otifications,\'n\',\'N\'  
-  
-
-
 ## date-format
-The date format to be used. See https://godoc.org/time\#Time.Format  
-**date-format**=*2006-01-02 15:04*
+The date format to be used. See https://pkg.go.dev/time\#pkg-constants  
+**date-format**=*"2006-01-02 15:04"*
 
-## date-today-format
+## date-tody-format
 Format for dates the same day. See date-format for more info.  
-**date-today-format**=*15:04*
+**date-tody-format**=*"15:04"*
 
 ## date-relative
 This displays relative dates instead for statuses that are one day or older the output is 1y2m1d (1 year 2 months and 1 day)  
@@ -81,702 +50,1417 @@ The value is an integear
 -1     = don\'t use relative dates  
  0     = always use relative dates, except for dates \< 1 day  
  1 - ∞ = number of days to use relative dates  
-  
-Example: date-relative=28 will display a relative date for toots that are between 1-28 days old. Otherwhise it will use the short or long format.  
+				  
+Value: 28 will display a relative date for toots that are between 1-28 days old. Otherwhise it will use the short or long format.  
 **date-relative**=*-1*
 
 ## max-width
-The max width of text before it wraps when displaying toots.  
-0 = no restriction.  
+The max with of text before it wraps when displaying a toot.  
 **max-width**=*0*
 
 ## list-placement
-Where do you want the list of toots to be placed?  
-Valid values: left, right, top, bottom.  
-**list-placement**=*left*
+The placement of your panes.  
+
+valid: left, right, top, bottom
+
+**list-placement**=*"left"*
 
 ## list-split
-If you have notification-feed set to true you can display it under the main list of toots (row) or place it to the right of the main list of toots (column).  
-**list-split**=*row*
+How should panes be split?  
+
+valid: row, column
+
+**list-split**=*"row"*
 
 ## list-proportion
-You can change the proportions of the list view in relation to the content view list-proportion=1 and content-proportoin=3 will result in the content taking up 3 times more space.  
-Must be n \> 0  
+The proportion of panes vs. content. 1 on this and 3 on content below results in content taking up 3 times more space.  
 **list-proportion**=*1*
 
 ## content-proportion
-See list-proportion  
+See previous.  
 **content-proportion**=*2*
 
 ## notifications-to-hide
-Hide notifications of this type. If you have multiple you separate them with a comma. Valid types: mention, status, boost, follow, follow_request, favorite, poll, edit.  
-**notifications-to-hide**=
+Hide notifications of this type in your notification timelines.  
+
+valid: mention, status, boost, follow, follow_request, favorite, poll, edit
+
+**notifications-to-hide**=*[]*
 
 ## quote-reply
-If you always want to quote original message when replying.  
+Always include a quote of the message you\'re replying to.  
+
+valid: true, false
+
 **quote-reply**=*false*
 
 ## show-icons
-If you want to show icons in the list of toots.  
+If you want to show icons in timelines.  
+
+valid: true, false
+
 **show-icons**=*true*
 
 ## short-hints
-If you\'ve learnt all the shortcut keys you can remove the help text and only show the key in tui. So it gets less cluttered.  
+If you only want to you the letter of keys instead of the full hint.  
+
+valid: true, false
+
 **short-hints**=*false*
 
 ## show-filter-phrase
 If you want to display the filter that filtered a toot.  
+
+valid: true, false
+
 **show-filter-phrase**=*true*
 
 ## show-help
-If you want to show a message in the cmdbar on how to access the help text.  
+Display a message in the commandbar on how to access the help text.  
+
+valid: true, false
+
 **show-help**=*true*
 
 ## stick-to-top
-If you always want tut to jump to the newest post. May ruin your reading experience.  
+Always jump to the newest post. May ruin your reading experience.  
+
+valid: true, false
+
 **stick-to-top**=*false*
 
 ## show-boosted-user
-If you want to display the username of the person being boosted instead of the person that boosted.  
+Display the username of the person being boosted insted of the person that boosted.  
+
+valid: true, false
+
 **show-boosted-user**=*false*
 
 ## terminal-title
 0 = No terminal title  
 1 = Show title in terminal and top bar  
 2 = Only show terminal title, and no top bar in tut.  
+
+valid: 0, 1, 2
+
 **terminal-title**=*0*
 
 ## redraw-ui
-If you don\'t want the whole UI to update, and only the text content you can set this option to true. This will lead to some artifacts being left on the screen when emojis are present. But it will keep the UI from flashing on every single toot in some terminals.  
+If you don\'t want the whole UI to update, and only update the text content you can disable this. This will lead to some artifacts being left on the screen when emojis are present.  
+
+valid: true, false
+
 **redraw-ui**=*true*
 
 ## leader-key
-The leader is used as a shortcut to run commands as you can do in Vim. By default this is disabled and you enable it by setting a leader-key. It can only consist of one char and I like to use comma as leader key. So to set it you write leader-key=,  
-**leader-key**=
+The leader is used as a shortcut to run commands as you can do in Vim. By default this is disabled and you enable it by setting a key here. It can only consist of one char, so set it to something like a comma.  
+**leader-key**=*""*
 
 ## leader-timeout
 Number of milliseconds before the leader command resets. So if you tap the leader-key by mistake or are to slow it empties all the input after X milliseconds.  
 **leader-timeout**=*1000*
 
-## leader-action
-You set actions for the leader-key with one or more leader-action. It consists of two parts first the action then the shortcut. And they\'re separated by a comma.  
-  
-Available commands: blocking, bookmarks, boosts, clear-notifications, close-window, compose, direct, edit, favorited, favorites, federated, followers, following, history, home, list-placement, list-split, lists, local, mentions, move-window-left, move-window-right, move-window-up, move-window-down, move-window-home, move-window-end, muting, newer, notifications, preferences, profile, proportions, refetch, saved, special-all, special-boosts, special-replies, stick-to-top, switch, tag, tags, window  
-  
-The ones named special-\* are the home timeline with only boosts and/or replies. All contains both, -boosts only boosts and -replies only replies.  
-  
-The shortcuts are up to you, but keep them quite short and make sure they don\'t collide. If you have one shortcut that is \"f\" and an other one that is \"fav\", the one with \"f\" will always run and \"fav\" will never run.   
-  
-Some special leaders:  
-tag is special as you need to add the tag after, e.g. tag linux  
-window is special as it\'s a shortcut for switching between the timelines you\'ve set under general and they are zero indexed. window 0 = your first timeline, window 1 = your second and so on.  
-list-placement as it takes the argument top, right, bottom or left  
-list-split as it takes the argument column or row  
-proportions takes the arguments [int] [int], where the first integer is the list and the other content, e.g. proportions 1 3. See list-proportion above for more information.  
-switch let\'s you go to a timeline if it already exists, if it doesn\'t it will open the timeline in a new window. The syntax is almost the same as in timelines= and is displayed under the examples.  
-  
-Some examples:  
-leader-action=local,lo  
-leader-action=lists,li  
-leader-action=federated,fed  
-leader-action=direct,d  
-leader-action=history,h  
-leader-action=tag linux,tl  
-leader-action=window 0,h  
-leader-action=list-placement bottom,b  
-leader-action=list-split column,c  
-leader-action=proportions 1 3,3  
-  
-Syntax for switch:  
-leader-action=switch feed,shortcut,[name],[showBoosts],[showReplies]  
-showBoosts can be either true or false and they are both optional. Here are some examples:  
-  
-leader-action=switch home,h,false,true  
-leader-action=switch tag tut,tt  
-  
+# GENERAL.TIMELINES
+This section is \[\[general.timelines\]\] in your configuration file. You can have multiple of them.
 
+Example:
+
+[[general.timelines]]  
+name=\"home\"  
+type=\"home\"  
+show-boosts=true  
+show-replies=true  
+  
+[[general.timelines]]  
+name = \"Notifications\"  
+type = \"notifications\"  
+keys = [\"n\", \"N\"]  
+closed = true  
+on-creation-closed = \"new-pane\"  
+on-focus=\"focus-self\"  
+
+## name
+The name to display above the timeline  
+**name**=*""*
+
+## type
+The type of the timeline  
+
+valid: home, direct, local, federated, bookmarks, saved, favorited, notifications, lists, mentions, tag
+
+**type**=*""*
+
+## data
+Used for the tag type, so here you set the tag.  
+**data**=*""*
+
+## keys
+A list of keys to give this timeline focus. See under the input section to learn more about keys.  
+**keys**=*[]*
+
+## special-keys
+A list of special-keys to give this timeline focus. See under the input section to learn more about special-keys.  
+**special-keys**=*[]*
+
+## shortcut
+A shortcut to give this timeline focus with your leader-key + this shortcut.  
+**shortcut**=*""*
+
+## hide-boosts
+Hide boosts in this timeline.  
+
+valid: true, false
+
+**hide-boosts**=*"false"*
+
+## hide-replies
+Hide replies in this timeline.  
+
+valid: true, false
+
+**hide-replies**=*"false"*
+
+## closed
+Don\'t open this timeline when you start tut. Use your keys or shortcut to open it.  
+
+valid: true, false
+
+**closed**=*"false"*
+
+## on-creation-closed
+Don\'t open this timeline when you start tut. Use your keys or shortcut to open it.  
+
+valid: new-pane, current-pane
+
+**on-creation-closed**=*"new-pane"*
+
+## on-focus
+Don\'t open this timeline when you start tut. Use your keys or shortcut to open it.  
+
+valid: focus-pane, focus-self
+
+**on-focus**=*"focus-pane"*
+
+# GENERAL.LEADER-ACTIONS
+This section is \[\[general.leader-actions\]\] in your configuration file. You can have multiple of them.
+
+## type
+The action you want to run.  
+
+valid: blocking, boosts, clear-notifications, close-pane, compose, edit, favorited, favorites, followers, following, history, list-placement, list-split, lists, move-pane-left, move-pane-right, move-pane-up, move-pane-down, move-pane-home, move-pane-end, muting, newer, pane, preferences, profile, proportions, refetch, stick-to-top, tags
+
+**type**=*""*
+
+## data
+Data to pass to the action.  
+**data**=*""*
+
+## shortcut
+A shortcut to run this action with your leader-key + this shortcut.  
+**shortcut**=*""*
 
 # MEDIA
 This section is \[media\] in your configuration file
 
-## image-viewer
-Your image viewer.  
-**image-viewer**=*xdg-open*
+# MEDIA.IMAGE
+This section is \[media.image\] in your configuration file
 
-## image-terminal
-Open the image viewer in the same terminal as toot. Only for terminal based viewers.  
-**image-terminal**=*false*
+## program
+The program to open images. TUT_OS_DEFAULT equals xdg-open on Linux, open on MacOS and start on Windows.  
+**program**=*"TUT_OS_DEFAULT"*
 
-## image-single
-If images should open one by one e.g. \"imv image.png\" multiple times. If set to false all images will open at the same time like this \"imv image1.png image2.png image3.png\". Not all image viewers support this, so try it first.  
-**image-single**=*true*
+## args
+Arguments to pass to the program.  
+**args**=*""*
 
-## image-reverse
-If you want to open the images in reverse order. In some image viewers this will display the images in the \"right\" order.  
-**image-reverse**=*false*
+## terminal
+If the program runs in the terminal set this to true.  
 
-## video-viewer
-Your video viewer.  
-**video-viewer**=*xdg-open*
+valid: true, false
 
-## video-terminal
-Open the video viewer in the same terminal as toot. Only for terminal based viewers.  
-**video-terminal**=*false*
+**terminal**=*false*
 
-## video-single
-If videos should open one by one. See image-single.  
-**video-single**=*true*
+## single
+If the program should be called multiple times when there is multiple files. If set to false all files will be passed as an argument, but not all programs support this.  
 
-## video-reverse
-If you want your videos in reverse order. In some video apps this will play the files in the \"right\" order.  
-**video-reverse**=*false*
+valid: true, false
 
-## audio-viewer
-Your audio viewer.  
-**audio-viewer**=*xdg-open*
+**single**=*true*
 
-## audio-terminal
-Open the audio viewer in the same terminal as toot. Only for terminal based viewers.  
-**audio-terminal**=*false*
+## reverse
+If the files should be passed in reverse order. This will make some programs display the files in the correct order.  
 
-## audio-single
-If audio should open one by one. See image-single.  
-**audio-single**=*true*
+valid: true, false
 
-## audio-reverse
-If you want to play the audio files in reverse order. In some audio apps this will play the files in the \"right\" order.  
-**audio-reverse**=*false*
+**reverse**=*false*
 
-## link-viewer
-Your web browser.  
-**link-viewer**=*xdg-open*
+# MEDIA.VIDEO
+This section is \[media.video\] in your configuration file
 
-## link-terminal
-Open the browser in the same terminal as toot. Only for terminal based browsers.  
-**link-terminal**=*false*
+## program
+The program to open videos. TUT_OS_DEFAULT equals xdg-open on Linux, open on MacOS and start on Windows.  
+**program**=*"TUT_OS_DEFAULT"*
 
-# OPEN-CUSTOM
-This section is \[open-custom\] in your configuration file
+## args
+Arguments to pass to the program.  
+**args**=*""*
 
-This sections allows you to set up to five custom programs to open URLs with. If the url points to an image, you can set c1-name to img and c1-use to imv. If the program runs in a terminal and you want to run it in the same terminal as tut. Set cX-terminal to true. The name will show up in the UI, so keep it short so all five fits.  
-  
-c1-name=name  
-c1-use=program  
-c1-terminal=false  
-  
-c2-name=name  
-c2-use=program  
-c2-terminal=false  
-  
-c3-name=name  
-c3-use=program  
-c3-terminal=false  
-  
-c4-name=name  
-c4-use=program  
-c4-terminal=false  
-  
-c5-name=name  
-c5-use=program  
-c5-terminal=false  
+## terminal
+If the program runs in the terminal set this to true.  
 
-# OPEN-PATTERN
-This section is \[open-pattern\] in your configuration file
+valid: true, false
 
-Here you can set your own glob patterns for opening matching URLs in the program you want them to open up in. You could for example open Youtube videos in your video player instead of your default browser.  
-  
-You must name the keys foo-pattern, foo-use and foo-terminal, where use is the program that will open up the URL. To see the syntax for glob pattern you can follow this URL https://github.com/gobwas/glob\#syntax. foo-terminal is if the program runs in the terminal and should open in the same terminal as tut itself.  
-  
-Example for youtube.com and youtu.be to open up in mpv instead of the browser.  
-  
-y1-pattern=\*youtube.com/watch\*  
-y1-use=mpv  
-y1-terminal=false  
-  
-y2-pattern=\*youtu.be/\*  
-y2-use=mpv  
-y2-terminal=false  
+**terminal**=*false*
+
+## single
+If the program should be called multiple times when there is multiple files. If set to false all files will be passed as an argument, but not all programs support this.  
+
+valid: true, false
+
+**single**=*true*
+
+## reverse
+If the files should be passed in reverse order. This will make some programs display the files in the correct order.  
+
+valid: true, false
+
+**reverse**=*false*
+
+# MEDIA.AUDIO
+This section is \[media.audio\] in your configuration file
+
+## program
+The program to open audio. TUT_OS_DEFAULT equals xdg-open on Linux, open on MacOS and start on Windows.  
+**program**=*"TUT_OS_DEFAULT"*
+
+## args
+Arguments to pass to the program.  
+**args**=*""*
+
+## terminal
+If the program runs in the terminal set this to true.  
+
+valid: true, false
+
+**terminal**=*false*
+
+## single
+If the program should be called multiple times when there is multiple files. If set to false all files will be passed as an argument, but not all programs support this.  
+
+valid: true, false
+
+**single**=*true*
+
+## reverse
+If the files should be passed in reverse order. This will make some programs display the files in the correct order.  
+
+valid: true, false
+
+**reverse**=*false*
+
+# MEDIA.LINK
+This section is \[media.link\] in your configuration file
+
+## program
+The program to open links. TUT_OS_DEFAULT equals xdg-open on Linux, open on MacOS and start on Windows.  
+**program**=*"TUT_OS_DEFAULT"*
+
+## args
+Arguments to pass to the program.  
+**args**=*""*
+
+## terminal
+If the program runs in the terminal set this to true.  
+
+valid: true, false
+
+**terminal**=*false*
 
 # DESKTOP-NOTIFICATION
 This section is \[desktop-notification\] in your configuration file
 
 ## followers
-Notification when someone follows you.  
+Enable notifications when someone follows you.  
+
+valid: true, false
+
 **followers**=*false*
 
 ## favorite
-Notification when someone favorites one of your toots.  
+Enable notifications when one of your toots gets favorited.  
+
+valid: true, false
+
 **favorite**=*false*
 
 ## mention
-Notification when someone mentions you.  
+Enable notifications  when someone mentions you.  
+
+valid: true, false
+
 **mention**=*false*
 
 ## update
-Notification when someone edits their toot.  
+Enable notifications when a post you have interacted with gets edited.  
+
+valid: true, false
+
 **update**=*false*
 
 ## boost
-Notification when someone boosts one of your toots.  
+Enable notifications when one of your toots gets boosted.  
+
+valid: true, false
+
 **boost**=*false*
 
 ## poll
-Notification of poll results.  
+Enable notifications when a poll ends.  
+
+valid: true, false
+
 **poll**=*false*
 
 ## posts
-Notification when there is new posts in current timeline.  
+Enable notifications for new posts.  
+
+valid: true, false
+
 **posts**=*false*
+
+# OPEN-CUSTOM
+This section is \[open-custom\] in your configuration file
+
+# OPEN-CUSTOM.PROGRAMS
+This section is \[\[open-custom.programs\]\] in your configuration file. You can have multiple of them.
+
+## program
+The program to open the file with.  
+**program**=*""*
+
+## args
+Arguments to pass to the program.  
+**args**=*""*
+
+## terminal
+If the program runs in the terminal set this to true.  
+
+valid: true, false
+
+**terminal**=*false*
+
+## hint
+What should the key hint in tut be for this program. See under the input section to learn more about hint.  
+**hint**=*""*
+
+## keys
+A list of keys to to open files with this program. See under the input section to learn more about keys.  
+**keys**=*[]*
+
+## special-keys
+A list of special-keys to open files with this program. See under the input section to learn more about special-keys.  
+**special-keys**=*[]*
+
+# OPEN-PATTERN
+This section is \[open-pattern\] in your configuration file
+
+# OPEN-PATTERN.PROGRAMS
+This section is \[\[open-pattern.programs\]\] in your configuration file. You can have multiple of them.
+
+## matching
+Here you can set your own glob patterns for opening matching URLs in the program you want them to open up in. You could for example open Youtube videos in your video player instead of your default browser. To see the syntax for glob pattern you can follow this URL https://github.com/gobwas/glob\#syntax.  
+**matching**=*""*
+
+## program
+The program to open the file with.  
+**program**=*""*
+
+## args
+Arguments to pass to the program.  
+**args**=*""*
+
+## terminal
+If the program runs in the terminal set this to true.  
+
+valid: true, false
+
+**terminal**=*false*
 
 # STYLE
 This section is \[style\] in your configuration file
 
 All styles can be represented in their HEX value like \#ffffff or with their name, so in this case white. The only special value is \"default\" which equals to transparent, so it will be the same color as your terminal.  
-  
-You can also use xrdb colors like this xrdb:color1 The program will use colors prefixed with an \* first then look for URxvt or XTerm if it can\'t find any color prefixed with an asterisk. If you don\'t want tut to guess the prefix you can set the prefix yourself. If the xrdb color can\'t be found a preset color will be used. You\'ll have to set theme=none for this to work.  
-
-## xrdb-prefix
-The xrdb prefix used for colors in .Xresources.  
-**xrdb-prefix**=*guess*
+You can also use xrdb colors like this xrdb:color1 The program will use colors prefixed with an \* first then look for URxvt or XTerm if it can\'t find any color prefixed with an asterisk. If you don\'t want tut to guess the prefix you can set the prefix yourself. If the xrdb color can\'t be found a preset color will be used. You\'ll have to set theme=\"none\" for this to work.  
 
 ## theme
-You can use some themes that comes bundled with tut. Check out the themes available on the URL below. If a theme is named \"nord.ini\" you just write theme=nord  
+The theme to use. You can use some themes that comes bundled with tut. Check out the themes available on the URL below. If a theme is named nord.ini you just write theme=\"nord\".  
   
 https://github.com/RasmusLindroth/tut/tree/master/config/themes  
   
 You can also create a theme file in your config directory e.g. ~/.config/tut/themes/foo.ini and then set theme=foo.  
   
-If you want to use your own theme but don\'t want to create a new file, set theme=none and then you can create your own theme below.  
-**theme**=*default*
+If you want to use your own theme but don\'t want to create a new file, set theme=\"none\" and then you can create your own theme below.  
+  
+**theme**=*"default"*
+
+## xrdb-prefix
+The xrdb prefix used for colors in .Xresources.  
+**xrdb-prefix**=*"guess"*
 
 ## background
 The background color used on most elements.  
-**background**=
+**background**=*""*
 
 ## text
 The text color used on most of the text.  
-**text**=
+**text**=*""*
 
 ## subtle
 The color to display subtle elements or subtle text. Like lines and help text.  
-**subtle**=
+**subtle**=*""*
 
 ## warning-text
 The color for errors or warnings  
-**warning-text**=
+**warning-text**=*""*
 
 ## text-special-one
 This color is used to display username.  
-**text-special-one**=
+**text-special-one**=*""*
 
 ## text-special-two
 This color is used to display username and key hints.  
-**text-special-two**=
+**text-special-two**=*""*
 
 ## top-bar-background
 The color of the bar at the top  
-**top-bar-background**=
+**top-bar-background**=*""*
 
 ## top-bar-text
 The color of the text in the bar at the top.  
-**top-bar-text**=
+**top-bar-text**=*""*
 
 ## status-bar-background
 The color of the bar at the bottom  
-**status-bar-background**=
+**status-bar-background**=*""*
 
 ## status-bar-text
 The color of the text in the bar at the bottom.  
-**status-bar-text**=
+**status-bar-text**=*""*
 
 ## status-bar-view-background
 The color of the bar at the bottom in view mode.  
-**status-bar-view-background**=
+**status-bar-view-background**=*""*
 
 ## status-bar-view-text
 The color of the text in the bar at the bottom in view mode.  
-**status-bar-view-text**=
+**status-bar-view-text**=*""*
 
 ## command-text
 The color of the text in the command bar at the bottom.  
-**command-text**=
+**command-text**=*""*
 
 ## list-selected-background
 Background of selected list items.  
-**list-selected-background**=
+**list-selected-background**=*""*
 
 ## list-selected-text
 The text color of selected list items.  
-**list-selected-text**=
+**list-selected-text**=*""*
 
 ## list-selected-inactive-background
 The background color of selected list items that are out of focus.  
-**list-selected-inactive-background**=
+**list-selected-inactive-background**=*""*
 
 ## list-selected-inactive-text
 The text color of selected list items that are out of focus.  
-**list-selected-inactive-text**=
+**list-selected-inactive-text**=*""*
 
 ## controls-text
 The main color of the text for key hints  
-**controls-text**=
+**controls-text**=*""*
 
 ## controls-highlight
 The highlight color of for key hints  
-**controls-highlight**=
+**controls-highlight**=*""*
 
 ## autocomplete-background
 The background color in dropdowns and autocompletions  
-**autocomplete-background**=
+**autocomplete-background**=*""*
 
 ## autocomplete-text
 The text color in dropdowns at autocompletions  
-**autocomplete-text**=
+**autocomplete-text**=*""*
 
 ## autocomplete-selected-background
 The background color for selected value in dropdowns and autocompletions  
-**autocomplete-selected-background**=
+**autocomplete-selected-background**=*""*
 
 ## autocomplete-selected-text
 The text color for selected value in dropdowns and autocompletions  
-**autocomplete-selected-text**=
+**autocomplete-selected-text**=*""*
 
 ## button-color-one
 The background color on selected button and the text color of unselected buttons  
-**button-color-one**=
+**button-color-one**=*""*
 
 ## button-color-two
 The text color on selected button and the background color of unselected buttons  
-**button-color-two**=
+**button-color-two**=*""*
 
 ## timeline-name-background
 The background on named timelines.  
-**timeline-name-background**=
+**timeline-name-background**=*""*
 
 ## timeline-name-text
 The text color on named timelines  
-**timeline-name-text**=
+**timeline-name-text**=*""*
 
 # INPUT
 This section is \[input\] in your configuration file
 
-You can edit the keys for tut below.  
+In this section you set the keys to be used in tut.  
+		  
+The hint option lets you set which part of the hint that will be highlighted in tut. E.g. [F]avorite results in a highlighted F and the rest of the text is displayed normaly.  
+Some of the options can be in two states, like favorites, so there you can set the hint-alt option to something like Un[F]avorite.  
   
-The syntax is a bit weird, but it works. And I\'ll try to explain it as well as I can.  
-  
-Example:  
-status-favorite=\"[F]avorite\",\"Un[F]avorite\",\'f\',\'F\'  
-status-delete=\"[D]elete\",\'d\',\'D\'  
-  
-status-favorite and status-delete differs because favorite can be in two states, so you will have to add two key hints.  
-Most keys will only have on key hint. Look at the default value for reference.  
-  
-Key hints must be in some of the following formats. Remember the quotation marks.  
-\"\" = empty  
+Examples:  
 \"[D]elete\" = Delete with a highlighted D  
 \"Un[F]ollow\" = UnFollow with a highlighted F  
 \"[Enter]\" = Enter where everything is highlighted  
 \"Yan[K]\" = YanK with a highlighted K  
   
-After the hint (or hints) you must set the keys. You can do this in two ways, with single quotation marks or double ones.  
+The keys option lets you define what key that should be pressed. This is limited to on character only and they are case sensetive.  
+Example:  
+keys=[\"j\",\"J\"]  
   
-The single ones are for single chars like \'a\', \'b\', \'c\' and double marks are for special keys like \"Enter\". Remember that they are case sensitive.  
-  
-To find the names of special keys you have to go to the following site and look for \"var KeyNames = map[Key]string{\"  
+You can also set special-keys and they\'re for keys like Escape and Enter. To find the names of special keys you have to go to the following site and look for \"var KeyNames = map[Key]string{\"  
   
 https://github.com/gdamore/tcell/blob/master/key.go  
 
-## global-down
+# INPUT.GLOBAL-DOWN
+This section is \[input.global-down\] in your configuration file
+
 Keys for moving down  
-**global-down**=*\"\",\'j\',\'J\',\"Down\"*
 
-## global-up
-Keys for moving up  
-**global-up**=*\"\",\'k\',\'K\',\"Up\"*
+## keys
+**keys**=*["j","J"]*
 
-## global-enter
+## special-keys
+**special-keys**=*["Down"]*
+
+# INPUT.GLOBAL-UP
+This section is \[input.global-up\] in your configuration file
+
+Keys for moving down  
+
+## keys
+**keys**=*["k","K"]*
+
+## special-keys
+**special-keys**=*["Up"]*
+
+# INPUT.GLOBAL-ENTER
+This section is \[input.global-enter\] in your configuration file
+
 To select items  
-**global-enter**=*\"\",\"Enter\"*
 
-## global-back
+## special-keys
+**special-keys**=*["Enter"]*
+
+# INPUT.GLOBAL-BACK
+This section is \[input.global-back\] in your configuration file
+
 To go back  
-**global-back**=*\"[Esc]\",\"Esc\"*
 
-## global-exit
-To go back and exit Tut  
-**global-exit**=*\"[Q]uit\",\'q\',\'Q\'*
+## hint
+**hint**=*"[Esc]"*
 
-## main-home
+## special-keys
+**special-keys**=*["Esc"]*
+
+# INPUT.GLOBAL-EXIT
+This section is \[input.global-exit\] in your configuration file
+
+To go back or exit  
+
+## hint
+**hint**=*"[Q]uit"*
+
+## keys
+**keys**=*["q","Q"]*
+
+# INPUT.MAIN-HOME
+This section is \[input.main-home\] in your configuration file
+
 Move to the top  
-**main-home**=*\"\",\'g\',\"Home\"*
 
-## main-end
+## keys
+**keys**=*["g"]*
+
+## special-keys
+**special-keys**=*["Home"]*
+
+# INPUT.MAIN-END
+This section is \[input.main-end\] in your configuration file
+
 Move to the bottom  
-**main-end**=*\"\",\'G\',\"End\"*
 
-## main-prev-feed
+## keys
+**keys**=*["G"]*
+
+## special-keys
+**special-keys**=*["End"]*
+
+# INPUT.MAIN-PREV-FEED
+This section is \[input.main-prev-feed\] in your configuration file
+
 Go to previous feed  
-**main-prev-feed**=*\"\",\'h\',\'H\',\"Left\"*
 
-## main-next-feed
+## keys
+**keys**=*["h","H"]*
+
+## special-keys
+**special-keys**=*["Left"]*
+
+# INPUT.MAIN-NEXT-FEED
+This section is \[input.main-next-feed\] in your configuration file
+
 Go to next feed  
-**main-next-feed**=*\"\",\'l\',\'L\',\"Right\"*
 
-## main-prev-window
-Focus on the previous feed window  
-**main-prev-window**=*\"\",\"Backtab\"*
+## keys
+**keys**=*["l","L"]*
 
-## main-next-window
-Focus on the next feed window  
-**main-next-window**=*\"\",\"Tab\"*
+## specialkeys
+**specialkeys**=*["Right"]*
 
-## main-notification-focus
-Focus on the notification list  
-**main-notification-focus**=*\"[N]otifications\",\'n\',\'N\'*
+# INPUT.MAIN-PREV-PANE
+This section is \[input.main-prev-pane\] in your configuration file
 
-## main-compose
+Focus on the previous feed pane  
+
+## special-keys
+**special-keys**=*["Backtab"]*
+
+# INPUT.MAIN-NEXT-PANE
+This section is \[input.main-next-pane\] in your configuration file
+
+Focus on the next feed pane  
+
+## special-keys
+**special-keys**=*["Tab"]*
+
+# INPUT.MAIN-NEXT-ACCOUNT
+This section is \[input.main-next-account\] in your configuration file
+
+Focus on the next account  
+
+## special-keys
+**special-keys**=*["Ctrl-N"]*
+
+# INPUT.MAIN-PREV-ACCOUNT
+This section is \[input.main-prev-account\] in your configuration file
+
+Focus on the previous account  
+
+## special-keys
+**special-keys**=*["Ctrl-P"]*
+
+# INPUT.MAIN-COMPOSE
+This section is \[input.main-compose\] in your configuration file
+
 Compose a new toot  
-**main-compose**=*\"\",\'c\',\'C\'*
 
-## status-avatar
+## keys
+**keys**=*["c","C"]*
+
+# INPUT.STATUS-AVATAR
+This section is \[input.status-avatar\] in your configuration file
+
 Open avatar  
-**status-avatar**=*\"[A]vatar\",\'a\',\'A\'*
 
-## status-boost
+## hint
+**hint**=*"[A]vatar"*
+
+## keys
+**keys**=*["a","A"]*
+
+# INPUT.STATUS-BOOST
+This section is \[input.status-boost\] in your configuration file
+
 Boost a toot  
-**status-boost**=*\"[B]oost\",\"Un[B]oost\",\'b\',\'B\'*
 
-## status-edit
+## hint
+**hint**=*"[B]oost"*
+
+## keys
+**keys**=*["b","B"]*
+
+# INPUT.STATUS-EDIT
+This section is \[input.status-edit\] in your configuration file
+
 Edit a toot  
-**status-edit**=*\"[E]dit\",\'e\',\'E\'*
 
-## status-delete
+## hint
+**hint**=*"[E]dit"*
+
+## keys
+**keys**=*["e","E"]*
+
+# INPUT.STATUS-DELETE
+This section is \[input.status-delete\] in your configuration file
+
 Delete a toot  
-**status-delete**=*\"[D]elete\",\'d\',\'D\'*
 
-## status-favorite
+## hint
+**hint**=*"[D]elete"*
+
+## keys
+**keys**=*["d","D"]*
+
+# INPUT.STATUS-FAVORITE
+This section is \[input.status-favorite\] in your configuration file
+
 Favorite a toot  
-**status-favorite**=*\"[F]avorite\",\"Un[F]avorite\",\'f\',\'F\'*
 
-## status-media
+## hint
+**hint**=*"[F]avorite"*
+
+## keys
+**keys**=*["f","F"]*
+
+# INPUT.STATUS-MEDIA
+This section is \[input.status-media\] in your configuration file
+
 Open toots media files  
-**status-media**=*\"[M]edia\",\'m\',\'M\'*
 
-## status-links
+## hint
+**hint**=*"[M]edia"*
+
+## keys
+**keys**=*["m","M"]*
+
+# INPUT.STATUS-LINKS
+This section is \[input.status-links\] in your configuration file
+
 Open links  
-**status-links**=*\"[O]pen\",\'o\',\'O\'*
 
-## status-poll
+## hint
+**hint**=*"[O]pen"*
+
+## keys
+**keys**=*["o","O"]*
+
+# INPUT.STATUS-POLL
+This section is \[input.status-poll\] in your configuration file
+
 Open poll  
-**status-poll**=*\"[P]oll\",\'p\',\'P\'*
 
-## status-reply
+## hint
+**hint**=*"[P]oll"*
+
+## keys
+**keys**=*["p","P"]*
+
+# INPUT.STATUS-REPLY
+This section is \[input.status-reply\] in your configuration file
+
 Reply to toot  
-**status-reply**=*\"[R]eply\",\'r\',\'R\'*
 
-## status-bookmark
+## hint
+**hint**=*"[R]eply"*
+
+## keys
+**keys**=*["r","R"]*
+
+# INPUT.STATUS-BOOKMARK
+This section is \[input.status-bookmark\] in your configuration file
+
 Save/bookmark a toot  
-**status-bookmark**=*\"[S]ave\",\"Un[S]ave\",\'s\',\'S\'*
 
-## status-thread
+## hint
+**hint**=*"[S]ave"*
+
+## hint-alt
+**hint-alt**=*"Un[S]ave"*
+
+## keys
+**keys**=*["s","S"]*
+
+# INPUT.STATUS-THREAD
+This section is \[input.status-thread\] in your configuration file
+
 View thread  
-**status-thread**=*\"[T]hread\",\'t\',\'T\'*
 
-## status-user
+## hint
+**hint**=*"[T]hread"*
+
+## keys
+**keys**=*["t","T"]*
+
+# INPUT.STATUS-USER
+This section is \[input.status-user\] in your configuration file
+
 Open user profile  
-**status-user**=*\"[U]ser\",\'u\',\'U\'*
 
-## status-view-focus
+## hint
+**hint**=*"[U]ser"*
+
+## keys
+**keys**=*["u","U"]*
+
+# INPUT.STATUS-VIEW-FOCUS
+This section is \[input.status-view-focus\] in your configuration file
+
 Open the view mode  
-**status-view-focus**=*\"[V]iew\",\'v\',\'V\'*
 
-## status-yank
+## hint
+**hint**=*"[V]iew"*
+
+## keys
+**keys**=*["v","V"]*
+
+# INPUT.STATUS-YANK
+This section is \[input.status-yank\] in your configuration file
+
 Yank the url of the toot  
-**status-yank**=*\"[Y]ank\",\'y\',\'Y\'*
 
-## status-toggle-cw
+## hint
+**hint**=*"[Y]ank"*
+
+## keys
+**keys**=*["y","Y"]*
+
+# INPUT.STATUS-TOGGLE-CW
+This section is \[input.status-toggle-cw\] in your configuration file
+
 Show the content in a content warning  
-**status-toggle-cw**=*\"Press [Z] to toggle cw\",\'z\',\'Z\'*
 
-## status-show-filtered
+## hint
+**hint**=*"Press [Z] to toggle cw"*
+
+## keys
+**keys**=*["z","Z"]*
+
+# INPUT.STATUS-SHOW-FILTERED
+This section is \[input.status-show-filtered\] in your configuration file
+
 Show the content of a filtered toot  
-**status-show-filtered**=*\"Press [Z] to view filtered toot\",\'z\',\'Z\'*
 
-## user-avatar
+## hint
+**hint**=*"Press [Z] to view filtered toot"*
+
+## keys
+**keys**=*["z","Z"]*
+
+# INPUT.USER-AVATAR
+This section is \[input.user-avatar\] in your configuration file
+
 View avatar  
-**user-avatar**=*\"[A]vatar\",\'a\',\'A\'*
 
-## user-block
+## hint
+**hint**=*"[A]vatar"*
+
+## keys
+**keys**=*["a","A"]*
+
+# INPUT.USER-BLOCK
+This section is \[input.user-block\] in your configuration file
+
 Block the user  
-**user-block**=*\"[B]lock\",\"Un[B]lock\",\'b\',\'B\'*
 
-## user-follow
+## hint
+**hint**=*"[B]lock"*
+
+## hint-alt
+**hint-alt**=*"Un[B]lock"*
+
+## keys
+**keys**=*["b","B"]*
+
+# INPUT.USER-FOLLOW
+This section is \[input.user-follow\] in your configuration file
+
 Follow user  
-**user-follow**=*\"[F]ollow\",\"Un[F]ollow\",\'f\',\'F\'*
 
-## user-follow-request-decide
+## hint
+**hint**=*"[F]ollow"*
+
+## hint-alt
+**hint-alt**=*"Un[F]ollow"*
+
+## keys
+**keys**=*["f","F"]*
+
+# INPUT.USER-FOLLOW-REQUEST-DECIDE
+This section is \[input.user-follow-request-decide\] in your configuration file
+
 Follow user  
-**user-follow-request-decide**=*\"Follow [R]equest\",\"Follow [R]equest\",\'r\',\'R\'*
 
-## user-mute
+## hint
+**hint**=*"Follow [R]equest"*
+
+## hint-alt
+**hint-alt**=*"Follow [R]equest"*
+
+## keys
+**keys**=*["r","R"]*
+
+# INPUT.USER-MUTE
+This section is \[input.user-mute\] in your configuration file
+
 Mute user  
-**user-mute**=*\"[M]ute\",\"Un[M]ute\",\'m\',\'M\'*
 
-## user-links
+## hint
+**hint**=*"[M]ute"*
+
+## hint-alt
+**hint-alt**=*"Un[M]ute"*
+
+## keys
+**keys**=*["m","M"]*
+
+# INPUT.USER-LINKS
+This section is \[input.user-links\] in your configuration file
+
 Open links  
-**user-links**=*\"[O]pen\",\'o\',\'O\'*
 
-## user-user
+## hint
+**hint**=*"[O]pen"*
+
+## keys
+**keys**=*["o","O"]*
+
+# INPUT.USER-USER
+This section is \[input.user-user\] in your configuration file
+
 View user profile  
-**user-user**=*\"[U]ser\",\'u\',\'U\'*
 
-## user-view-focus
+## hint
+**hint**=*"[U]ser"*
+
+## keys
+**keys**=*["u","U"]*
+
+# INPUT.USER-VIEW-FOCUS
+This section is \[input.user-view-focus\] in your configuration file
+
 Open view mode  
-**user-view-focus**=*\"[V]iew\",\'v\',\'V\'*
 
-## user-yank
+## hint
+**hint**=*"[V]iew"*
+
+## keys
+**keys**=*["v","V"]*
+
+# INPUT.USER-YANK
+This section is \[input.user-yank\] in your configuration file
+
 Yank the user URL  
-**user-yank**=*\"[Y]ank\",\'y\',\'Y\'*
 
-## list-open-feed
+## hint
+**hint**=*"[Y]ank"*
+
+## keys
+**keys**=*["y","Y"]*
+
+# INPUT.LIST-OPEN-FEED
+This section is \[input.list-open-feed\] in your configuration file
+
 Open list  
-**list-open-feed**=*\"[O]pen\",\'o\',\'O\'*
 
-## list-user-list
+## hint
+**hint**=*"[O]pen"*
+
+## keys
+**keys**=*["o","O"]*
+
+# INPUT.LIST-USER-LIST
+This section is \[input.list-user-list\] in your configuration file
+
 List all users in a list  
-**list-user-list**=*\"[U]sers\",\'u\',\'U\'*
 
-## list-user-add
+## hint
+**hint**=*"[U]sers"*
+
+## keys
+**keys**=*["u","U"]*
+
+# INPUT.LIST-USER-ADD
+This section is \[input.list-user-add\] in your configuration file
+
 Add user to list  
-**list-user-add**=*\"[A]dd\",\'a\',\'A\'*
 
-## list-user-delete
+## hint
+**hint**=*"[A]dd"*
+
+## keys
+**keys**=*["a","A"]*
+
+# INPUT.LIST-USER-DELETE
+This section is \[input.list-user-delete\] in your configuration file
+
 Delete user from list  
-**list-user-delete**=*\"[D]elete\",\'d\',\'D\'*
 
-## link-open
+## hint
+**hint**=*"[D]elete"*
+
+## keys
+**keys**=*["d","D"]*
+
+# INPUT.LINK-OPEN
+This section is \[input.link-open\] in your configuration file
+
 Open URL  
-**link-open**=*\"[O]pen\",\'o\',\'O\'*
 
-## link-yank
+## hint
+**hint**=*"[O]pen"*
+
+## keys
+**keys**=*["o","O"]*
+
+# INPUT.LINK-YANK
+This section is \[input.link-yank\] in your configuration file
+
 Yank the URL  
-**link-yank**=*\"[Y]ank\",\'y\',\'Y\'*
 
-## tag-open-feed
+## hint
+**hint**=*"[Y]ank"*
+
+## keys
+**keys**=*["y","Y"]*
+
+# INPUT.TAG-OPEN-FEED
+This section is \[input.tag-open-feed\] in your configuration file
+
 Open tag feed  
-**tag-open-feed**=*\"[O]pen\",\'o\',\'O\'*
 
-## tag-follow
+## hint
+**hint**=*"[O]pen"*
+
+## keys
+**keys**=*["o","O"]*
+
+# INPUT.TAG-FOLLOW
+This section is \[input.tag-follow\] in your configuration file
+
 Toggle follow on tag  
-**tag-follow**=*\"[F]ollow\",\"Un[F]ollow\",\'f\',\'F\'*
 
-## compose-edit-cw
+## hint
+**hint**=*"[F]ollow"*
+
+## hint-alt
+**hint-alt**=*"Un[F]ollow"*
+
+## keys
+**keys**=*["f","F"]*
+
+# INPUT.COMPOSE-EDIT-CW
+This section is \[input.compose-edit-cw\] in your configuration file
+
 Edit content warning text on new toot  
-**compose-edit-cw**=*\"[C]W text\",\'c\',\'C\'*
 
-## compose-edit-text
+## hint
+**hint**=*"[C]W text"*
+
+## keys
+**keys**=*["c","C"]*
+
+# INPUT.COMPOSE-EDIT-TEXT
+This section is \[input.compose-edit-text\] in your configuration file
+
 Edit the text on new toot  
-**compose-edit-text**=*\"[E]dit text\",\'e\',\'E\'*
 
-## compose-include-quote
+## hint
+**hint**=*"[E]dit text"*
+
+## keys
+**keys**=*["e","E"]*
+
+# INPUT.COMPOSE-INCLUDE-QUOTE
+This section is \[input.compose-include-quote\] in your configuration file
+
 Include a quote when replying  
-**compose-include-quote**=*\"[I]nclude quote\",\'i\',\'I\'*
 
-## compose-media-focus
+## hint
+**hint**=*"[I]nclude quote"*
+
+## keys
+**keys**=*["i","I"]*
+
+# INPUT.COMPOSE-MEDIA-FOCUS
+This section is \[input.compose-media-focus\] in your configuration file
+
 Focus on adding media to toot  
-**compose-media-focus**=*\"[M]edia\",\'m\',\'M\'*
 
-## compose-post
+## hint
+**hint**=*"[M]edia"*
+
+## keys
+**keys**=*["m","M"]*
+
+# INPUT.COMPOSE-POST
+This section is \[input.compose-post\] in your configuration file
+
 Post the new toot  
-**compose-post**=*\"[P]ost\",\'p\',\'P\'*
 
-## compose-toggle-content-warning
+## hint
+**hint**=*"[P]ost"*
+
+## keys
+**keys**=*["p","P"]*
+
+# INPUT.COMPOSE-TOGGLE-CONTENT-WARNING
+This section is \[input.compose-toggle-content-warning\] in your configuration file
+
 Toggle content warning on toot  
-**compose-toggle-content-warning**=*\"[T]oggle CW\",\'t\',\'T\'*
 
-## compose-visibility
+## hint
+**hint**=*"[T]oggle CW"*
+
+## keys
+**keys**=*["t","T"]*
+
+# INPUT.COMPOSE-VISIBILITY
+This section is \[input.compose-visibility\] in your configuration file
+
 Edit the visibility on new toot  
-**compose-visibility**=*\"[V]isibility\",\'v\',\'V\'*
 
-## compose-language
+## hint
+**hint**=*"[V]isibility"*
+
+## keys
+**keys**=*["v","V"]*
+
+# INPUT.COMPOSE-LANGUAGE
+This section is \[input.compose-language\] in your configuration file
+
 Edit the language of a toot  
-**compose-language**=*\"[L]ang\",\'l\',\'L\'*
 
-## compose-poll
+## hint
+**hint**=*"[L]ang"*
+
+## keys
+**keys**=*["l","L"]*
+
+# INPUT.COMPOSE-POLL
+This section is \[input.compose-poll\] in your configuration file
+
 Switch to creating a poll  
-**compose-poll**=*\"P[O]ll\",\'o\',\'O\'*
 
-## media-delete
+## hint
+**hint**=*"P[O]ll"*
+
+## keys
+**keys**=*["o","O"]*
+
+# INPUT.MEDIA-DELETE
+This section is \[input.media-delete\] in your configuration file
+
 Delete media file  
-**media-delete**=*\"[D]elete\",\'d\',\'D\'*
 
-## media-edit-desc
+## hint
+**hint**=*"[D]elete"*
+
+## keys
+**keys**=*["d","D"]*
+
+# INPUT.MEDIA-EDIT-DESC
+This section is \[input.media-edit-desc\] in your configuration file
+
 Edit the description on media file  
-**media-edit-desc**=*\"[E]dit desc\",\'e\',\'E\'*
 
-## media-add
+## hint
+**hint**=*"[E]dit desc"*
+
+## keys
+**keys**=*["e","E"]*
+
+# INPUT.MEDIA-ADD
+This section is \[input.media-add\] in your configuration file
+
 Add a new media file  
-**media-add**=*\"[A]dd\",\'a\',\'A\'*
 
-## vote-vote
+## hint
+**hint**=*"[A]dd"*
+
+## keys
+**keys**=*["a","A"]*
+
+# INPUT.VOTE-VOTE
+This section is \[input.vote-vote\] in your configuration file
+
 Vote on poll  
-**vote-vote**=*\"[V]ote\",\'v\',\'V\'*
 
-## vote-select
+## hint
+**hint**=*"[V]ote"*
+
+## keys
+**keys**=*["v","V"]*
+
+# INPUT.VOTE-SELECT
+This section is \[input.vote-select\] in your configuration file
+
 Select item to vote on  
-**vote-select**=*\"[Enter] to select\",\' \', \"Enter\"*
 
-## poll-add
+## hint
+**hint**=*"[Enter] to select"*
+
+## special-keys
+**special-keys**=*["Enter"]*
+
+# INPUT.POLL-ADD
+This section is \[input.poll-add\] in your configuration file
+
 Add a new poll option  
-**poll-add**=*\"[A]dd\",\'a\',\'A\'*
 
-## poll-edit
+## hint
+**hint**=*"[A]dd"*
+
+## keys
+**keys**=*["a","A"]*
+
+# INPUT.POLL-EDIT
+This section is \[input.poll-edit\] in your configuration file
+
 Edit a poll option  
-**poll-edit**=*\"[E]dit\",\'e\',\'E\'*
 
-## poll-delete
+## hint
+**hint**=*"[E]dit"*
+
+## keys
+**keys**=*["e","E"]*
+
+# INPUT.POLL-DELETE
+This section is \[input.poll-delete\] in your configuration file
+
 Delete a poll option  
-**poll-delete**=*\"[D]elete\",\'d\',\'D\'*
 
-## poll-multi-toggle
+## hint
+**hint**=*"[D]elete"*
+
+## keys
+**keys**=*["d","D"]*
+
+# INPUT.POLL-MULTI-TOGGLE
+This section is \[input.poll-multi-toggle\] in your configuration file
+
 Toggle voting on multiple options  
-**poll-multi-toggle**=*\"Toggle [M]ultiple\",\'m\',\'M\'*
 
-## poll-expiration
+## hint
+**hint**=*"Toggle [M]ultiple"*
+
+## keys
+**keys**=*["m","M"]*
+
+# INPUT.POLL-EXPIRATION
+This section is \[input.poll-expiration\] in your configuration file
+
 Change the expiration of poll  
-**poll-expiration**=*\"E[X]pires\",\'x\',\'X\'*
 
-## preference-name
+## hint
+**hint**=*"E[X]pires"*
+
+## keys
+**keys**=*["x","X"]*
+
+# INPUT.PREFERENCE-NAME
+This section is \[input.preference-name\] in your configuration file
+
 Change display name  
-**preference-name**=*\"[N]ame\",\'n\',\'N\'*
 
-## preference-visibility
+## hint
+**hint**=*"[N]ame"*
+
+## keys
+**keys**=*["n","N"]*
+
+# INPUT.PREFERENCE-VISIBILITY
+This section is \[input.preference-visibility\] in your configuration file
+
 Change default visibility of toots  
-**preference-visibility**=*\"[V]isibility\",\'v\',\'V\'*
 
-## preference-bio
+## hint
+**hint**=*"[V]isibility"*
+
+## keys
+**keys**=*["v","V"]*
+
+# INPUT.PREFERENCE-BIO
+This section is \[input.preference-bio\] in your configuration file
+
 Change bio in profile  
-**preference-bio**=*\"[B]io\",\'b\',\'B\'*
 
-## preference-save
+## hint
+**hint**=*"[B]io"*
+
+## keys
+**keys**=*["b","B"]*
+
+# INPUT.PREFERENCE-SAVE
+This section is \[input.preference-save\] in your configuration file
+
 Save your preferences  
-**preference-save**=*\"[S]ave\",\'s\',\'S\'*
 
-## preference-fields
+## hint
+**hint**=*"[S]ave"*
+
+## keys
+**keys**=*["s","S"]*
+
+# INPUT.PREFERENCE-FIELDS
+This section is \[input.preference-fields\] in your configuration file
+
 Edit profile fields  
-**preference-fields**=*\"[F]ields\",\'f\',\'F\'*
 
-## preference-fields-add
+## hint
+**hint**=*"[F]ields"*
+
+## keys
+**keys**=*["f","F"]*
+
+# INPUT.PREFERENCE-FIELDS-ADD
+This section is \[input.preference-fields-add\] in your configuration file
+
 Add new field  
-**preference-fields-add**=*\"[A]dd\",\'a\',\'A\'*
 
-## preference-fields-edit
+## hint
+**hint**=*"[A]dd"*
+
+## keys
+**keys**=*["a","A"]*
+
+# INPUT.PREFERENCE-FIELDS-EDIT
+This section is \[input.preference-fields-edit\] in your configuration file
+
 Edit current field  
-**preference-fields-edit**=*\"[E]dit\",\'e\',\'E\'*
 
-## preference-fields-delete
+## hint
+**hint**=*"[E]dit"*
+
+## keys
+**keys**=*["e","E"]*
+
+# INPUT.PREFERENCE-FIELDS-DELETE
+This section is \[input.preference-fields-delete\] in your configuration file
+
 Delete current field  
-**preference-fields-delete**=*\"[D]elete\",\'d\',\'D\'*
+
+## hint
+**hint**=*"[D]elete"*
+
+## keys
+**keys**=*["d","D"]*
+
+# INPUT.EDITOR-EXIT
+This section is \[input.editor-exit\] in your configuration file
+
+Exit the editor  
+
+## hint
+**hint**=*"[Esc] when done"*
+
+## special-keys
+**special-keys**=*["Esc"]*
 
 # SEE ALSO
     tut(1) - flags and commands

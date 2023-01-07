@@ -1,6 +1,6 @@
-% tut(7) tut 1.0.34
+% tut(7) tut 1.0.35
 % Rasmus Lindroth
-% 2023-01-01
+% 2023-01-07
 
 # NAME
 tut - keys and commands inside of tut(1)
@@ -95,7 +95,7 @@ To change the keys look at tut(5) under the *INPUT* section.
 **:list-split** *row|column*
 : Split the timelines in window by row or column
 
-**:move-pane** *left|right|up|down|home|end*
+**:move-window** *left|right|up|down|home|end*
 : Moves the window in choosen direction
 
 **:mv** *l|r|u|d|h|e*
@@ -137,8 +137,8 @@ To change the keys look at tut(5) under the *INPUT* section.
 **:user** *\<username\>*
 : Search for users named \<username\>, e.g. :user rasmus. To narrow a search include the instance like this :user rasmus@mastodon.acc.sunet.se
 
-**:pane** *\<int\>*
-: Switch window by index (zero indexed) e.g. :pane 0 for the left/top window
+**:window** *\<int\>*
+: Switch window by index (zero indexed) e.g. :window 0 for the left/top window
 
 # SEE ALSO
     tut(1) - flags and commands

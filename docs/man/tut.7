@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "tut" "7" "2023-01-01" "tut 1.0.34" ""
+.TH "tut" "7" "2023-01-07" "tut 1.0.35" ""
 .hy
 .SH NAME
 .PP
@@ -152,7 +152,7 @@ Place the list in choosen placement
 \f[B]:list-split\f[R] \f[I]row|column\f[R]
 Split the timelines in window by row or column
 .TP
-\f[B]:move-pane\f[R] \f[I]left|right|up|down|home|end\f[R]
+\f[B]:move-window\f[R] \f[I]left|right|up|down|home|end\f[R]
 Moves the window in choosen direction
 .TP
 \f[B]:mv\f[R] \f[I]l|r|u|d|h|e\f[R]
@@ -202,8 +202,8 @@ Search for users named <username>, e.g.\ :user rasmus.
 To narrow a search include the instance like this :user
 rasmus\[at]mastodon.acc.sunet.se
 .TP
-\f[B]:pane\f[R] \f[I]<int>\f[R]
-Switch window by index (zero indexed) e.g.\ :pane 0 for the left/top
+\f[B]:window\f[R] \f[I]<int>\f[R]
+Switch window by index (zero indexed) e.g.\ :window 0 for the left/top
 window
 .SH SEE ALSO
 .IP
