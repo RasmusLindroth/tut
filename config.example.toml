@@ -1,6 +1,4 @@
-package config
-
-var conftext = `# Configuration file for tut
+# Configuration file for tut
 
 [general]
 # You need to press yes in a confirmation dialog before favoriting, boosting,
@@ -1242,4 +1240,3 @@ hint="[Esc] when done"
 
 # default=["Esc"]
 special-keys=["Esc"]
-`
