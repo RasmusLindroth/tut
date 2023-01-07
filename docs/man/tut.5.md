@@ -27,16 +27,10 @@ What editor to use. TUT_USE_INTERNAL will use the editor that comes with tut. If
 
 ## confirmation
 You need to press yes in a confirmation dialog before favoriting, boosting, etc.  
-
-valid: true, false
-
 **confirmation**=*true*
 
 ## mouse-support
 Enable mouse support in tut.  
-
-valid: true, false
-
 **mouse-support**=*false*
 
 ## date-format
@@ -93,51 +87,30 @@ valid: mention, status, boost, follow, follow_request, favorite, poll, edit
 
 ## quote-reply
 Always include a quote of the message you\'re replying to.  
-
-valid: true, false
-
 **quote-reply**=*false*
 
 ## show-icons
 If you want to show icons in timelines.  
-
-valid: true, false
-
 **show-icons**=*true*
 
 ## short-hints
 If you only want to you the letter of keys instead of the full hint.  
-
-valid: true, false
-
 **short-hints**=*false*
 
 ## show-filter-phrase
 If you want to display the filter that filtered a toot.  
-
-valid: true, false
-
 **show-filter-phrase**=*true*
 
 ## show-help
 Display a message in the commandbar on how to access the help text.  
-
-valid: true, false
-
 **show-help**=*true*
 
 ## stick-to-top
 Always jump to the newest post. May ruin your reading experience.  
-
-valid: true, false
-
 **stick-to-top**=*false*
 
 ## show-boosted-user
 Display the username of the person being boosted insted of the person that boosted.  
-
-valid: true, false
-
 **show-boosted-user**=*false*
 
 ## terminal-title
@@ -152,9 +125,6 @@ valid: 0, 1, 2, 4
 
 ## redraw-ui
 If you don\'t want the whole UI to update, and only update the text content you can disable this. This will lead to some artifacts being left on the screen when emojis are present.  
-
-valid: true, false
-
 **redraw-ui**=*true*
 
 ## leader-key
@@ -213,23 +183,14 @@ A shortcut to give this timeline focus with your leader-key + this shortcut.
 
 ## hide-boosts
 Hide boosts in this timeline.  
-
-valid: true, false
-
 **hide-boosts**=*"false"*
 
 ## hide-replies
 Hide replies in this timeline.  
-
-valid: true, false
-
 **hide-replies**=*"false"*
 
 ## closed
 Don\'t open this timeline when you start tut. Use your keys or shortcut to open it.  
-
-valid: true, false
-
 **closed**=*"false"*
 
 ## on-creation-closed
@@ -280,23 +241,14 @@ Arguments to pass to the program.
 
 ## terminal
 If the program runs in the terminal set this to true.  
-
-valid: true, false
-
 **terminal**=*false*
 
 ## single
 If the program should be called multiple times when there is multiple files. If set to false all files will be passed as an argument, but not all programs support this.  
-
-valid: true, false
-
 **single**=*true*
 
 ## reverse
 If the files should be passed in reverse order. This will make some programs display the files in the correct order.  
-
-valid: true, false
-
 **reverse**=*false*
 
 # MEDIA.VIDEO
@@ -312,23 +264,14 @@ Arguments to pass to the program.
 
 ## terminal
 If the program runs in the terminal set this to true.  
-
-valid: true, false
-
 **terminal**=*false*
 
 ## single
 If the program should be called multiple times when there is multiple files. If set to false all files will be passed as an argument, but not all programs support this.  
-
-valid: true, false
-
 **single**=*true*
 
 ## reverse
 If the files should be passed in reverse order. This will make some programs display the files in the correct order.  
-
-valid: true, false
-
 **reverse**=*false*
 
 # MEDIA.AUDIO
@@ -344,23 +287,14 @@ Arguments to pass to the program.
 
 ## terminal
 If the program runs in the terminal set this to true.  
-
-valid: true, false
-
 **terminal**=*false*
 
 ## single
 If the program should be called multiple times when there is multiple files. If set to false all files will be passed as an argument, but not all programs support this.  
-
-valid: true, false
-
 **single**=*true*
 
 ## reverse
 If the files should be passed in reverse order. This will make some programs display the files in the correct order.  
-
-valid: true, false
-
 **reverse**=*false*
 
 # MEDIA.LINK
@@ -376,9 +310,6 @@ Arguments to pass to the program.
 
 ## terminal
 If the program runs in the terminal set this to true.  
-
-valid: true, false
-
 **terminal**=*false*
 
 # DESKTOP-NOTIFICATION
@@ -386,51 +317,30 @@ This section is \[desktop-notification\] in your configuration file
 
 ## followers
 Enable notifications when someone follows you.  
-
-valid: true, false
-
 **followers**=*false*
 
 ## favorite
 Enable notifications when one of your toots gets favorited.  
-
-valid: true, false
-
 **favorite**=*false*
 
 ## mention
 Enable notifications  when someone mentions you.  
-
-valid: true, false
-
 **mention**=*false*
 
 ## update
 Enable notifications when a post you have interacted with gets edited.  
-
-valid: true, false
-
 **update**=*false*
 
 ## boost
 Enable notifications when one of your toots gets boosted.  
-
-valid: true, false
-
 **boost**=*false*
 
 ## poll
 Enable notifications when a poll ends.  
-
-valid: true, false
-
 **poll**=*false*
 
 ## posts
 Enable notifications for new posts.  
-
-valid: true, false
-
 **posts**=*false*
 
 # OPEN-CUSTOM
@@ -449,9 +359,6 @@ Arguments to pass to the program.
 
 ## terminal
 If the program runs in the terminal set this to true.  
-
-valid: true, false
-
 **terminal**=*false*
 
 ## hint
@@ -486,9 +393,6 @@ Arguments to pass to the program.
 
 ## terminal
 If the program runs in the terminal set this to true.  
-
-valid: true, false
-
 **terminal**=*false*
 
 # STYLE

@@ -11,12 +11,10 @@ editor="TUT_USE_INTERNAL"
 
 # You need to press yes in a confirmation dialog before favoriting, boosting,
 # etc.
-# valid: true, false
 # default=true
 confirmation=true
 
 # Enable mouse support in tut.
-# valid: true, false
 # default=false
 mouse-support=false
 
@@ -70,38 +68,31 @@ content-proportion=2
 notifications-to-hide=[]
 
 # Always include a quote of the message you're replying to.
-# valid: true, false
 # default=false
 quote-reply=false
 
 # If you want to show icons in timelines.
-# valid: true, false
 # default=true
 show-icons=true
 
 # If you only want to you the letter of keys instead of the full hint.
-# valid: true, false
 # default=false
 short-hints=false
 
 # If you want to display the filter that filtered a toot.
-# valid: true, false
 # default=true
 show-filter-phrase=true
 
 # Display a message in the commandbar on how to access the help text.
-# valid: true, false
 # default=true
 show-help=true
 
 # Always jump to the newest post. May ruin your reading experience.
-# valid: true, false
 # default=false
 stick-to-top=false
 
 # Display the username of the person being boosted insted of the person that
 # boosted.
-# valid: true, false
 # default=false
 show-boosted-user=false
 
@@ -116,7 +107,6 @@ terminal-title=0
 # If you don't want the whole UI to update, and only update the text content you
 # can disable this. This will lead to some artifacts being left on the screen
 # when emojis are present.
-# valid: true, false
 # default=true
 redraw-ui=true
 
@@ -177,18 +167,15 @@ leader-timeout=1000
 # shortcut=""
 
 # Hide boosts in this timeline.
-# valid: true, false
 # default="false"
 # hide-boosts="false"
 
 # Hide replies in this timeline.
-# valid: true, false
 # default="false"
 # hide-replies="false"
 
 # Don't open this timeline when you start tut. Use your keys or shortcut to open
 # it.
-# valid: true, false
 # default="false"
 # closed="false"
 
@@ -234,20 +221,17 @@ program="TUT_OS_DEFAULT"
 args=""
 
 # If the program runs in the terminal set this to true.
-# valid: true, false
 # default=false
 terminal=false
 
 # If the program should be called multiple times when there is multiple files.
 # If set to false all files will be passed as an argument, but not all programs
 # support this.
-# valid: true, false
 # default=true
 single=true
 
 # If the files should be passed in reverse order. This will make some programs
 # display the files in the correct order.
-# valid: true, false
 # default=false
 reverse=false
 
@@ -262,20 +246,17 @@ program="TUT_OS_DEFAULT"
 args=""
 
 # If the program runs in the terminal set this to true.
-# valid: true, false
 # default=false
 terminal=false
 
 # If the program should be called multiple times when there is multiple files.
 # If set to false all files will be passed as an argument, but not all programs
 # support this.
-# valid: true, false
 # default=true
 single=true
 
 # If the files should be passed in reverse order. This will make some programs
 # display the files in the correct order.
-# valid: true, false
 # default=false
 reverse=false
 
@@ -290,20 +271,17 @@ program="TUT_OS_DEFAULT"
 args=""
 
 # If the program runs in the terminal set this to true.
-# valid: true, false
 # default=false
 terminal=false
 
 # If the program should be called multiple times when there is multiple files.
 # If set to false all files will be passed as an argument, but not all programs
 # support this.
-# valid: true, false
 # default=true
 single=true
 
 # If the files should be passed in reverse order. This will make some programs
 # display the files in the correct order.
-# valid: true, false
 # default=false
 reverse=false
 
@@ -318,43 +296,35 @@ program="TUT_OS_DEFAULT"
 args=""
 
 # If the program runs in the terminal set this to true.
-# valid: true, false
 # default=false
 terminal=false
 
 [desktop-notification]
 # Enable notifications when someone follows you.
-# valid: true, false
 # default=false
 followers=false
 
 # Enable notifications when one of your toots gets favorited.
-# valid: true, false
 # default=false
 favorite=false
 
 # Enable notifications  when someone mentions you.
-# valid: true, false
 # default=false
 mention=false
 
 # Enable notifications when a post you have interacted with gets edited.
-# valid: true, false
 # default=false
 update=false
 
 # Enable notifications when one of your toots gets boosted.
-# valid: true, false
 # default=false
 boost=false
 
 # Enable notifications when a poll ends.
-# valid: true, false
 # default=false
 poll=false
 
 # Enable notifications for new posts.
-# valid: true, false
 # default=false
 posts=false
 
@@ -369,7 +339,6 @@ posts=false
 # args=""
 
 # If the program runs in the terminal set this to true.
-# valid: true, false
 # default=false
 # terminal=false
 
@@ -406,7 +375,6 @@ posts=false
 # args=""
 
 # If the program runs in the terminal set this to true.
-# valid: true, false
 # default=false
 # terminal=false
 
