@@ -11,6 +11,7 @@ import (
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/adrg/xdg"
 	"github.com/microcosm-cc/bluemonday"
+	"github.com/rivo/tview"
 	"golang.org/x/net/html"
 )
 
@@ -53,9 +54,9 @@ type URL struct {
 }
 
 func CleanHTML(content string) (string, []URL) {
-	stripped := bluemonday.NewPolicy().AllowElements("p", "br", "li", "ul").AllowAttrs("href", "class").OnElements("a").Sanitize(content)
+	stripped := bluemonday.NewPolicy().AllowElements("p", "br", "li", "ul", "ol").AllowAttrs("href", "class").OnElements("a").Sanitize(content)
 	urls := getURLs(stripped)
-	stripped = bluemonday.NewPolicy().AllowElements("p", "br", "li", "ul").Sanitize(content)
+	stripped = bluemonday.NewPolicy().AllowElements("p", "br", "li", "ul", "ol").Sanitize(content)
 	stripped = strings.ReplaceAll(stripped, "<br>", "\n")
 	stripped = strings.ReplaceAll(stripped, "<br/>", "\n")
 	stripped = strings.ReplaceAll(stripped, "<p>", "")
@@ -64,8 +65,34 @@ func CleanHTML(content string) (string, []URL) {
 	stripped = strings.ReplaceAll(stripped, "</li>", "\n")
 	stripped = strings.ReplaceAll(stripped, "<ul>", "")
 	stripped = strings.ReplaceAll(stripped, "</ul>", "\n")
+	stripped = strings.ReplaceAll(stripped, "<ol>", "")
+	stripped = strings.ReplaceAll(stripped, "</ol>", "\n")
 	stripped = strings.TrimSpace(stripped)
 	stripped = html.UnescapeString(stripped)
+	return stripped, urls
+}
+
+func CleanHTMLStyled(content string) (string, []URL) {
+	stripped := bluemonday.NewPolicy().AllowElements("p", "br", "li", "ul", "ol", "strong", "em").AllowAttrs("href", "class").OnElements("a").Sanitize(content)
+	urls := getURLs(stripped)
+	stripped = bluemonday.NewPolicy().AllowElements("p", "br", "li", "ul", "ol", "strong", "em").Sanitize(content)
+	stripped = strings.ReplaceAll(stripped, "<br>", "\n")
+	stripped = strings.ReplaceAll(stripped, "<br/>", "\n")
+	stripped = strings.ReplaceAll(stripped, "<p>", "")
+	stripped = strings.ReplaceAll(stripped, "</p>", "\n\n")
+	stripped = strings.ReplaceAll(stripped, "<li>", "* ")
+	stripped = strings.ReplaceAll(stripped, "</li>", "\n")
+	stripped = strings.ReplaceAll(stripped, "<ul>", "")
+	stripped = strings.ReplaceAll(stripped, "</ul>", "\n")
+	stripped = strings.ReplaceAll(stripped, "<ol>", "")
+	stripped = strings.ReplaceAll(stripped, "</ol>", "\n")
+	stripped = html.UnescapeString(stripped)
+	stripped = tview.Escape(stripped)
+	stripped = strings.ReplaceAll(stripped, "<strong>", TextFlags("b"))
+	stripped = strings.ReplaceAll(stripped, "</strong>", TextFlags("-"))
+	stripped = strings.ReplaceAll(stripped, "<em>", TextFlags("i"))
+	stripped = strings.ReplaceAll(stripped, "</em>", TextFlags("-"))
+	stripped = strings.TrimSpace(stripped)
 	return stripped, urls
 }
 
@@ -212,4 +239,8 @@ func StatusOrReblog(s *mastodon.Status) *mastodon.Status {
 
 func SetTerminalTitle(s string) {
 	fmt.Printf("\033]0;%s\a", s)
+}
+
+func TextFlags(s string) string {
+	return fmt.Sprintf("[::%s]", s)
 }

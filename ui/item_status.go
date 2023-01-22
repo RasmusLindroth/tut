@@ -104,8 +104,7 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 		status = status.Reblog
 	}
 
-	strippedContent, _ = util.CleanHTML(status.Content)
-	strippedContent = tview.Escape(strippedContent)
+	strippedContent, _ = util.CleanHTMLStyled(status.Content)
 
 	width := 0
 	if main != nil {
@@ -162,8 +161,7 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 	}
 
 	if status.Sensitive {
-		strippedSpoiler, _ = util.CleanHTML(status.SpoilerText)
-		strippedSpoiler = tview.Escape(strippedSpoiler)
+		strippedSpoiler, _ = util.CleanHTMLStyled(status.SpoilerText)
 	}
 
 	toot.CWText = strippedSpoiler
