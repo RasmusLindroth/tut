@@ -53,13 +53,17 @@ type URL struct {
 }
 
 func CleanHTML(content string) (string, []URL) {
-	stripped := bluemonday.NewPolicy().AllowElements("p", "br").AllowAttrs("href", "class").OnElements("a").Sanitize(content)
+	stripped := bluemonday.NewPolicy().AllowElements("p", "br", "li", "ul").AllowAttrs("href", "class").OnElements("a").Sanitize(content)
 	urls := getURLs(stripped)
-	stripped = bluemonday.NewPolicy().AllowElements("p", "br").Sanitize(content)
+	stripped = bluemonday.NewPolicy().AllowElements("p", "br", "li", "ul").Sanitize(content)
 	stripped = strings.ReplaceAll(stripped, "<br>", "\n")
 	stripped = strings.ReplaceAll(stripped, "<br/>", "\n")
 	stripped = strings.ReplaceAll(stripped, "<p>", "")
 	stripped = strings.ReplaceAll(stripped, "</p>", "\n\n")
+	stripped = strings.ReplaceAll(stripped, "<li>", "* ")
+	stripped = strings.ReplaceAll(stripped, "</li>", "\n")
+	stripped = strings.ReplaceAll(stripped, "<ul>", "")
+	stripped = strings.ReplaceAll(stripped, "</ul>", "\n")
 	stripped = strings.TrimSpace(stripped)
 	stripped = html.UnescapeString(stripped)
 	return stripped, urls
