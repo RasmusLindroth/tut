@@ -108,8 +108,8 @@ List all your bookmarks
 \f[B]:clear-notifications\f[R]
 Remove all of your notifications
 .TP
-\f[B]:close-window\f[R]
-Closes the current window, including all the timelines in said window
+\f[B]:close-pane\f[R]
+Closes the current pane, including all the timelines in said pane
 .TP
 \f[B]:compose\f[R]
 Compose a new toot
@@ -150,12 +150,15 @@ Show a list of your lists
 Place the list in choosen placement
 .TP
 \f[B]:list-split\f[R] \f[I]row|column\f[R]
-Split the timelines in window by row or column
+Split the timelines by row or column
 .TP
-\f[B]:move-window\f[R] \f[I]left|right|up|down|home|end\f[R]
-Moves the window in choosen direction
+\f[B]:login\f[R]
+Login to one more account
 .TP
-\f[B]:mv\f[R] \f[I]l|r|u|d|h|e\f[R]
+\f[B]:move-pane\f[R] \f[I]left|right|up|down|home|end\f[R]
+Moves the pane in choosen direction
+.TP
+\f[B]:mp\f[R] \f[I]l|r|u|d|h|e\f[R]
 Shorter form of former command
 .TP
 \f[B]:muting\f[R]
@@ -164,15 +167,21 @@ Lists users that you\[aq]ve muted
 \f[B]:newer\f[R]
 Force load newer toots in current timeline
 .TP
+\f[B]:next-acct\f[R]
+Go to the next account if you\[aq]re logged in to multiple
+.TP
 \f[B]:preferences\f[R]
 Update your profile and some other settings
+.TP
+\f[B]:prev-acct\f[R]
+Go to the prev account if you\[aq]re logged in to multiple
 .TP
 \f[B]:profile\f[R]
 Go to your profile
 .TP
 \f[B]:proportions\f[R] \f[I][int] [int]\f[R]
-Sets the proportions of the windows and the content.
-The first integer is your windows and the other for content,
+Sets the proportions of the panes and the content.
+The first integer is your panes and the other for content,
 e.g.\ :proportions 1 3
 .TP
 \f[B]:refetch\f[R]
@@ -202,9 +211,8 @@ Search for users named <username>, e.g.\ :user rasmus.
 To narrow a search include the instance like this :user
 rasmus\[at]mastodon.acc.sunet.se
 .TP
-\f[B]:window\f[R] \f[I]<int>\f[R]
-Switch window by index (zero indexed) e.g.\ :window 0 for the left/top
-window
+\f[B]:pane\f[R] \f[I]<int>\f[R]
+Switch pane by index (zero indexed) e.g.\ :pane 0 for the left/top pane
 .SH SEE ALSO
 .IP
 .nf

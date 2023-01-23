@@ -50,8 +50,8 @@ Here's a list of supported commands.
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:clear-notifications{{ Flags "-" }}{{ Color .Style.Text }}
     Remove all of your notifications
 
-{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:close-window{{ Flags "-" }}{{ Color .Style.Text }}
-    Closes the current window, including all the timelines in said window
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:close-pane{{ Flags "-" }}{{ Color .Style.Text }}
+    Closes the current pane, including all the timelines in said pane
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:compose{{ Flags "-" }}{{ Color .Style.Text }}
     Compose a new toot
@@ -90,12 +90,15 @@ Here's a list of supported commands.
     Place the list in choosen placement
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:list-split{{ Flags "-" }}{{ Color .Style.Text }} row|column
-    Split the timelines in window by row or column
+    Split the timelines by row or column
 
-{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:move-window{{ Flags "-" }}{{ Color .Style.Text }} left|right|up|down|home|end
-    Moves the window in choosen direction
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:login{{ Flags "-" }}{{ Color .Style.Text }}
+    Login to one more account
 
-{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:mv{{ Flags "-" }}{{ Color .Style.Text }} l|r|u|d|h|e
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:move-pane{{ Flags "-" }}{{ Color .Style.Text }} left|right|up|down|home|end
+    Moves the pane in choosen direction
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:mp{{ Flags "-" }}{{ Color .Style.Text }} l|r|u|d|h|e
     Shorter form of former command
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:muting{{ Flags "-" }}{{ Color .Style.Text }}
@@ -104,14 +107,20 @@ Here's a list of supported commands.
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:newer{{ Flags "-" }}{{ Color .Style.Text }}
     Force load newer toots in current timeline
 
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:next-acct{{ Flags "-" }}{{ Color .Style.Text }}
+    Go to the next account if you're logged in to multiple
+
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:preferences{{ Flags "-" }}{{ Color .Style.Text }}
     Update your profile and some other settings
+
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:prev-acct{{ Flags "-" }}{{ Color .Style.Text }}
+    Go to the prev account if you're logged in to multiple
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:profile{{ Flags "-" }}{{ Color .Style.Text }}
     Go to your profile
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:proportions{{ Flags "-" }}{{ Color .Style.Text }} [int] [int]
-    Sets the proportions of the windows and the content. The first integer is your windows and the other for content, e.g. :proportions 1 3
+    Sets the proportions of the panes and the content. The first integer is your panes and the other for content, e.g. :proportions 1 3
 
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:refetch{{ Flags "-" }}{{ Color .Style.Text }}
     Refetches the current item that you're viewing. Can be used to update poll results.
@@ -134,8 +143,8 @@ Here's a list of supported commands.
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:user{{ Flags "-" }}{{ Color .Style.Text }} <username>
     Search for users named <username>, e.g. :user rasmus. To narrow a search include the instance like this :user rasmus@mastodon.acc.sunet.se
 
-{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:window{{ Flags "-" }}{{ Color .Style.Text }} <int>
-    Switch window by index (zero indexed) e.g. :window 0 for the left/top window
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:pane{{ Flags "-" }}{{ Color .Style.Text }} <int>
+    Switch pane by index (zero indexed) e.g. :pane 0 for the left/top pane
 
 {{ Color .Style.Text }}{{ Flags "b" }}Configuration{{ Flags "-" }}
 

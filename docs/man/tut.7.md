@@ -53,8 +53,8 @@ To change the keys look at tut(5) under the *INPUT* section.
 **:clear-notifications**
 : Remove all of your notifications
 
-**:close-window**
-: Closes the current window, including all the timelines in said window
+**:close-pane**
+: Closes the current pane, including all the timelines in said pane
 
 **:compose**
 : Compose a new toot
@@ -93,12 +93,15 @@ To change the keys look at tut(5) under the *INPUT* section.
 : Place the list in choosen placement
 
 **:list-split** *row|column*
-: Split the timelines in window by row or column
+: Split the timelines by row or column
 
-**:move-window** *left|right|up|down|home|end*
-: Moves the window in choosen direction
+**:login**
+: Login to one more account
 
-**:mv** *l|r|u|d|h|e*
+**:move-pane** *left|right|up|down|home|end*
+: Moves the pane in choosen direction
+
+**:mp** *l|r|u|d|h|e*
 : Shorter form of former command
 
 **:muting**
@@ -107,14 +110,20 @@ To change the keys look at tut(5) under the *INPUT* section.
 **:newer**
 : Force load newer toots in current timeline
 
+**:next-acct**
+: Go to the next account if you\'re logged in to multiple
+
 **:preferences**
 : Update your profile and some other settings
+
+**:prev-acct**
+: Go to the prev account if you\'re logged in to multiple
 
 **:profile**
 : Go to your profile
 
 **:proportions** *\[int\] \[int\]*
-: Sets the proportions of the windows and the content. The first integer is your windows and the other for content, e.g. :proportions 1 3
+: Sets the proportions of the panes and the content. The first integer is your panes and the other for content, e.g. :proportions 1 3
 
 **:refetch**
 : Refetches the current item that you\'re viewing. Can be used to update poll results.
@@ -137,8 +146,8 @@ To change the keys look at tut(5) under the *INPUT* section.
 **:user** *\<username\>*
 : Search for users named \<username\>, e.g. :user rasmus. To narrow a search include the instance like this :user rasmus@mastodon.acc.sunet.se
 
-**:window** *\<int\>*
-: Switch window by index (zero indexed) e.g. :window 0 for the left/top window
+**:pane** *\<int\>*
+: Switch pane by index (zero indexed) e.g. :pane 0 for the left/top pane
 
 # SEE ALSO
     tut(1) - flags and commands

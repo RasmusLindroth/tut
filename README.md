@@ -47,7 +47,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:boosts` = Lists users that have boosted the toot
 * `:bookmarks` = List all your bookmarks
 * `:clear-notifications` = Remove all of your notifications
-* `:close-window` = Closes the current window, including all the timelines in said window
+* `:close-pane` = Closes the current pane, including all the timelines in said pane
 * `:compose` = Compose a new toot
 * `:edit` = Edit one of your toots
 * `:favorited` = Lists toots  you&#39;ve favorited
@@ -60,14 +60,17 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:history` = Show edits of a toot
 * `:lists` = Show a list of your lists
 * `:list-placement top|right|bottom|left` = Place the list in choosen placement
-* `:list-split row|column` = Split the timelines in window by row or column
-* `:move-window left|right|up|down|home|end` = Moves the window in choosen direction
-* `:mv l|r|u|d|h|e` = Shorter form of former command
+* `:list-split row|column` = Split the timelines by row or column
+* `:login` = Login to one more account
+* `:move-pane left|right|up|down|home|end` = Moves the pane in choosen direction
+* `:mp l|r|u|d|h|e` = Shorter form of former command
 * `:muting` = Lists users that you&#39;ve muted
 * `:newer` = Force load newer toots in current timeline
+* `:next-acct` = Go to the next account if you&#39;re logged in to multiple
 * `:preferences` = Update your profile and some other settings
+* `:prev-acct` = Go to the prev account if you&#39;re logged in to multiple
 * `:profile` = Go to your profile
-* `:proportions [int] [int]` = Sets the proportions of the windows and the content. The first integer is your windows and the other for content, e.g. :proportions 1 3
+* `:proportions [int] [int]` = Sets the proportions of the panes and the content. The first integer is your panes and the other for content, e.g. :proportions 1 3
 * `:refetch` = Refetches the current item that you&#39;re viewing. Can be used to update poll results.
 * `:saved` = Alias for bookmarks
 * `:stick-to-top` = Toggle the stick-to-top setting that always shows the latest toot in all timelines
@@ -75,7 +78,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:tags` = List of tags that you&#39;re following
 * `:unfollow-tag <tag>` = Unfollow the hashtag named &lt;tag&gt;, e.g. :unfollow-tag tut
 * `:user <username>` = Search for users named &lt;username&gt;, e.g. :user rasmus. To narrow a search include the instance like this :user rasmus@mastodon.acc.sunet.se
-* `:window <int>` = Switch window by index (zero indexed) e.g. :window 0 for the left/top window
+* `:pane <int>` = Switch pane by index (zero indexed) e.g. :pane 0 for the left/top pane
 
 Keys without description in tut
 * `c` = Compose a new toot
