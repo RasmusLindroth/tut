@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/RasmusLindroth/go-mastodon"
@@ -352,6 +353,17 @@ func (tv *TutView) ClearNotificationsCommand() {
 			if f.Data.Type() == config.Notifications {
 				f.Data.Clear()
 			}
+		}
+	}
+}
+
+func (tv *TutView) ClearTemp() {
+	if !tv.tut.Config.Media.DeleteTmpFiles {
+		for _, t := range TutViews.Views {
+			for _, f := range t.FileList {
+				os.Remove(f)
+			}
+			t.FileList = []string{}
 		}
 	}
 }

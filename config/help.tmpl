@@ -50,6 +50,9 @@ Here's a list of supported commands.
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:clear-notifications{{ Flags "-" }}{{ Color .Style.Text }}
     Remove all of your notifications
 
+{{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:clear-temp{{ Flags "-" }}{{ Color .Style.Text }}
+    Remove all of your media files that have been downloaded. Only needed if you have set delete-temp-files to false under [media[] in your config.
+
 {{ Color .Style.TextSpecial2 }}{{ Flags "b" }}:close-pane{{ Flags "-" }}{{ Color .Style.Text }}
     Closes the current pane, including all the timelines in said pane
 

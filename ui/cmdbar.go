@@ -112,6 +112,9 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 	case ":clear-notifications":
 		c.tutView.ClearNotificationsCommand()
 		c.Back()
+	case ":clear-temp":
+		c.tutView.ClearTemp()
+		c.Back()
 	case ":close-pane":
 		c.tutView.ClosePaneCommand()
 		c.Back()
@@ -291,7 +294,7 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 
 func (c *CmdBar) Autocomplete(curr string) []string {
 	var entries []string
-	words := strings.Split(":blocking,:boosts,:bookmarks,:clear-notifications,:close-pane,:compose,:favorites,:favorited,:follow-tag,:followers,:following,:help,:h,:history,:move-pane,:next-acct,:lists,:list-placement,:list-split,:login,:muting,:newer,:preferences,:prev-acct,:profile,:proportions,:refetch,:requests,:saved,:stick-to-top,:tag,:timeline,:tl,:unfollow-tag,:user,:pane,:quit,:q", ",")
+	words := strings.Split(":blocking,:boosts,:bookmarks,:clear-notifications,:clear-temp,:close-pane,:compose,:favorites,:favorited,:follow-tag,:followers,:following,:help,:h,:history,:move-pane,:next-acct,:lists,:list-placement,:list-split,:login,:muting,:newer,:preferences,:prev-acct,:profile,:proportions,:refetch,:requests,:saved,:stick-to-top,:tag,:timeline,:tl,:unfollow-tag,:user,:pane,:quit,:q", ",")
 	if curr == "" {
 		return entries
 	}

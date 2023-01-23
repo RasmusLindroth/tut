@@ -53,6 +53,9 @@ To change the keys look at tut(5) under the *INPUT* section.
 **:clear-notifications**
 : Remove all of your notifications
 
+**:clear-temp**
+: Remove all of your media files that have been downloaded. Only needed if you have set delete-temp-files to false under \[media\] in your config.
+
 **:close-pane**
 : Closes the current pane, including all the timelines in said pane
 

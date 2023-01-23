@@ -47,6 +47,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:boosts` = Lists users that have boosted the toot
 * `:bookmarks` = List all your bookmarks
 * `:clear-notifications` = Remove all of your notifications
+* `:clear-temp` = Remove all of your media files that have been downloaded. Only needed if you have set delete-temp-files to false under [media] in your config.
 * `:close-pane` = Closes the current pane, including all the timelines in said pane
 * `:compose` = Compose a new toot
 * `:edit` = Edit one of your toots

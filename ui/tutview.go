@@ -76,13 +76,7 @@ type TutView struct {
 }
 
 func (tv *TutView) CleanExit(code int) {
-	if !tv.tut.Config.Media.DeleteTmpFiles {
-		for _, t := range TutViews.Views {
-			for _, f := range t.FileList {
-				os.Remove(f)
-			}
-		}
-	}
+	tv.ClearTemp()
 	os.Exit(code)
 }
 
