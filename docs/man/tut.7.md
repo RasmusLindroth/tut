@@ -1,6 +1,6 @@
 % tut(7) tut 2.0.0
 % Rasmus Lindroth
-% 2023-01-07
+% 2023-01-23
 
 # NAME
 tut - keys and commands inside of tut(1)

@@ -114,7 +114,7 @@ func (lv *LinkView) Open() {
 			NewUserFeed(lv.tutView, u, config.NewTimeline(config.Timeline{
 				FeedType: config.User,
 			}),
-			))
+			), false)
 		lv.tutView.FocusMainNoHistory()
 		return
 	}
@@ -124,7 +124,7 @@ func (lv *LinkView) Open() {
 			NewTagFeed(lv.tutView, config.NewTimeline(config.Timeline{
 				FeedType:  config.Tag,
 				Subaction: tags[tIndex].Name,
-			})))
+			})), false)
 		lv.tutView.FocusMainNoHistory()
 		return
 	}

@@ -36,6 +36,8 @@ type GeneralTOML struct {
 	StickToTop          *bool               `toml:"stick-to-top"`
 	NotificationsToHide *[]string           `toml:"notifications-to-hide"`
 	ShowBoostedUser     *bool               `toml:"show-boosted-user"`
+	DynamicTimelineName *bool               `toml:"dynamic-timeline-name"`
+	CommandsInNewPane   *bool               `toml:"commands-in-new-pane"`
 }
 
 type TimelineTOML struct {

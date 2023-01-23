@@ -93,10 +93,75 @@ func NewTimeline(tv *TutView, update chan bool) *Timeline {
 	return tl
 }
 
-func (tl *Timeline) AddFeed(f *Feed) {
-	fh := tl.Feeds[tl.FeedFocusIndex]
-	fh.Feeds = append(fh.Feeds, f)
-	fh.FeedIndex = fh.FeedIndex + 1
+func (tl *Timeline) AddFeed(f *Feed, newPane bool) {
+	if f.Timeline.Name == "" && tl.tutView.tut.Config.General.DynamicTimelineName {
+		name := f.Data.Name()
+		switch f.Timeline.FeedType {
+		case config.Favorited:
+			f.Timeline.Name = "Favorited"
+		case config.Notifications:
+			f.Timeline.Name = "Notifications"
+		case config.Mentions:
+			f.Timeline.Name = "Mentions"
+		case config.Tag:
+			parts := strings.Split(name, " ")
+			for i, p := range parts {
+				parts[i] = fmt.Sprintf("#%s", p)
+			}
+			f.Timeline.Name = strings.Join(parts, " ")
+		case config.Thread:
+			f.Timeline.Name = "Thread"
+		case config.History:
+			f.Timeline.Name = "History"
+		case config.TimelineFederated:
+			f.Timeline.Name = "Federated"
+		case config.TimelineHome:
+			f.Timeline.Name = "Home"
+		case config.TimelineHomeSpecial:
+			f.Timeline.Name = "Special"
+		case config.TimelineLocal:
+			f.Timeline.Name = "Local"
+		case config.Saved:
+			f.Timeline.Name = "Bookmarked"
+		case config.User:
+			f.Timeline.Name = fmt.Sprintf("@%s", name)
+		case config.UserList:
+			f.Timeline.Name = fmt.Sprintf("Search %s", name)
+		case config.Conversations:
+			f.Timeline.Name = "Direct"
+		case config.Lists:
+			f.Timeline.Name = "Lists"
+		case config.List:
+			f.Timeline.Name = fmt.Sprintf("List %s", name)
+		case config.Boosts:
+			f.Timeline.Name = "Boosts"
+		case config.Favorites:
+			f.Timeline.Name = "Favorites"
+		case config.Followers:
+			f.Timeline.Name = "Followers"
+		case config.Following:
+			f.Timeline.Name = "Following"
+		case config.FollowRequests:
+			f.Timeline.Name = "Follow requests"
+		case config.Blocking:
+			f.Timeline.Name = "Blocking"
+		case config.ListUsersAdd:
+			f.Timeline.Name = fmt.Sprintf("Add users to %s", name)
+		case config.ListUsersIn:
+			f.Timeline.Name = fmt.Sprintf("Delete users from %s", name)
+		}
+	}
+
+	if newPane {
+		tl.Feeds = append(tl.Feeds, &FeedHolder{
+			Feeds: []*Feed{f},
+		})
+		tl.tutView.FocusFeed(len(tl.Feeds)-1, nil)
+	} else {
+		fh := tl.Feeds[tl.FeedFocusIndex]
+		fh.Feeds = append(fh.Feeds, f)
+		fh.FeedIndex = fh.FeedIndex + 1
+	}
 	tl.tutView.Shared.Top.SetText(tl.GetTitle())
 	tl.update <- true
 }
@@ -261,11 +326,11 @@ func (tl *Timeline) GetTitle() string {
 		for i, p := range parts {
 			parts[i] = fmt.Sprintf("#%s", p)
 		}
-		ct = fmt.Sprintf("tag %s", strings.Join(parts, " "))
+		ct = strings.Join(parts, " ")
 	case config.Thread:
-		ct = "thread feed"
+		ct = "thread"
 	case config.History:
-		ct = "history feed"
+		ct = "history"
 	case config.TimelineFederated:
 		ct = "federated"
 	case config.TimelineHome:
@@ -275,7 +340,7 @@ func (tl *Timeline) GetTitle() string {
 	case config.TimelineLocal:
 		ct = "local"
 	case config.Saved:
-		ct = "saved/bookmarked toots"
+		ct = "bookmarked"
 	case config.User:
 		ct = fmt.Sprintf("user %s", name)
 	case config.UserList:
@@ -285,7 +350,7 @@ func (tl *Timeline) GetTitle() string {
 	case config.Lists:
 		ct = "lists"
 	case config.List:
-		ct = fmt.Sprintf("list named %s", name)
+		ct = fmt.Sprintf("list %s", name)
 	case config.Boosts:
 		ct = "boosts"
 	case config.Favorites:

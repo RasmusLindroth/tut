@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "tut" "5" "2023-01-07" "tut 2.0.0" ""
+.TH "tut" "5" "2023-01-23" "tut 2.0.0" ""
 .hy
 .SH NAME
 .PP
@@ -203,6 +203,21 @@ that boosted.
 .P
 .PD
 \f[B]show-boosted-user\f[R]=\f[I]false\f[R]
+.SS commands-in-new-pane
+.PP
+Open a new pane when you run a command like :timeline home.
+.PD 0
+.P
+.PD
+\f[B]commands-in-new-pane\f[R]=\f[I]true\f[R]
+.SS dynamic-timeline-name
+.PP
+Set a default name for the timeline if the name is empty.
+So if you run :tag linux the title of the pane will be set to #linux
+.PD 0
+.P
+.PD
+\f[B]dynamic-timeline-name\f[R]=\f[I]true\f[R]
 .SS terminal-title
 .PP
 0 = No terminal title

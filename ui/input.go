@@ -235,14 +235,9 @@ func (tv *TutView) matchedTimeline(tl *config.Timeline) {
 	nf := CreateFeed(tv, tl)
 	switch tl.OnCreationClosed {
 	case config.TimelineCreationClosedCurrentPane:
-		tv.Timeline.AddFeed(nf)
+		tv.Timeline.AddFeed(nf, false)
 	case config.TimelineCreationClosedNewPane:
-		tv.Timeline.Feeds = append(tv.Timeline.Feeds, &FeedHolder{
-			Feeds: []*Feed{nf},
-		})
-		tv.FocusFeed(len(tv.Timeline.Feeds)-1, nil)
-		tv.Shared.Top.SetText(tv.Timeline.GetTitle())
-		tv.Timeline.update <- true
+		tv.Timeline.AddFeed(nf, true)
 	}
 }
 
@@ -556,7 +551,7 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 	if tv.tut.Config.Input.StatusThread.Match(event.Key(), event.Rune()) {
 		tv.Timeline.AddFeed(NewThreadFeed(tv, item, config.NewTimeline(config.Timeline{
 			FeedType: config.Thread,
-		})))
+		})), false)
 		return nil
 	}
 	if tv.tut.Config.Input.StatusUser.Match(event.Key(), event.Rune()) {
@@ -570,7 +565,7 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 		}
 		tv.Timeline.AddFeed(NewUserFeed(tv, user, config.NewTimeline(config.Timeline{
 			FeedType: config.User,
-		})))
+		})), false)
 		return nil
 	}
 	if tv.tut.Config.Input.StatusViewFocus.Match(event.Key(), event.Rune()) {
@@ -800,7 +795,7 @@ func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User, ut InputUser
 	if tv.tut.Config.Input.UserUser.Match(event.Key(), event.Rune()) {
 		tv.Timeline.AddFeed(NewUserFeed(tv, api.NewUserItem(user, true), config.NewTimeline(config.Timeline{
 			FeedType: config.User,
-		})))
+		})), false)
 		return nil
 	}
 	if tv.tut.Config.Input.UserViewFocus.Match(event.Key(), event.Rune()) {
@@ -814,7 +809,7 @@ func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User, ut InputUser
 	if tv.tut.Config.Input.GlobalEnter.Match(event.Key(), event.Rune()) {
 		tv.Timeline.AddFeed(NewUserFeed(tv, api.NewUserItem(user, true), config.NewTimeline(config.Timeline{
 			FeedType: config.User,
-		})))
+		})), false)
 		return nil
 	}
 	return event
@@ -825,19 +820,19 @@ func (tv *TutView) InputList(event *tcell.EventKey, list *mastodon.List) *tcell.
 		tv.tut.Config.Input.GlobalEnter.Match(event.Key(), event.Rune()) {
 		tv.Timeline.AddFeed(NewListFeed(tv, list, config.NewTimeline(config.Timeline{
 			FeedType: config.List,
-		})))
+		})), false)
 		return nil
 	}
 	if tv.tut.Config.Input.ListUserList.Match(event.Key(), event.Rune()) {
 		tv.Timeline.AddFeed(NewUsersInListFeed(tv, list, config.NewTimeline(config.Timeline{
 			FeedType: config.ListUsersIn,
-		})))
+		})), false)
 		return nil
 	}
 	if tv.tut.Config.Input.ListUserAdd.Match(event.Key(), event.Rune()) {
 		tv.Timeline.AddFeed(NewUsersAddListFeed(tv, list, config.NewTimeline(config.Timeline{
 			FeedType: config.ListUsersAdd,
-		})))
+		})), false)
 		return nil
 	}
 	return event
@@ -849,7 +844,7 @@ func (tv *TutView) InputTag(event *tcell.EventKey, tag *mastodon.Tag) *tcell.Eve
 		tv.Timeline.AddFeed(NewTagFeed(tv, config.NewTimeline(config.Timeline{
 			FeedType:  config.Tag,
 			Subaction: tag.Name,
-		})))
+		})), false)
 		return nil
 	}
 	if tv.tut.Config.Input.TagFollow.Match(event.Key(), event.Rune()) {

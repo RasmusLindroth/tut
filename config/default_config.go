@@ -96,6 +96,15 @@ stick-to-top=false
 # default=false
 show-boosted-user=false
 
+# Open a new pane when you run a command like :timeline home.
+# default=true
+commands-in-new-pane=true
+
+# Set a default name for the timeline if the name is empty. So if you run :tag
+# linux the title of the pane will be set to #linux
+# default=true
+dynamic-timeline-name=true
+
 # 0 = No terminal title
 # 1 = Show title in terminal and top bar
 # 2 = Only show terminal title, and no top bar in tut

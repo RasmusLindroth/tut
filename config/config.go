@@ -196,6 +196,8 @@ type General struct {
 	StickToTop          bool
 	NotificationsToHide []NotificationToHide
 	ShowBoostedUser     bool
+	DynamicTimelineName bool
+	CommandsInNewPane   bool
 }
 
 type Style struct {
@@ -834,6 +836,8 @@ func parseGeneral(cfg GeneralTOML) General {
 	general.RedrawUI = NilDefaultBool(cfg.RedrawUI, def.RedrawUI)
 	general.StickToTop = NilDefaultBool(cfg.StickToTop, def.StickToTop)
 	general.ShowBoostedUser = NilDefaultBool(cfg.ShowBoostedUser, def.ShowBoostedUser)
+	general.DynamicTimelineName = NilDefaultBool(cfg.DynamicTimelineName, def.DynamicTimelineName)
+	general.CommandsInNewPane = NilDefaultBool(cfg.CommandsInNewPane, def.CommandsInNewPane)
 
 	lp := NilDefaultString(cfg.ListPlacement, def.ListPlacement)
 	switch lp {

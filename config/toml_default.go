@@ -34,6 +34,8 @@ var ConfigDefault = ConfigTOML{
 		RedrawUI:            bt,
 		StickToTop:          bf,
 		ShowBoostedUser:     bf,
+		DynamicTimelineName: bt,
+		CommandsInNewPane:   bt,
 		ListPlacement:       sp("left"),
 		ListSplit:           sp("row"),
 		ListProportion:      ip(1),

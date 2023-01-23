@@ -1,6 +1,6 @@
 % tut(5) tut 2.0.0
 % Rasmus Lindroth
-% 2023-01-07
+% 2023-01-23
 
 # NAME
 tut - configuration for tut(1)
@@ -112,6 +112,14 @@ Always jump to the newest post. May ruin your reading experience.
 ## show-boosted-user
 Display the username of the person being boosted insted of the person that boosted.  
 **show-boosted-user**=*false*
+
+## commands-in-new-pane
+Open a new pane when you run a command like :timeline home.  
+**commands-in-new-pane**=*true*
+
+## dynamic-timeline-name
+Set a default name for the timeline if the name is empty. So if you run :tag linux the title of the pane will be set to \#linux  
+**dynamic-timeline-name**=*true*
 
 ## terminal-title
 0 = No terminal title  

@@ -249,7 +249,7 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 			NewUserSearchFeed(c.tutView, config.NewTimeline(config.Timeline{
 				FeedType:  config.UserList,
 				Subaction: user,
-			})),
+			})), c.tutView.tut.Config.General.CommandsInNewPane,
 		)
 		c.Back()
 	case ":refetch":

@@ -34,7 +34,7 @@ func (tv *TutView) BlockingCommand() {
 	tv.Timeline.AddFeed(
 		NewBlocking(tv, config.NewTimeline(config.Timeline{
 			FeedType: config.Blocking,
-		})),
+		})), tv.tut.Config.General.CommandsInNewPane,
 	)
 }
 
@@ -42,41 +42,47 @@ func (tv *TutView) BookmarksCommand() {
 	tv.Timeline.AddFeed(
 		NewBookmarksFeed(tv, config.NewTimeline(config.Timeline{
 			FeedType: config.Saved,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 func (tv *TutView) FavoritedCommand() {
 	tv.Timeline.AddFeed(
 		NewFavoritedFeed(tv, config.NewTimeline(config.Timeline{
 			FeedType: config.Favorited,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) MutingCommand() {
 	tv.Timeline.AddFeed(
 		NewMuting(tv, config.NewTimeline(config.Timeline{
 			FeedType: config.Muting,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) FollowRequestsCommand() {
 	tv.Timeline.AddFeed(
 		NewFollowRequests(tv, config.NewTimeline(config.Timeline{
 			FeedType: config.FollowRequests,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) LocalCommand() {
 	tv.Timeline.AddFeed(
 		NewLocalFeed(tv, config.NewTimeline(config.Timeline{
 			FeedType: config.TimelineLocal,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) FederatedCommand() {
 	tv.Timeline.AddFeed(
 		NewFederatedFeed(tv, config.NewTimeline(config.Timeline{
 			FeedType: config.TimelineFederated,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) SpecialCommand(hideBoosts, hideReplies bool) {
@@ -85,42 +91,48 @@ func (tv *TutView) SpecialCommand(hideBoosts, hideReplies bool) {
 			FeedType:    config.TimelineHomeSpecial,
 			HideBoosts:  hideBoosts,
 			HideReplies: hideReplies,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) DirectCommand() {
 	tv.Timeline.AddFeed(
 		NewConversationsFeed(tv, config.NewTimeline(config.Timeline{
 			FeedType: config.Conversations,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) HomeCommand() {
 	tv.Timeline.AddFeed(
 		NewHomeFeed(tv, config.NewTimeline(config.Timeline{
 			FeedType: config.TimelineHome,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) NotificationsCommand() {
 	tv.Timeline.AddFeed(
 		NewNotificationFeed(tv, config.NewTimeline(config.Timeline{
 			FeedType: config.Notifications,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) MentionsCommand() {
 	tv.Timeline.AddFeed(
 		NewNotificatioMentionsFeed(tv, config.NewTimeline(config.Timeline{
 			FeedType: config.Mentions,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) ListsCommand() {
 	tv.Timeline.AddFeed(
 		NewListsFeed(tv, config.NewTimeline(config.Timeline{
 			FeedType: config.Lists,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) TagCommand(tag string) {
@@ -128,14 +140,16 @@ func (tv *TutView) TagCommand(tag string) {
 		NewTagFeed(tv, config.NewTimeline(config.Timeline{
 			FeedType:  config.Tag,
 			Subaction: tag,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) TagsCommand() {
 	tv.Timeline.AddFeed(
 		NewTagsFeed(tv, config.NewTimeline(config.Timeline{
 			FeedType: config.Tags,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) TagFollowCommand(tag string) {
@@ -200,7 +214,8 @@ func (tv *TutView) BoostsCommand() {
 			FeedType:    config.Boosts,
 			HideBoosts:  false,
 			HideReplies: true,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) FavoritesCommand() {
@@ -216,7 +231,8 @@ func (tv *TutView) FavoritesCommand() {
 	tv.Timeline.AddFeed(
 		NewFavoritesStatus(tv, s.ID, config.NewTimeline(config.Timeline{
 			FeedType: config.Favorites,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) FollowingCommand() {
@@ -231,7 +247,8 @@ func (tv *TutView) FollowingCommand() {
 	tv.Timeline.AddFeed(
 		NewFollowing(tv, s.Data.ID, config.NewTimeline(config.Timeline{
 			FeedType: config.Following,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) FollowersCommand() {
@@ -246,7 +263,8 @@ func (tv *TutView) FollowersCommand() {
 	tv.Timeline.AddFeed(
 		NewFollowers(tv, s.Data.ID, config.NewTimeline(config.Timeline{
 			FeedType: config.Followers,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) HistoryCommand() {
@@ -260,7 +278,8 @@ func (tv *TutView) HistoryCommand() {
 	tv.Timeline.AddFeed(
 		NewHistoryFeed(tv, item, config.NewTimeline(config.Timeline{
 			FeedType: config.History,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) ProfileCommand() {
@@ -272,7 +291,8 @@ func (tv *TutView) ProfileCommand() {
 	tv.Timeline.AddFeed(
 		NewUserFeed(tv, item, config.NewTimeline(config.Timeline{
 			FeedType: config.User,
-		})))
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) PreferencesCommand() {
