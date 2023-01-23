@@ -9,13 +9,13 @@ require (
 	github.com/gdamore/tcell/v2 v2.5.4
 	github.com/gen2brain/beeep v0.0.0-20220909211152-5a9ec94374f6
 	github.com/gobwas/glob v0.2.3
-	github.com/icza/gox v0.0.0-20221026131554-a08a8cdc726a
+	github.com/icza/gox v0.0.0-20230117093757-93f961aa2755
 	github.com/microcosm-cc/bluemonday v1.0.21
 	github.com/pelletier/go-toml/v2 v2.0.6
 	github.com/rivo/tview v0.0.0-20230104153304-892d1a2eb0da
 	github.com/rivo/uniseg v0.4.3
 	github.com/spf13/pflag v1.0.5
-	golang.org/x/exp v0.0.0-20230105202349-8879d0199aa3
+	golang.org/x/exp v0.0.0-20230118134722-a68e582fa157
 	golang.org/x/net v0.5.0
 	mvdan.cc/xurls/v2 v2.4.0
 )
