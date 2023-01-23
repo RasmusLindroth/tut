@@ -47,7 +47,8 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:boosts` = Lists users that have boosted the toot
 * `:bookmarks` = List all your bookmarks
 * `:clear-notifications` = Remove all of your notifications
-* `:close-window` = Closes the current window, including all the timelines in said window
+* `:clear-temp` = Remove all of your media files that have been downloaded. Only needed if you have set delete-temp-files to false under [media] in your config.
+* `:close-pane` = Closes the current pane, including all the timelines in said pane
 * `:compose` = Compose a new toot
 * `:edit` = Edit one of your toots
 * `:favorited` = Lists toots  you&#39;ve favorited
@@ -60,14 +61,17 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:history` = Show edits of a toot
 * `:lists` = Show a list of your lists
 * `:list-placement top|right|bottom|left` = Place the list in choosen placement
-* `:list-split row|column` = Split the timelines in window by row or column
-* `:move-window left|right|up|down|home|end` = Moves the window in choosen direction
-* `:mv l|r|u|d|h|e` = Shorter form of former command
+* `:list-split row|column` = Split the timelines by row or column
+* `:login` = Login to one more account
+* `:move-pane left|right|up|down|home|end` = Moves the pane in choosen direction
+* `:mp l|r|u|d|h|e` = Shorter form of former command
 * `:muting` = Lists users that you&#39;ve muted
 * `:newer` = Force load newer toots in current timeline
+* `:next-acct` = Go to the next account if you&#39;re logged in to multiple
 * `:preferences` = Update your profile and some other settings
+* `:prev-acct` = Go to the prev account if you&#39;re logged in to multiple
 * `:profile` = Go to your profile
-* `:proportions [int] [int]` = Sets the proportions of the windows and the content. The first integer is your windows and the other for content, e.g. :proportions 1 3
+* `:proportions [int] [int]` = Sets the proportions of the panes and the content. The first integer is your panes and the other for content, e.g. :proportions 1 3
 * `:refetch` = Refetches the current item that you&#39;re viewing. Can be used to update poll results.
 * `:saved` = Alias for bookmarks
 * `:stick-to-top` = Toggle the stick-to-top setting that always shows the latest toot in all timelines
@@ -75,7 +79,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:tags` = List of tags that you&#39;re following
 * `:unfollow-tag <tag>` = Unfollow the hashtag named &lt;tag&gt;, e.g. :unfollow-tag tut
 * `:user <username>` = Search for users named &lt;username&gt;, e.g. :user rasmus. To narrow a search include the instance like this :user rasmus@mastodon.acc.sunet.se
-* `:window <int>` = Switch window by index (zero indexed) e.g. :window 0 for the left/top window
+* `:pane <int>` = Switch pane by index (zero indexed) e.g. :pane 0 for the left/top pane
 
 Keys without description in tut
 * `c` = Compose a new toot
@@ -99,12 +103,12 @@ Tut is configurable, so you can change things like the colors, the default timel
 what image viewer to use and some more. Check out the configuration file to see 
 all the options.
 
-You find it in `XDG_CONFIG_HOME/tut/config.ini` on Linux which usually equals to `~/.config/tut/config.ini`.
+You find it in `XDG_CONFIG_HOME/tut/config.toml` on Linux which usually equals to `~/.config/tut/config.toml`.
 If you don't run Linux it will use the path of [os#UserConfigDir](https://github.com/golang/go/blob/7dc9fcb13de7bb20b11f6a526865545cc9142c2c/src/os/file.go#L455-L461).
 But if you move the tut folder to `XDG_CONFIG_HOME/tut/` and have set the environment variable `XDG_CONFIG_HOME`
 it will look there instead of the standard place.
 
-You can find an updated configuration file in this repo named `config.example.ini`.
+You can find an updated configuration file in this repo named `config.example.toml`.
 If there are any new configurations options you can copy them frome that file.
 If you prefer a website you can read about all the options on [tut.anv.nu](https://tut.anv.nu/config) and
 if man pages are your thing use `tut(5)`.
@@ -210,16 +214,17 @@ you will have to add `go/bin` to your `$PATH`.
 ## Flags and commands
 ```
 Commands:
-    example-config - creates the default configuration file in the current directory and names it ./config.example.ini
+    example-config - creates the default configuration file in the current directory and names it ./config.example.toml
 
 Flags:
 	-h  --help             prints this message
 	-v  --version          prints the version
 	-n  --new-user         add one more user to tut
-	-c  --config <path>    load config.ini from <path>
+	-c  --config <path>    load config.toml from <path>
 	-d --config-dir <path> load all config from <path>
 	-u  --user <name>      login directly to user named <name>
-		If two users are named the same. Use full name like tut@fosstodon.org
+      If you want to login to multiple accounts seperate them with a space and use quotation marks. E.g. -u "acc_one acc_two"
+      If two users are named the same. Use full name like tut@fosstodon.org
 ```
 
 If you don't want to set `--config` or `--config-dir` everytime you can set

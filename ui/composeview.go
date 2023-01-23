@@ -33,17 +33,19 @@ type msgToot struct {
 }
 
 type ComposeView struct {
-	tutView    *TutView
-	shared     *Shared
-	View       *tview.Flex
-	content    *tview.TextView
-	input      *MediaInput
-	info       *tview.TextView
-	controls   *tview.Flex
-	visibility *tview.DropDown
-	lang       *tview.DropDown
-	media      *MediaList
-	msg        *msgToot
+	tutView      *TutView
+	shared       *Shared
+	View         *tview.Flex
+	content      *tview.TextView
+	textAreaMain *tview.TextArea
+	textAreaCW   *tview.TextArea
+	input        *MediaInput
+	info         *tview.TextView
+	controls     *tview.Flex
+	visibility   *tview.DropDown
+	lang         *tview.DropDown
+	media        *MediaList
+	msg          *msgToot
 }
 
 var visibilities = map[string]int{
@@ -61,15 +63,17 @@ var visibilitiesStr = []string{
 
 func NewComposeView(tv *TutView) *ComposeView {
 	cv := &ComposeView{
-		tutView:    tv,
-		shared:     tv.Shared,
-		content:    NewTextView(tv.tut.Config),
-		input:      NewMediaInput(tv),
-		controls:   NewControlView(tv.tut.Config),
-		info:       NewTextView(tv.tut.Config),
-		visibility: NewDropDown(tv.tut.Config),
-		lang:       NewDropDown(tv.tut.Config),
-		media:      NewMediaList(tv),
+		tutView:      tv,
+		shared:       tv.Shared,
+		content:      NewTextView(tv.tut.Config),
+		textAreaMain: NewTextArea(tv.tut.Config),
+		textAreaCW:   NewTextArea(tv.tut.Config),
+		input:        NewMediaInput(tv),
+		controls:     NewControlView(tv.tut.Config),
+		info:         NewTextView(tv.tut.Config),
+		visibility:   NewDropDown(tv.tut.Config),
+		lang:         NewDropDown(tv.tut.Config),
+		media:        NewMediaList(tv),
 	}
 	cv.content.SetDynamicColors(true)
 	cv.View = newComposeUI(cv)
@@ -81,18 +85,41 @@ func newComposeUI(cv *ComposeView) *tview.Flex {
 	if cv.tutView.tut.Config.General.TerminalTitle < 2 {
 		r.AddItem(cv.tutView.Shared.Top.View, 1, 0, false)
 	}
-	r.AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-			AddItem(cv.content, 0, 2, false), 0, 2, false).
-		AddItem(tview.NewBox(), 2, 0, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-			AddItem(cv.visibility, 1, 0, false).
-			AddItem(cv.lang, 1, 0, false).
-			AddItem(cv.info, 5, 0, false).
-			AddItem(cv.media.View, 0, 1, false), 0, 1, false), 0, 1, false).
-		AddItem(cv.input.View, 1, 0, false).
-		AddItem(cv.controls, 1, 0, false).
-		AddItem(cv.tutView.Shared.Bottom.View, 2, 0, false)
+	if !cv.tutView.tut.Config.General.UseInternalEditor {
+		r.AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+				AddItem(cv.content, 0, 2, false), 0, 2, false).
+			AddItem(tview.NewBox(), 2, 0, false).
+			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+				AddItem(cv.visibility, 1, 0, false).
+				AddItem(cv.lang, 1, 0, false).
+				AddItem(cv.info, 5, 0, false).
+				AddItem(cv.media.View, 0, 1, false), 0, 1, false), 0, 1, false).
+			AddItem(cv.input.View, 1, 0, false).
+			AddItem(cv.controls, 1, 0, false).
+			AddItem(cv.tutView.Shared.Bottom.View, 2, 0, false)
+	} else {
+		txtOne := NewTextView(cv.tutView.tut.Config)
+		txtOne.SetText("Content warning text:")
+		txtTwo := NewTextView(cv.tutView.tut.Config)
+		txtTwo.SetText("Main content:")
+		r.AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+				AddItem(cv.content, 3, 0, false).
+				AddItem(txtOne, 1, 0, false).
+				AddItem(cv.textAreaCW, 0, 1, false).
+				AddItem(txtTwo, 1, 0, false).
+				AddItem(cv.textAreaMain, 0, 2, false), 0, 2, false).
+			AddItem(tview.NewBox(), 2, 0, false).
+			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+				AddItem(cv.visibility, 1, 0, false).
+				AddItem(cv.lang, 1, 0, false).
+				AddItem(cv.info, 5, 0, false).
+				AddItem(cv.media.View, 0, 1, false), 0, 1, false), 0, 1, false).
+			AddItem(cv.input.View, 1, 0, false).
+			AddItem(cv.controls, 1, 0, false).
+			AddItem(cv.tutView.Shared.Bottom.View, 2, 0, false)
+	}
 	return r
 }
 
@@ -167,6 +194,8 @@ func (cv *ComposeView) SetControls(ctrl ComposeControls) {
 func (cv *ComposeView) SetStatus(reply *mastodon.Status, edit *mastodon.Status) error {
 	cv.tutView.PollView.Reset()
 	cv.media.Reset()
+	cv.textAreaMain.SetText("", false)
+	cv.textAreaCW.SetText("", false)
 	msg := &msgToot{}
 	me := cv.tutView.tut.Client.Me
 	visibility := mastodon.VisibilityPublic
@@ -250,6 +279,10 @@ func (cv *ComposeView) SetStatus(reply *mastodon.Status, edit *mastodon.Status) 
 	cv.lang.SetOptions(langStrs, cv.langSelected)
 	cv.lang.SetCurrentOption(index)
 
+	if cv.tutView.tut.Config.General.UseInternalEditor {
+		cv.textAreaMain.SetText(cv.msg.Text, true)
+		cv.textAreaCW.SetText(cv.msg.CWText, true)
+	}
 	cv.UpdateContent()
 	cv.SetControls(ComposeNormal)
 	return nil
@@ -275,27 +308,35 @@ func (cv *ComposeView) getAccs() string {
 }
 
 func (cv *ComposeView) EditText() {
-	text, err := OpenEditor(cv.tutView, cv.msg.Text)
-	if err != nil {
-		cv.tutView.ShowError(
-			fmt.Sprintf("Couldn't open editor. Error: %v", err),
-		)
-		return
+	if !cv.tutView.tut.Config.General.UseInternalEditor {
+		text, err := OpenEditor(cv.tutView, cv.msg.Text)
+		if err != nil {
+			cv.tutView.ShowError(
+				fmt.Sprintf("Couldn't open editor. Error: %v", err),
+			)
+			return
+		}
+		cv.msg.Text = text
+		cv.UpdateContent()
+	} else {
+		cv.textAreaMainFocus()
 	}
-	cv.msg.Text = text
-	cv.UpdateContent()
 }
 
 func (cv *ComposeView) EditSpoiler() {
-	text, err := OpenEditor(cv.tutView, cv.msg.CWText)
-	if err != nil {
-		cv.tutView.ShowError(
-			fmt.Sprintf("Couldn't open editor. Error: %v", err),
-		)
-		return
+	if !cv.tutView.tut.Config.General.UseInternalEditor {
+		text, err := OpenEditor(cv.tutView, cv.msg.CWText)
+		if err != nil {
+			cv.tutView.ShowError(
+				fmt.Sprintf("Couldn't open editor. Error: %v", err),
+			)
+			return
+		}
+		cv.msg.CWText = text
+		cv.UpdateContent()
+	} else {
+		cv.textAreaCWFocus()
 	}
-	cv.msg.CWText = text
-	cv.UpdateContent()
 }
 
 func (cv *ComposeView) ToggleCW() {
@@ -315,26 +356,29 @@ func (cv *ComposeView) UpdateContent() {
 	if cv.msg.Reply != nil {
 		var acct string
 		if cv.msg.Reply.Account.DisplayName != "" {
-			acct = fmt.Sprintf("%s (%s)\n", cv.msg.Reply.Account.DisplayName, cv.msg.Reply.Account.Acct)
+			acct = fmt.Sprintf("%s (%s)", cv.msg.Reply.Account.DisplayName, cv.msg.Reply.Account.Acct)
 		} else {
-			acct = fmt.Sprintf("%s\n", cv.msg.Reply.Account.Acct)
+			acct = cv.msg.Reply.Account.Acct
 		}
 		outputHead += subtleColor + "Replying to " + tview.Escape(acct) + "\n" + normal
 	}
 	if cv.msg.CWText != "" && !cv.msg.Sensitive {
 		outputHead += warningColor + "You have entered content warning text, but haven't set an content warning. Do it by pressing " + tview.Escape("[T]") + "\n\n" + normal
 	}
-
 	if cv.msg.Sensitive && cv.msg.CWText == "" {
 		outputHead += warningColor + "You have added an content warning, but haven't set any text above the hidden text. Do it by pressing " + tview.Escape("[C]") + "\n\n" + normal
 	}
 
-	if cv.msg.Sensitive && cv.msg.CWText != "" {
-		outputHead += subtleColor + "Content warning\n\n" + normal
-		outputHead += tview.Escape(cv.msg.CWText)
-		outputHead += "\n\n" + subtleColor + "---hidden content below---\n\n" + normal
+	if !cv.tutView.tut.Config.General.UseInternalEditor {
+		if cv.msg.Sensitive && cv.msg.CWText != "" {
+			outputHead += subtleColor + "Content warning\n\n" + normal
+			outputHead += tview.Escape(cv.msg.CWText)
+			outputHead += "\n\n" + subtleColor + "---hidden content below---\n\n" + normal
+		}
+		output = outputHead + normal + tview.Escape(cv.msg.Text)
+	} else {
+		output = strings.TrimSpace(outputHead)
 	}
-	output = outputHead + normal + tview.Escape(cv.msg.Text)
 
 	cv.content.SetText(output)
 }
@@ -354,10 +398,49 @@ func (cv *ComposeView) IncludeQuote() {
 	for _, line := range strings.Split(tootText, "\n") {
 		t += "> " + line + "\n"
 	}
-	t += "\n"
 	cv.msg.Text = t
+	if cv.tutView.tut.Config.General.UseInternalEditor {
+		cv.textAreaMain.SetText(cv.msg.Text, false)
+	}
 	cv.msg.QuoteIncluded = true
 	cv.UpdateContent()
+}
+
+func (cv *ComposeView) textAreaInput(event *tcell.EventKey) *tcell.EventKey {
+	if cv.tutView.tut.Config.Input.GlobalBack.Match(event.Key(), rune(-1)) {
+		cv.exitTextAreaInput()
+		return nil
+	}
+	switch key := event.Key(); key {
+	case tcell.KeyCtrlQ:
+		return nil
+	case tcell.KeyCtrlC:
+		return tcell.NewEventKey(tcell.KeyCtrlQ, rune(0), tcell.ModNone)
+	}
+	return event
+}
+
+func (cv *ComposeView) exitTextAreaInput() {
+	cv.tutView.tut.App.SetInputCapture(cv.tutView.Input)
+	cv.tutView.tut.App.SetFocus(cv.content)
+}
+
+func (cv *ComposeView) textAreaMainFocus() {
+	cv.tutView.tut.App.SetInputCapture(cv.textAreaInput)
+	cv.textAreaMain.SetChangedFunc(func() {
+		cv.msg.Text = cv.textAreaMain.GetText()
+		cv.UpdateContent()
+	})
+	cv.tutView.tut.App.SetFocus(cv.textAreaMain)
+}
+
+func (cv *ComposeView) textAreaCWFocus() {
+	cv.tutView.tut.App.SetInputCapture(cv.textAreaInput)
+	cv.textAreaCW.SetChangedFunc(func() {
+		cv.msg.CWText = cv.textAreaCW.GetText()
+		cv.UpdateContent()
+	})
+	cv.tutView.tut.App.SetFocus(cv.textAreaCW)
 }
 
 func (cv *ComposeView) HasMedia() bool {
@@ -650,14 +733,29 @@ func (m *MediaList) EditDesc() {
 		)
 		return
 	}
-	desc, err := OpenEditor(m.tutView, file.Description)
+	var desc string
+	var err error
+	if m.tutView.tut.Config.General.UseInternalEditor {
+		m.tutView.EditorView.Init(file.Description, 0, true, func(input string) {
+			m.editDesc(input, nil)
+		})
+		return
+	} else {
+		desc, err = OpenEditor(m.tutView, file.Description)
+		m.editDesc(desc, err)
+	}
+}
+
+func (m *MediaList) editDesc(text string, err error) {
+	index := m.list.GetCurrentItem()
+	file := m.Files[index]
 	if err != nil {
 		m.tutView.ShowError(
 			fmt.Sprintf("Couldn't edit description. Error: %v\n", err),
 		)
 		return
 	}
-	file.Description = desc
+	file.Description = text
 	m.Files[index] = file
 	m.Draw()
 }

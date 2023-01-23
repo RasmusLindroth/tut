@@ -183,25 +183,45 @@ func (p *PreferenceView) AddField() {
 		p.tutView.ShowError("You can have a maximum of four fields.")
 		return
 	}
-	name, valid, err := OpenEditorLengthLimit(p.tutView, "name", 255)
+	if p.tutView.tut.Config.General.UseInternalEditor {
+		p.tutView.EditorView.Init("name", 255, true, func(input string) {
+			p.addFieldOne(input, nil)
+		})
+	} else {
+		name, err := OpenEditorLengthLimit(p.tutView, "name", 255)
+		p.addFieldOne(name, err)
+	}
+}
+
+func (p *PreferenceView) addFieldOne(name string, err error) {
 	if err != nil {
 		p.tutView.ShowError(
 			fmt.Sprintf("Couldn't add name. Error: %v\n", err),
 		)
 		return
 	}
-	if !valid {
+	if len(name) == 0 {
 		p.tutView.ShowError("Name can't be empty.")
 		return
 	}
-	value, valid, err := OpenEditorLengthLimit(p.tutView, "value", 255)
+	if p.tutView.tut.Config.General.UseInternalEditor {
+		p.tutView.EditorView.Init("value", 255, false, func(input string) {
+			p.addFieldTwo(name, input, nil)
+		})
+	} else {
+		value, err := OpenEditorLengthLimit(p.tutView, "value", 255)
+		p.addFieldTwo(name, value, err)
+	}
+}
+
+func (p *PreferenceView) addFieldTwo(name string, value string, err error) {
 	if err != nil {
 		p.tutView.ShowError(
 			fmt.Sprintf("Couldn't add value. Error: %v\n", err),
 		)
 		return
 	}
-	if !valid {
+	if len(value) == 0 {
 		p.tutView.ShowError("Value can't be empty.")
 		return
 	}
@@ -223,25 +243,45 @@ func (p *PreferenceView) EditField() {
 		return
 	}
 	curr := p.preferences.fields[index]
-	name, valid, err := OpenEditorLengthLimit(p.tutView, curr.Name, 255)
+	if p.tutView.tut.Config.General.UseInternalEditor {
+		p.tutView.EditorView.Init(curr.Name, 255, true, func(input string) {
+			p.editFieldOne(index, input, curr.Value, nil)
+		})
+	} else {
+		name, err := OpenEditorLengthLimit(p.tutView, curr.Name, 255)
+		p.editFieldOne(index, name, curr.Value, err)
+	}
+}
+
+func (p *PreferenceView) editFieldOne(index int, name string, value string, err error) {
 	if err != nil {
 		p.tutView.ShowError(
 			fmt.Sprintf("Couldn't edit name. Error: %v\n", err),
 		)
 		return
 	}
-	if !valid {
+	if len(name) == 0 {
 		p.tutView.ShowError("Name can't be empty.")
 		return
 	}
-	value, valid, err := OpenEditorLengthLimit(p.tutView, curr.Value, 255)
+	if p.tutView.tut.Config.General.UseInternalEditor {
+		p.tutView.EditorView.Init(value, 255, false, func(input string) {
+			p.editFieldTwo(index, name, input, nil)
+		})
+	} else {
+		value, err := OpenEditorLengthLimit(p.tutView, value, 255)
+		p.editFieldTwo(index, name, value, err)
+	}
+}
+
+func (p *PreferenceView) editFieldTwo(index int, name string, value string, err error) {
 	if err != nil {
 		p.tutView.ShowError(
 			fmt.Sprintf("Couldn't edit value. Error: %v\n", err),
 		)
 		return
 	}
-	if !valid {
+	if len(value) == 0 {
 		p.tutView.ShowError("Value can't be empty.")
 		return
 	}
@@ -268,7 +308,17 @@ func (p *PreferenceView) DeleteField() {
 
 func (p *PreferenceView) EditBio() {
 	bio := p.preferences.bio
-	text, _, err := OpenEditorLengthLimit(p.tutView, bio, 500)
+	if p.tutView.tut.Config.General.UseInternalEditor {
+		p.tutView.EditorView.Init(bio, 500, true, func(input string) {
+			p.editBio(input, nil)
+		})
+	} else {
+		text, err := OpenEditorLengthLimit(p.tutView, bio, 500)
+		p.editBio(text, err)
+	}
+}
+
+func (p *PreferenceView) editBio(text string, err error) {
 	if err != nil {
 		p.tutView.ShowError(
 			fmt.Sprintf("Couldn't edit bio. Error: %v\n", err),
@@ -281,7 +331,17 @@ func (p *PreferenceView) EditBio() {
 
 func (p *PreferenceView) EditDisplayname() {
 	dn := p.preferences.displayname
-	text, _, err := OpenEditorLengthLimit(p.tutView, dn, 30)
+	if p.tutView.tut.Config.General.UseInternalEditor {
+		p.tutView.EditorView.Init(dn, 30, true, func(input string) {
+			p.editDisplayname(input, nil)
+		})
+	} else {
+		text, err := OpenEditorLengthLimit(p.tutView, dn, 30)
+		p.editDisplayname(text, err)
+	}
+}
+
+func (p *PreferenceView) editDisplayname(text string, err error) {
 	if err != nil {
 		p.tutView.ShowError(
 			fmt.Sprintf("Couldn't edit display name. Error: %v\n", err),

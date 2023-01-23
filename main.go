@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/RasmusLindroth/tut/auth"
 	"github.com/RasmusLindroth/tut/config"
 	"github.com/RasmusLindroth/tut/ui"
@@ -8,7 +10,9 @@ import (
 	"github.com/rivo/tview"
 )
 
-const version = "1.0.34"
+const version = "2.0.0"
+
+var tutViews []*ui.TutView
 
 func main() {
 	util.SetTerminalTitle("tut")
@@ -17,32 +21,35 @@ func main() {
 	accs := auth.StartAuth(newUser)
 
 	app := tview.NewApplication()
-	t := &ui.Tut{
-		App:    app,
-		Config: config.Load(cnfPath, cnfDir),
-	}
-	if t.Config.General.MouseSupport {
+	cnf := config.Load(cnfPath, cnfDir)
+
+	if cnf.General.MouseSupport {
 		app.EnableMouse(true)
 	}
 	tview.Styles = tview.Theme{
-		PrimitiveBackgroundColor:    t.Config.Style.Background,              // background
-		ContrastBackgroundColor:     t.Config.Style.Text,                    //background for button, checkbox, form, modal
-		MoreContrastBackgroundColor: t.Config.Style.Text,                    //background for dropdown
-		BorderColor:                 t.Config.Style.Background,              //border
-		TitleColor:                  t.Config.Style.Text,                    //titles
-		GraphicsColor:               t.Config.Style.Text,                    //borders
-		PrimaryTextColor:            t.Config.Style.StatusBarViewBackground, //backround color selected
-		SecondaryTextColor:          t.Config.Style.Text,                    //text
-		TertiaryTextColor:           t.Config.Style.Text,                    //list secondary
-		InverseTextColor:            t.Config.Style.Text,                    //label activated
-		ContrastSecondaryTextColor:  t.Config.Style.Text,                    //foreground on input and prefix on dropdown
+		PrimitiveBackgroundColor:    cnf.Style.Background,              // background
+		ContrastBackgroundColor:     cnf.Style.Text,                    //background for button, checkbox, form, modal
+		MoreContrastBackgroundColor: cnf.Style.Text,                    //background for dropdown
+		BorderColor:                 cnf.Style.Background,              //border
+		TitleColor:                  cnf.Style.Text,                    //titles
+		GraphicsColor:               cnf.Style.Text,                    //borders
+		PrimaryTextColor:            cnf.Style.StatusBarViewBackground, //backround color selected
+		SecondaryTextColor:          cnf.Style.Text,                    //text
+		TertiaryTextColor:           cnf.Style.Text,                    //list secondary
+		InverseTextColor:            cnf.Style.Text,                    //label activated
+		ContrastSecondaryTextColor:  cnf.Style.Text,                    //foreground on input and prefix on dropdown
 	}
-	main := ui.NewTutView(t, accs, selectedUser)
-	app.SetInputCapture(main.Input)
-	if t.Config.General.MouseSupport {
-		app.SetMouseCapture(main.MouseInput)
+	ui.SetVars(cnf, app, accs)
+	users := strings.Fields(selectedUser)
+	if len(users) > 0 {
+		for _, user := range strings.Fields(selectedUser) {
+			ui.NewTutView(user)
+		}
+	} else {
+		ui.NewTutView(selectedUser)
 	}
-	if err := app.SetRoot(main.View, true).Run(); err != nil {
+	ui.DoneAdding()
+	if err := app.Run(); err != nil {
 		panic(err)
 	}
 }

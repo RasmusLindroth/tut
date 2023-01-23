@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -30,6 +29,16 @@ func (tv *TutView) Input(event *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	}
+
+	if tv.tut.Config.Input.MainNextAccount.Match(event.Key(), event.Rune()) {
+		tv.NextAcct()
+		return nil
+	}
+	if tv.tut.Config.Input.MainPrevAccount.Match(event.Key(), event.Rune()) {
+		tv.NextAcct()
+		return nil
+	}
+
 	switch tv.PageFocus {
 	case LoginFocus:
 		return tv.InputLoginView(event)
@@ -55,6 +64,8 @@ func (tv *TutView) Input(event *tcell.EventKey) *tcell.EventKey {
 		return tv.InputHelp(event)
 	case PreferenceFocus:
 		return tv.InputPreference(event)
+	case EditorFocus:
+		return tv.InputEditorView(event)
 	default:
 		return event
 	}
@@ -95,6 +106,33 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 		action := config.LeaderNone
 		var subaction string
 		content := tv.Leader.Content()
+		foundFeed := false
+		for i, fh := range tv.Timeline.Feeds {
+			for _, f := range fh.Feeds {
+				if f.Timeline.Shortcut == "" || f.Timeline.Shortcut != content {
+					continue
+				}
+				switch f.Timeline.OnFocus {
+				case config.TimelineFocusPane:
+					tv.FocusFeed(i, nil)
+				case config.TimelineFocusTimeline:
+					tv.FocusFeed(i, f.Timeline)
+				}
+				foundFeed = true
+				tv.Leader.ResetInactive()
+				return nil
+			}
+		}
+		if !foundFeed {
+			for _, tl := range tv.tut.Config.General.Timelines {
+				if tl.Shortcut == "" || tl.Shortcut != content {
+					continue
+				}
+				tv.matchedTimeline(tl)
+				tv.Leader.ResetInactive()
+				return nil
+			}
+		}
 		for _, la := range tv.tut.Config.General.LeaderActions {
 			if la.Shortcut == content {
 				action = la.Command
@@ -106,20 +144,6 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 		switch action {
-		case config.LeaderHome:
-			tv.HomeCommand()
-		case config.LeaderDirect:
-			tv.DirectCommand()
-		case config.LeaderLocal:
-			tv.LocalCommand()
-		case config.LeaderFederated:
-			tv.FederatedCommand()
-		case config.LeaderSpecialAll:
-			tv.SpecialCommand(true, true)
-		case config.LeaderSpecialBoosts:
-			tv.SpecialCommand(true, false)
-		case config.LeaderSpecialReplies:
-			tv.SpecialCommand(false, true)
 		case config.LeaderClearNotifications:
 			tv.ClearNotificationsCommand()
 		case config.LeaderCompose:
@@ -128,8 +152,6 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.EditCommand()
 		case config.LeaderBlocking:
 			tv.BlockingCommand()
-		case config.LeaderBookmarks, config.LeaderSaved:
-			tv.BookmarksCommand()
 		case config.LeaderFavorited:
 			tv.FavoritedCommand()
 		case config.LeaderHistory:
@@ -148,36 +170,26 @@ func (tv *TutView) InputLeaderKey(event *tcell.EventKey) *tcell.EventKey {
 			tv.PreferencesCommand()
 		case config.LeaderProfile:
 			tv.ProfileCommand()
-		case config.LeaderNotifications:
-			tv.NotificationsCommand()
-		case config.LeaderMentions:
-			tv.MentionsCommand()
 		case config.LeaderLoadNewer:
 			tv.LoadNewerCommand()
-		case config.LeaderLists:
-			tv.ListsCommand()
 		case config.LeaderStickToTop:
 			tv.ToggleStickToTop()
 		case config.LeaderRefetch:
 			tv.RefetchCommand()
-		case config.LeaderTag:
-			tv.TagCommand(subaction)
 		case config.LeaderTags:
 			tv.TagsCommand()
-		case config.LeaderWindow:
-			tv.WindowCommand(subaction)
-		case config.LeaderCloseWindow:
-			tv.CloseWindowCommand()
-		case config.LeaderMoveWindowLeft:
-			tv.MoveWindowLeft()
-		case config.LeaderMoveWindowRight:
-			tv.MoveWindowRight()
-		case config.LeaderMoveWindowHome:
-			tv.MoveWindowHome()
-		case config.LeaderMoveWindowEnd:
-			tv.MoveWindowEnd()
-		case config.LeaderSwitch:
-			tv.SwitchCommand(subaction)
+		case config.LeaderPane:
+			tv.PaneCommand(subaction)
+		case config.LeaderClosePane:
+			tv.ClosePaneCommand()
+		case config.LeaderMovePaneLeft:
+			tv.MovePaneLeft()
+		case config.LeaderMovePaneRight:
+			tv.MovePaneRight()
+		case config.LeaderMovePaneHome:
+			tv.MovePaneHome()
+		case config.LeaderMovePaneEnd:
+			tv.MovePaneEnd()
 		case config.LeaderListPlacement:
 			switch subaction {
 			case "top":
@@ -219,6 +231,16 @@ func (tv *TutView) InputMainView(event *tcell.EventKey) *tcell.EventKey {
 	}
 }
 
+func (tv *TutView) matchedTimeline(tl *config.Timeline) {
+	nf := CreateFeed(tv, tl)
+	switch tl.OnCreationClosed {
+	case config.TimelineCreationClosedCurrentPane:
+		tv.Timeline.AddFeed(nf, false)
+	case config.TimelineCreationClosedNewPane:
+		tv.Timeline.AddFeed(nf, true)
+	}
+}
+
 func (tv *TutView) InputMainViewFeed(event *tcell.EventKey) *tcell.EventKey {
 	if tv.tut.Config.Input.MainHome.Match(event.Key(), event.Rune()) {
 		tv.Timeline.HomeItemFeed()
@@ -244,16 +266,12 @@ func (tv *TutView) InputMainViewFeed(event *tcell.EventKey) *tcell.EventKey {
 		tv.Timeline.PrevItemFeed()
 		return nil
 	}
-	if tv.tut.Config.Input.MainPrevWindow.Match(event.Key(), event.Rune()) {
-		if tv.tut.Config.General.NotificationFeed {
-			tv.PrevFeed()
-		}
+	if tv.tut.Config.Input.MainPrevPane.Match(event.Key(), event.Rune()) {
+		tv.PrevFeed()
 		return nil
 	}
-	if tv.tut.Config.Input.MainNextWindow.Match(event.Key(), event.Rune()) {
-		if tv.tut.Config.General.NotificationFeed {
-			tv.NextFeed()
-		}
+	if tv.tut.Config.Input.MainNextPane.Match(event.Key(), event.Rune()) {
+		tv.NextFeed()
 		return nil
 	}
 	if tv.tut.Config.Input.GlobalExit.Match(event.Key(), event.Rune()) {
@@ -265,19 +283,39 @@ func (tv *TutView) InputMainViewFeed(event *tcell.EventKey) *tcell.EventKey {
 				})
 			return nil
 		} else if exiting && tv.Timeline.FeedFocusIndex != 0 {
-			tv.FocusFeed(0)
+			tv.FocusFeed(0, nil)
 		}
 		return nil
 	}
-	for i, tl := range tv.tut.Config.General.Timelines {
-		if tl.Key.Match(event.Key(), event.Rune()) {
-			tv.FocusFeed(i)
+
+	foundFeed := false
+	for i, fh := range tv.Timeline.Feeds {
+		for _, f := range fh.Feeds {
+			if f.Timeline.Key.Match(event.Key(), event.Rune()) {
+				switch f.Timeline.OnFocus {
+				case config.TimelineFocusPane:
+					tv.FocusFeed(i, nil)
+				case config.TimelineFocusTimeline:
+					tv.FocusFeed(i, f.Timeline)
+				}
+				foundFeed = true
+				return nil
+			}
 		}
 	}
+	if !foundFeed {
+		for _, tl := range tv.tut.Config.General.Timelines {
+			if tl.Key.Match(event.Key(), event.Rune()) {
+				tv.matchedTimeline(tl)
+				return nil
+			}
+		}
+	}
+
 	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), event.Rune()) {
 		exiting := tv.Timeline.RemoveCurrent(false)
 		if exiting && tv.Timeline.FeedFocusIndex != 0 {
-			tv.FocusFeed(0)
+			tv.FocusFeed(0, nil)
 		}
 		return nil
 	}
@@ -511,7 +549,9 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 		return nil
 	}
 	if tv.tut.Config.Input.StatusThread.Match(event.Key(), event.Rune()) {
-		tv.Timeline.AddFeed(NewThreadFeed(tv, item))
+		tv.Timeline.AddFeed(NewThreadFeed(tv, item, config.NewTimeline(config.Timeline{
+			FeedType: config.Thread,
+		})), false)
 		return nil
 	}
 	if tv.tut.Config.Input.StatusUser.Match(event.Key(), event.Rune()) {
@@ -523,7 +563,9 @@ func (tv *TutView) InputStatus(event *tcell.EventKey, item api.Item, status *mas
 		if err != nil {
 			return nil
 		}
-		tv.Timeline.AddFeed(NewUserFeed(tv, user))
+		tv.Timeline.AddFeed(NewUserFeed(tv, user, config.NewTimeline(config.Timeline{
+			FeedType: config.User,
+		})), false)
 		return nil
 	}
 	if tv.tut.Config.Input.StatusViewFocus.Match(event.Key(), event.Rune()) {
@@ -751,7 +793,9 @@ func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User, ut InputUser
 		return nil
 	}
 	if tv.tut.Config.Input.UserUser.Match(event.Key(), event.Rune()) {
-		tv.Timeline.AddFeed(NewUserFeed(tv, api.NewUserItem(user, true)))
+		tv.Timeline.AddFeed(NewUserFeed(tv, api.NewUserItem(user, true), config.NewTimeline(config.Timeline{
+			FeedType: config.User,
+		})), false)
 		return nil
 	}
 	if tv.tut.Config.Input.UserViewFocus.Match(event.Key(), event.Rune()) {
@@ -763,7 +807,9 @@ func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User, ut InputUser
 		return nil
 	}
 	if tv.tut.Config.Input.GlobalEnter.Match(event.Key(), event.Rune()) {
-		tv.Timeline.AddFeed(NewUserFeed(tv, api.NewUserItem(user, true)))
+		tv.Timeline.AddFeed(NewUserFeed(tv, api.NewUserItem(user, true), config.NewTimeline(config.Timeline{
+			FeedType: config.User,
+		})), false)
 		return nil
 	}
 	return event
@@ -772,15 +818,21 @@ func (tv *TutView) InputUser(event *tcell.EventKey, user *api.User, ut InputUser
 func (tv *TutView) InputList(event *tcell.EventKey, list *mastodon.List) *tcell.EventKey {
 	if tv.tut.Config.Input.ListOpenFeed.Match(event.Key(), event.Rune()) ||
 		tv.tut.Config.Input.GlobalEnter.Match(event.Key(), event.Rune()) {
-		tv.Timeline.AddFeed(NewListFeed(tv, list, true, true))
+		tv.Timeline.AddFeed(NewListFeed(tv, list, config.NewTimeline(config.Timeline{
+			FeedType: config.List,
+		})), false)
 		return nil
 	}
 	if tv.tut.Config.Input.ListUserList.Match(event.Key(), event.Rune()) {
-		tv.Timeline.AddFeed(NewUsersInListFeed(tv, list))
+		tv.Timeline.AddFeed(NewUsersInListFeed(tv, list, config.NewTimeline(config.Timeline{
+			FeedType: config.ListUsersIn,
+		})), false)
 		return nil
 	}
 	if tv.tut.Config.Input.ListUserAdd.Match(event.Key(), event.Rune()) {
-		tv.Timeline.AddFeed(NewUsersAddListFeed(tv, list))
+		tv.Timeline.AddFeed(NewUsersAddListFeed(tv, list, config.NewTimeline(config.Timeline{
+			FeedType: config.ListUsersAdd,
+		})), false)
 		return nil
 	}
 	return event
@@ -789,7 +841,10 @@ func (tv *TutView) InputList(event *tcell.EventKey, list *mastodon.List) *tcell.
 func (tv *TutView) InputTag(event *tcell.EventKey, tag *mastodon.Tag) *tcell.EventKey {
 	if tv.tut.Config.Input.TagOpenFeed.Match(event.Key(), event.Rune()) ||
 		tv.tut.Config.Input.GlobalEnter.Match(event.Key(), event.Rune()) {
-		tv.Timeline.AddFeed(NewTagFeed(tv, tag.Name, true, true))
+		tv.Timeline.AddFeed(NewTagFeed(tv, config.NewTimeline(config.Timeline{
+			FeedType:  config.Tag,
+			Subaction: tag.Name,
+		})), false)
 		return nil
 	}
 	if tv.tut.Config.Input.TagFollow.Match(event.Key(), event.Rune()) {
@@ -837,12 +892,9 @@ func (tv *TutView) InputLinkView(event *tcell.EventKey) *tcell.EventKey {
 		tv.SetPage(MainFocus)
 		return nil
 	}
-	if event.Key() == tcell.KeyRune {
-		switch event.Rune() {
-		case '1', '2', '3', '4', '5':
-			s := string(event.Rune())
-			i, _ := strconv.Atoi(s)
-			tv.LinkView.OpenCustom(i)
+	for _, oc := range tv.tut.Config.OpenCustom.OpenCustoms {
+		if oc.Key.Match(event.Key(), event.Rune()) {
+			tv.LinkView.OpenCustom(oc)
 			return nil
 		}
 	}
@@ -1099,12 +1151,32 @@ func (tv *TutView) InputCmdView(event *tcell.EventKey) *tcell.EventKey {
 	return event
 }
 
+func (tv *TutView) InputEditorView(event *tcell.EventKey) *tcell.EventKey {
+	if tv.tut.Config.Input.GlobalBack.Match(event.Key(), rune(-1)) {
+		tv.EditorView.ExitTextAreaInput()
+		return nil
+	}
+	switch key := event.Key(); key {
+	case tcell.KeyCtrlQ:
+		return nil
+	case tcell.KeyCtrlC:
+		return tcell.NewEventKey(tcell.KeyCtrlQ, rune(0), tcell.ModNone)
+	}
+	return event
+}
+
 func (tv *TutView) MouseInput(event *tcell.EventMouse, action tview.MouseAction) (*tcell.EventMouse, tview.MouseAction) {
 	if event == nil {
 		return nil, action
 	}
 	switch action {
 	case tview.MouseLeftUp, tview.MouseMiddleUp, tview.MouseRightUp:
+		return event, action
+	}
+
+	/* Switch accounts */
+	x, y := event.Position()
+	if tv.MainView.accView.InRect(x, y) {
 		return event, action
 	}
 
@@ -1136,7 +1208,7 @@ func (tv *TutView) MouseInput(event *tcell.EventMouse, action tview.MouseAction)
 
 func (tv *TutView) feedListMouse(list *tview.List, i int, event *tcell.EventMouse, action tview.MouseAction) {
 	tv.SetPage(MainFocus)
-	tv.FocusFeed(i)
+	tv.FocusFeed(i, nil)
 	mh := list.MouseHandler()
 	if mh == nil {
 		return

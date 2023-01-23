@@ -25,7 +25,7 @@ func NewTop(tv *TutView) *Top {
 }
 
 func (t *Top) SetText(s string) {
-	if t.TutView.tut.Client != nil {
+	if t.TutView.tut.Client != nil && t.TutView.tut.Client.Me != nil {
 		acct := t.TutView.tut.Client.Me
 		us := acct.Acct
 		u, err := url.Parse(acct.URL)
@@ -48,7 +48,7 @@ func (t *Top) SetText(s string) {
 
 func (t *Top) setText(s string) {
 	t.View.SetText(s)
-	if t.TutView.tut.Config.General.TerminalTitle > 0 {
+	if t.TutView.tut.Config.General.TerminalTitle > 0 && t.TutView.tut.Config.General.TerminalTitle != 3 {
 		util.SetTerminalTitle(s)
 	}
 }

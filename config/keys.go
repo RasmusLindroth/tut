@@ -32,10 +32,6 @@ func ColorKey(c *Config, pre, key, end string) string {
 	return text
 }
 
-func ColorMark(color tcell.Color) string {
-	return fmt.Sprintf("[#%06x]", color.Hex())
-}
-
 func TextFlags(s string) string {
 	return fmt.Sprintf("[::%s]", s)
 }
@@ -43,4 +39,8 @@ func TextFlags(s string) string {
 func SublteText(c *Config, text string) string {
 	subtle := ColorMark(c.Style.Subtle)
 	return fmt.Sprintf("%s%s", subtle, text)
+}
+
+func ColorMark(color tcell.Color) string {
+	return fmt.Sprintf("[#%06x]", color.Hex())
 }

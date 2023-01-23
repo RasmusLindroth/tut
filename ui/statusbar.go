@@ -23,6 +23,7 @@ const (
 	CmdMode ViewMode = iota
 	ComposeMode
 	HelpMode
+	EditorMode
 	LinkMode
 	ListMode
 	MediaMode
@@ -48,6 +49,8 @@ func (sb *StatusBar) SetMode(m ViewMode) {
 		sb.View.SetText("-- LINK --")
 	case ListMode:
 		sb.View.SetText("-- LIST --")
+	case EditorMode:
+		sb.View.SetText("-- EDITOR --")
 	case MediaMode:
 		sb.View.SetText("-- MEDIA --")
 	case NotificationsMode:

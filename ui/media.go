@@ -155,18 +155,22 @@ func openMediaType(tv *TutView, filenames []string, mediaType string) {
 	go func() {
 		for _, ext := range external {
 			exec.Command(ext.Name, ext.Args...).Run()
-			deleteFiles(ext.Filenames)
+			deleteFiles(tv, ext.Filenames)
 		}
 	}()
 	for _, term := range terminal {
 		openInTerminal(tv, term.Name, term.Args...)
-		deleteFiles(term.Filenames)
+		deleteFiles(tv, term.Filenames)
 	}
 }
 
-func deleteFiles(filenames []string) {
-	for _, filename := range filenames {
-		os.Remove(filename)
+func deleteFiles(tv *TutView, filenames []string) {
+	if tv.tut.Config.Media.DeleteTmpFiles {
+		for _, filename := range filenames {
+			os.Remove(filename)
+		}
+	} else {
+		tv.FileList = append(tv.FileList, filenames...)
 	}
 }
 

@@ -1,6 +1,6 @@
-% tut(1) tut 1.0.34
+% tut(1) tut 2.0.0
 % Rasmus Lindroth
-% 2023-01-01
+% 2023-01-23
 
 # NAME
 tut - a Mastodon TUI
@@ -24,13 +24,14 @@ To see keys and commands you can use inside of tut check tut(7).
 : Add one more user to tut
 
 **-c**,  **\--config** \<path\>
-: Load config.ini from *\<path\>*
+: Load config.toml from *\<path\>*
 
 **-d**,  **\--config-dir** \<path\>
 : Load all config from *\<path\>*
 
 **-u**,  **\--user** \<name\>
 : Login directly to user named *\<name\>*.
+: If you want to login to multiple accounts seperate them with a space and use quotation marks. E.g. -u "acc_one acc_two".
 : If two users are named the same, use full name like *tut@fosstodon.org*
 
 # COMMANDS
@@ -39,12 +40,12 @@ To see keys and commands you can use inside of tut check tut(7).
 : Runs the TUI
 
 **example-config**
-: Generates the default configuration file in the current directory and names it ./config.example.ini
+: Generates the default configuration file in the current directory and names it ./config.example.toml
 
 # CONFIGURATION
 Tut is configurable, so you can change things like the colors, the default timeline, what image viewer to use and some more. Check out tut(5) or the configuration file to see all the options.
 
-You find it in *$XDG_CONFIG_HOME/tut/config.ini* on Linux which usually equals to *~/.config/tut/config.ini*.
+You find it in *$XDG_CONFIG_HOME/tut/config.toml* on Linux which usually equals to *~/.config/tut/config.toml*.
 If you don't run Linux it will use the path of the Go funcdtion os.UserConfigDir().
 But if you move the tut folder to *XDG_CONFIG_HOME/tut/* and have set the environment variable *XDG_CONFIG_HOME*
 it will look there instead of the standard place.

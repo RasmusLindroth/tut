@@ -19,7 +19,7 @@ func NewCmdBar(tv *TutView) *CmdBar {
 		View:    NewInputField(tv.tut.Config),
 	}
 	c.View.SetAutocompleteFunc(c.Autocomplete)
-	//c.View.SetAutocompletedFunc(c.Autocompleted)
+	c.View.SetAutocompletedFunc(c.Autocompleted)
 	c.View.SetDoneFunc(c.DoneFunc)
 
 	return c
@@ -100,28 +100,40 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 	case ":newer":
 		c.tutView.LoadNewerCommand()
 		c.Back()
+	case ":login":
+		c.tutView.LoginCommand()
+		c.Back()
+	case ":next-acct":
+		c.tutView.NextAcct()
+		c.Back()
+	case ":prev-acct":
+		c.tutView.PrevAcct()
+		c.Back()
 	case ":clear-notifications":
 		c.tutView.ClearNotificationsCommand()
 		c.Back()
-	case ":close-window":
-		c.tutView.CloseWindowCommand()
+	case ":clear-temp":
+		c.tutView.ClearTemp()
 		c.Back()
-	case ":move-window", ":mv":
+	case ":close-pane":
+		c.tutView.ClosePaneCommand()
+		c.Back()
+	case ":move-pane", ":mp":
 		if len(parts) < 2 {
 			break
 		}
 		switch parts[1] {
 		case "left", "up", "l", "u":
-			c.tutView.MoveWindowLeft()
+			c.tutView.MovePaneLeft()
 			c.Back()
 		case "right", "down", "r", "d":
-			c.tutView.MoveWindowRight()
+			c.tutView.MovePaneRight()
 			c.Back()
 		case "home", "h":
-			c.tutView.MoveWindowHome()
+			c.tutView.MovePaneHome()
 			c.Back()
 		case "end", "e":
-			c.tutView.MoveWindowEnd()
+			c.tutView.MovePaneEnd()
 			c.Back()
 		}
 	case ":list-placement":
@@ -185,13 +197,13 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 			c.tutView.FederatedCommand()
 			c.Back()
 		case "special-all", "sa":
-			c.tutView.SpecialCommand(true, true)
+			c.tutView.SpecialCommand(false, false)
 			c.Back()
 		case "special-boosts", "sb":
-			c.tutView.SpecialCommand(true, false)
+			c.tutView.SpecialCommand(false, true)
 			c.Back()
 		case "special-replies", "sr":
-			c.tutView.SpecialCommand(false, true)
+			c.tutView.SpecialCommand(true, false)
 			c.Back()
 		case "direct", "d":
 			c.tutView.DirectCommand()
@@ -222,11 +234,11 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 	case ":tags":
 		c.tutView.TagsCommand()
 		c.Back()
-	case ":window":
+	case ":pane":
 		if len(parts) < 2 {
 			break
 		}
-		c.tutView.WindowCommand(parts[1])
+		c.tutView.PaneCommand(parts[1])
 		c.Back()
 	case ":user":
 		if len(parts) < 2 {
@@ -237,7 +249,10 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 			break
 		}
 		c.tutView.Timeline.AddFeed(
-			NewUserSearchFeed(c.tutView, user),
+			NewUserSearchFeed(c.tutView, config.NewTimeline(config.Timeline{
+				FeedType:  config.UserList,
+				Subaction: user,
+			})), c.tutView.tut.Config.General.CommandsInNewPane,
 		)
 		c.Back()
 	case ":refetch":
@@ -279,13 +294,13 @@ func (c *CmdBar) DoneFunc(key tcell.Key) {
 
 func (c *CmdBar) Autocomplete(curr string) []string {
 	var entries []string
-	words := strings.Split(":blocking,:boosts,:bookmarks,:clear-notifications,:compose,:favorites,:favorited,:follow-tag,:followers,:following,:help,:h,:history,:move-window,:lists,:list-placement,:list-split,:muting,:newer,:preferences,:profile,:proportions,:refetch,:requests,:saved,:stick-to-top,:tag,:timeline,:tl,:unfollow-tag,:user,:window,:quit,:q", ",")
+	words := strings.Split(":blocking,:boosts,:bookmarks,:clear-notifications,:clear-temp,:close-pane,:compose,:favorites,:favorited,:follow-tag,:followers,:following,:help,:h,:history,:move-pane,:next-acct,:lists,:list-placement,:list-split,:login,:muting,:newer,:preferences,:prev-acct,:profile,:proportions,:refetch,:requests,:saved,:stick-to-top,:tag,:timeline,:tl,:unfollow-tag,:user,:pane,:quit,:q", ",")
 	if curr == "" {
 		return entries
 	}
 
 	if len(curr) > 2 && curr[:3] == ":tl" {
-		words = strings.Split(":tl home,:tl notifications,:tl local,:tl federated,:tl direct,:tl mentions,:tl favorited,:tl special-all,:tl special-boosts,:tl-special-replies", ",")
+		words = strings.Split(":tl home,:tl notifications,:tl local,:tl federated,:tl direct,:tl mentions,:tl favorited,:tl special-all,:tl special-boosts,:tl special-replies", ",")
 	}
 	if len(curr) > 8 && curr[:9] == ":timeline" {
 		words = strings.Split(":timeline home,:timeline notifications,:timeline local,:timeline federated,:timeline direct,:timeline mentions,:timeline favorited,:timeline special-all,:timeline special-boosts,:timeline special-replies", ",")
@@ -297,8 +312,8 @@ func (c *CmdBar) Autocomplete(curr string) []string {
 		words = strings.Split(":list-split row,:list-split column", ",")
 	}
 
-	if len(curr) > 11 && curr[:12] == ":move-window" {
-		words = strings.Split(":move-window left,:move-window right,:move-window up,:move-window down,:move-window home,:move-window end", ",")
+	if len(curr) > 11 && curr[:12] == ":move-pane" {
+		words = strings.Split(":move-pane left,:move-pane right,:move-pane up,:move-pane down,:move-pane home,:move-pane end", ",")
 	}
 	if len(curr) > 2 && curr[:3] == ":mv" {
 		words = strings.Split(":mv left,:mv right,:mv up,:mv down,:mv home,:mv end", ",")
@@ -315,12 +330,9 @@ func (c *CmdBar) Autocomplete(curr string) []string {
 	return entries
 }
 
-/*
 func (c *CmdBar) Autocompleted(text string, index, source int) bool {
 	if source != tview.AutocompletedNavigate {
 		c.View.SetText(text)
 	}
-
-	return source == tview.AutocompletedEnter || source == tview.AutocompletedClick
+	return false
 }
-*/

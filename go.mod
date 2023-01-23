@@ -6,18 +6,17 @@ require (
 	github.com/RasmusLindroth/go-mastodon v0.0.21
 	github.com/adrg/xdg v0.4.0
 	github.com/atotto/clipboard v0.1.4
-	github.com/gdamore/tcell/v2 v2.5.3
+	github.com/gdamore/tcell/v2 v2.5.4
 	github.com/gen2brain/beeep v0.0.0-20220909211152-5a9ec94374f6
 	github.com/gobwas/glob v0.2.3
-	github.com/icza/gox v0.0.0-20221026131554-a08a8cdc726a
+	github.com/icza/gox v0.0.0-20230117093757-93f961aa2755
 	github.com/microcosm-cc/bluemonday v1.0.21
 	github.com/pelletier/go-toml/v2 v2.0.6
-	github.com/rivo/tview v0.0.0-20221221172851-9c04916f4eaa
+	github.com/rivo/tview v0.0.0-20230104153304-892d1a2eb0da
 	github.com/rivo/uniseg v0.4.3
 	github.com/spf13/pflag v1.0.5
-	golang.org/x/exp v0.0.0-20221230185412-738e83a70c30
-	golang.org/x/net v0.4.0
-	gopkg.in/ini.v1 v1.67.0
+	golang.org/x/exp v0.0.0-20230118134722-a68e582fa157
+	golang.org/x/net v0.5.0
 	mvdan.cc/xurls/v2 v2.4.0
 )
 
@@ -33,7 +32,7 @@ require (
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/tadvi/systray v0.0.0-20190226123456-11a2b8fa57af // indirect
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 // indirect
-	golang.org/x/sys v0.3.0 // indirect
-	golang.org/x/term v0.3.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
+	golang.org/x/sys v0.4.0 // indirect
+	golang.org/x/term v0.4.0 // indirect
+	golang.org/x/text v0.6.0 // indirect
 )

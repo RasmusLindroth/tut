@@ -26,6 +26,19 @@ func NewTextView(cnf *config.Config) *tview.TextView {
 	return tw
 }
 
+func NewTextArea(cnf *config.Config) *tview.TextArea {
+	ta := tview.NewTextArea()
+	ta.SetBackgroundColor(cnf.Style.Background)
+	ta.SetWordWrap(true)
+	ta.SetTextStyle(tcell.StyleDefault.
+		Background(cnf.Style.Background).
+		Foreground(cnf.Style.Text),
+	)
+	//tw.SetTextColor(cnf.Style.Text)
+	//tw.SetDynamicColors(true)
+	return ta
+}
+
 func NewControlView(cnf *config.Config) *tview.Flex {
 	f := tview.NewFlex().SetDirection(tview.FlexColumn)
 	f.SetBackgroundColor(cnf.Style.Background)
@@ -126,4 +139,29 @@ func NewHorizontalLine(cnf *config.Config) *tview.Box {
 		return 0, 0, 0, 0
 	})
 	return horizontalLine
+}
+
+func NewAccButton(tv *TutView, cnf *config.Config, name string, index int, isActive bool) *tview.Button {
+	btn := tview.NewButton(name)
+	style := tcell.Style{}
+	if !isActive {
+		style = style.Foreground(cnf.Style.Text)
+		style = style.Background(cnf.Style.Background)
+	} else {
+		style = style.Foreground(cnf.Style.ListSelectedText)
+		style = style.Background(cnf.Style.ListSelectedBackground)
+	}
+	btn.SetActivatedStyle(style)
+	btn.SetStyle(style)
+	btn.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
+		if !btn.InRect(event.Position()) {
+			return action, event
+		}
+		if action != tview.MouseLeftClick {
+			return action, event
+		}
+		TutViews.SetFocusedTutView(index)
+		return action, nil
+	})
+	return btn
 }

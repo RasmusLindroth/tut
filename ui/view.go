@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"log"
+
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
 )
@@ -19,6 +21,7 @@ const (
 	CmdFocus
 	VoteFocus
 	HelpFocus
+	EditorFocus
 	PollFocus
 	PreferenceFocus
 )
@@ -80,6 +83,7 @@ func (tv *TutView) SetPage(f PageFocusAt) {
 	}
 	switch f {
 	case LoginFocus:
+		log.Fatalln(tv.tut.Client.Me.Acct)
 		tv.PageFocus = LoginFocus
 		tv.View.SwitchToPage("login")
 		tv.Shared.Bottom.StatusBar.SetMode(UserMode)
@@ -134,6 +138,11 @@ func (tv *TutView) SetPage(f PageFocusAt) {
 		tv.View.SwitchToPage("help")
 		tv.Shared.Bottom.StatusBar.SetMode(HelpMode)
 		tv.tut.App.SetFocus(tv.HelpView.content)
+	case EditorFocus:
+		tv.PageFocus = EditorFocus
+		tv.View.SwitchToPage("editor")
+		tv.Shared.Bottom.StatusBar.SetMode(EditorMode)
+		tv.tut.App.SetFocus(tv.EditorView.editor)
 	case ModalFocus:
 		tv.PageFocus = ModalFocus
 		tv.View.SwitchToPage("modal")

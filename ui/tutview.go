@@ -35,6 +35,22 @@ type Tut struct {
 	Config *config.Config
 }
 
+var App *tview.Application
+var Config *config.Config
+var Accounts *auth.AccountData
+var TutViews *TutViewsHolder
+
+type TutViewsHolder struct {
+	Views   []*TutView
+	Current int
+}
+
+func SetVars(config *config.Config, app *tview.Application, accounts *auth.AccountData) {
+	Config = config
+	App = app
+	Accounts = accounts
+}
+
 type TutView struct {
 	tut           *Tut
 	Timeline      *Timeline
@@ -53,10 +69,14 @@ type TutView struct {
 	PollView       *PollView
 	PreferenceView *PreferenceView
 	HelpView       *HelpView
+	EditorView     *EditorView
 	ModalView      *ModalView
+
+	FileList []string
 }
 
 func (tv *TutView) CleanExit(code int) {
+	tv.ClearTemp()
 	os.Exit(code)
 }
 
@@ -95,10 +115,19 @@ func (l *Leader) Content() string {
 	return l.content
 }
 
-func NewTutView(t *Tut, accs *auth.AccountData, selectedUser string) *TutView {
+func NewTutView(selectedUser string) {
+	if TutViews == nil {
+		TutViews = &TutViewsHolder{}
+	}
+	accs := Accounts
 	tv := &TutView{
-		tut:  t,
-		View: tview.NewPages(),
+		tut: &Tut{
+			Client: &api.AccountClient{},
+			App:    App,
+			Config: Config,
+		},
+		View:     tview.NewPages(),
+		FileList: []string{},
 	}
 	tv.Leader = NewLeader(tv)
 	tv.Shared = NewShared(tv)
@@ -131,7 +160,52 @@ func NewTutView(t *Tut, accs *auth.AccountData, selectedUser string) *TutView {
 	} else {
 		tv.loggedIn(accs.Accounts[0])
 	}
-	return tv
+	TutViews.Views = append(TutViews.Views, tv)
+	TutViews.SetFocusedTutView(len(TutViews.Views) - 1)
+}
+
+func (tvh *TutViewsHolder) SetFocusedTutView(index int) {
+	if index < 0 && index >= len(tvh.Views) {
+		return
+	}
+	tvh.Current = index
+	curr := tvh.Views[tvh.Current]
+	App.SetRoot(curr.View, true)
+	App.SetInputCapture(curr.Input)
+	if Config.General.MouseSupport {
+		App.SetMouseCapture(curr.MouseInput)
+	}
+	if curr.MainView != nil {
+		curr.MainView.ForceUpdate()
+	}
+}
+
+func (tvh *TutViewsHolder) Next() {
+	if len(tvh.Views) < 2 {
+		return
+	}
+	next := tvh.Current + 1
+	if next >= len(tvh.Views) {
+		next = 0
+	}
+	tvh.SetFocusedTutView(next)
+}
+
+func (tvh *TutViewsHolder) Prev() {
+	if len(tvh.Views) < 2 {
+		return
+	}
+	prev := tvh.Current - 1
+	if prev < 0 {
+		prev = len(tvh.Views) - 1
+	}
+	tvh.SetFocusedTutView(prev)
+}
+
+func DoneAdding() {
+	if len(TutViews.Views) > 0 {
+		TutViews.SetFocusedTutView(0)
+	}
 }
 
 func (tv *TutView) loggedIn(acc auth.Account) {
@@ -181,6 +255,7 @@ func (tv *TutView) loggedIn(acc auth.Account) {
 	tv.PollView = NewPollView(tv)
 	tv.PreferenceView = NewPreferenceView(tv)
 	tv.HelpView = NewHelpView(tv)
+	tv.EditorView = NewEditorView(tv)
 	tv.ModalView = NewModalView(tv)
 
 	tv.View.AddPage("main", tv.MainView.View, true, false)
@@ -188,13 +263,14 @@ func (tv *TutView) loggedIn(acc auth.Account) {
 	tv.View.AddPage("compose", tv.ComposeView.View, true, false)
 	tv.View.AddPage("vote", tv.VoteView.View, true, false)
 	tv.View.AddPage("help", tv.HelpView.View, true, false)
+	tv.View.AddPage("editor", tv.EditorView.View, true, false)
 	tv.View.AddPage("poll", tv.PollView.View, true, false)
 	tv.View.AddPage("preference", tv.PreferenceView.View, true, false)
 	tv.View.AddPage("modal", tv.ModalView.View, true, false)
 	tv.SetPage(MainFocus)
 }
 
-func (tv *TutView) FocusFeed(index int) {
+func (tv *TutView) FocusFeed(index int, ct *config.Timeline) {
 	if index < 0 || index >= len(tv.Timeline.Feeds) {
 		return
 	}
@@ -210,6 +286,12 @@ func (tv *TutView) FocusFeed(index int) {
 			}
 		}
 	}
+	for i, tl := range tv.Timeline.Feeds[index].Feeds {
+		if ct == tl.Timeline {
+			tv.Timeline.Feeds[index].FeedIndex = i
+			break
+		}
+	}
 	tv.Shared.Top.SetText(tv.Timeline.GetTitle())
 	tv.Timeline.update <- true
 }
@@ -219,7 +301,7 @@ func (tv *TutView) NextFeed() {
 	if index >= len(tv.Timeline.Feeds) {
 		index = 0
 	}
-	tv.FocusFeed(index)
+	tv.FocusFeed(index, nil)
 }
 
 func (tv *TutView) PrevFeed() {
@@ -227,5 +309,5 @@ func (tv *TutView) PrevFeed() {
 	if index < 0 {
 		index = len(tv.Timeline.Feeds) - 1
 	}
-	tv.FocusFeed(index)
+	tv.FocusFeed(index, nil)
 }

@@ -166,14 +166,24 @@ func (p *PollView) Add() {
 		p.tutView.ShowError(fmt.Sprintf("You can only have a maximum of %d options.", p.numOptions))
 		return
 	}
-	text, valid, err := OpenEditorLengthLimit(p.tutView, "", p.numChars)
+	if p.tutView.tut.Config.General.UseInternalEditor {
+		p.tutView.EditorView.Init("", p.numChars, true, func(input string) {
+			p.add(input, nil)
+		})
+	} else {
+		text, err := OpenEditorLengthLimit(p.tutView, "", p.numChars)
+		p.add(text, err)
+	}
+}
+
+func (p *PollView) add(text string, err error) {
 	if err != nil {
 		p.tutView.ShowError(
 			fmt.Sprintf("Couldn't open editor. Error: %v", err),
 		)
 		return
 	}
-	if !valid {
+	if len(text) == 0 {
 		return
 	}
 	p.list.AddItem(text, "", 0, nil)
@@ -187,14 +197,24 @@ func (p *PollView) Edit() {
 		return
 	}
 	text, _ := p.list.GetItemText(p.list.GetCurrentItem())
-	text, valid, err := OpenEditorLengthLimit(p.tutView, text, p.numChars)
+	if p.tutView.tut.Config.General.UseInternalEditor {
+		p.tutView.EditorView.Init(text, p.numChars, true, func(input string) {
+			p.edit(input, nil)
+		})
+	} else {
+		text, err := OpenEditorLengthLimit(p.tutView, text, p.numChars)
+		p.edit(text, err)
+	}
+}
+
+func (p *PollView) edit(text string, err error) {
 	if err != nil {
 		p.tutView.ShowError(
 			fmt.Sprintf("Couldn't open editor. Error: %v", err),
 		)
 		return
 	}
-	if !valid {
+	if len(text) == 0 {
 		return
 	}
 	p.list.SetItemText(p.list.GetCurrentItem(), text, "")

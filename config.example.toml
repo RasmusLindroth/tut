@@ -1,6 +1,4 @@
-package config
-
-var conftext = `# Configuration file for tut
+# Configuration file for tut
 
 [general]
 # What editor to use. TUT_USE_INTERNAL will use the editor that comes with tut.
@@ -1268,4 +1266,3 @@ hint="[Esc] when done"
 
 # default=["Esc"]
 special-keys=["Esc"]
-`

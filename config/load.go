@@ -11,9 +11,9 @@ func Load(cnfPath string, cnfDir string) *Config {
 		fmt.Printf("Couldn't create or access the configuration dir. Error: %v\n", err)
 		os.Exit(1)
 	}
-	path, exists, err := checkConfig("config.ini", cnfPath, cnfDir)
+	path, exists, err := checkConfig("config.toml", cnfPath, cnfDir)
 	if err != nil {
-		fmt.Printf("Couldn't access config.ini. Error: %v\n", err)
+		fmt.Printf("Couldn't access config.toml. Error: %v\n", err)
 		os.Exit(1)
 	}
 	if !exists {

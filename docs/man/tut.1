@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "tut" "1" "2023-01-01" "tut 1.0.34" ""
+.TH "tut" "1" "2023-01-23" "tut 2.0.0" ""
 .hy
 .SH NAME
 .PP
@@ -39,13 +39,17 @@ Show the version number
 Add one more user to tut
 .TP
 \f[B]-c\f[R], \f[B]--config\f[R] <path>
-Load config.ini from \f[I]<path>\f[R]
+Load config.toml from \f[I]<path>\f[R]
 .TP
 \f[B]-d\f[R], \f[B]--config-dir\f[R] <path>
 Load all config from \f[I]<path>\f[R]
 .TP
 \f[B]-u\f[R], \f[B]--user\f[R] <name>
 Login directly to user named \f[I]<name>\f[R].
+If you want to login to multiple accounts seperate them with a space and
+use quotation marks.
+E.g.
+-u \[lq]acc_one acc_two\[rq].
 If two users are named the same, use full name like
 \f[I]tut\[at]fosstodon.org\f[R]
 .SH COMMANDS
@@ -55,15 +59,15 @@ Runs the TUI
 .TP
 \f[B]example-config\f[R]
 Generates the default configuration file in the current directory and
-names it ./config.example.ini
+names it ./config.example.toml
 .SH CONFIGURATION
 .PP
 Tut is configurable, so you can change things like the colors, the
 default timeline, what image viewer to use and some more.
 Check out tut(5) or the configuration file to see all the options.
 .PP
-You find it in \f[I]$XDG_CONFIG_HOME/tut/config.ini\f[R] on Linux which
-usually equals to \f[I]\[ti]/.config/tut/config.ini\f[R].
+You find it in \f[I]$XDG_CONFIG_HOME/tut/config.toml\f[R] on Linux which
+usually equals to \f[I]\[ti]/.config/tut/config.toml\f[R].
 If you don\[cq]t run Linux it will use the path of the Go funcdtion
 os.UserConfigDir().
 But if you move the tut folder to \f[I]XDG_CONFIG_HOME/tut/\f[R] and

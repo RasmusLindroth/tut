@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/RasmusLindroth/go-mastodon"
 	"github.com/RasmusLindroth/tut/api"
 	"github.com/RasmusLindroth/tut/config"
 	"github.com/RasmusLindroth/tut/util"
-	"golang.org/x/exp/slices"
 )
 
 func (tv *TutView) ComposeCommand() {
@@ -35,91 +33,124 @@ func (tv *TutView) EditCommand() {
 
 func (tv *TutView) BlockingCommand() {
 	tv.Timeline.AddFeed(
-		NewBlocking(tv),
+		NewBlocking(tv, config.NewTimeline(config.Timeline{
+			FeedType: config.Blocking,
+		})), tv.tut.Config.General.CommandsInNewPane,
 	)
 }
 
 func (tv *TutView) BookmarksCommand() {
 	tv.Timeline.AddFeed(
-		NewBookmarksFeed(tv),
-	)
+		NewBookmarksFeed(tv, config.NewTimeline(config.Timeline{
+			FeedType: config.Saved,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 func (tv *TutView) FavoritedCommand() {
 	tv.Timeline.AddFeed(
-		NewFavoritedFeed(tv),
-	)
+		NewFavoritedFeed(tv, config.NewTimeline(config.Timeline{
+			FeedType: config.Favorited,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) MutingCommand() {
 	tv.Timeline.AddFeed(
-		NewMuting(tv),
-	)
+		NewMuting(tv, config.NewTimeline(config.Timeline{
+			FeedType: config.Muting,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) FollowRequestsCommand() {
 	tv.Timeline.AddFeed(
-		NewFollowRequests(tv),
-	)
+		NewFollowRequests(tv, config.NewTimeline(config.Timeline{
+			FeedType: config.FollowRequests,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) LocalCommand() {
 	tv.Timeline.AddFeed(
-		NewLocalFeed(tv, true, true),
-	)
+		NewLocalFeed(tv, config.NewTimeline(config.Timeline{
+			FeedType: config.TimelineLocal,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) FederatedCommand() {
 	tv.Timeline.AddFeed(
-		NewFederatedFeed(tv, true, true),
-	)
+		NewFederatedFeed(tv, config.NewTimeline(config.Timeline{
+			FeedType: config.TimelineFederated,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
-func (tv *TutView) SpecialCommand(boosts, replies bool) {
+func (tv *TutView) SpecialCommand(hideBoosts, hideReplies bool) {
 	tv.Timeline.AddFeed(
-		NewHomeSpecialFeed(tv, boosts, replies),
-	)
+		NewHomeSpecialFeed(tv, config.NewTimeline(config.Timeline{
+			FeedType:    config.TimelineHomeSpecial,
+			HideBoosts:  hideBoosts,
+			HideReplies: hideReplies,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) DirectCommand() {
 	tv.Timeline.AddFeed(
-		NewConversationsFeed(tv),
-	)
+		NewConversationsFeed(tv, config.NewTimeline(config.Timeline{
+			FeedType: config.Conversations,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) HomeCommand() {
 	tv.Timeline.AddFeed(
-		NewHomeFeed(tv, true, true),
-	)
+		NewHomeFeed(tv, config.NewTimeline(config.Timeline{
+			FeedType: config.TimelineHome,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) NotificationsCommand() {
 	tv.Timeline.AddFeed(
-		NewNotificationFeed(tv, true, true),
-	)
+		NewNotificationFeed(tv, config.NewTimeline(config.Timeline{
+			FeedType: config.Notifications,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) MentionsCommand() {
 	tv.Timeline.AddFeed(
-		NewNotificatioMentionsFeed(tv, true, true),
-	)
+		NewNotificatioMentionsFeed(tv, config.NewTimeline(config.Timeline{
+			FeedType: config.Mentions,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) ListsCommand() {
 	tv.Timeline.AddFeed(
-		NewListsFeed(tv),
-	)
+		NewListsFeed(tv, config.NewTimeline(config.Timeline{
+			FeedType: config.Lists,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) TagCommand(tag string) {
 	tv.Timeline.AddFeed(
-		NewTagFeed(tv, tag, true, true),
-	)
+		NewTagFeed(tv, config.NewTimeline(config.Timeline{
+			FeedType:  config.Tag,
+			Subaction: tag,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) TagsCommand() {
 	tv.Timeline.AddFeed(
-		NewTagsFeed(tv),
-	)
+		NewTagsFeed(tv, config.NewTimeline(config.Timeline{
+			FeedType: config.Tags,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) TagFollowCommand(tag string) {
@@ -138,7 +169,7 @@ func (tv *TutView) TagUnfollowCommand(tag string) {
 	}
 }
 
-func (tv *TutView) WindowCommand(index string) {
+func (tv *TutView) PaneCommand(index string) {
 	i, err := strconv.Atoi(index)
 	if err != nil {
 		tv.ShowError(
@@ -146,119 +177,27 @@ func (tv *TutView) WindowCommand(index string) {
 		)
 		return
 	}
-	tv.FocusFeed(i)
+	tv.FocusFeed(i, nil)
 }
 
-func (tv *TutView) MoveWindowLeft() {
-	tv.Timeline.MoveCurrentWindowLeft()
+func (tv *TutView) MovePaneLeft() {
+	tv.Timeline.MoveCurrentPaneLeft()
 }
 
-func (tv *TutView) MoveWindowRight() {
-	tv.Timeline.MoveCurrentWindowRight()
+func (tv *TutView) MovePaneRight() {
+	tv.Timeline.MoveCurrentPaneRight()
 }
 
-func (tv *TutView) MoveWindowHome() {
-	tv.Timeline.MoveCurrentWindowHome()
+func (tv *TutView) MovePaneHome() {
+	tv.Timeline.MoveCurrentPaneHome()
 }
 
-func (tv *TutView) MoveWindowEnd() {
-	tv.Timeline.MoveCurrentWindowEnd()
+func (tv *TutView) MovePaneEnd() {
+	tv.Timeline.MoveCurrentPaneEnd()
 }
 
-func (tv *TutView) SwitchCommand(s string) {
-	ft := config.InvalidFeed
-
-	parts := strings.Split(s, ",")
-	for i, p := range parts {
-		parts[i] = strings.TrimSpace(p)
-	}
-	cmd := parts[0]
-	var subaction string
-	if strings.Contains(parts[0], " ") {
-		p := strings.Split(cmd, " ")
-		cmd = p[0]
-		subaction = strings.Join(p[1:], " ")
-	}
-	showBoosts := true
-	showReplies := true
-	name := ""
-	if len(parts) > 1 {
-		tfStr := []string{"true", "false"}
-		name = parts[1]
-		if slices.Contains(tfStr, name) {
-			name = ""
-		}
-		if len(parts) > 2 && slices.Contains(tfStr, parts[len(parts)-2]) &&
-			slices.Contains(tfStr, parts[len(parts)-1]) {
-			showBoosts = parts[len(parts)-2] == "true"
-			showReplies = parts[len(parts)-1] == "true"
-		} else if len(parts) > 1 && slices.Contains(tfStr, parts[len(parts)-1]) {
-			showBoosts = parts[len(parts)-1] == "true"
-		} else if name == "" {
-			fmt.Printf("switch is invalid . Check this for errors: switch %s\n", s)
-			os.Exit(1)
-		}
-	}
-	var data string
-	switch cmd {
-	case "home":
-		ft = config.TimelineHome
-	case "direct":
-		ft = config.Conversations
-	case "local":
-		ft = config.TimelineLocal
-	case "federated":
-		ft = config.TimelineFederated
-	case "special":
-		ft = config.TimelineHomeSpecial
-	case "special-all":
-		ft = config.TimelineHomeSpecial
-		showBoosts = true
-		showReplies = true
-	case "special-boosts":
-		ft = config.TimelineHomeSpecial
-		showBoosts = true
-		showReplies = false
-	case "special-replies":
-		ft = config.TimelineHomeSpecial
-		showBoosts = false
-		showReplies = true
-	case "bookmarks", "saved":
-		ft = config.Saved
-	case "favorited":
-		ft = config.Favorited
-	case "notifications":
-		ft = config.Notifications
-	case "lists":
-		ft = config.Lists
-	case "tag":
-		ft = config.Tag
-		data = subaction
-	case "blocking":
-		ft = config.Blocking
-	case "muting":
-		ft = config.Muting
-	case "tags":
-		ft = config.Tags
-	case "mentions":
-		ft = config.Mentions
-	}
-	found := tv.Timeline.FindAndGoTo(ft, data, showBoosts, showReplies)
-	if found {
-		return
-	}
-	nf := CreateFeed(tv, ft, data, showBoosts, showReplies)
-	tv.Timeline.Feeds = append(tv.Timeline.Feeds, &FeedHolder{
-		Feeds: []*Feed{nf},
-		Name:  name,
-	})
-	tv.FocusFeed(len(tv.Timeline.Feeds) - 1)
-	tv.Shared.Top.SetText(tv.Timeline.GetTitle())
-	tv.Timeline.update <- true
-}
-
-func (tv *TutView) CloseWindowCommand() {
-	tv.Timeline.CloseCurrentWindow()
+func (tv *TutView) ClosePaneCommand() {
+	tv.Timeline.CloseCurrentPane()
 }
 
 func (tv *TutView) BoostsCommand() {
@@ -272,8 +211,12 @@ func (tv *TutView) BoostsCommand() {
 	s := item.Raw().(*mastodon.Status)
 	s = util.StatusOrReblog(s)
 	tv.Timeline.AddFeed(
-		NewBoosts(tv, s.ID),
-	)
+		NewBoosts(tv, s.ID, config.NewTimeline(config.Timeline{
+			FeedType:    config.Boosts,
+			HideBoosts:  false,
+			HideReplies: true,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) FavoritesCommand() {
@@ -287,8 +230,10 @@ func (tv *TutView) FavoritesCommand() {
 	s := item.Raw().(*mastodon.Status)
 	s = util.StatusOrReblog(s)
 	tv.Timeline.AddFeed(
-		NewFavoritesStatus(tv, s.ID),
-	)
+		NewFavoritesStatus(tv, s.ID, config.NewTimeline(config.Timeline{
+			FeedType: config.Favorites,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) FollowingCommand() {
@@ -301,8 +246,10 @@ func (tv *TutView) FollowingCommand() {
 	}
 	s := item.Raw().(*api.User)
 	tv.Timeline.AddFeed(
-		NewFollowing(tv, s.Data.ID),
-	)
+		NewFollowing(tv, s.Data.ID, config.NewTimeline(config.Timeline{
+			FeedType: config.Following,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) FollowersCommand() {
@@ -315,8 +262,10 @@ func (tv *TutView) FollowersCommand() {
 	}
 	s := item.Raw().(*api.User)
 	tv.Timeline.AddFeed(
-		NewFollowers(tv, s.Data.ID),
-	)
+		NewFollowers(tv, s.Data.ID, config.NewTimeline(config.Timeline{
+			FeedType: config.Followers,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) HistoryCommand() {
@@ -328,8 +277,10 @@ func (tv *TutView) HistoryCommand() {
 		return
 	}
 	tv.Timeline.AddFeed(
-		NewHistoryFeed(tv, item),
-	)
+		NewHistoryFeed(tv, item, config.NewTimeline(config.Timeline{
+			FeedType: config.History,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) ProfileCommand() {
@@ -339,8 +290,10 @@ func (tv *TutView) ProfileCommand() {
 		return
 	}
 	tv.Timeline.AddFeed(
-		NewUserFeed(tv, item),
-	)
+		NewUserFeed(tv, item, config.NewTimeline(config.Timeline{
+			FeedType: config.User,
+		})),
+		tv.tut.Config.General.CommandsInNewPane)
 }
 
 func (tv *TutView) PreferencesCommand() {
@@ -378,6 +331,17 @@ func (tv *TutView) LoadNewerCommand() {
 	f.LoadNewer(true)
 }
 
+func (tv *TutView) LoginCommand() {
+	NewTutView("")
+}
+
+func (tv *TutView) NextAcct() {
+	TutViews.Next()
+}
+func (tv *TutView) PrevAcct() {
+	TutViews.Prev()
+}
+
 func (tv *TutView) ClearNotificationsCommand() {
 	err := tv.tut.Client.ClearNotifications()
 	if err != nil {
@@ -389,6 +353,17 @@ func (tv *TutView) ClearNotificationsCommand() {
 			if f.Data.Type() == config.Notifications {
 				f.Data.Clear()
 			}
+		}
+	}
+}
+
+func (tv *TutView) ClearTemp() {
+	if !tv.tut.Config.Media.DeleteTmpFiles {
+		for _, t := range TutViews.Views {
+			for _, f := range t.FileList {
+				os.Remove(f)
+			}
+			t.FileList = []string{}
 		}
 	}
 }

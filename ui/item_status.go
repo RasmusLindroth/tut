@@ -36,6 +36,7 @@ type Toot struct {
 	Boosts             int
 	Favorites          int
 	Edited             bool
+	Lang               string
 	Controls           string
 }
 
@@ -104,8 +105,7 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 		status = status.Reblog
 	}
 
-	strippedContent, _ = util.CleanHTML(status.Content)
-	strippedContent = tview.Escape(strippedContent)
+	strippedContent, _ = util.CleanHTMLStyled(status.Content)
 
 	width := 0
 	if main != nil {
@@ -120,6 +120,12 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 		BoostedAcct:        tview.Escape(so.Account.Acct),
 		ShowSpoiler:        showSensitive,
 		CWlabel:            cwToggle.Label,
+	}
+	for _, lang := range util.Languages {
+		if status.Language == lang.Code {
+			toot.Lang = lang.English
+			break
+		}
 	}
 
 	toot.AccountDisplayName = tview.Escape(status.Account.DisplayName)
@@ -162,8 +168,7 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 	}
 
 	if status.Sensitive {
-		strippedSpoiler, _ = util.CleanHTML(status.SpoilerText)
-		strippedSpoiler = tview.Escape(strippedSpoiler)
+		strippedSpoiler, _ = util.CleanHTMLStyled(status.SpoilerText)
 	}
 
 	toot.CWText = strippedSpoiler
