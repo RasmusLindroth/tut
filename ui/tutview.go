@@ -71,9 +71,18 @@ type TutView struct {
 	HelpView       *HelpView
 	EditorView     *EditorView
 	ModalView      *ModalView
+
+	FileList []string
 }
 
 func (tv *TutView) CleanExit(code int) {
+	if !tv.tut.Config.Media.DeleteTmpFiles {
+		for _, t := range TutViews.Views {
+			for _, f := range t.FileList {
+				os.Remove(f)
+			}
+		}
+	}
 	os.Exit(code)
 }
 
@@ -123,7 +132,8 @@ func NewTutView(selectedUser string) {
 			App:    App,
 			Config: Config,
 		},
-		View: tview.NewPages(),
+		View:     tview.NewPages(),
+		FileList: []string{},
 	}
 	tv.Leader = NewLeader(tv)
 	tv.Shared = NewShared(tv)

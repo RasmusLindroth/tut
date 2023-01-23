@@ -119,10 +119,11 @@ type ViewerTOML struct {
 }
 
 type MediaTOML struct {
-	Image *ViewerTOML `toml:"image"`
-	Video *ViewerTOML `toml:"video"`
-	Audio *ViewerTOML `toml:"audio"`
-	Link  *ViewerTOML `toml:"link"`
+	DeleteTmpFiles *bool       `toml:"delete-temp-files"`
+	Image          *ViewerTOML `toml:"image"`
+	Video          *ViewerTOML `toml:"video"`
+	Audio          *ViewerTOML `toml:"audio"`
+	Link           *ViewerTOML `toml:"link"`
 }
 
 type PatternTOML struct {

@@ -90,6 +90,7 @@ var ConfigDefault = ConfigTOML{
 		TimelineNameText:               sp("#808080"),
 	},
 	Media: MediaTOML{
+		DeleteTmpFiles: bt,
 		Image: &ViewerTOML{
 			Program:  sp("TUT_OS_DEFAULT"),
 			Args:     sp(""),

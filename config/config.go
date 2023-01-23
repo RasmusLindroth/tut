@@ -248,24 +248,25 @@ type Style struct {
 }
 
 type Media struct {
-	ImageViewer   string
-	ImageArgs     []string
-	ImageTerminal bool
-	ImageSingle   bool
-	ImageReverse  bool
-	VideoViewer   string
-	VideoArgs     []string
-	VideoTerminal bool
-	VideoSingle   bool
-	VideoReverse  bool
-	AudioViewer   string
-	AudioArgs     []string
-	AudioTerminal bool
-	AudioSingle   bool
-	AudioReverse  bool
-	LinkViewer    string
-	LinkArgs      []string
-	LinkTerminal  bool
+	DeleteTmpFiles bool
+	ImageViewer    string
+	ImageArgs      []string
+	ImageTerminal  bool
+	ImageSingle    bool
+	ImageReverse   bool
+	VideoViewer    string
+	VideoArgs      []string
+	VideoTerminal  bool
+	VideoSingle    bool
+	VideoReverse   bool
+	AudioViewer    string
+	AudioArgs      []string
+	AudioTerminal  bool
+	AudioSingle    bool
+	AudioReverse   bool
+	LinkViewer     string
+	LinkArgs       []string
+	LinkTerminal   bool
 }
 
 type Pattern struct {
@@ -770,6 +771,7 @@ func getViewer(v *ViewerTOML, def *ViewerTOML) (program, args string, terminal, 
 
 func parseMedia(cfg MediaTOML) Media {
 	media := Media{}
+	media.DeleteTmpFiles = NilDefaultBool(cfg.DeleteTmpFiles, ConfigDefault.Media.DeleteTmpFiles)
 	var program, args string
 	var terminal, single, reverse bool
 

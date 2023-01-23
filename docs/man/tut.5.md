@@ -265,6 +265,10 @@ A shortcut to run this action with your leader-key + this shortcut.
 # MEDIA
 This section is \[media\] in your configuration file
 
+## delete-temp-files
+Media files will be removed directly after they\'ve been opened. Some programs doesn\'t like this, so if your media doesn\'t open, try set this to false. Tut will remove all files once you close the program.  
+**delete-temp-files**=*true*
+
 # MEDIA.IMAGE
 This section is \[media.image\] in your configuration file
 

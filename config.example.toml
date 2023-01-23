@@ -253,6 +253,12 @@ leader-timeout=1000
 # shortcut=""
 
 [media]
+# Media files will be removed directly after they've been opened. Some programs
+# doesn't like this, so if your media doesn't open, try set this to false. Tut
+# will remove all files once you close the program.
+# default=true
+delete-temp-files=true
+
 [media.image]
 # The program to open images. TUT_OS_DEFAULT equals xdg-open on Linux, open on
 # MacOS and start on Windows.
