@@ -23,8 +23,8 @@ tut - configuration for tut(1)
 .PP
 The configuration format for tut.
 .PP
-You find it in \f[I]$XDG_CONFIG_HOME/tut/config.ini\f[R] on Linux which
-usually equals to \f[I]\[ti]/.config/tut/config.ini\f[R].
+You find it in \f[I]$XDG_CONFIG_HOME/tut/config.toml\f[R] on Linux which
+usually equals to \f[I]\[ti]/.config/tut/config.toml\f[R].
 If you don\[cq]t run Linux it will use the path of the Go funcdtion
 os.UserConfigDir().
 But if you move the tut folder to \f[I]XDG_CONFIG_HOME/tut/\f[R] and
@@ -841,12 +841,12 @@ You\[aq]ll have to set theme=\[dq]none\[dq] for this to work.
 The theme to use.
 You can use some themes that comes bundled with tut.
 Check out the themes available on the URL below.
-If a theme is named nord.ini you just write theme=\[dq]nord\[dq].
+If a theme is named nord.toml you just write theme=\[dq]nord\[dq].
 .PP
 https://github.com/RasmusLindroth/tut/tree/master/config/themes
 .PP
 You can also create a theme file in your config directory
-e.g.\ \[ti]/.config/tut/themes/foo.ini and then set theme=foo.
+e.g.\ \[ti]/.config/tut/themes/foo.toml and then set theme=foo.
 .PP
 If you want to use your own theme but don\[aq]t want to create a new
 file, set theme=\[dq]none\[dq] and then you can create your own theme

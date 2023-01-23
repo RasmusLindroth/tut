@@ -141,8 +141,8 @@ Here's a list of supported commands.
 
 tut searches for a config file in the following locations on Linux:
 
-    1. $XDG_CONFIG_HOME/tut/config.ini
-    2. $HOME/.config/tut/config.ini
+    1. $XDG_CONFIG_HOME/tut/config.toml
+    2. $HOME/.config/tut/config.toml
 
 If you don't run Linux it will use the path of the Go function {{ Flags "b" }}os.UserConfigDir(){{ Flags "-" }}.
 But if you move the tut folder to {{ Flags "b" }}XDG_CONFIG_HOME/tut/{{ Flags "-" }} and have set the environment variable {{ Flags "b" }}XDG_CONFIG_HOME{{ Flags "-" }}

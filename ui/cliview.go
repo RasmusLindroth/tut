@@ -77,7 +77,8 @@ func CliView(version string) (newUser bool, selectedUser string, confPath string
 		fmt.Print("\t-n  --new-user         add one more user to tut\n")
 		fmt.Print("\t-c  --config <path>    load config.toml from <path>\n")
 		fmt.Print("\t-d --config-dir <path> load all config from <path>\n")
-		fmt.Print("\t-u  --user <name>      login directly to user named <name>\n")
+		fmt.Print("\t-u  --user <name>      login directly to user named <name>.\n")
+		fmt.Print("\t\tIf you want to login to multiple accounts seperate them with a space and use quotation marks. E.g. -u \"acc_one acc_two\"\n")
 		fmt.Print("\t\tIf two users are named the same. Use full name like tut@fosstodon.org\n\n")
 
 		fmt.Print("Configuration:\n")

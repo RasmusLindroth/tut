@@ -440,13 +440,13 @@ posts=false
 # will be used. You'll have to set theme="none" for this to work.
 
 # The theme to use. You can use some themes that comes bundled with tut. Check
-# out the themes available on the URL below. If a theme is named nord.ini you
+# out the themes available on the URL below. If a theme is named nord.toml you
 # just write theme="nord".
 # 
 # https://github.com/RasmusLindroth/tut/tree/master/config/themes
 # 
 # You can also create a theme file in your config directory e.g.
-# ~/.config/tut/themes/foo.ini and then set theme=foo.
+# ~/.config/tut/themes/foo.toml and then set theme=foo.
 # 
 # If you want to use your own theme but don't want to create a new file, set
 # theme="none" and then you can create your own theme below.

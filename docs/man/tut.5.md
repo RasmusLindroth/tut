@@ -8,7 +8,7 @@ tut - configuration for tut(1)
 # DESCRIPTION
 The configuration format for tut.
 
-You find it in *$XDG_CONFIG_HOME/tut/config.ini* on Linux which usually equals to *~/.config/tut/config.ini*.
+You find it in *$XDG_CONFIG_HOME/tut/config.toml* on Linux which usually equals to *~/.config/tut/config.toml*.
 If you don't run Linux it will use the path of the Go funcdtion os.UserConfigDir().
 But if you move the tut folder to *XDG_CONFIG_HOME/tut/* and have set the environment variable *XDG_CONFIG_HOME*
 it will look there instead of the standard place.
@@ -443,11 +443,11 @@ All styles can be represented in their HEX value like \#ffffff or with their nam
 You can also use xrdb colors like this xrdb:color1 The program will use colors prefixed with an \* first then look for URxvt or XTerm if it can\'t find any color prefixed with an asterisk. If you don\'t want tut to guess the prefix you can set the prefix yourself. If the xrdb color can\'t be found a preset color will be used. You\'ll have to set theme=\"none\" for this to work.  
 
 ## theme
-The theme to use. You can use some themes that comes bundled with tut. Check out the themes available on the URL below. If a theme is named nord.ini you just write theme=\"nord\".  
+The theme to use. You can use some themes that comes bundled with tut. Check out the themes available on the URL below. If a theme is named nord.toml you just write theme=\"nord\".  
   
 https://github.com/RasmusLindroth/tut/tree/master/config/themes  
   
-You can also create a theme file in your config directory e.g. ~/.config/tut/themes/foo.ini and then set theme=foo.  
+You can also create a theme file in your config directory e.g. ~/.config/tut/themes/foo.toml and then set theme=foo.  
   
 If you want to use your own theme but don\'t want to create a new file, set theme=\"none\" and then you can create your own theme below.  
   
