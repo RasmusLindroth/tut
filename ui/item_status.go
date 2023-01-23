@@ -36,6 +36,7 @@ type Toot struct {
 	Boosts             int
 	Favorites          int
 	Edited             bool
+	Lang               string
 	Controls           string
 }
 
@@ -119,6 +120,12 @@ func drawStatus(tv *TutView, item api.Item, status *mastodon.Status, main *tview
 		BoostedAcct:        tview.Escape(so.Account.Acct),
 		ShowSpoiler:        showSensitive,
 		CWlabel:            cwToggle.Label,
+	}
+	for _, lang := range util.Languages {
+		if status.Language == lang.Code {
+			toot.Lang = lang.English
+			break
+		}
 	}
 
 	toot.AccountDisplayName = tview.Escape(status.Account.DisplayName)
