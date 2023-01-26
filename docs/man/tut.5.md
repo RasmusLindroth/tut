@@ -1,6 +1,6 @@
 % tut(5) tut 2.0.0
 % Rasmus Lindroth
-% 2023-01-23
+% 2023-01-24
 
 # NAME
 tut - configuration for tut(1)
@@ -44,12 +44,12 @@ Format for dates the same day. See date-format for more info.
 ## date-relative
 This displays relative dates instead for statuses that are one day or older the output is 1y2m1d (1 year 2 months and 1 day)  
   
-The value is an integear  
+The value is an integer  
 -1     = don\'t use relative dates  
  0     = always use relative dates, except for dates \< 1 day  
  1 - ∞ = number of days to use relative dates  
 				  
-Value: 28 will display a relative date for toots that are between 1-28 days old. Otherwhise it will use the short or long format.  
+Value: 28 will display a relative date for toots that are between 1-28 days old. Otherwise it will use the short or long format.  
 **date-relative**=*-1*
 
 ## max-width
@@ -110,7 +110,7 @@ Always jump to the newest post. May ruin your reading experience.
 **stick-to-top**=*false*
 
 ## show-boosted-user
-Display the username of the person being boosted insted of the person that boosted.  
+Display the username of the person being boosted instead of the person that boosted.  
 **show-boosted-user**=*false*
 
 ## commands-in-new-pane
@@ -127,7 +127,7 @@ Set a default name for the timeline if the name is empty. So if you run :tag lin
 2 = Only show terminal title, and no top bar in tut  
 3 = No terminal title and no top bar in tut.  
 
-valid: 0, 1, 2, 4
+valid: 0, 1, 2, 3
 
 **terminal-title**=*0*
 
@@ -176,7 +176,7 @@ valid: home, direct, local, federated, bookmarks, saved, favorited, notification
 **type**=*""*
 
 ## data
-Used for the tag type, so here you set the tag. If you have multiple you seperate them with a space.  
+Used for the tag type, so here you set the tag. If you have multiple you separate them with a space.  
 **data**=*""*
 
 ## keys
@@ -245,7 +245,6 @@ shortcut=\"r\"
 type=\"list-split\"  
 data=\"column\"  
 shortcut=\"c\"  
-  
 
 ## type
 The action you want to run.  
@@ -386,6 +385,20 @@ Enable notifications for new posts.
 
 # OPEN-CUSTOM
 This section is \[open-custom\] in your configuration file
+
+Example:
+
+\[\[open-custom.programs\]\]  
+program = \'chromium\'  
+terminal = false  
+hint = \"\[C\]hrome\"  
+keys = \[\"c\", \"C\"\]  
+		  
+\[\[open-custom.programs\]\]  
+program = \'imv\'  
+terminal = false  
+hint = \"\[I\]mv\"  
+keys = \[\"i\", \"I\"\]\"  
 
 # OPEN-CUSTOM.PROGRAMS
 This section is \[\[open-custom.programs\]\] in your configuration file. You can have multiple of them.
@@ -534,19 +547,19 @@ The highlight color of for key hints
 **controls-highlight**=*""*
 
 ## autocomplete-background
-The background color in dropdowns and autocompletions  
+The background color in drop-downs and autocompletions  
 **autocomplete-background**=*""*
 
 ## autocomplete-text
-The text color in dropdowns at autocompletions  
+The text color in drop-downs at autocompletions  
 **autocomplete-text**=*""*
 
 ## autocomplete-selected-background
-The background color for selected value in dropdowns and autocompletions  
+The background color for selected value in drop-downs and autocompletions  
 **autocomplete-selected-background**=*""*
 
 ## autocomplete-selected-text
-The text color for selected value in dropdowns and autocompletions  
+The text color for selected value in drop-downs and autocompletions  
 **autocomplete-selected-text**=*""*
 
 ## button-color-one
@@ -570,7 +583,7 @@ This section is \[input\] in your configuration file
 
 In this section you set the keys to be used in tut.  
 		  
-The hint option lets you set which part of the hint that will be highlighted in tut. E.g. \[F\]avorite results in a highlighted F and the rest of the text is displayed normaly.  
+The hint option lets you set which part of the hint that will be highlighted in tut. E.g. \[F\]avorite results in a highlighted F and the rest of the text is displayed normally.  
 Some of the options can be in two states, like favorites, so there you can set the hint-alt option to something like Un\[F\]avorite.  
   
 Examples:  
@@ -579,7 +592,7 @@ Examples:
 \"\[Enter\]\" = Enter where everything is highlighted  
 \"Yan\[K\]\" = YanK with a highlighted K  
   
-The keys option lets you define what key that should be pressed. This is limited to on character only and they are case sensetive.  
+The keys option lets you define what key that should be pressed. This is limited to on character only and they are case sensitive.  
 Example:  
 keys=\[\"j\",\"J\"\]  
   

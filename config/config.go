@@ -1381,9 +1381,15 @@ func parseConfig(filepath string, cnfPath string, cnfDir string) (Config, error)
 		return conf, err
 	}
 	var cnf ConfigTOML
-	toml.NewDecoder(f).Decode(&cnf)
+	d := toml.NewDecoder(f)
+	err = d.Decode(&cnf)
+
 	if err != nil {
-		log.Fatalln(err)
+		fmt.Print("Error while parsing your config:\n")
+		fmt.Println(err)
+		fmt.Println("\nThis message can be a bit unclear. If you don't understand the error you can open up an issue and I'll try to help you. Please post your config.toml in the issue.")
+		fmt.Println("https://github.com/RasmusLindroth/tut/issues")
+		os.Exit(1)
 	}
 	f.Close()
 	conf.General = parseGeneral(cnf.General)

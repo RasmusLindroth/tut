@@ -223,7 +223,7 @@ Flags:
 	-c  --config <path>    load config.toml from <path>
 	-d --config-dir <path> load all config from <path>
 	-u  --user <name>      login directly to user named <name>
-      If you want to login to multiple accounts seperate them with a space and use quotation marks. E.g. -u "acc_one acc_two"
+      If you want to login to multiple accounts separate them with a space and use quotation marks. E.g. -u "acc_one acc_two"
       If two users are named the same. Use full name like tut@fosstodon.org
 ```
 

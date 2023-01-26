@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "tut" "5" "2023-01-23" "tut 2.0.0" ""
+.TH "tut" "5" "2023-01-24" "tut 2.0.0" ""
 .hy
 .SH NAME
 .PP
@@ -86,7 +86,7 @@ See date-format for more info.
 This displays relative dates instead for statuses that are one day or
 older the output is 1y2m1d (1 year 2 months and 1 day)
 .PP
-The value is an integear
+The value is an integer
 .PD 0
 .P
 .PD
@@ -102,7 +102,7 @@ The value is an integear
 .PP
 Value: 28 will display a relative date for toots that are between 1-28
 days old.
-Otherwhise it will use the short or long format.
+Otherwise it will use the short or long format.
 .PD 0
 .P
 .PD
@@ -197,7 +197,7 @@ May ruin your reading experience.
 \f[B]stick-to-top\f[R]=\f[I]false\f[R]
 .SS show-boosted-user
 .PP
-Display the username of the person being boosted insted of the person
+Display the username of the person being boosted instead of the person
 that boosted.
 .PD 0
 .P
@@ -234,7 +234,7 @@ So if you run :tag linux the title of the pane will be set to #linux
 .PD
 3 = No terminal title and no top bar in tut.
 .PP
-valid: 0, 1, 2, 4
+valid: 0, 1, 2, 3
 .PP
 \f[B]terminal-title\f[R]=\f[I]0\f[R]
 .SS redraw-ui
@@ -337,7 +337,7 @@ notifications, lists, mentions, tag
 .SS data
 .PP
 Used for the tag type, so here you set the tag.
-If you have multiple you seperate them with a space.
+If you have multiple you separate them with a space.
 .PD 0
 .P
 .PD
@@ -729,6 +729,44 @@ Enable notifications for new posts.
 .SH OPEN-CUSTOM
 .PP
 This section is [open-custom] in your configuration file
+.PP
+Example:
+.PP
+[[open-custom.programs]]
+.PD 0
+.P
+.PD
+program = \[aq]chromium\[aq]
+.PD 0
+.P
+.PD
+terminal = false
+.PD 0
+.P
+.PD
+hint = \[dq][C]hrome\[dq]
+.PD 0
+.P
+.PD
+keys = [\[dq]c\[dq], \[dq]C\[dq]]
+.PP
+[[open-custom.programs]]
+.PD 0
+.P
+.PD
+program = \[aq]imv\[aq]
+.PD 0
+.P
+.PD
+terminal = false
+.PD 0
+.P
+.PD
+hint = \[dq][I]mv\[dq]
+.PD 0
+.P
+.PD
+keys = [\[dq]i\[dq], \[dq]I\[dq]]\[dq]
 .SH OPEN-CUSTOM.PROGRAMS
 .PP
 This section is [[open-custom.programs]] in your configuration file.
@@ -996,28 +1034,29 @@ The highlight color of for key hints
 \f[B]controls-highlight\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS autocomplete-background
 .PP
-The background color in dropdowns and autocompletions
+The background color in drop-downs and autocompletions
 .PD 0
 .P
 .PD
 \f[B]autocomplete-background\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS autocomplete-text
 .PP
-The text color in dropdowns at autocompletions
+The text color in drop-downs at autocompletions
 .PD 0
 .P
 .PD
 \f[B]autocomplete-text\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS autocomplete-selected-background
 .PP
-The background color for selected value in dropdowns and autocompletions
+The background color for selected value in drop-downs and
+autocompletions
 .PD 0
 .P
 .PD
 \f[B]autocomplete-selected-background\f[R]=\f[I]\[lq]\[lq]\f[R]
 .SS autocomplete-selected-text
 .PP
-The text color for selected value in dropdowns and autocompletions
+The text color for selected value in drop-downs and autocompletions
 .PD 0
 .P
 .PD
@@ -1062,7 +1101,7 @@ The hint option lets you set which part of the hint that will be
 highlighted in tut.
 E.g.
 [F]avorite results in a highlighted F and the rest of the text is
-displayed normaly.
+displayed normally.
 .PD 0
 .P
 .PD
@@ -1088,7 +1127,7 @@ Examples:
 \[dq]Yan[K]\[dq] = YanK with a highlighted K
 .PP
 The keys option lets you define what key that should be pressed.
-This is limited to on character only and they are case sensetive.
+This is limited to on character only and they are case sensitive.
 .PD 0
 .P
 .PD

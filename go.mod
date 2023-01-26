@@ -15,7 +15,7 @@ require (
 	github.com/rivo/tview v0.0.0-20230104153304-892d1a2eb0da
 	github.com/rivo/uniseg v0.4.3
 	github.com/spf13/pflag v1.0.5
-	golang.org/x/exp v0.0.0-20230118134722-a68e582fa157
+	golang.org/x/exp v0.0.0-20230125214544-b3c2aaf6208d
 	golang.org/x/net v0.5.0
 	mvdan.cc/xurls/v2 v2.4.0
 )

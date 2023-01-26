@@ -29,13 +29,13 @@ date-tody-format="15:04"
 # This displays relative dates instead for statuses that are one day or older
 # the output is 1y2m1d (1 year 2 months and 1 day)
 # 
-# The value is an integear
+# The value is an integer
 # -1     = don't use relative dates
 #  0     = always use relative dates, except for dates < 1 day
 #  1 - ∞ = number of days to use relative dates
 # 				
 # Value: 28 will display a relative date for toots that are between 1-28 days
-# old. Otherwhise it will use the short or long format.
+# old. Otherwise it will use the short or long format.
 # default=-1
 date-relative=-1
 
@@ -91,7 +91,7 @@ show-help=true
 # default=false
 stick-to-top=false
 
-# Display the username of the person being boosted insted of the person that
+# Display the username of the person being boosted instead of the person that
 # boosted.
 # default=false
 show-boosted-user=false
@@ -109,7 +109,7 @@ dynamic-timeline-name=true
 # 1 = Show title in terminal and top bar
 # 2 = Only show terminal title, and no top bar in tut
 # 3 = No terminal title and no top bar in tut.
-# valid: 0, 1, 2, 4
+# valid: 0, 1, 2, 3
 # default=0
 terminal-title=0
 
@@ -135,7 +135,7 @@ leader-timeout=1000
 # Timelines adds panes of feeds. You can customize the number of feeds, what
 # they should show and the key to activate them.
 
-# Example:
+# --- START OF EXAMPLE ---
 # [[general.timelines]]
 # name="home"
 # type="home"
@@ -149,6 +149,7 @@ leader-timeout=1000
 # closed=true
 # on-creation-closed="new-pane"
 # on-focus="focus-self"
+# --- END OF EXAMPLE ---
 
 # The name to display above the timeline
 # default=""
@@ -161,7 +162,7 @@ leader-timeout=1000
 # type=""
 
 # Used for the tag type, so here you set the tag. If you have multiple you
-# seperate them with a space.
+# separate them with a space.
 # default=""
 # data=""
 
@@ -221,7 +222,7 @@ leader-timeout=1000
 # list and the other content, e.g. proportions 1 3. See list-proportion above
 # for more information.
 
-# Example:
+# --- START OF EXAMPLE ---
 # [[general.leader-actions]]
 # type="close-pane"
 # shortcut="q"
@@ -235,7 +236,7 @@ leader-timeout=1000
 # type="list-split"
 # data="column"
 # shortcut="c"
-# 
+# --- END OF EXAMPLE ---
 
 # The action you want to run.
 # valid: blocking, boosts, clear-notifications, close-pane, compose, edit, favorited,
@@ -380,6 +381,20 @@ poll=false
 posts=false
 
 [open-custom]
+# --- START OF EXAMPLE ---
+# [[open-custom.programs]]
+# program = 'chromium'
+# terminal = false
+# hint = "[C]hrome"
+# keys = ["c", "C"]
+# 		
+# [[open-custom.programs]]
+# program = 'imv'
+# terminal = false
+# hint = "[I]mv"
+# keys = ["i", "I"]"
+# --- END OF EXAMPLE ---
+
 # [[open-custom.programs]]
 # The program to open the file with.
 # default=""
@@ -534,19 +549,19 @@ controls-text=""
 # default=""
 controls-highlight=""
 
-# The background color in dropdowns and autocompletions
+# The background color in drop-downs and autocompletions
 # default=""
 autocomplete-background=""
 
-# The text color in dropdowns at autocompletions
+# The text color in drop-downs at autocompletions
 # default=""
 autocomplete-text=""
 
-# The background color for selected value in dropdowns and autocompletions
+# The background color for selected value in drop-downs and autocompletions
 # default=""
 autocomplete-selected-background=""
 
-# The text color for selected value in dropdowns and autocompletions
+# The text color for selected value in drop-downs and autocompletions
 # default=""
 autocomplete-selected-text=""
 
@@ -573,7 +588,7 @@ timeline-name-text=""
 # 		
 # The hint option lets you set which part of the hint that will be highlighted
 # in tut. E.g. [F]avorite results in a highlighted F and the rest of the text is
-# displayed normaly.
+# displayed normally.
 # Some of the options can be in two states, like favorites, so there you can set
 # the hint-alt option to something like Un[F]avorite.
 # 
@@ -584,7 +599,7 @@ timeline-name-text=""
 # "Yan[K]" = YanK with a highlighted K
 # 
 # The keys option lets you define what key that should be pressed. This is
-# limited to on character only and they are case sensetive.
+# limited to on character only and they are case sensitive.
 # Example:
 # keys=["j","J"]
 # 

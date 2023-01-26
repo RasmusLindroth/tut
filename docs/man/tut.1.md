@@ -1,6 +1,6 @@
 % tut(1) tut 2.0.0
 % Rasmus Lindroth
-% 2023-01-23
+% 2023-01-24
 
 # NAME
 tut - a Mastodon TUI
@@ -31,7 +31,7 @@ To see keys and commands you can use inside of tut check tut(7).
 
 **-u**,  **\--user** \<name\>
 : Login directly to user named *\<name\>*.
-: If you want to login to multiple accounts seperate them with a space and use quotation marks. E.g. -u "acc_one acc_two".
+: If you want to login to multiple accounts separate them with a space and use quotation marks. E.g. -u "acc_one acc_two".
 : If two users are named the same, use full name like *tut@fosstodon.org*
 
 # COMMANDS

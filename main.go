@@ -10,9 +10,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-const version = "2.0.0"
-
-var tutViews []*ui.TutView
+const version = "2.0.1"
 
 func main() {
 	util.SetTerminalTitle("tut")
