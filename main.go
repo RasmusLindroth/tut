@@ -12,8 +12,6 @@ import (
 
 const version = "2.0.1"
 
-var tutViews []*ui.TutView
-
 func main() {
 	util.SetTerminalTitle("tut")
 	util.MakeDirs()
