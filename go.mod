@@ -16,7 +16,7 @@ require (
 	github.com/rivo/uniseg v0.4.3
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/exp v0.0.0-20230125214544-b3c2aaf6208d
-	golang.org/x/net v0.5.0
+	golang.org/x/net v0.7.0
 	mvdan.cc/xurls/v2 v2.4.0
 )
 
@@ -32,7 +32,7 @@ require (
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/tadvi/systray v0.0.0-20190226123456-11a2b8fa57af // indirect
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 // indirect
-	golang.org/x/sys v0.4.0 // indirect
-	golang.org/x/term v0.4.0 // indirect
-	golang.org/x/text v0.6.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/term v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 )
