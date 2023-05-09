@@ -104,7 +104,7 @@ func OpenEditor(tv *TutView, content string) (string, error) {
 	fname := f.Name()
 	args = append(args, fname)
 	f.Close()
-	cmd := exec.Command(editor, args...)
+	cmd := exec.Command("/bin/sh", "-c", editor + " " + f.Name())
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
