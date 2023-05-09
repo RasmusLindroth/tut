@@ -85,12 +85,6 @@ func OpenEditor(tv *TutView, content string) (string, error) {
 	} else {
 		editor = strings.TrimSpace(tv.tut.Config.General.Editor)
 	}
-	args := []string{}
-	parts := strings.Split(editor, " ")
-	if len(parts) > 1 {
-		args = append(args, parts[1:]...)
-		editor = parts[0]
-	}
 	f, err := os.CreateTemp("", "tut")
 	if err != nil {
 		return "", err
@@ -102,7 +96,6 @@ func OpenEditor(tv *TutView, content string) (string, error) {
 		}
 	}
 	fname := f.Name()
-	args = append(args, fname)
 	f.Close()
 	cmd := exec.Command("/bin/sh", "-c", editor + " " + f.Name())
 	cmd.Stdin = os.Stdin
