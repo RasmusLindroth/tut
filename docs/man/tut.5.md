@@ -37,9 +37,9 @@ Enable mouse support in tut.
 The date format to be used. See https://pkg.go.dev/time\#pkg-constants  
 **date-format**=*"2006-01-02 15:04"*
 
-## date-tody-format
+## date-today-format
 Format for dates the same day. See date-format for more info.  
-**date-tody-format**=*"15:04"*
+**date-today-format**=*"15:04"*
 
 ## date-relative
 This displays relative dates instead for statuses that are one day or older the output is 1y2m1d (1 year 2 months and 1 day)  
