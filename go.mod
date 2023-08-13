@@ -7,7 +7,7 @@ require (
 	github.com/adrg/xdg v0.4.0
 	github.com/atotto/clipboard v0.1.4
 	github.com/gdamore/tcell/v2 v2.5.4
-	github.com/gen2brain/beeep v0.0.0-20220909211152-5a9ec94374f6
+	github.com/gen2brain/beeep v0.0.0-20230812223410-3e1549ef0811
 	github.com/gobwas/glob v0.2.3
 	github.com/icza/gox v0.0.0-20230117093757-93f961aa2755
 	github.com/microcosm-cc/bluemonday v1.0.21
@@ -32,7 +32,7 @@ require (
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/tadvi/systray v0.0.0-20190226123456-11a2b8fa57af // indirect
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 // indirect
-	golang.org/x/sys v0.4.0 // indirect
+	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/term v0.4.0 // indirect
 	golang.org/x/text v0.6.0 // indirect
 )
