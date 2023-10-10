@@ -67,6 +67,15 @@ func getUrlsStatus(status *mastodon.Status) ([]util.URL, []mastodon.Mention, []m
 		}
 	}
 
+	// Also append the URL of the actual status, in case the user wants to open
+	// that. This is equivalent to "open original page" in the Mastodon web
+	// interface.
+	realUrls = append(realUrls, util.URL{
+		Text:    status.URL + " (original page)",
+		URL:     status.URL,
+		Classes: []string{},
+	})
+
 	length := len(realUrls) + len(status.Mentions) + len(status.Tags)
 	return realUrls, status.Mentions, status.Tags, length
 }
