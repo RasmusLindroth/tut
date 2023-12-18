@@ -55,7 +55,7 @@ You can find Linux binaries under [releases](https://github.com/RasmusLindroth/t
 * `:favorites` = Lists users that favorited the toot
 * `:follow-tag <tag>` = Follow a hashtag named &lt;tag&gt;
 * `:followers` = List of people the account are following. It only works on profiles
-* `:following` = List of people follwing the account. It only works on profiles
+* `:following` = List of people following the account. It only works on profiles
 * `:help` = Show help for how to use tut
 * `:h` = Shorter form of former command
 * `:history` = Show edits of a toot

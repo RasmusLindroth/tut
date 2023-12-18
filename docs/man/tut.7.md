@@ -8,24 +8,24 @@ tut - keys and commands inside of tut(1)
 # DESCRIPTION
 This page contains information for some of the keys and all the commands you can use in tut(1).
 
-To change the keys look at tut(5) under the *INPUT* section. 
+To change the keys look at tut(5) under the *INPUT* section.
 
 # KEYS
 ## Keys without description in tut
-**c** = Compose a new toot  
-**j** or **Down arrow** = Navigate down in feed list or toot  
-**k** or **Up arrow** = Navigate up in feed list or toot  
-**h** or **Left arrow** = Cycle back in open timelines  
-**l** or **Right arrow** = Cycle forward in open timelines  
-**g** or **Home** = Go to top in feed list or toot  
-**G** or **End** = Go to bottom in feed list or toot  
-**?** = View help  
-**q** = Go back or quit  
+**c** = Compose a new toot
+**j** or **Down arrow** = Navigate down in feed list or toot
+**k** or **Up arrow** = Navigate up in feed list or toot
+**h** or **Left arrow** = Cycle back in open timelines
+**l** or **Right arrow** = Cycle forward in open timelines
+**g** or **Home** = Go to top in feed list or toot
+**G** or **End** = Go to bottom in feed list or toot
+**?** = View help
+**q** = Go back or quit
 **Esc** = Go back
 
 ## Explanation of the non obvious keys when viewing a toot
-**v** = view. In this mode you can scroll throught the text of the toot if it doesn\'t fit the screen  
-**o** = open. Gives you a list of all URLs in the toot. Opens them in your default browser, if it\'s an user or tag they will be opened in tut  
+**v** = view. In this mode you can scroll throught the text of the toot if it doesn\'t fit the screen
+**o** = open. Gives you a list of all URLs in the toot. Opens them in your default browser, if it\'s an user or tag they will be opened in tut
 **m** = media. Opens the media with xdg-open
 
 # Commands
@@ -78,7 +78,7 @@ To change the keys look at tut(5) under the *INPUT* section.
 : List of people the account are following. It only works on profiles
 
 **:following**
-: List of people follwing the account. It only works on profiles
+: List of people following the account. It only works on profiles
 
 **:help**
 : Show help for how to use tut
